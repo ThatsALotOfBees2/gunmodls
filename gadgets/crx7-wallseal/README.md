@@ -27,7 +27,8 @@ that pass the outline are the lock bolts, 10 cm above and below.
 | `crx7-wallseal-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~45k |
 | `crx7-wallseal-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~45k |
 | `crx7-wallseal-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.0 s | ~63k |
-| `crx7-wallseal-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.3 s | ~81k |
+| `crx7-wallseal-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.3 s | ~80k |
+| `crx7-wallseal-hatch.glb` | 1.2 × 1.2 m square floor hatch | 3 × 3 | 2.8 s | ~40k |
 | `viewer.html` | Interactive viewer and the procedural source of the `.glb` files | | |
 
 Panels share one mesh per file, so the files stay around 2 MB.
@@ -37,21 +38,16 @@ Panels share one mesh per file, so the files stay around 2 MB.
 `sounds/` holds generated mechanical sounds (44.1 kHz mono WAV), made by `sounds/generate_sounds.py`
 (numpy only; run it to regenerate or tweak them).
 
-| File | Use |
-| --- | --- |
-| `place.wav` | Base clamps onto the wall |
-| `touch_tap.wav`, `arm_confirmed.wav` | Touch-screen taps and the arm confirmation |
-| `button_press.wav` | Confirm button |
-| `motor_spread.wav` | Servo whir during the sideways spread |
-| `rail_extend.wav` | Rails telescoping up and down (motor and ratchet) |
-| `panel_latch.wav` | A panel column or row hitting its stop |
-| `lock_bolt.wav` | Lock bolts firing into the ceiling and floor |
-| `anchor_set.wav` | Tie rods punching through and the stars twist-locking |
-| `locked.wav` | Locked chime |
-| `retract.wav` | Retraction |
-| `deploy_<size>.wav` | Full mix timed to that size's `deploy` clip; play both together |
-
-`sounds/cues.json` lists each sound's start time within each size's `deploy` clip, if you'd rather trigger the one-shots yourself.
+- **`deploy_<size>.wav`:** start it with the `deploy` clip. It is built from the same timeline as
+  the animation: the servo runs while the parts move and stops with them, and each clank lands on the
+  frame a column, rail or row hits its stop. The tie rods thump one after another, and the slam lands
+  on the lock frame.
+- **`retract_<size>.wav`:** start it when you play `deploy` backwards (at normal speed).
+- **One-shots:** `place`, `touch_tap`, `arm_confirmed` play before the clip, when the base goes on
+  and the operator traces the arm pattern. `button_press`, `motor_spread`, `rail_extend`,
+  `panel_latch`, `lock_bolt`, `anchor_set`, `locked` and `retract` are separate pieces for custom
+  setups.
+- **`cues.json`:** lists every animation event's time for each size.
 
 ## Using it in a game
 
@@ -68,6 +64,10 @@ Panels share one mesh per file, so the files stay around 2 MB.
   Play it after your touch-screen interaction, and play it backwards to retract.
 - **Far side:** the star anchors and tie rods sit under the `far_side` node, set for a 0.3 m wall.
   Set that node's z to minus your wall's thickness.
+- **Hatch:** a perfect square laid face-up. The origin is the centre of the square, on the floor
+  surface, and the unit faces +Y. Everything sits under `hatch_mount`, and its lock bolts drive down
+  into the floor. The star anchors are on the underside, 0.3 m down; move `far_side` for other floor
+  thicknesses.
 - **Nodes:**
   - `core` (with `confirm_button`)
   - `rail_left` / `rail_right` (sleeves, `*_upper_n` / `*_lower_n` stages, clamps and `*_lockbolt_top` / `*_lockbolt_bottom`)
