@@ -10,23 +10,27 @@
    },
    {
     "t": 0.45,
-    "event": "frame starts spreading sideways"
+    "event": "rails step out of the housing"
    },
    {
-    "t": 1.0,
-    "event": "rails reach the edges"
+    "t": 0.6,
+    "event": "rails catch the band edges; columns start sliding out"
    },
    {
     "t": 1.1,
     "event": "column 1 from the centre lands"
    },
    {
-    "t": 1.15,
-    "event": "rails start telescoping"
+    "t": 1.1,
+    "event": "rails reach the edges with the outermost columns"
    },
    {
-    "t": 1.85,
-    "event": "rails and beams at full travel"
+    "t": 1.3,
+    "event": "first rows rise; beams and rail ends ride on the outer rows"
+   },
+   {
+    "t": 2.15,
+    "event": "beams and rails at full travel with the first top / bottom row"
    },
    {
     "t": 1.8,
@@ -61,23 +65,27 @@
    },
    {
     "t": 0.45,
-    "event": "frame starts spreading sideways"
+    "event": "rails step out of the housing"
    },
    {
-    "t": 1.0,
-    "event": "rails reach the edges"
+    "t": 0.6,
+    "event": "rails catch the band edges; columns start sliding out"
    },
    {
     "t": 1.1,
     "event": "column 1 from the centre lands"
    },
    {
-    "t": 1.15,
-    "event": "rails start telescoping"
+    "t": 1.1,
+    "event": "rails reach the edges with the outermost columns"
    },
    {
-    "t": 1.85,
-    "event": "rails and beams at full travel"
+    "t": 1.3,
+    "event": "first rows rise; beams and rail ends ride on the outer rows"
+   },
+   {
+    "t": 2.15,
+    "event": "beams and rails at full travel with the first top / bottom row"
    },
    {
     "t": 1.8,
@@ -112,11 +120,11 @@
    },
    {
     "t": 0.45,
-    "event": "frame starts spreading sideways"
+    "event": "rails step out of the housing"
    },
    {
-    "t": 1.0,
-    "event": "rails reach the edges"
+    "t": 0.6,
+    "event": "rails catch the band edges; columns start sliding out"
    },
    {
     "t": 1.1,
@@ -127,12 +135,16 @@
     "event": "column 2 from the centre lands"
    },
    {
-    "t": 1.45,
-    "event": "rails start telescoping"
+    "t": 1.4,
+    "event": "rails reach the edges with the outermost columns"
    },
    {
-    "t": 2.15,
-    "event": "rails and beams at full travel"
+    "t": 1.6,
+    "event": "first rows rise; beams and rail ends ride on the outer rows"
+   },
+   {
+    "t": 2.45,
+    "event": "beams and rails at full travel with the first top / bottom row"
    },
    {
     "t": 2.1,
@@ -175,11 +187,11 @@
    },
    {
     "t": 0.45,
-    "event": "frame starts spreading sideways"
+    "event": "rails step out of the housing"
    },
    {
-    "t": 1.0,
-    "event": "rails reach the edges"
+    "t": 0.6,
+    "event": "rails catch the band edges; columns start sliding out"
    },
    {
     "t": 1.1,
@@ -194,12 +206,16 @@
     "event": "column 3 from the centre lands"
    },
    {
-    "t": 1.75,
-    "event": "rails start telescoping"
+    "t": 1.7,
+    "event": "rails reach the edges with the outermost columns"
    },
    {
-    "t": 2.45,
-    "event": "rails and beams at full travel"
+    "t": 1.9,
+    "event": "first rows rise; beams and rail ends ride on the outer rows"
+   },
+   {
+    "t": 2.75,
+    "event": "beams and rails at full travel with the first top / bottom row"
    },
    {
     "t": 2.4,
@@ -240,7 +256,7 @@
   ]
  },
  "hatch": {
-  "clip_seconds": 2.5,
+  "clip_seconds": 2.45,
   "deploy_track": "deploy_hatch.wav",
   "retract_track": "retract_hatch.wav",
   "events": [
@@ -250,23 +266,27 @@
    },
    {
     "t": 0.45,
-    "event": "frame starts spreading sideways"
+    "event": "rails step out of the housing"
    },
    {
-    "t": 1.0,
-    "event": "rails reach the edges"
+    "t": 0.6,
+    "event": "rails catch the band edges; columns start sliding out"
    },
    {
     "t": 1.1,
     "event": "column 1 from the centre lands"
    },
    {
-    "t": 1.15,
-    "event": "rails start telescoping"
+    "t": 1.1,
+    "event": "rails reach the edges with the outermost columns"
    },
    {
-    "t": 1.85,
-    "event": "rails and beams at full travel"
+    "t": 1.22,
+    "event": "first rows rise; beams and rail ends ride on the outer rows"
+   },
+   {
+    "t": 1.72,
+    "event": "beams and rails at full travel with the first top / bottom row"
    },
    {
     "t": 1.72,
@@ -277,15 +297,15 @@
     "event": "row 1 of column 1 lands"
    },
    {
-    "t": 1.65,
+    "t": 1.6,
     "event": "tie rods start punching through"
    },
    {
-    "t": 2.44,
+    "t": 2.39,
     "event": "lock: bolts, panels and star anchors seat"
    },
    {
-    "t": 2.5,
+    "t": 2.45,
     "event": "locked"
    }
   ]

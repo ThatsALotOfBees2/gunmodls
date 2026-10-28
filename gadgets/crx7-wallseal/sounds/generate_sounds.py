@@ -216,11 +216,10 @@ SIZES = {'small': (1, 7, 5, 2), 'standard': (1, 7, 5, 2), 'large': (2, 9, 5, 4),
 
 
 def timeline(m, rows, cols):
-    """frame first, then panels from the centre outward: the furthest go on last"""
+    """panels from the centre outward (the furthest go on last); the frame rides on the outermost panels"""
     h_win = {j: (0.6 + max(0, j - 1) * 0.3, 0.6 + max(0, j - 1) * 0.3 + 0.5) for j in range(1, m + 1)}
     h_end = 1.1 + (m - 1) * 0.3
     v_s = h_end + 0.05
-    frame_v = (v_s, v_s + 0.7)
     js = range(0 if cols % 2 else 1, m + 1)
     ks = range(1, (rows - 1) // 2 + 1)
     v_win = {}
@@ -228,9 +227,11 @@ def timeline(m, rows, cols):
         for k in ks:
             s = v_s + 0.15 + (k - 1) * 0.3 + (j - 1) * 0.08
             v_win[(j, k)] = (s, s + (0.55 if k >= 2 else 0.5))
-    v_end = max([frame_v[1]] + [b for a, b in v_win.values()])
+    beam = (min(a for (j, k), (a, b) in v_win.items() if k == 1),            # beams leave with the first rising row
+            min(b for (j, k), (a, b) in v_win.items() if k == max(ks)))      # and land with the first top / bottom row
+    v_end = max(b for a, b in v_win.values())
     l0 = v_end + 0.1
-    return dict(frame_h=(0.45, 1.0), h_win=h_win, h_end=h_end, v_s=v_s, frame_v=frame_v, v_win=v_win, v_end=v_end, l0=l0, total=l0 + 0.55)
+    return dict(rail_step=(0.45, 0.6), h_win=h_win, h_end=h_end, v_s=v_s, beam=beam, v_win=v_win, v_end=v_end, l0=l0, total=l0 + 0.55)
 
 
 def grind(d):
@@ -266,15 +267,16 @@ def deploy_track(m, stars, rows, cols):
         nonlocal out
         out += at(x * gain, when, L)
     put(s_button_press(), 0.14, 0.8)                                        # button bottoms out
-    put(motor(T['h_end'] - 0.45, 85, 150, 1150), 0.45, 0.75)                 # one drive: frame out, then the columns
+    put(motor(T['h_end'] - 0.45, 85, 150, 1150), 0.45, 0.75)                 # one drive: rails step out, then ride out on the columns
     put(ratchet(T['h_end'] - 0.45, 9, 14, 3000, 0.18), 0.45, 0.6)
-    put(clank(480, 1.0), T['frame_h'][1])                                    # rails reach the edges
+    put(clank(980, 0.35), T['rail_step'][1])                                 # rails catch the band's side edges
     for j, (a, b) in T['h_win'].items():                                     # columns land, centre outward
         put(clank(720 - 40 * j, 0.6 + 0.1 * j), b)
-    vs, fv = T['v_s'], T['frame_v']
-    put(motor(T['v_end'] - vs, 110, 185, 1500), vs, 0.7)                     # rails telescope, then the rows follow
-    put(ratchet(fv[1] - vs, 26, 34, 3800, 0.42), vs, 0.7)
-    put(clank(470, 1.1), fv[1])                                              # rails and beams at full travel
+    put(clank(480, 1.0), T['h_end'])                                         # rails reach the edges with the outermost columns
+    vs, (b0, b1) = T['v_s'], T['beam']
+    put(motor(T['v_end'] - vs, 110, 185, 1500), vs, 0.7)                     # rows rise; beams ride on the outer rows
+    put(ratchet(b1 - b0, 26, 34, 3800, 0.42), b0, 0.7)                       # rail ends telescope with the beams
+    put(clank(470, 1.1), b1)                                                 # rails and beams at full travel
     for (j, k), (a, b) in sorted(T['v_win'].items(), key=lambda e: e[1][1]):
         put(clank(700 - 60 * k - 15 * max(j, 0), 0.45 + 0.15 * k), b)       # each row lands; the far corners last
     l0 = T['l0']
@@ -297,20 +299,21 @@ def retract_track(m, stars, rows, cols):
         nonlocal out
         out += at(x * gain, when, L)
     r = lambda t: total - t
-    l0, vs, fv = T['l0'], T['v_s'], T['frame_v']
+    l0, vs, (b0, b1) = T['l0'], T['v_s'], T['beam']
     put(burst(0.2, 1800, 0.8, 0.012) * 1.2 + thud(120, 70, 0.2, 0.05) * 0.6, 0.03)   # bolts release
     put(hiss(0.45), r(l0 + 0.5), 0.9)
     put(ratchet(0.46, 22, 34, 3300, 0.45), r(l0 + 0.5), 0.8)                 # stars untwist
     for i in range(stars):
         put(grind(0.4), r(l0 + 0.1 + i * 0.03), 0.3)                        # rods withdraw
-    put(motor(T['v_end'] - vs, 185, 110, 1500), r(T['v_end']), 0.7)         # rows come in, corners first, then the rails
-    put(ratchet(fv[1] - vs, 30, 24, 3800, 0.4), r(fv[1]), 0.7)
+    put(motor(T['v_end'] - vs, 185, 110, 1500), r(T['v_end']), 0.7)         # rows come in, corners first
+    put(ratchet(b1 - b0, 30, 24, 3800, 0.4), r(b1), 0.7)                    # beams and rail ends come in with the outer rows
     for (j, k), (a, b) in T['v_win'].items():
         put(clank(700 - 60 * k - 15 * max(j, 0), 0.35 + 0.1 * k), r(a))     # each row stowed behind the band
-    put(clank(470, 1.0), r(vs))                                              # rails fully in
-    put(motor(T['h_end'] - 0.45, 150, 85, 1150), r(T['h_end']), 0.75)        # columns slide back in, outermost first
+    put(clank(470, 1.0), r(b0))                                              # beams and rails fully in with the last row
+    put(motor(T['h_end'] - 0.45, 150, 85, 1150), r(T['h_end']), 0.75)        # columns slide back in, outermost first, rails riding on them
     for j, (a, b) in T['h_win'].items():
         put(clank(720 - 40 * j, 0.5), r(a))
+    put(clank(980, 0.3), r(T['rail_step'][1]))                               # rails let go of the band
     put(clank(480, 1.0), r(0.45))                                            # rails back in the housing
     put(beeps([1318.5, 880], 0.13, 0.11, 0.4), r(0.25))                      # stowed
     return room(out, 0.5, 0.1)[:int(L * SR)]
@@ -333,9 +336,11 @@ def main():
             x = fn(m, stars, rows, cols)
             x = np.tanh(x / (np.max(np.abs(x)) + 1e-9) * 1.6) / np.tanh(1.6)
             write_wav(os.path.join(HERE, f'{kind}_{size}.wav'), norm(x, 0.9))
-        ev = [(0.14, 'confirm button bottoms out'), (0.45, 'frame starts spreading sideways'), (1.0, 'rails reach the edges')]
+        ev = [(0.14, 'confirm button bottoms out'), (0.45, 'rails step out of the housing'), (0.6, 'rails catch the band edges; columns start sliding out')]
         ev += [(round(b, 3), f'column {j} from the centre lands') for j, (a, b) in sorted(T['h_win'].items())]
-        ev += [(round(T['v_s'], 3), 'rails start telescoping'), (round(T['frame_v'][1], 3), 'rails and beams at full travel')]
+        ev += [(round(T['h_end'], 3), 'rails reach the edges with the outermost columns')]
+        ev += [(round(T['beam'][0], 3), 'first rows rise; beams and rail ends ride on the outer rows'),
+               (round(T['beam'][1], 3), 'beams and rails at full travel with the first top / bottom row')]
         ev += [(round(b, 3), f'row {k} of column {j} lands') for (j, k), (a, b) in sorted(T['v_win'].items(), key=lambda e: e[1][1])]
         ev += [(round(T['l0'] - 0.3, 3), 'tie rods start punching through'), (round(T['l0'] + 0.49, 3), 'lock: bolts, panels and star anchors seat'),
                (round(T['total'], 3), 'locked')]

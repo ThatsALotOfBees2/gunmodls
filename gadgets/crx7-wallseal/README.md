@@ -6,16 +6,17 @@ Crystalix automated wall reinforcement. The operator places the base unit in the
 and traces an arm pattern on its touch screen. After a press of the confirm button, the unit
 expands into a reinforced wall:
 
-1. **Sideways first.** The frame goes out first: the side rails ride to the edges and the beams
-   telescope with them. Then a band of panels slides out from behind the core, centre column first,
-   each one coming out from behind its neighbour. The furthest columns land last.
-2. **Then up and down.** The rails telescope to full height, carrying the top and bottom beams.
-   Then the rows slide out of the band, nearest first, and the far corners go on last.
-
-Retracting runs the same steps backwards, so the furthest panels come off first.
+1. **Sideways first.** A band of panels slides out from behind the core, centre column first,
+   each one coming out from behind its neighbour, so the furthest columns land last. The side rails
+   step out of the housing onto the band's outer edges and ride out with them (the beams telescope
+   alongside), so the frame reaches the edges together with the last columns.
+2. **Then up and down.** The rows slide out of the band, nearest first, and the far corners go on
+   last. The top and bottom beams ride on the outermost rows, and the rails telescope with them.
 3. **Lock.** The panels seat flush and lock bolts shoot 10 cm up into the ceiling frame and down
    into the floor. Tie rods then punch through the wall, and X-shaped star anchors twist-lock on
    the far side.
+
+Retracting runs the same steps backwards, so the furthest panels come off first.
 
 Every part is rigid and slides or turns; nothing scales.
 
