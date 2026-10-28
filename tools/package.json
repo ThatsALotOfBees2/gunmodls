@@ -1,0 +1,12 @@
+{
+  "name": "gunmodls-tools",
+  "private": true,
+  "description": "Export .glb files and preview images from the model viewers in this repo.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "playwright": "1.63.0",
+    "three": "0.180.0",
+    "three-bvh-csg": "0.0.18",
+    "three-mesh-bvh": "0.9.7"
+  }
+}
