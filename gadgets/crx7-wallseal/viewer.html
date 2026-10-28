@@ -617,22 +617,20 @@ function buildColumn(name, parent, { w, d, sleeveH, topY, botY, clamps, side }) 
       if (i === n && clamps) {
         const end = dir * L / 2;
         const cl = node(`${name}_clamp_${dir > 0 ? 'top' : 'bottom'}`, st);
-        const bw = wi + 0.05, bh = 0.09;
+        // bracket stays inside the rail's width so units can sit flush side by side
+        const bw = RW - 0.004, bh = 0.09;
         const bracket = slab(roundedShape([[-bw / 2, -bh / 2, 0.012], [bw / 2, -bh / 2, 0.012], [bw / 2, bh / 2, 0.012], [-bw / 2, bh / 2, 0.012]]), di + 0.006, { bevel: 0.006, segs: 1, zc: (di + 0.006) / 2 + 0.003 });
         bracket.translate(0, end - dir * bh / 2, 0);
         cl.add(mesh(creased(bracket, 30), MAT.dark, cl.name + '_bracket'));
-        const bb = [-1, 1].map(sx => hexScrew(0.0085, V3(sx * bw * 0.3, end - dir * bh / 2, di + 0.009), V3(0, 0, 1), 0.7 + sx));
+        const bb = [-1, 1].map(sx => hexScrew(0.0075, V3(sx * bw * 0.28, end - dir * bh * 0.62, di + 0.009), V3(0, 0, 1), 0.7 + sx));
         cl.add(mesh(mergeGeometries(bb.map(clean)), MAT.bolt, cl.name + '_bolts'));
-        // jaw: hinged on the bracket's outer face; folded along the rail, it swings out 90 degrees into the wall frame
-        const jaw = node(`${name}_jaw_${dir > 0 ? 'top' : 'bottom'}`, cl);
-        jaw.position.set(side * (bw / 2 - 0.006), end - dir * bh / 2, 0);
-        const jp = [[0, -0.02, 0.004], [0.13, -0.02, 0.006], [0.155, -0.002, 0.004], [0.155, 0.032, 0.004], [0.125, 0.032, 0.004], [0.125, 0.012, 0.002], [0, 0.02, 0.004]];
-        const jg = slab(roundedShape(jp.map(([x, y, r]) => [side * x, dir * y, r])), 0.05, { bevel: 0.005, segs: 1, zc: di * 0.5 });
-        jaw.add(mesh(creased(jg, 30), MAT.dark, jaw.name + '_hook'));
-        const pivot = new THREE.CylinderGeometry(0.017, 0.017, 0.066, 18); pivot.rotateX(Math.PI / 2); pivot.translate(0, 0, di * 0.5);
-        jaw.add(mesh(pivot, MAT.bolt, jaw.name + '_pin'));
-        jaw.add(mesh(ledBar(0.05, 0.006, 0.003, side * 0.07, dir * 0.0, di * 0.5 + 0.025), MAT.led, jaw.name + '_led', { cast: false }));
-        stages[stages.length - 1].jaw = { node: jaw, folded: -side * dir * Math.PI / 2 };
+        // lock bolt: a chisel-tipped deadbolt that shoots 10 cm out of the bracket into the ceiling / floor frame
+        const lb = node(`${name}_lockbolt_${dir > 0 ? 'top' : 'bottom'}`, cl);
+        const bl = 0.15, tipY = end;           // retracted: tip flush with the bracket end
+        const lp = [[-0.022, tipY - dir * bl, 0.003], [0.022, tipY - dir * bl, 0.003], [0.022, tipY - dir * 0.02, 0.002], [0.006, tipY, 0.002], [-0.006, tipY, 0.002], [-0.022, tipY - dir * 0.02, 0.002]];
+        lb.add(mesh(creased(slab(roundedShape(lp), 0.05, { bevel: 0.004, segs: 1, zc: di * 0.5 }), 30), MAT.bolt, lb.name + '_bar'));
+        lb.add(mesh(ledBar(0.008, 0.06, 0.003, 0, tipY - dir * 0.07, di * 0.5 + 0.025), MAT.led, lb.name + '_led', { cast: false }));
+        stages[stages.length - 1].bolt = { node: lb, dir };
       }
     }
   }
@@ -719,7 +717,8 @@ function buildModel(key) {
   }
 
   /* telescoping side rails (and a centre post on the wide variants) */
-  const xRail = W / 2 - RW / 2, xStow = coreW / 2 - RW / 2 - 0.07;
+  // rails sit 12 mm inside the edge so nothing (collars, brackets) passes the unit's width
+  const xRail = W / 2 - RW / 2 - 0.012, xStow = coreW / 2 - RW / 2 - 0.07;
   for (const side of [-1, 1]) {
     const c = buildColumn(side < 0 ? 'rail_left' : 'rail_right', root, { w: RW, d: RD, sleeveH, topY: H - coreY, botY: -coreY, clamps: true, side });
     c.col.position.set(side * xRail, coreY, 0);
@@ -750,7 +749,7 @@ function buildModel(key) {
     }
     N.beams.push({ node: b, stages, y1: y, y0: coreY + (y > coreY ? 1 : -1) * (sleeveH / 2 - BH / 2 - 0.01) });
   }
-  N.labels.clamp = V3(W / 2 + 0.03, H - 0.02, 0.12);
+  N.labels.clamp = V3(xRail, H + 0.07, 0.12);
   N.labels.rail = V3(-W / 2 + RW / 2, coreY + (H - coreY) * 0.62, RD);
 
   /* armor panels: a rows x cols grid between the rails and beams */
@@ -786,8 +785,10 @@ function buildModel(key) {
   /* through-wall anchors: tie rods punch through and X-shaped star plates twist-lock on the far face */
   const far = node('far_side', root); far.position.set(0, 0, -WALL_T);
   far.userData = { note: `star anchors on the far face of a ${WALL_T} m wall; set this node's z to minus the wall thickness` };
-  const ap = [[-xRail, H - 0.12], [xRail, H - 0.12], [-xRail, 0.12], [xRail, 0.12], [0, coreY]];
-  if (H >= 1.8) ap.push([-xRail, coreY], [xRail, coreY]);
+  // edge anchors kept 14 cm in so a star never reaches past the unit's width
+  const xa = W / 2 - 0.14;
+  const ap = [[-xa, H - 0.14], [xa, H - 0.14], [-xa, 0.14], [xa, 0.14], [0, coreY]];
+  if (H >= 1.8) ap.push([-xa, coreY], [xa, coreY]);
   if (W >= 2.5) ap.push([0, H - 0.12], [0, 0.12]);
   if (W >= 3.5) ap.push([-W / 4, H - 0.12], [W / 4, H - 0.12], [-W / 4, 0.12], [W / 4, 0.12]);
   const sp = starParts();
@@ -816,7 +817,7 @@ function pose(N, t) {
     c.col.position.x = lerp(c.x0, c.x1, spread);
     for (const s of c.stages) {
       s.node.position.y = lerp(s.stowed, s.deployed, seg(t, vS + 0.1 * (s.i - 1), vS + 0.85));
-      if (s.jaw) s.jaw.node.rotation.z = lerp(s.jaw.folded, 0, lock);
+      if (s.bolt) s.bolt.node.position.y = s.bolt.dir * 0.1 * lock;
     }
   }
   for (const b of N.beams) {
@@ -843,7 +844,7 @@ function animatedTracks(N) {
   for (const s of N.stars) list.push([s.rod, ['scale']], [s.star, ['position', 'quaternion']]);
   for (const c of N.columns) {
     list.push([c.col, ['position']]);
-    for (const s of c.stages) { list.push([s.node, ['position']]); if (s.jaw) list.push([s.jaw.node, ['quaternion']]); }
+    for (const s of c.stages) { list.push([s.node, ['position']]); if (s.bolt) list.push([s.bolt.node, ['position']]); }
   }
   for (const b of N.beams) { list.push([b.node, ['position']]); for (const s of b.stages) list.push([s.node, ['position']]); }
   for (const p of N.panels) list.push([p.node, ['position']]);
@@ -983,7 +984,7 @@ function setModel(key) {
 function addLabels() {
   const on = $('labels').getAttribute('aria-pressed') === 'true';
   const L = model.labels;
-  const items = [['control', 'Control panel · lever + confirm', model.core, V3()], ['clamp', 'Locking clamp', model.root, V3()], ['rail', 'Telescoping rail', model.root, V3()], ['panel', 'Composite armor panel', model.root, V3()], ['star', 'X-star anchors · far side', model.root, V3()]];
+  const items = [['control', 'Control panel · lever + confirm', model.core, V3()], ['clamp', 'Lock bolt · into ceiling and floor', model.root, V3()], ['rail', 'Telescoping rail', model.root, V3()], ['panel', 'Composite armor panel', model.root, V3()], ['star', 'X-star anchors · far side', model.root, V3()]];
   for (const [k, text, parent, off] of items) {
     if (!L[k]) continue;
     const el = document.createElement('div'); el.className = 'label'; el.textContent = text;

@@ -10,14 +10,17 @@ expands into a reinforced wall:
    band of panels, outer columns first, until the band spans the full width.
 2. **Then up and down.** The rails telescope to full height, carrying the top and bottom beams.
    The panel rows that were stacked behind the band slide out vertically, outer rows first.
-3. **Lock.** The panels seat flush, the clamps swing into the wall frame, tie rods punch through
-   the wall, and X-shaped star anchors twist-lock on the far side.
+3. **Lock.** The panels seat flush and lock bolts shoot 10 cm up into the ceiling frame and down
+   into the floor. Tie rods then punch through the wall, and X-shaped star anchors twist-lock on
+   the far side.
 
 Every part is rigid and slides or turns; nothing scales.
 
 ## Files
 
-Sizes differ in width only; every variant covers the full 2.0 m wall height.
+Sizes differ in width only; every variant covers the full 2.0 m wall height. Nothing reaches past
+the unit's width, so several units can sit flush side by side. Place them W apart; the only parts
+that pass the outline are the lock bolts, 10 cm above and below.
 
 | File | Width | Panels (rows × columns) | `deploy` clip | Triangles |
 | --- | --- | --- | --- | --- |
@@ -46,7 +49,7 @@ Panels share one mesh per file, so the files stay around 2 MB.
   Set that node's z to minus your wall's thickness.
 - **Nodes:**
   - `core` (with `confirm_button`)
-  - `rail_left` / `rail_right` (sleeves, `*_upper_n` / `*_lower_n` stages, clamps and jaws)
+  - `rail_left` / `rail_right` (sleeves, `*_upper_n` / `*_lower_n` stages, clamps and `*_lockbolt_top` / `*_lockbolt_bottom`)
   - `post_centre` (large and XL only)
   - `beam_top`, `beam_bottom` (with `*_left_n` / `*_right_n` stages)
   - `panel_rR_cC`
