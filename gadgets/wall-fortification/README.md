@@ -1,9 +1,9 @@
-# CRX-7 "Wallseal"
+# Wall Fortification
 
-![CRX-7 Wallseal](preview.png)
+![Wall Fortification](preview.png)
 
-Crystalix automated wall reinforcement. The operator places the base unit in the middle of a wall
-and traces an arm pattern on its touch screen. After a press of the confirm button, the unit
+Automated wall reinforcement. The operator places the base unit in the middle of a wall
+and traces the arm code on its touch screen. After a press of the confirm button, the unit
 expands into a reinforced wall:
 
 1. **Sideways first.** A band of panels slides out from behind the core, centre column first,
@@ -18,7 +18,8 @@ expands into a reinforced wall:
 
 Retracting runs the same steps backwards, so the furthest panels come off first.
 
-Every part is rigid and slides or turns; nothing scales.
+Every part is rigid and slides or turns; nothing scales. There are no logos, decals or printed text:
+the only graphic is the 3 × 3 code pad on the touch screen.
 
 ## Files
 
@@ -28,11 +29,11 @@ that pass the outline are the lock bolts, 10 cm above and below.
 
 | File | Width | Panels (rows × columns) | `deploy` clip | Triangles |
 | --- | --- | --- | --- | --- |
-| `crx7-wallseal-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~45k |
-| `crx7-wallseal-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~45k |
-| `crx7-wallseal-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.2 s | ~62k |
-| `crx7-wallseal-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.6 s | ~80k |
-| `crx7-wallseal-hatch.glb` | 1.2 × 1.2 m square floor hatch | 3 × 3 | 2.5 s | ~40k |
+| `wall-fortification-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~45k |
+| `wall-fortification-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~45k |
+| `wall-fortification-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.2 s | ~62k |
+| `wall-fortification-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.6 s | ~80k |
+| `wall-fortification-hatch.glb` | 1.2 × 1.2 m square floor hatch | 3 × 3 | 2.5 s | ~40k |
 | `viewer.html` | Interactive viewer and the procedural source of the `.glb` files | | |
 
 Panels share one mesh per file, so the files stay around 2 MB.
@@ -48,7 +49,7 @@ Panels share one mesh per file, so the files stay around 2 MB.
   on the lock frame.
 - **`retract_<size>.wav`:** start it when you play `deploy` backwards (at normal speed).
 - **One-shots:** `place`, `touch_tap`, `arm_confirmed` play before the clip, when the base goes on
-  and the operator traces the arm pattern. `button_press`, `motor_spread`, `rail_extend`,
+  and the operator traces the arm code. `button_press`, `motor_spread`, `rail_extend`,
   `panel_latch`, `lock_bolt`, `anchor_set`, `locked` and `retract` are separate pieces for custom
   setups.
 - **`cues.json`:** lists every animation event's time for each size.
@@ -79,9 +80,10 @@ Panels share one mesh per file, so the files stay around 2 MB.
   - `beam_top`, `beam_bottom` (with `*_left_n` / `*_right_n` stages)
   - `panel_rR_cC`
   - `far_side` (`tie_rod_n`, `star_n`)
-- **Materials:** PBR, with emissive purple LEDs and the screen. Every bolt has a hex socket recess.
+- **Materials:** PBR, with emissive purple LEDs and the screen. The screen texture is the code pad
+  with the accepted code (the locked state). Every bolt has a hex socket recess.
 
 ## Viewer
 
 Open `viewer.html`. **Deploy** (D or Space) plays the whole sequence, and pressing it again
-retracts. There are size buttons (1–4), views including **Far side**, part labels and a slow orbit.
+retracts. There are size buttons (1–5), views including **Far side**, part labels and a slow orbit.

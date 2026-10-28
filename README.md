@@ -7,13 +7,13 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | --- | --- | --- |
 | [Mossberg 590A1](shotguns/m590a1/) | Shotguns | `m590a1.glb`, `shell-12ga.glb` |
 | [AK-47 (AKM)](rifles/ak47/) | Rifles | `ak47.glb`, `cartridge-7.62x39.glb` |
-| [CRX-7 Wallseal](gadgets/crx7-wallseal/) | Gadgets | `crx7-wallseal-{small,standard,large,xl,hatch}.glb` |
+| [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 
 ![Mossberg 590A1](shotguns/m590a1/preview.png)
 
 ![AK-47](rifles/ak47/preview.png)
 
-![CRX-7 Wallseal](gadgets/crx7-wallseal/preview.png)
+![Wall Fortification](gadgets/wall-fortification/preview.png)
 
 ## Layout
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Synthesises the CRX-7 Wallseal sound set (numpy only) and writes 44.1 kHz mono 16-bit WAVs.
+"""Synthesises the Wall Fortification sound set (numpy only) and writes 44.1 kHz mono 16-bit WAVs.
 
-    python3 generate_sounds.py            # writes the one-shots and the four deploy_<size>.wav mixes
+    python3 generate_sounds.py            # writes the one-shots and the deploy_<size>.wav / retract_<size>.wav mixes
 
-One-shots are for gameplay events; deploy_<size>.wav is a full mix timed to that size's `deploy` clip.
+One-shots are for gameplay events; deploy_<size>.wav is a full mix timed to that size's `deploy` clip,
+and retract_<size>.wav goes with the clip played backwards.
 """
 import json, os, wave
 import numpy as np
