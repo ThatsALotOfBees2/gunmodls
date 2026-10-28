@@ -28,7 +28,7 @@ and were traced from a reference photo of the real gun. Small details are close 
 
 | File | Contents |
 | --- | --- |
-| `m590a1.glb` | The shotgun. 1.041 m long, 44 named meshes, about 101k triangles. One animation, `rack` (0.47 s): the forend and bolt slide back 91 mm and return. |
+| `m590a1.glb` | The shotgun. 1.041 m long, 47 named meshes, about 106k triangles. One animation, `rack` (0.47 s): the forend and bolt slide back 91 mm and return. |
 | `shell-12ga.glb` | A 2 3/4" 12-gauge shell, unfired: 63.8 mm long, 22.2 mm rim. Brass head, primer, hull and an 8-point star crimp. Origin at the centre of the base, crimp toward +Z. |
 | `viewer.html` | Interactive viewer and the procedural source of both files. |
 | `preview.png` | Still render. |
@@ -38,8 +38,8 @@ and were traced from a reference photo of the real gun. Small details are close 
 Nodes in `m590a1.glb`. Where a part is made of several meshes, they are numbered (`front_sight_2`, ...).
 
 - **Moving:** `forend_assembly` (`forend`, `action_bars`), `bolt_assembly` (`bolt`)
-- **Receiver group:** `receiver`, `receiver_cavity`, `rail`, `rear_sight`, `safety`, `elevator`,
-  `chamber`, `trigger_pins`
+- **Receiver group:** `receiver`, `receiver_cavity`, `rail`, `rail_screws` (hex sockets), `rear_sight`,
+  `rear_sight_clamp_screw` (slotted), `safety`, `elevator`, `chamber`, `trigger_pins`
 - **Trigger group:** `trigger_housing`, `trigger_guard`, `trigger`, `action_lock_lever`
 - **Barrel and tube:** `barrel`, `bore_plug`, `front_sight`, `barrel_lug`, `bayonet_band`,
   `bayonet_lug`, `magazine_tube`, `magazine_cap`
