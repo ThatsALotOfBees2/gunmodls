@@ -212,15 +212,25 @@ ONESHOTS = {
 
 # ----------------------------------------------------------------- timeline-locked tracks
 # Mirrors pose() in viewer.html. m = panel columns per side, stars = number of far-side anchors.
-SIZES = {'small': (1, 7), 'standard': (1, 7), 'large': (2, 9), 'xl': (3, 13), 'hatch': (1, 5)}
+SIZES = {'small': (1, 7, 5, 2), 'standard': (1, 7, 5, 2), 'large': (2, 9, 5, 4), 'xl': (3, 13, 5, 6), 'hatch': (1, 5, 3, 3)}   # m, stars, rows, cols
 
 
-def timeline(m):
-    h_win = {j: (0.45 + (m - j) * 0.4, 0.45 + (m - j) * 0.4 + (0.65 if j == m else 0.4)) for j in range(1, m + 1)}
-    h_end = 1.1 if m == 1 else 0.85 + (m - 1) * 0.4
+def timeline(m, rows, cols):
+    """frame first, then panels from the centre outward: the furthest go on last"""
+    h_win = {j: (0.6 + max(0, j - 1) * 0.3, 0.6 + max(0, j - 1) * 0.3 + 0.5) for j in range(1, m + 1)}
+    h_end = 1.1 + (m - 1) * 0.3
     v_s = h_end + 0.05
-    l0 = v_s + 1.1
-    return dict(h_win=h_win, h_end=h_end, v_s=v_s, l0=l0, total=l0 + 0.55)
+    frame_v = (v_s, v_s + 0.7)
+    js = range(0 if cols % 2 else 1, m + 1)
+    ks = range(1, (rows - 1) // 2 + 1)
+    v_win = {}
+    for j in js:
+        for k in ks:
+            s = v_s + 0.15 + (k - 1) * 0.3 + (j - 1) * 0.08
+            v_win[(j, k)] = (s, s + (0.55 if k >= 2 else 0.5))
+    v_end = max([frame_v[1]] + [b for a, b in v_win.values()])
+    l0 = v_end + 0.1
+    return dict(frame_h=(0.45, 1.0), h_win=h_win, h_end=h_end, v_s=v_s, frame_v=frame_v, v_win=v_win, v_end=v_end, l0=l0, total=l0 + 0.55)
 
 
 def grind(d):
@@ -249,22 +259,24 @@ def beeps(freqs, step=0.12, length=0.1, level=0.5):
     return out * level
 
 
-def deploy_track(m, stars):
-    T = timeline(m); L = T['total'] + 1.3
+def deploy_track(m, stars, rows, cols):
+    T = timeline(m, rows, cols); L = T['total'] + 1.3
     out = np.zeros(int(L * SR))
     def put(x, when, gain=1.0):
         nonlocal out
         out += at(x * gain, when, L)
     put(s_button_press(), 0.14, 0.8)                                        # button bottoms out
-    put(motor(T['h_end'] - 0.45, 85, 150, 1150), 0.45, 0.75)                 # sideways spread, stops with the last column
+    put(motor(T['h_end'] - 0.45, 85, 150, 1150), 0.45, 0.75)                 # one drive: frame out, then the columns
     put(ratchet(T['h_end'] - 0.45, 9, 14, 3000, 0.18), 0.45, 0.6)
-    for j, (a, b) in T['h_win'].items():                                     # each column hits its stop
-        put(clank(560 if j == m else 700, 1.0 if j == m else 0.7), b)
-    vs = T['v_s']
-    put(motor(0.85, 110, 185, 1500), vs, 0.7)                                # rails telescope, beams ride out
-    put(ratchet(0.85, 26, 34, 3800, 0.42), vs, 0.7)
-    put(clank(480, 1.1), vs + 0.85)                                          # rails and outer rows at full travel
-    put(clank(680, 0.7), vs + 1.0)                                           # inner rows seat
+    put(clank(480, 1.0), T['frame_h'][1])                                    # rails reach the edges
+    for j, (a, b) in T['h_win'].items():                                     # columns land, centre outward
+        put(clank(720 - 40 * j, 0.6 + 0.1 * j), b)
+    vs, fv = T['v_s'], T['frame_v']
+    put(motor(T['v_end'] - vs, 110, 185, 1500), vs, 0.7)                     # rails telescope, then the rows follow
+    put(ratchet(fv[1] - vs, 26, 34, 3800, 0.42), vs, 0.7)
+    put(clank(470, 1.1), fv[1])                                              # rails and beams at full travel
+    for (j, k), (a, b) in sorted(T['v_win'].items(), key=lambda e: e[1][1]):
+        put(clank(700 - 60 * k - 15 * max(j, 0), 0.45 + 0.15 * k), b)       # each row lands; the far corners last
     l0 = T['l0']
     for i in range(stars):                                                   # tie rods punch through, 30 ms apart
         d0 = i * 0.03
@@ -277,27 +289,29 @@ def deploy_track(m, stars):
     return room(out, 0.5, 0.1)[:int(L * SR)]
 
 
-def retract_track(m, stars):
-    T = timeline(m); total = T['total']; L = total + 1.0
+def retract_track(m, stars, rows, cols):
+    """deploy played backwards at normal speed: the far corners come off first"""
+    T = timeline(m, rows, cols); total = T['total']; L = total + 1.0
     out = np.zeros(int(L * SR))
     def put(x, when, gain=1.0):
         nonlocal out
         out += at(x * gain, when, L)
-    l0, vs = T['l0'], T['v_s']
-    r = lambda t: total - t                                                  # retract time for a deploy time
+    r = lambda t: total - t
+    l0, vs, fv = T['l0'], T['v_s'], T['frame_v']
     put(burst(0.2, 1800, 0.8, 0.012) * 1.2 + thud(120, 70, 0.2, 0.05) * 0.6, 0.03)   # bolts release
     put(hiss(0.45), r(l0 + 0.5), 0.9)
     put(ratchet(0.46, 22, 34, 3300, 0.45), r(l0 + 0.5), 0.8)                 # stars untwist
     for i in range(stars):
-        d0 = i * 0.03
-        put(grind(0.4), r(l0 + 0.1 + d0), 0.3)                              # rods withdraw
-    put(motor(1.0, 110, 185, 1500), r(vs + 1.0), 0.7)                        # rows and rails come back in
-    put(ratchet(1.0, 30, 24, 3800, 0.4), r(vs + 1.0), 0.7)
-    put(clank(680, 0.6), r(vs + 0.5))                                        # inner rows stowed behind the band
-    put(clank(480, 1.0), r(vs))                                              # rails fully in
-    put(motor(T['h_end'] - 0.45, 150, 85, 1150), r(T['h_end']), 0.75)        # columns slide back in
+        put(grind(0.4), r(l0 + 0.1 + i * 0.03), 0.3)                        # rods withdraw
+    put(motor(T['v_end'] - vs, 185, 110, 1500), r(T['v_end']), 0.7)         # rows come in, corners first, then the rails
+    put(ratchet(fv[1] - vs, 30, 24, 3800, 0.4), r(fv[1]), 0.7)
+    for (j, k), (a, b) in T['v_win'].items():
+        put(clank(700 - 60 * k - 15 * max(j, 0), 0.35 + 0.1 * k), r(a))     # each row stowed behind the band
+    put(clank(470, 1.0), r(vs))                                              # rails fully in
+    put(motor(T['h_end'] - 0.45, 150, 85, 1150), r(T['h_end']), 0.75)        # columns slide back in, outermost first
     for j, (a, b) in T['h_win'].items():
-        put(clank(560 if j == m else 700, 1.0 if j == m else 0.6), r(a))     # each column reaches the housing
+        put(clank(720 - 40 * j, 0.5), r(a))
+    put(clank(480, 1.0), r(0.45))                                            # rails back in the housing
     put(beeps([1318.5, 880], 0.13, 0.11, 0.4), r(0.25))                      # stowed
     return room(out, 0.5, 0.1)[:int(L * SR)]
 
@@ -313,17 +327,18 @@ def main():
     for name, fn in ONESHOTS.items():
         write_wav(os.path.join(HERE, f'{name}.wav'), norm(fn()))
     sheet = {}
-    for size, (m, stars) in SIZES.items():
-        T = timeline(m)
+    for size, (m, stars, rows, cols) in SIZES.items():
+        T = timeline(m, rows, cols)
         for kind, fn in (('deploy', deploy_track), ('retract', retract_track)):
-            x = fn(m, stars)
+            x = fn(m, stars, rows, cols)
             x = np.tanh(x / (np.max(np.abs(x)) + 1e-9) * 1.6) / np.tanh(1.6)
             write_wav(os.path.join(HERE, f'{kind}_{size}.wav'), norm(x, 0.9))
-        ev = [(0.14, 'confirm button bottoms out'), (0.45, 'sideways spread starts')]
-        ev += [(round(b, 3), f'column {j} from the centre reaches its stop') for j, (a, b) in sorted(T['h_win'].items(), reverse=True)]
-        ev += [(round(T['v_s'], 3), 'rails start telescoping'), (round(T['v_s'] + 0.85, 3), 'rails and outer rows at full travel'),
-               (round(T['v_s'] + 1.0, 3), 'inner rows seat'), (round(T['l0'] - 0.3, 3), 'tie rods start punching through'),
-               (round(T['l0'] + 0.49, 3), 'lock: bolts, panels and star anchors seat'), (round(T['total'], 3), 'locked')]
+        ev = [(0.14, 'confirm button bottoms out'), (0.45, 'frame starts spreading sideways'), (1.0, 'rails reach the edges')]
+        ev += [(round(b, 3), f'column {j} from the centre lands') for j, (a, b) in sorted(T['h_win'].items())]
+        ev += [(round(T['v_s'], 3), 'rails start telescoping'), (round(T['frame_v'][1], 3), 'rails and beams at full travel')]
+        ev += [(round(b, 3), f'row {k} of column {j} lands') for (j, k), (a, b) in sorted(T['v_win'].items(), key=lambda e: e[1][1])]
+        ev += [(round(T['l0'] - 0.3, 3), 'tie rods start punching through'), (round(T['l0'] + 0.49, 3), 'lock: bolts, panels and star anchors seat'),
+               (round(T['total'], 3), 'locked')]
         sheet[size] = {'clip_seconds': round(T['total'], 3), 'deploy_track': f'deploy_{size}.wav', 'retract_track': f'retract_{size}.wav',
                        'events': [{'t': t, 'event': e} for t, e in ev]}
     with open(os.path.join(HERE, 'cues.json'), 'w') as f:

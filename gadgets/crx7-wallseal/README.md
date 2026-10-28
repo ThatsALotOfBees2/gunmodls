@@ -6,10 +6,13 @@ Crystalix automated wall reinforcement. The operator places the base unit in the
 and traces an arm pattern on its touch screen. After a press of the confirm button, the unit
 expands into a reinforced wall:
 
-1. **Sideways first.** The side rails ride outward. The beams telescope out with them and carry a
-   band of panels, outer columns first, until the band spans the full width.
+1. **Sideways first.** The frame goes out first: the side rails ride to the edges and the beams
+   telescope with them. Then a band of panels slides out from behind the core, centre column first,
+   each one coming out from behind its neighbour. The furthest columns land last.
 2. **Then up and down.** The rails telescope to full height, carrying the top and bottom beams.
-   The panel rows that were stacked behind the band slide out vertically, outer rows first.
+   Then the rows slide out of the band, nearest first, and the far corners go on last.
+
+Retracting runs the same steps backwards, so the furthest panels come off first.
 3. **Lock.** The panels seat flush and lock bolts shoot 10 cm up into the ceiling frame and down
    into the floor. Tie rods then punch through the wall, and X-shaped star anchors twist-lock on
    the far side.
@@ -26,9 +29,9 @@ that pass the outline are the lock bolts, 10 cm above and below.
 | --- | --- | --- | --- | --- |
 | `crx7-wallseal-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~45k |
 | `crx7-wallseal-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~45k |
-| `crx7-wallseal-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.0 s | ~63k |
-| `crx7-wallseal-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.3 s | ~80k |
-| `crx7-wallseal-hatch.glb` | 1.2 × 1.2 m square floor hatch | 3 × 3 | 2.8 s | ~40k |
+| `crx7-wallseal-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.2 s | ~62k |
+| `crx7-wallseal-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.6 s | ~80k |
+| `crx7-wallseal-hatch.glb` | 1.2 × 1.2 m square floor hatch | 3 × 3 | 2.5 s | ~40k |
 | `viewer.html` | Interactive viewer and the procedural source of the `.glb` files | | |
 
 Panels share one mesh per file, so the files stay around 2 MB.
