@@ -32,6 +32,27 @@ that pass the outline are the lock bolts, 10 cm above and below.
 
 Panels share one mesh per file, so the files stay around 2 MB.
 
+## Sounds
+
+`sounds/` holds generated mechanical sounds (44.1 kHz mono WAV), made by `sounds/generate_sounds.py`
+(numpy only; run it to regenerate or tweak them).
+
+| File | Use |
+| --- | --- |
+| `place.wav` | Base clamps onto the wall |
+| `touch_tap.wav`, `arm_confirmed.wav` | Touch-screen taps and the arm confirmation |
+| `button_press.wav` | Confirm button |
+| `motor_spread.wav` | Servo whir during the sideways spread |
+| `rail_extend.wav` | Rails telescoping up and down (motor and ratchet) |
+| `panel_latch.wav` | A panel column or row hitting its stop |
+| `lock_bolt.wav` | Lock bolts firing into the ceiling and floor |
+| `anchor_set.wav` | Tie rods punching through and the stars twist-locking |
+| `locked.wav` | Locked chime |
+| `retract.wav` | Retraction |
+| `deploy_<size>.wav` | Full mix timed to that size's `deploy` clip; play both together |
+
+`sounds/cues.json` lists each sound's start time within each size's `deploy` clip, if you'd rather trigger the one-shots yourself.
+
 ## Using it in a game
 
 - **Units:** metres, +Y up. The unit faces +Z, away from the wall.
