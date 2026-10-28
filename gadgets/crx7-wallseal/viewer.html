@@ -119,10 +119,10 @@
   <h1>CRX-7 <span>Wallseal</span></h1>
   <dl class="specs">
     <dt>Variant</dt><dd id="s-variant">Standard · single wall</dd>
-    <dt>Size</dt><dd id="s-size">2.0 m H × 1.5 m W</dd>
+    <dt>Size</dt><dd id="s-size">1.5 m wide × 2.0 m</dd>
     <dt>Depth</dt><dd>20 cm off the wall</dd>
     <dt>Armor</dt><dd id="s-panels">8 composite steel panels</dd>
-    <dt>Deploy</dt><dd>Touch-arm, then 3.4 s</dd>
+    <dt>Deploy</dt><dd id="s-deploy">Touch-arm, then 2.9 s</dd>
   </dl>
   <div class="state" aria-live="polite"><span class="chip">Status <b id="status">Stowed</b></span></div>
 </header>
@@ -134,10 +134,10 @@
   <div class="controls">
     <button id="deploy" class="primary" type="button" title="Deploy or retract (D or Space)">Deploy <kbd>D</kbd></button>
     <div class="group" role="group" aria-label="Size">
-      <button type="button" data-size="small" aria-pressed="false" title="1.0 m × 1.0 m">Small</button>
-      <button type="button" data-size="standard" aria-pressed="true" title="2.0 m × 1.5 m">Standard</button>
-      <button type="button" data-size="large" aria-pressed="false" title="2.0 m × 3.0 m">Large</button>
-      <button type="button" data-size="xl" aria-pressed="false" title="3.0 m × 3.0 m">XL</button>
+      <button type="button" data-size="small" aria-pressed="false" title="1.0 m wide">Small</button>
+      <button type="button" data-size="standard" aria-pressed="true" title="1.5 m wide">Standard</button>
+      <button type="button" data-size="large" aria-pressed="false" title="3.0 m wide">Large</button>
+      <button type="button" data-size="xl" aria-pressed="false" title="4.0 m wide">XL</button>
     </div>
     <div class="group" role="group" aria-label="View">
       <button type="button" data-view="34">¾</button>
@@ -547,13 +547,15 @@ for (const [k, v] of Object.entries(MAT_NAMES)) MAT[k].name = v;
 /* ------------------------------------------------------------------ model */
 
 const SIZES = {
-  small: { label: 'Small', sub: 'doorway / narrow', H: 1.0, W: 1.0, rows: 2, cols: 2 },
-  standard: { label: 'Standard', sub: 'single wall', H: 2.0, W: 1.5, rows: 4, cols: 2 },
-  large: { label: 'Large', sub: 'wide wall', H: 2.0, W: 3.0, rows: 4, cols: 4 },
-  xl: { label: 'Extra large', sub: 'bulkhead / vertical', H: 3.0, W: 3.0, rows: 6, cols: 4 },
+  // sizes differ in width only; every variant covers the full 2.0 m wall height
+  small: { label: 'Small', sub: 'doorway / narrow', H: 2.0, W: 1.0, rows: 5, cols: 2 },
+  standard: { label: 'Standard', sub: 'single wall', H: 2.0, W: 1.5, rows: 5, cols: 2 },
+  large: { label: 'Large', sub: 'wide wall', H: 2.0, W: 3.0, rows: 5, cols: 4 },
+  xl: { label: 'Extra large', sub: 'bulkhead', H: 2.0, W: 4.0, rows: 5, cols: 6 },
 };
 const RW = 0.09, RD = 0.185, BH = 0.075, PT = 0.035, GAP = 0.012;
-const Z_PANEL = 0.105, Z_STOW = 0.062, T_END = 3.4, WALL_T = 0.3;
+const Z_PANEL = 0.105, LAYER = 0.047, WALL_T = 0.3;
+let T_END = 3.4;
 
 const mesh = (geo, mat, name, { cast = true, receive = true } = {}) => {
   const m = new THREE.Mesh(geo, mat); m.name = name; m.castShadow = cast; m.receiveShadow = receive; return m;
@@ -729,16 +731,24 @@ function buildModel(key) {
     N.columns.push({ ...c, x0: 0, x1: 0 });
   }
 
-  /* top and bottom beams riding on the outer stages; they stretch with the rails */
-  const beamL = W - 2 * RW + 0.01;
+  /* top and bottom beams: a sleeve on the core with nested stages that telescope out to the rails,
+     then the whole beam rides up or down with the rails' outer stages */
+  const sleeveL = coreW - 0.1, xIn = W / 2 - RW;
+  const prof = (h, d0, d1) => [[d0, -h / 2, 0], [d1, -h / 2, 0.012], [d1, h / 2, 0.012], [d0, h / 2, 0]];
   for (const [nm, y] of [['beam_top', H - BH / 2], ['beam_bottom', BH / 2]]) {
-    const b = node(nm, root); b.position.set(0, y, 0);
-    const g = extrudeX([[0.012, -BH / 2, 0], [0.17, -BH / 2, 0.012], [0.17, BH / 2, 0.012], [0.012, BH / 2, 0]], -beamL / 2, beamL / 2, 0.004);
-    b.add(mesh(creased(g, 30), MAT.frame, nm + '_body'));
-    b.add(mesh(box(-beamL / 2 + 0.05, beamL / 2 - 0.05, -0.005, 0.005, 0.17, 0.173), MAT.led, nm + '_led', { cast: false }));
-    const lip = extrudeX([[0.005, -BH / 2 + 0.008, 0], [0.11, -BH / 2 + 0.008, 0], [0.11, BH / 2 - 0.008, 0], [0.005, BH / 2 - 0.008, 0]], -beamL / 2 - 0.02, beamL / 2 + 0.02, 0.002);
-    b.add(mesh(lip, MAT.dark, nm + '_flange'));
-    N.beams.push({ node: b, y1: y, y0: coreY + (y > coreY ? 1 : -1) * (sleeveH / 2 - BH / 2 - 0.01), sx0: (2 * xStow - RW) / beamL });
+    const b = node(nm, root);
+    b.add(mesh(creased(extrudeX(prof(BH, 0.012, 0.17), -sleeveL / 2, sleeveL / 2, 0.004), 30), MAT.frame, nm + '_sleeve'));
+    b.add(mesh(box(-sleeveL / 2 + 0.05, sleeveL / 2 - 0.05, -0.005, 0.005, 0.17, 0.173), MAT.led, nm + '_sleeve_led', { cast: false }));
+    const span = xIn - sleeveL / 2, n = Math.max(1, Math.ceil(span / (sleeveL - 0.06))), step = span / n, L = step + 0.05;
+    const stages = [];
+    for (const s of [-1, 1]) for (let i = 1; i <= n; i++) {
+      const h = BH - 0.01 * i, d1 = 0.17 - 0.008 * i;
+      const st = node(`${nm}_${s < 0 ? 'left' : 'right'}_${i}`, b);
+      st.add(mesh(creased(extrudeX(prof(h, 0.018, d1), -L / 2, L / 2, 0.003), 30), MAT.frame, st.name + '_tube'));
+      st.add(mesh(box(-L / 2 + 0.04, L / 2 - 0.04, -0.004, 0.004, d1, d1 + 0.003), MAT.led, st.name + '_led', { cast: false }));
+      stages.push({ node: st, deployed: s * (sleeveL / 2 + (i - 0.5) * step) });
+    }
+    N.beams.push({ node: b, stages, y1: y, y0: coreY + (y > coreY ? 1 : -1) * (sleeveH / 2 - BH / 2 - 0.01) });
   }
   N.labels.clamp = V3(W / 2 + 0.03, H - 0.02, 0.12);
   N.labels.rail = V3(-W / 2 + RW / 2, coreY + (H - coreY) * 0.62, RD);
@@ -746,7 +756,6 @@ function buildModel(key) {
   /* armor panels: a rows x cols grid between the rails and beams */
   const pw = (W - 2 * RW - (cols - 1) * GAP) / cols, ph = (H - 2 * BH - (rows - 1) * GAP) / rows;
   const parts = panelParts(pw, ph);
-  const maxD = Math.hypot(W / 2, H / 2);
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     const fx = -W / 2 + RW + pw / 2 + c * (pw + GAP), fy = BH + ph / 2 + r * (ph + GAP);
     const p = node(`panel_r${r}_c${c}`, root);
@@ -758,14 +767,21 @@ function buildModel(key) {
       const bg = new THREE.PlaneGeometry(0.2, 0.2); bg.translate(pw / 2 - 0.2, -ph / 2 + 0.17, PT + 0.0115);
       p.add(mesh(bg, MAT.badge, 'panel_badge', { cast: false }));
     }
-    // start packed inside the housing: pulled toward the centre and shrunk to fit
-    const sx = fx * 0.12, sy = coreY + (fy - coreY) * 0.12;
-    const kx = clamp01(((coreW / 2 - 0.05) - Math.abs(sx)) * 2 / pw), ky = clamp01(((coreH / 2 - 0.05) - Math.abs(sy - coreY)) * 2 / ph);
-    const order = Math.hypot(fx, fy - coreY) / maxD;
-    N.panels.push({ node: p, fx, fy, sx, sy, kx: Math.max(0.05, kx), ky: Math.max(0.05, ky), order });
+    // column index from the centre (1 = next to the core) and row distance from the middle (band) row
+    const side = fx < 0 ? -1 : 1, jx = side < 0 ? cols / 2 - c : c - cols / 2 + 1, k = Math.abs(r - (rows - 1) / 2);
+    N.panels.push({ node: p, fx, fy, j: jx, k, z0: Z_PANEL - k * LAYER });
     if (r === 0 && c === cols - 1) N.labels.panel = V3(fx, fy, Z_PANEL + PT + 0.02);
   }
   N.panelCount = rows * cols;
+  N.bandY = BH + ph / 2 + ((rows - 1) / 2) * (ph + GAP);
+  // timeline: sideways first (outer columns with the rails, then inward), then up and down (outer rows first), then lock
+  const m = cols / 2;
+  N.m = m;
+  N.hWin = (j) => { const s = 0.45 + (m - j) * 0.4; return [s, s + (j === m ? 0.65 : 0.4)]; };
+  N.hEnd = m === 1 ? 1.1 : 0.85 + (m - 1) * 0.4;
+  N.vS = N.hEnd + 0.05;
+  N.L0 = N.vS + 1.1;
+  N.T = N.L0 + 0.55;
 
   /* through-wall anchors: tie rods punch through and X-shaped star plates twist-lock on the far face */
   const far = node('far_side', root); far.position.set(0, 0, -WALL_T);
@@ -773,6 +789,7 @@ function buildModel(key) {
   const ap = [[-xRail, H - 0.12], [xRail, H - 0.12], [-xRail, 0.12], [xRail, 0.12], [0, coreY]];
   if (H >= 1.8) ap.push([-xRail, coreY], [xRail, coreY]);
   if (W >= 2.5) ap.push([0, H - 0.12], [0, 0.12]);
+  if (W >= 3.5) ap.push([-W / 4, H - 0.12], [W / 4, H - 0.12], [-W / 4, 0.12], [W / 4, 0.12]);
   const sp = starParts();
   const rodG = new THREE.CylinderGeometry(0.012, 0.012, WALL_T + 0.04, 14); rodG.rotateX(Math.PI / 2); rodG.translate(0, 0, -(WALL_T + 0.04) / 2);
   N.stars = ap.map(([x, y], i) => {
@@ -789,35 +806,36 @@ function buildModel(key) {
 
 /* ------------------------------------------------------------------ deployment timeline */
 
-// t = 0: stowed (only the housing shows); t = T_END: locked. Drives every moving node.
+// t = 0: stowed (everything packed inside the housing); t = N.T: locked. Drives every moving node.
+// Order: confirm press -> sideways (rails, beam stages, band of panels) -> up/down (rail stages, beams, rows) -> lock.
 function pose(N, t) {
-  const wake = seg(t, 0.0, 0.45), spread = seg(t, 0.45, 1.05), rise = seg(t, 1.0, 1.85), lock = seg(t, 2.85, 3.35);
-  // confirm press that starts the expansion
+  const [hs, he] = N.hWin(N.m), spread = seg(t, hs, he), vS = N.vS;
+  const rise = seg(t, vS, vS + 0.85), lock = seg(t, N.L0, N.L0 + 0.5);
   N.button.position.z = 0.256 - 0.007 * Math.sin(Math.PI * clamp01(t / 0.35));
   for (const c of N.columns) {
     c.col.position.x = lerp(c.x0, c.x1, spread);
     for (const s of c.stages) {
-      const k = seg(t, 1.0 + 0.12 * (s.i - 1), 1.85);
-      s.node.position.y = lerp(s.stowed, s.deployed, k);
+      s.node.position.y = lerp(s.stowed, s.deployed, seg(t, vS + 0.1 * (s.i - 1), vS + 0.85));
       if (s.jaw) s.jaw.node.rotation.z = lerp(s.jaw.folded, 0, lock);
     }
   }
   for (const b of N.beams) {
     b.node.position.y = lerp(b.y0, b.y1, rise);
-    b.node.scale.x = lerp(b.sx0, 1, spread);
+    for (const s of b.stages) s.node.position.x = s.deployed * spread;
   }
   for (const p of N.panels) {
-    const a = 1.15 + 0.95 * p.order, k = seg(t, a, a + 0.72);
-    p.node.position.set(lerp(p.sx, p.fx, k), lerp(p.sy, p.fy, k), lerp(Z_STOW, Z_PANEL, lock));
-    p.node.scale.set(lerp(p.kx, 1, k), lerp(p.ky, 1, k), 1);
+    const [a, b] = N.hWin(p.j);
+    const x = p.fx * seg(t, a, b);
+    const ky = p.k >= 2 ? seg(t, vS, vS + 0.85) : p.k >= 1 ? seg(t, vS + 0.5, vS + 1.0) : 1;
+    p.node.position.set(x, lerp(N.bandY, p.fy, ky), lerp(p.z0, Z_PANEL, lock));
   }
   for (const s of N.stars) {
-    const kr = seg(t, 2.5 + s.delay, 2.9 + s.delay), ks = seg(t, 2.82 + s.delay, 3.32);
+    const kr = seg(t, N.L0 - 0.3 + s.delay, N.L0 + 0.1 + s.delay), ks = seg(t, N.L0 + 0.02 + s.delay, N.L0 + 0.5);
     s.rod.scale.z = lerp(0.02, 1, kr);
     s.star.position.z = lerp(0.04, 0, ks);
     s.star.rotation.z = lerp(-Math.PI / 4, 0, ks);
   }
-  return { wake, spread, rise, lock };
+  return { spread, rise, lock };
 }
 // every node the timeline touches, with the properties it animates
 function animatedTracks(N) {
@@ -827,19 +845,19 @@ function animatedTracks(N) {
     list.push([c.col, ['position']]);
     for (const s of c.stages) { list.push([s.node, ['position']]); if (s.jaw) list.push([s.jaw.node, ['quaternion']]); }
   }
-  for (const b of N.beams) list.push([b.node, ['position', 'scale']]);
-  for (const p of N.panels) list.push([p.node, ['position', 'scale']]);
+  for (const b of N.beams) { list.push([b.node, ['position']]); for (const s of b.stages) list.push([s.node, ['position']]); }
+  for (const p of N.panels) list.push([p.node, ['position']]);
   return list;
 }
 function deployClip(N) {
-  const fps = 30, n = Math.round(T_END * fps), list = animatedTracks(N);
+  const fps = 30, n = Math.round(N.T * fps), list = animatedTracks(N);
   const data = list.map(() => ({}));
   const times = [];
   for (let i = 0; i <= n; i++) {
     const t = i / fps; times.push(t); pose(N, t);
     list.forEach(([o, props], j) => { for (const pr of props) (data[j][pr] = data[j][pr] || []).push(...o[pr].toArray()); });
   }
-  pose(N, T_END);
+  pose(N, N.T);
   const tracks = [];
   list.forEach(([o, props], j) => {
     for (const pr of props) {
@@ -847,7 +865,7 @@ function deployClip(N) {
       tracks.push(new T(`${o.name}.${pr}`, times, data[j][pr]));
     }
   });
-  return new THREE.AnimationClip('deploy', T_END, tracks);
+  return new THREE.AnimationClip('deploy', N.T, tracks);
 }
 
 /* ------------------------------------------------------------------ scene */
@@ -939,7 +957,8 @@ const backSpot = new THREE.SpotLight('#d3dcff', 38, 0, 0.75, 0.8, 2); backSpot.p
 /* ------------------------------------------------------------------ state */
 
 // master time tau: place the base on the wall, trace the arm pattern, then the expansion (t = tau - T0)
-const T_PLACE = 0.7, T_TOUCH = 1.7, T0 = T_PLACE + T_TOUCH, TAU_END = T0 + T_END;
+const T_PLACE = 0.7, T_TOUCH = 1.7, T0 = T_PLACE + T_TOUCH;
+let TAU_END = T0 + T_END;
 let model = null, sizeKey = 'standard', t = 0, tau = 0, dir = 0, swayOn = true, swayT = 0, screenState = 'READY', side = 'front';
 const labelObjs = [];
 const $ = (id) => document.getElementById(id);
@@ -950,11 +969,13 @@ function setModel(key) {
   labelObjs.length = 0;
   sizeKey = key;
   model = buildModel(key);
+  T_END = model.T; TAU_END = T0 + T_END;
   scene.add(model.root);
   const P = model.P;
   $('s-variant').textContent = `${P.label} · ${P.sub}`;
-  $('s-size').textContent = `${P.H.toFixed(1)} m H × ${P.W.toFixed(1)} m W`;
+  $('s-size').textContent = `${P.W.toFixed(1)} m wide × ${P.H.toFixed(1)} m`;
   $('s-panels').textContent = `${model.panelCount} composite steel panels`;
+  $('s-deploy').textContent = `Touch-arm, then ${model.T.toFixed(1)} s`;
   document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === key)));
   addLabels();
   apply();

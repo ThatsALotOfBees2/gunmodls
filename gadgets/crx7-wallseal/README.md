@@ -6,19 +6,25 @@ Crystalix automated wall reinforcement. The operator places the base unit in the
 and traces an arm pattern on its touch screen. After a press of the confirm button, the unit
 expands into a reinforced wall:
 
-1. Telescoping rails slide out sideways, then extend up and down.
-2. Composite steel panels fan out between them.
-3. Locking clamps swing into the wall frame.
-4. Tie rods punch through the wall, and X-shaped star anchors twist-lock on the far side.
+1. **Sideways first.** The side rails ride outward. The beams telescope out with them and carry a
+   band of panels, outer columns first, until the band spans the full width.
+2. **Then up and down.** The rails telescope to full height, carrying the top and bottom beams.
+   The panel rows that were stacked behind the band slide out vertically, outer rows first.
+3. **Lock.** The panels seat flush, the clamps swing into the wall frame, tie rods punch through
+   the wall, and X-shaped star anchors twist-lock on the far side.
+
+Every part is rigid and slides or turns; nothing scales.
 
 ## Files
 
-| File | Size (H × W) | Panels | Triangles |
-| --- | --- | --- | --- |
-| `crx7-wallseal-small.glb` | 1.0 × 1.0 m (doorway / narrow) | 2 × 2 | ~34k |
-| `crx7-wallseal-standard.glb` | 2.0 × 1.5 m (single wall) | 4 × 2 | ~42k |
-| `crx7-wallseal-large.glb` | 2.0 × 3.0 m (wide wall) | 4 × 4 | ~57k |
-| `crx7-wallseal-xl.glb` | 3.0 × 3.0 m (bulkhead) | 6 × 4 | ~70k |
+Sizes differ in width only; every variant covers the full 2.0 m wall height.
+
+| File | Width | Panels (rows × columns) | `deploy` clip | Triangles |
+| --- | --- | --- | --- | --- |
+| `crx7-wallseal-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~45k |
+| `crx7-wallseal-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~45k |
+| `crx7-wallseal-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.0 s | ~63k |
+| `crx7-wallseal-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.3 s | ~81k |
 | `viewer.html` | Interactive viewer and the procedural source of the `.glb` files | | |
 
 Panels share one mesh per file, so the files stay around 2 MB.
@@ -29,20 +35,20 @@ Panels share one mesh per file, so the files stay around 2 MB.
 - **Origin:** bottom centre of the reinforced area, on the wall surface (z = 0). Put it on the
   defender side of the wall.
 - **Rest pose:** fully deployed and locked.
-- **Animation:** `deploy` (3.4 s) runs from the stowed base to the locked wall:
-  - 0–0.35 s: confirm press
-  - 0.45–1.85 s: rails spread and extend
-  - 1.15–2.8 s: panels deploy
-  - 2.5–3.35 s: clamps lock and anchors set
+- **Animation:** `deploy` runs from the stowed base to the locked wall, in this order:
+  1. Confirm press.
+  2. The sideways spread.
+  3. The vertical spread.
+  4. Lock.
 
-  Play it at the end of your touch-screen interaction, and play it backwards to retract.
+  Play it after your touch-screen interaction, and play it backwards to retract.
 - **Far side:** the star anchors and tie rods sit under the `far_side` node, set for a 0.3 m wall.
   Set that node's z to minus your wall's thickness.
 - **Nodes:**
   - `core` (with `confirm_button`)
   - `rail_left` / `rail_right` (sleeves, `*_upper_n` / `*_lower_n` stages, clamps and jaws)
   - `post_centre` (large and XL only)
-  - `beam_top`, `beam_bottom`
+  - `beam_top`, `beam_bottom` (with `*_left_n` / `*_right_n` stages)
   - `panel_rR_cC`
   - `far_side` (`tie_rod_n`, `star_n`)
 - **Materials:** PBR, with emissive purple LEDs and the screen. Every bolt has a hex socket recess.
