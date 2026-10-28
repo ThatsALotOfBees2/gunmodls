@@ -7,10 +7,13 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | --- | --- | --- |
 | [Mossberg 590A1](shotguns/m590a1/) | Shotguns | `m590a1.glb`, `shell-12ga.glb` |
 | [AK-47 (AKM)](rifles/ak47/) | Rifles | `ak47.glb`, `cartridge-7.62x39.glb` |
+| [CRX-7 Wallseal](gadgets/crx7-wallseal/) | Gadgets | `crx7-wallseal-{small,standard,large,xl}.glb` |
 
 ![Mossberg 590A1](shotguns/m590a1/preview.png)
 
 ![AK-47](rifles/ak47/preview.png)
+
+![CRX-7 Wallseal](gadgets/crx7-wallseal/preview.png)
 
 ## Layout
 
@@ -24,7 +27,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 tools/             export, preview and inspection scripts
 ```
 
-Folder names are lowercase and hyphenated: a plural category (`shotguns`, `rifles`, `pistols`)
+Folder names are lowercase and hyphenated: a plural category (`shotguns`, `rifles`, `pistols`, `gadgets`)
 and a model id without spaces (`m590a1`).
 
 ## Conventions
