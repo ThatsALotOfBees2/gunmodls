@@ -124,7 +124,7 @@
     <dt>Armor</dt><dd id="s-panels">10 composite steel panels</dd>
     <dt>Deploy</dt><dd id="s-deploy">Touch-arm, then 2.8 s</dd>
   </dl>
-  <div class="state" aria-live="polite"><span class="chip">Status <b id="status">Stowed</b></span></div>
+  <div class="state" aria-live="polite"><span class="chip">Status <b id="status">Ready</b></span></div>
 </header>
 
 <div class="hint">Drag to orbit · Scroll to zoom<br>Right-drag to pan</div>
@@ -799,8 +799,9 @@ function pose(N, t) {
   }
   for (const s of N.stars) {
     const kr = seg(t, N.L0 - 0.3 + s.delay, N.L0 + 0.1 + s.delay), ks = seg(t, N.L0 + 0.02 + s.delay, N.L0 + 0.5);
-    s.rod.scale.z = lerp(0.02, 1, kr);
-    s.star.position.z = lerp(0.04, 0, ks);
+    const rr = clamp01(kr * 8);                       // no radius while stowed, so no stub shows on the wall
+    s.rod.scale.set(rr, rr, lerp(0.02, 1, kr));
+    s.star.position.z = lerp(0.065, 0, ks);           // stowed: plate, nut and tip all inside the wall
     s.star.rotation.z = lerp(-Math.PI / 4, 0, ks);
   }
   return { spread: Math.min(spreadL, spreadR), rise: Math.min(extTop, extBot), lock };
@@ -955,15 +956,20 @@ function setModel(key) {
   apply();
 }
 function addLabels() {
-  const on = $('labels').getAttribute('aria-pressed') === 'true';
   const L = model.labels;
   const B = model.base, h = model.P.hatch;
   const items = [['control', 'Control panel · touch + confirm', model.core, V3()], ['clamp', h ? 'Lock bolt · into the floor' : 'Lock bolt · into ceiling and floor', B, V3()], ['rail', 'Telescoping rail', B, V3()], ['panel', 'Composite armor panel', B, V3()], ['star', h ? 'X-star anchors · underside' : 'X-star anchors · far side', B, V3()]];
   for (const [k, text, parent, off] of items) {
     if (!L[k]) continue;
     const el = document.createElement('div'); el.className = 'label'; el.textContent = text;
-    const o = new CSS2DObject(el); o.position.copy(L[k]).add(off); parent.add(o); o.visible = on; labelObjs.push(o);
+    const o = new CSS2DObject(el); o.position.copy(L[k]).add(off); o.userData.back = k === 'star'; parent.add(o); labelObjs.push(o);
   }
+  updateLabels();
+}
+// labels show once locked, and only those on the side being viewed: a label behind the wall would float over the front
+function updateLabels() {
+  const on = $('labels').getAttribute('aria-pressed') === 'true' && tau >= TAU_END - 1e-3;
+  labelObjs.forEach(o => { o.visible = on && o.userData.back === (side === 'back'); });
 }
 function apply() {
   t = Math.min(T_END, Math.max(0, tau - T0));
@@ -975,14 +981,13 @@ function apply() {
   model.far.visible = !placing;   // the stowed anchors sit in the wall; keep them out of sight until the base is on it
   MAT.led.emissiveIntensity = placing ? 0.35 : arming ? 0.9 : !live ? 0.5 : done ? 2.6 : lerp(1.3 + 0.7 * Math.sin(performance.now() * 0.012), 2.6, s.lock);
   if (arming) drawTouch((tau - T_PLACE) / T_TOUCH);
-  const showLabels = $('labels').getAttribute('aria-pressed') === 'true' && done;
-  labelObjs.forEach(o => { o.visible = showLabels; });
+  updateLabels();
   if (model.P.hatch) glow.position.set(0, 0.6 + model.root.position.y, HATCH_Z); else glow.position.set(0, model.coreY, 0.6 + model.root.position.z);
   glow.intensity = live ? 0.25 + 0.5 * s.lock : 0.08;
-  const st = placing ? 'Placing' : arming ? 'Arming' : !live ? 'Stowed' : done ? 'Locked' : dir < 0 ? 'Retracting' : 'Deploying';
+  const st = placing ? (dir > 0 ? 'Placing' : dir < 0 ? 'Removing' : 'Ready') : arming ? 'Arming' : !live ? 'Stowed' : done ? 'Locked' : dir < 0 ? 'Retracting' : 'Deploying';
   if (statusEl.textContent !== st) {
     statusEl.textContent = st;
-    if (!arming) { screenState = st === 'Locked' ? 'LOCKED' : (st === 'Stowed' || st === 'Placing') ? 'READY' : st.toUpperCase(); drawScreen(screenState); }
+    if (!arming) { screenState = st === 'Locked' ? 'LOCKED' : (st === 'Deploying' || st === 'Retracting') ? st.toUpperCase() : 'READY'; drawScreen(screenState); }
   }
   const label = (dir < 0 || (dir === 0 && !done)) ? 'Deploy ' : 'Retract ';
   if ($('deploy').firstChild.textContent !== label) $('deploy').firstChild.textContent = label;
@@ -1072,6 +1077,7 @@ function goView(name, instant = false) {
   swayT = 0;
   if (back !== (side === 'back')) instant = true;           // never swing the camera through the wall
   side = back ? 'back' : 'front';
+  updateLabels();
   if (model.P.hatch) {            // orbit freely round the hatch; stay above the floor, or below it for the underside
     controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity;
     controls.minPolarAngle = back ? Math.PI * 0.56 : 0; controls.maxPolarAngle = back ? Math.PI : Math.PI * 0.48;
@@ -1080,7 +1086,7 @@ function goView(name, instant = false) {
     controls.minPolarAngle = 0; controls.maxPolarAngle = Math.PI * 0.495;
   }
   if (back && swayOn) { swayOn = false; $('sway').setAttribute('aria-pressed', 'false'); }
-  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
+  if (instant) { camTween = null; camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
   camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 };
 }
 
@@ -1097,9 +1103,12 @@ $('sway').addEventListener('click', () => { swayOn = !swayOn; $('sway').setAttri
 controls.addEventListener('start', () => { if (swayOn) { swayOn = false; $('sway').setAttribute('aria-pressed', 'false'); } camTween = null; });
 window.addEventListener('keydown', (e) => {
   if (e.target.closest && e.target.closest('input, textarea')) return;
-  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const deployKey = e.key === 'd' || e.key === 'D' || e.key === ' ';
+  if (deployKey) e.preventDefault();        // repeats too, so a held Space never clicks a focused button on release
+  if (e.repeat) return;
   unlockAudio();
-  if (e.key === 'd' || e.key === 'D' || e.key === ' ') { e.preventDefault(); toggleDeploy(); }
+  if (deployKey) toggleDeploy();
   if (e.key === 's' || e.key === 'S') $('sound').click();
   if (e.key === 'p' || e.key === 'P') setPaused(!paused);
   const i = ['1', '2', '3', '4', '5'].indexOf(e.key); if (i >= 0) document.querySelectorAll('[data-size]')[i].click();
@@ -1133,7 +1142,7 @@ function exportScenes() {
 }
 async function exportGLB() {
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
-  const exporter = new GLTFExporter(), out = [], was = looping;
+  const exporter = new GLTFExporter(), out = [], was = looping, led = MAT.led.emissiveIntensity;
   setLoop(false);                                  // nothing may redraw the screen or the LEDs mid-export
   try {
     for (const s of exportScenes()) {
@@ -1141,7 +1150,8 @@ async function exportGLB() {
       out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
     }
   } finally {
-    drawScreen(screenState); apply();              // back to the live screen (or the code being traced) and LEDs
+    drawScreen(screenState); apply();              // back to the live screen (or the code being traced)
+    MAT.led.emissiveIntensity = led;               // and exactly the LED level that was showing (it pulses)
     if (was) setLoop(true);
   }
   return out;

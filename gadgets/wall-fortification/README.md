@@ -18,8 +18,8 @@ expands into a reinforced wall:
 
 Retracting runs the same steps backwards, so the furthest panels come off first.
 
-Every part is rigid and slides or turns; the only scaled parts are the tie rods, which grow along their
-length as they punch through the wall. There are no logos, decals or printed text: the only graphic is
+Every part is rigid and slides or turns, except the tie rods: they scale up from nothing as they punch
+through the wall. There are no logos, decals or printed text: the only graphic is
 the 3 × 3 code pad on the touch screen.
 
 ## Files
