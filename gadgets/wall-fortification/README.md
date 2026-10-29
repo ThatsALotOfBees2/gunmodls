@@ -18,8 +18,9 @@ expands into a reinforced wall:
 
 Retracting runs the same steps backwards, so the furthest panels come off first.
 
-Every part is rigid and slides or turns; nothing scales. There are no logos, decals or printed text:
-the only graphic is the 3 × 3 code pad on the touch screen.
+Every part is rigid and slides or turns; the only scaled parts are the tie rods, which grow along their
+length as they punch through the wall. There are no logos, decals or printed text: the only graphic is
+the 3 × 3 code pad on the touch screen.
 
 ## Files
 
@@ -29,8 +30,8 @@ that pass the outline are the lock bolts, 10 cm above and below.
 
 | File | Width | Panels (rows × columns) | `deploy` clip | Triangles |
 | --- | --- | --- | --- | --- |
-| `wall-fortification-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~45k |
-| `wall-fortification-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~45k |
+| `wall-fortification-small.glb` | 1.0 m (doorway / narrow) | 5 × 2 | 2.8 s | ~44k |
+| `wall-fortification-standard.glb` | 1.5 m (single wall) | 5 × 2 | 2.8 s | ~44k |
 | `wall-fortification-large.glb` | 3.0 m (wide wall) | 5 × 4 | 3.2 s | ~62k |
 | `wall-fortification-xl.glb` | 4.0 m (bulkhead) | 5 × 6 | 3.6 s | ~80k |
 | `wall-fortification-hatch.glb` | 1.2 × 1.2 m square floor hatch | 3 × 3 | 2.5 s | ~40k |

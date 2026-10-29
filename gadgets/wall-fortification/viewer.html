@@ -120,9 +120,9 @@
   <dl class="specs">
     <dt>Variant</dt><dd id="s-variant">Standard · single wall</dd>
     <dt>Size</dt><dd id="s-size">1.5 m wide × 2.0 m</dd>
-    <dt>Depth</dt><dd>20 cm off the wall</dd>
-    <dt>Armor</dt><dd id="s-panels">8 composite steel panels</dd>
-    <dt>Deploy</dt><dd id="s-deploy">Touch-arm, then 2.9 s</dd>
+    <dt>Depth</dt><dd id="s-depth">20 cm off the wall</dd>
+    <dt>Armor</dt><dd id="s-panels">10 composite steel panels</dd>
+    <dt>Deploy</dt><dd id="s-deploy">Touch-arm, then 2.8 s</dd>
   </dl>
   <div class="state" aria-live="polite"><span class="chip">Status <b id="status">Stowed</b></span></div>
 </header>
@@ -442,7 +442,7 @@ function canvas(w, h) { const c = document.createElement('canvas'); c.width = w;
 const screenCanvas = canvas(256, 320);
 const screenTex = new THREE.CanvasTexture(screenCanvas);
 screenTex.colorSpace = THREE.SRGBColorSpace;
-const PATTERN = [0, 4, 8, 5, 2];
+const PATTERN = [6, 3, 4, 1, 2];   // a staircase: reads as no letter, digit or symbol
 // q: share of the code traced (0..1; below 0 = untouched), ok: code accepted (green), ring: finger-ring phase or null
 function drawPad(q, ok = false, ring = null) {
   const c = screenCanvas.getContext('2d'), w = c.canvas.width, h = c.canvas.height;
@@ -543,7 +543,7 @@ function buildColumn(name, parent, { w, d, sleeveH, topY, botY, clamps, side }) 
   const cb = [];
   for (const s of [-1, 1]) for (const sx of [-1, 1]) cb.push(hexScrew(0.008, V3(sx * w * 0.27, s * (sleeveH / 2 - 0.0225), d + 0.005), V3(0, 0, 1), 0.4));
   col.add(mesh(mergeGeometries(cb.map(clean)), MAT.bolt, name + '_sleeve_bolts'));
-  col.add(mesh(ledBar(0.012, sleeveH - 0.14, 0.003, 0, 0, d), MAT.led, name + '_sleeve_led', { cast: false }));
+  col.add(mesh(ledBar(0.012, sleeveH - 0.14, 0.003, 0, 0, d + 0.0009), MAT.led, name + '_sleeve_led', { cast: false }));   // face is at d + 0.0036 (bevel)
   const stages = [];
   for (const [dir, endY] of [[1, topY], [-1, botY]]) {
     const span = Math.abs(endY) - sleeveH / 2;
@@ -690,7 +690,7 @@ function buildModel(key) {
   for (const [nm, y] of [['beam_top', H - BHm / 2 - 0.006], ['beam_bottom', BHm / 2 + 0.006]]) {
     const b = node(nm, base);
     b.add(mesh(creased(extrudeX(prof(BHm, 0.012, 0.17), -sleeveL / 2, sleeveL / 2, 0.004), 30), MAT.frame, nm + '_sleeve'));
-    b.add(mesh(box(-sleeveL / 2 + 0.05, sleeveL / 2 - 0.05, -0.005, 0.005, 0.17, 0.173), MAT.led, nm + '_sleeve_led', { cast: false }));
+    b.add(mesh(box(-sleeveL / 2 + 0.05, sleeveL / 2 - 0.05, -0.005, 0.005, 0.1709, 0.1739), MAT.led, nm + '_sleeve_led', { cast: false }));   // face is at 0.1736 (bevel)
     const span = xIn - sleeveL / 2, n = Math.max(1, Math.ceil(span / (sleeveL - 0.06))), step = span / n, L = step + 0.05;
     const stages = [];
     for (const s of [-1, 1]) for (let i = 1; i <= n; i++) {
@@ -737,6 +737,7 @@ function buildModel(key) {
 
   /* through-wall anchors: tie rods punch through and X-shaped star plates twist-lock on the far face */
   const far = node('far_side', base); far.position.set(0, 0, -WALL_T);
+  N.far = far;
   far.userData = { note: `star anchors on the far face of a ${WALL_T} m wall; set this node's z to minus the wall thickness` };
   // edge anchors kept 14 cm in so a star never reaches past the unit's width
   const xa = W / 2 - 0.14;
@@ -925,7 +926,7 @@ const backSpot = new THREE.SpotLight('#d3dcff', 38, 0, 0.75, 0.8, 2); backSpot.p
 
 // master time tau: place the base on the wall, trace the arm pattern, then the expansion (t = tau - T0)
 const T_PLACE = 0.7, T_TOUCH = 1.7, T0 = T_PLACE + T_TOUCH, HATCH_Z = 1.7;
-let TAU_END = T0 + T_END;
+let TAU_END = T0 + T_END, floorTau = T0;
 let paused = false, model = null, sizeKey = 'standard', t = 0, tau = 0, dir = 0, swayOn = true, swayT = 0, screenState = 'READY', side = 'front';
 const labelObjs = [];
 const $ = (id) => document.getElementById(id);
@@ -933,6 +934,7 @@ const statusEl = $('status');
 
 function setModel(key) {
   if (model) { scene.remove(model.root); }
+  labelObjs.forEach(o => o.element.remove());   // CSS2D elements are not removed along with their model
   labelObjs.length = 0;
   sizeKey = key;
   model = buildModel(key);
@@ -945,6 +947,7 @@ function setModel(key) {
   else { backSpot.position.set(-0.8, 3.9, -2.9); backSpot.target.position.set(0, 1.0, -0.3); }
   $('s-variant').textContent = `${P.label} · ${P.sub}`;
   $('s-size').textContent = P.hatch ? `${P.W.toFixed(1)} m × ${P.H.toFixed(1)} m square` : `${P.W.toFixed(1)} m wide × ${P.H.toFixed(1)} m`;
+  $('s-depth').textContent = P.hatch ? '20 cm off the floor' : '20 cm off the wall';
   $('s-panels').textContent = `${model.panelCount} composite steel panels`;
   $('s-deploy').textContent = `Touch-arm, then ${model.T.toFixed(1)} s`;
   document.querySelectorAll('[data-size]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.size === key)));
@@ -967,7 +970,9 @@ function apply() {
   const s = pose(model, t);
   const kp = seg(tau, 0, T_PLACE);
   if (model.P.hatch) model.root.position.y = lerp(0.42, 0, kp); else model.root.position.z = lerp(0.42, 0, kp);
-  const placing = tau < T_PLACE, arming = !placing && tau < T0, live = t > 0.01, done = tau >= TAU_END - 1e-3;
+  // a deploy that has just left the arming sequence already counts as live, so nothing flashes 'Stowed' for a frame
+  const placing = tau < T_PLACE, arming = !placing && tau < T0, live = t > 0.01 || (dir > 0 && !placing && !arming), done = tau >= TAU_END - 1e-3;
+  model.far.visible = !placing;   // the stowed anchors sit in the wall; keep them out of sight until the base is on it
   MAT.led.emissiveIntensity = placing ? 0.35 : arming ? 0.9 : !live ? 0.5 : done ? 2.6 : lerp(1.3 + 0.7 * Math.sin(performance.now() * 0.012), 2.6, s.lock);
   if (arming) drawTouch((tau - T_PLACE) / T_TOUCH);
   const showLabels = $('labels').getAttribute('aria-pressed') === 'true' && done;
@@ -978,18 +983,25 @@ function apply() {
   if (statusEl.textContent !== st) {
     statusEl.textContent = st;
     if (!arming) { screenState = st === 'Locked' ? 'LOCKED' : (st === 'Stowed' || st === 'Placing') ? 'READY' : st.toUpperCase(); drawScreen(screenState); }
-    $('deploy').firstChild.textContent = (st === 'Stowed' || st === 'Retracting') ? 'Deploy ' : 'Retract ';
   }
+  const label = (dir < 0 || (dir === 0 && !done)) ? 'Deploy ' : 'Retract ';
+  if ($('deploy').firstChild.textContent !== label) $('deploy').firstChild.textContent = label;
 }
 function setPaused(v) {
   paused = v; $('pause').setAttribute('aria-pressed', String(v)); $('pause').textContent = v ? 'Resume' : 'Pause';
   if (actx) (v ? actx.suspend() : actx.resume()).catch(() => { });   // sound freezes with the animation
 }
 function toggleDeploy() {
+  autoStart = -1;
   if (paused) setPaused(false);
   const stowed = tau <= T0 + 1e-3 && dir <= 0;
   if (stowed) { if (tau >= T0 - 1e-3) tau = T_PLACE; dir = 1; stopMix(); }      // replays the arming sequence
-  else if (dir > 0 || tau >= TAU_END - 1e-3) { dir = -1; if (tau < T0) { tau = T0; stopMix(); } else playMix('retract_' + sizeKey, T_END - t); }
+  else if (dir > 0 || tau >= TAU_END - 1e-3) {
+    dir = -1; stopMix();
+    if (tau < T_PLACE) floorTau = 0;                     // still placing: take the base back off the wall
+    else if (tau < T0) tau = floorTau = T0;              // arming: drop the code; the unit stays stowed on the wall
+    else { floorTau = T0; playMix('retract_' + sizeKey, T_END - t); }
+  }
   else { dir = 1; playMix('deploy_' + sizeKey, t); }
 }
 
@@ -1076,7 +1088,7 @@ function goView(name, instant = false) {
 
 $('deploy').addEventListener('click', toggleDeploy);
 $('pause').addEventListener('click', () => setPaused(!paused));
-document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { if (b.dataset.size === sizeKey) return; const locked = tau >= TAU_END - 1e-3; setModel(b.dataset.size); tau = locked ? TAU_END : T0; dir = 0; apply(); goView('34'); try { localStorage.setItem('wall-fortification-size', sizeKey); } catch (e) { } }));
+document.querySelectorAll('[data-size]').forEach(b => b.addEventListener('click', () => { if (b.dataset.size === sizeKey) return; const locked = tau >= TAU_END - 1e-3; setModel(b.dataset.size); tau = locked ? TAU_END : T0; dir = 0; autoStart = -1; apply(); goView('34'); try { localStorage.setItem('wall-fortification-size', sizeKey); } catch (e) { } }));
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => goView(b.dataset.view)));
 $('labels').addEventListener('click', () => { const on = $('labels').getAttribute('aria-pressed') !== 'true'; $('labels').setAttribute('aria-pressed', String(on)); if (on && tau < TAU_END - 1e-3 && dir <= 0) toggleDeploy(); apply(); });
 $('sound').addEventListener('click', () => { soundOn = !soundOn; $('sound').setAttribute('aria-pressed', String(soundOn)); if (soundOn) unlockAudio(); else stopMix(); });
@@ -1085,6 +1097,7 @@ $('sway').addEventListener('click', () => { swayOn = !swayOn; $('sway').setAttri
 controls.addEventListener('start', () => { if (swayOn) { swayOn = false; $('sway').setAttribute('aria-pressed', 'false'); } camTween = null; });
 window.addEventListener('keydown', (e) => {
   if (e.target.closest && e.target.closest('input, textarea')) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
   unlockAudio();
   if (e.key === 'd' || e.key === 'D' || e.key === ' ') { e.preventDefault(); toggleDeploy(); }
   if (e.key === 's' || e.key === 'S') $('sound').click();
@@ -1108,7 +1121,7 @@ function toBase64(buf) {
 // Used by tools/export-glb.js: one .glb per size, rest pose locked (deployed), plus a 'deploy' clip
 // that runs from the stowed unit to the locked wall. Metres, +Y up, facing +Z, wall surface at z = 0.
 function exportScenes() {
-  drawScreen('LOCKED');
+  drawScreen('LOCKED'); MAT.led.emissiveIntensity = 2.6;   // the files' rest pose is the locked unit
   const out = [];
   for (const key of Object.keys(SIZES)) {
     const N = buildModel(key);
@@ -1120,16 +1133,21 @@ function exportScenes() {
 }
 async function exportGLB() {
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
-  const exporter = new GLTFExporter(), out = [];
-  for (const s of exportScenes()) {
-    const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations });
-    out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
+  const exporter = new GLTFExporter(), out = [], was = looping;
+  setLoop(false);                                  // nothing may redraw the screen or the LEDs mid-export
+  try {
+    for (const s of exportScenes()) {
+      const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations });
+      out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
+    }
+  } finally {
+    drawScreen(screenState); apply();              // back to the live screen (or the code being traced) and LEDs
+    if (was) setLoop(true);
   }
-  drawScreen(screenState);
   return out;
 }
 function preview() {
-  renderer.setAnimationLoop(null);
+  setLoop(false);
   document.querySelectorAll('.plate, .bar, .hint').forEach(e => { e.hidden = true; });
   if (sizeKey !== 'standard') setModel('standard');
   tau = TAU_END; dir = 0; apply();
@@ -1150,6 +1168,8 @@ $('loading').hidden = true;
 let autoStart = reduce ? -1 : 0.9;
 
 const clock = new THREE.Clock();
+let looping = false;
+function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
 function tick(dt) {
   if (autoStart > 0 && !paused) { autoStart -= dt; if (autoStart <= 0) dir = 1; }
   if (dir !== 0 && !paused) {
@@ -1159,7 +1179,7 @@ function tick(dt) {
       for (const [when, name] of cues) if (when > prev && when <= tau) playSfx(name);
       if (prev < T0 && tau >= T0) playMix('deploy_' + sizeKey, tau - T0);
     }
-    if (dir < 0 && tau <= T0) { tau = T0; dir = 0; }
+    if (dir < 0 && tau <= floorTau) { tau = floorTau; dir = 0; }
     if (dir > 0 && tau >= TAU_END) { tau = TAU_END; dir = 0; }
     apply();
   }
@@ -1177,16 +1197,17 @@ function tick(dt) {
     controls.target.copy(v.target);
   }
 }
-renderer.setAnimationLoop(() => {
+function loop() {
   const dt = Math.min(clock.getDelta(), 1 / 30);
   tick(dt);
   controls.update();
   composer.render(dt);
   labelRenderer.render(scene, camera);
-});
+}
+setLoop(true);
 window.__model.ready = true;
 window.__model.debug = {
-  tick, stop: () => renderer.setAnimationLoop(null),
+  tick, stop: () => setLoop(false),
   renderOnce: () => { controls.update(); composer.render(); labelRenderer.render(scene, camera); },
   setT: (v) => { tau = T0 + v; dir = 0; apply(); }, setTau: (v) => { tau = v; dir = 0; apply(); }, setModel, goView, camera, controls, scene, renderer, MAT, get model() { return model; },
   setSway: (v) => { swayOn = v; }, setSpin: (v) => { swayOn = v; }, pivot: { rotation: {} }, toggleDeploy,
