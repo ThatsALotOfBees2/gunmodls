@@ -908,9 +908,9 @@ function concreteTexture(seamsX, seamsY, tone) {
 const wallTex = concreteTexture(2, 4, '#5f5e5a'); wallTex.repeat.set(8, 2.2);
 const floorTex = concreteTexture(1, 1, '#3d3c3a'); floorTex.repeat.set(8, 6);
 const wall = new THREE.Mesh(new THREE.BoxGeometry(16, 4.4, 0.3), new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.92, metalness: 0, color: '#c8c6c0' }));
-wall.position.set(0, 2.2, -0.15); wall.receiveShadow = true; scene.add(wall);
+wall.position.set(0, 2.2, -0.15); wall.receiveShadow = true; wall.castShadow = true; scene.add(wall);   // casts too, so light does not reach through it
 const floor = new THREE.Mesh(new THREE.BoxGeometry(16, WALL_T, 12), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.62, metalness: 0.05, color: '#a8a6a2' }));
-floor.position.set(0, -WALL_T / 2, 1.9); floor.receiveShadow = true; scene.add(floor);
+floor.position.set(0, -WALL_T / 2, 1.9); floor.receiveShadow = true; floor.castShadow = true; scene.add(floor);
 
 // lights: a ceiling spot above the bay, a cool fill from the left, a dim sky/ground fill, and the unit's own glow
 const spot = new THREE.SpotLight('#fff0dc', 60, 0, 0.62, 0.75, 2);
