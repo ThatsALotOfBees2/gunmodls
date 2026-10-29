@@ -6,34 +6,33 @@
 <title>M590A1 Model</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Chivo+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Chivo+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
 <style>
-  /* Layout: full-bleed studio canvas; a stamped data plate top-left, an operating strip along the bottom. */
+  /* Layout: full-bleed studio canvas; a data plate top-left, an operating strip along the bottom. */
   :root {
-    --bg: #d9dad6;          /* concrete studio */
-    --bg-deep: #b9bbb6;
-    --fg: #1d201e;
-    --muted: #5d625d;
-    --panel: rgba(244, 245, 241, 0.78);
-    --line: rgba(29, 32, 30, 0.16);
-    --accent: #b5562a;      /* shotshell hull red-orange */
-    --accent-fg: #fff7f1;
-    --brass: #a8843a;
-    --font-display: "Big Shoulders Display", "Oswald", "Arial Narrow", sans-serif;
+    --bg: #e4e4ea;
+    --bg-deep: #c3c4ce;
+    --fg: #16171d;
+    --muted: #5b5e6b;
+    --panel: rgba(240, 240, 246, 0.8);
+    --line: rgba(22, 23, 29, 0.16);
+    --accent: #6a3fe0;      /* the faction's LED purple */
+    --accent-fg: #f7f3ff;
+    --font-display: "Chakra Petch", "Arial Narrow", sans-serif;
     --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
     --font-mono: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #1b1d1c; --bg-deep: #0d0f0e; --fg: #e8e9e4; --muted: #949a93;
-      --panel: rgba(24, 27, 25, 0.74); --line: rgba(232, 233, 228, 0.14);
-      --accent: #d8693a; --accent-fg: #1a0e08; --brass: #c9a24f; color-scheme: dark;
+      --bg: #17181f; --bg-deep: #07080c; --fg: #e8e8f0; --muted: #8e92a6;
+      --panel: rgba(13, 14, 20, 0.74); --line: rgba(232, 232, 240, 0.13);
+      --accent: #8f63ff; --accent-fg: #0e0819; color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #1b1d1c; --bg-deep: #0d0f0e; --fg: #e8e9e4; --muted: #949a93;
-    --panel: rgba(24, 27, 25, 0.74); --line: rgba(232, 233, 228, 0.14);
-    --accent: #d8693a; --accent-fg: #1a0e08; --brass: #c9a24f; color-scheme: dark;
+    --bg: #17181f; --bg-deep: #07080c; --fg: #e8e8f0; --muted: #8e92a6;
+    --panel: rgba(13, 14, 20, 0.74); --line: rgba(232, 232, 240, 0.13);
+    --accent: #8f63ff; --accent-fg: #0e0819; color-scheme: dark;
   }
   html, body { height: 100%; }
   body {
@@ -49,24 +48,40 @@
     position: fixed;
     top: calc(env(safe-area-inset-top, 0px) + 18px);
     left: max(16px, env(safe-area-inset-left, 0px));
-    max-width: min(360px, calc(100vw - 32px));
+    max-width: min(340px, calc(100vw - 32px));
     display: grid; gap: 6px;
     pointer-events: none;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   }
   .plate .eyebrow {
-    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
   }
   .plate h1 {
-    margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(44px, 8vw, 76px);
-    line-height: 0.86; letter-spacing: 0.01em; text-wrap: balance;
+    margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 5.2vw, 36px);
+    line-height: 0.95; letter-spacing: 0.06em; text-transform: uppercase; text-wrap: balance;
   }
   .plate h1 span { color: var(--accent); }
   .specs {
-    display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin-top: 8px;
+    display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin: 6px 0 0;
     font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums;
   }
   .specs dt { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10.5px; padding-top: 1px; }
   .specs dd { margin: 0; }
+  .state {
+    margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap;
+    font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+  .chip b { font-weight: 500; color: var(--accent); }
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+    font: 500 12px var(--font-mono); letter-spacing: 0.04em; color: var(--fg);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    pointer-events: none; max-width: calc(100vw - 32px); text-align: center;
+  }
   .bar {
     position: fixed; left: 0; right: 0;
     bottom: 0;
@@ -86,38 +101,37 @@
   button {
     font: 500 13px/1 var(--font-body); color: var(--fg); background: transparent; border: 0;
     padding: 9px 12px; border-radius: 7px; cursor: pointer; white-space: nowrap;
+    display: inline-flex; gap: 7px; align-items: center;
   }
   button:hover { background: var(--line); }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-  #rack {
-    background: var(--accent); color: var(--accent-fg); font-weight: 600; padding: 10px 16px;
-    display: inline-flex; gap: 8px; align-items: center;
-  }
-  #rack kbd { font: 500 11px var(--font-mono); opacity: 0.75; border: 1px solid currentColor; border-radius: 4px; padding: 1px 4px; }
+  button.primary { background: var(--accent); color: var(--accent-fg); font-weight: 600; padding: 10px 16px; }
+  kbd { font: 500 11px var(--font-mono); opacity: 0.75; border: 1px solid currentColor; border-radius: 4px; padding: 1px 4px; }
   .hint {
     position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 20px);
     font: 11px var(--font-mono); letter-spacing: 0.06em; color: var(--muted); text-align: right; pointer-events: none;
   }
   .label {
-    font: 500 11px var(--font-mono); letter-spacing: 0.04em; color: var(--fg);
-    background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 7px;
+    font: 500 11px var(--font-mono); letter-spacing: 0.04em; color: #e8e8f0;
+    background: rgba(13, 14, 20, 0.78); border: 1px solid rgba(232, 232, 240, 0.16); border-radius: 6px; padding: 4px 7px;
     white-space: nowrap; transform: translateY(-14px); pointer-events: none;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   }
   .label.below { transform: translateY(14px); }
   .label.below::after { top: auto; bottom: 100%; }
   .label::after {
-    content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 12px; background: var(--fg); opacity: 0.5;
+    content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 12px; background: #e8e8f0; opacity: 0.5;
   }
   #loading {
     position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none;
-    font: 12px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    font: 12px var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
   }
   @media (max-width: 640px) {
     .hint { display: none; }
+    .plate { padding: 10px 12px; }
     .specs { font-size: 11px; }
-    button { padding: 8px 10px; font-size: 12px; }
+    button { padding: 8px 9px; font-size: 12px; }
+    .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); }
   }
 </style>
 <style>
@@ -133,30 +147,36 @@
   <h1>Mossberg <span>590A1</span></h1>
   <dl class="specs">
     <dt>Barrel</dt><dd>20″ heavy wall, cylinder bore</dd>
-    <dt>Overall</dt><dd>41.0″</dd>
+    <dt>Overall</dt><dd>41.0″ (1.041 m)</dd>
     <dt>Pull</dt><dd>13.87″</dd>
     <dt>Capacity</dt><dd>8 + 1, 2¾″ shells</dd>
     <dt>Sights</dt><dd>Ghost ring on receiver rail</dd>
-    <dt>Forend</dt><dd>M-LOK, 2 rows of slots</dd>
+    <dt>Forend</dt><dd>M-LOK, 2 rows of vents</dd>
   </dl>
+  <div class="state" aria-live="polite">
+    <span class="chip">Tube <b id="tube-state">8 / 8</b></span>
+    <span class="chip">Chamber <b id="chamber-state">Loaded</b></span>
+  </div>
 </header>
 
 <div class="hint">Drag to orbit · Scroll to zoom<br>Right-drag to pan</div>
 <div id="loading">Machining parts…</div>
+<div class="toast" id="toast" hidden></div>
 
 <nav class="bar" aria-label="Model controls">
   <div class="controls">
-    <button id="rack" type="button" title="Cycle the action (R or Space)">Rack the action <kbd>R</kbd></button>
-    <div class="group" role="group" aria-label="Finish">
-      <button type="button" id="fin-black" data-finish="black" aria-pressed="true">Matte black</button>
-      <button type="button" id="fin-park" data-finish="parkerized" aria-pressed="false">Parkerized</button>
-      <button type="button" id="fin-grey" data-finish="tungsten" aria-pressed="false">Tungsten</button>
+    <button id="rack" class="primary" type="button" title="Cycle the action (R or Space)">Rack <kbd>R</kbd></button>
+    <button id="load" type="button" title="Top up the magazine tube (L)">Load <kbd>L</kbd></button>
+    <div class="group" role="group" aria-label="Furniture colour">
+      <button type="button" data-finish="graphite" aria-pressed="true">Graphite</button>
+      <button type="button" data-finish="arctic" aria-pressed="false">Arctic</button>
+      <button type="button" data-finish="sand" aria-pressed="false">Sand</button>
     </div>
     <div class="group" role="group" aria-label="View">
-      <button type="button" id="v-34" data-view="34">¾</button>
-      <button type="button" id="v-right" data-view="right">Right</button>
-      <button type="button" id="v-left" data-view="left">Left</button>
-      <button type="button" id="v-top" data-view="top">Top</button>
+      <button type="button" data-view="34">¾</button>
+      <button type="button" data-view="right">Right</button>
+      <button type="button" data-view="left">Left</button>
+      <button type="button" data-view="top">Top</button>
     </div>
     <button type="button" id="labels" aria-pressed="false">Labels</button>
     <button type="button" id="spin" aria-pressed="true">Turntable</button>
@@ -182,8 +202,10 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
 
 // All modelling is done in inches. +X runs butt -> muzzle, +Y is up, +Z is the gun's right (ejection) side.
@@ -195,6 +217,8 @@ const IN = {
   magY: -0.97, magR: 0.48,
   stroke: 3.6,
 };
+// The receiver's outer faces: rear, front, top, bottom, half-width.
+const RCV = { x0: 12.375, x1: 20.545, top: 0.825, bot: -1.645, hw: 0.66 };
 
 /* ------------------------------------------------------------------ helpers */
 
@@ -218,101 +242,105 @@ function curve(pts) {
     return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * m[i + 1];
   };
 }
-const constant = v => () => v;
+const smooth01 = (t) => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
 
-// Loft a superellipse cross-section along X. top/bot/hw/n are functions of x.
-// round: radius used to roll the edges at both ends; caps are flat.
-function loft({ x0, x1, top, bot, hw, n = constant(2.6), cy = null, steps = 160, seg = 72, round = 0, roundStart = round, roundEnd = round, groove = null }) {
-  const xs = [];
-  // denser stations near the ends so the rolled edges stay smooth
-  for (let i = 0; i <= steps; i++) {
-    const u = i / steps;
-    const e = 0.5 - 0.5 * Math.cos(Math.PI * u);
-    xs.push(x0 + (x1 - x0) * (0.55 * u + 0.45 * e));
+// Polygon from corners [x, y, c, kind]: c cuts the corner with a straight chamfer of that leg length,
+// or rounds it when kind is 'r'. Returns [[x, y], ...].
+function cornerPoly(pts, arcSegs = 6) {
+  const n = pts.length, out = [];
+  for (let i = 0; i < n; i++) {
+    const [px, py] = pts[(i - 1 + n) % n], [cx, cy, c = 0, kind] = pts[i], [nx, ny] = pts[(i + 1) % n];
+    let v1x = px - cx, v1y = py - cy, v2x = nx - cx, v2y = ny - cy;
+    const l1 = Math.hypot(v1x, v1y), l2 = Math.hypot(v2x, v2y);
+    const cc = Math.min(c, l1 / 2.05, l2 / 2.05);
+    if (cc <= 0) { out.push([cx, cy]); continue; }
+    v1x /= l1; v1y /= l1; v2x /= l2; v2y /= l2;
+    const ax = cx + v1x * cc, ay = cy + v1y * cc, bx = cx + v2x * cc, by = cy + v2y * cc;
+    if (kind === 'r') {
+      for (let k = 0; k <= arcSegs; k++) {
+        const t = k / arcSegs, a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, d = t * t;
+        out.push([a * ax + b * cx + d * bx, a * ay + b * cy + d * by]);
+      }
+    } else out.push([ax, ay], [bx, by]);
   }
-  const pos = [], idx = [];
-  const ring = (x) => {
-    let T = top(x), B = bot(x), W = hw(x);
-    const ds = x - x0, de = x1 - x;
-    let inset = 0;
-    if (roundStart > 0 && ds < roundStart) inset = Math.max(inset, roundStart - Math.sqrt(Math.max(0, roundStart * roundStart - (roundStart - ds) ** 2)));
-    if (roundEnd > 0 && de < roundEnd) inset = Math.max(inset, roundEnd - Math.sqrt(Math.max(0, roundEnd * roundEnd - (roundEnd - de) ** 2)));
-    let gB = 0, gW = 0;
-    if (groove) { const g = groove(x); gB = g; gW = g; }
-    T -= inset; B += inset + gB; W -= inset + gW;
-    const c = cy ? cy(x) : (T + B) / 2, ry = (T - B) / 2;
-    const e = 2 / n(x), out = [];
-    for (let j = 0; j < seg; j++) {
-      const t = (j / seg) * Math.PI * 2, co = Math.cos(t), si = Math.sin(t);
-      const z = W * Math.sign(co) * Math.pow(Math.abs(co), e);
-      const y = c + ry * Math.sign(si) * Math.pow(Math.abs(si), e);
-      out.push([x, y, z]);
-    }
-    return out;
-  };
-  const rings = xs.map(ring);
-  rings.forEach(r => r.forEach(p => pos.push(...p)));
-  for (let i = 0; i < rings.length - 1; i++) {
-    for (let j = 0; j < seg; j++) {
-      const a = i * seg + j, b = i * seg + (j + 1) % seg, c = (i + 1) * seg + j, d = (i + 1) * seg + (j + 1) % seg;
-      idx.push(a, c, b, b, c, d);
-    }
+  return out;
+}
+function signedArea(P) { let a = 0; for (let i = 0; i < P.length; i++) { const p = P[i], q = P[(i + 1) % P.length]; a += p[0] * q[1] - q[0] * p[1]; } return a / 2; }
+// Offset a closed polygon by d along its outward normals (mitred corners); d < 0 insets it.
+function offsetPoly(P, d) {
+  if (!d) return P.map(p => [p[0], p[1]]);
+  const s = signedArea(P) > 0 ? 1 : -1, n = P.length, out = [];
+  for (let i = 0; i < n; i++) {
+    const a = P[(i - 1 + n) % n], b = P[i], c = P[(i + 1) % n];
+    let ex = b[0] - a[0], ey = b[1] - a[1], l = Math.hypot(ex, ey); ex /= l; ey /= l;
+    let fx = c[0] - b[0], fy = c[1] - b[1]; l = Math.hypot(fx, fy); fx /= l; fy /= l;
+    const n1x = s * ey, n1y = -s * ex, n2x = s * fy, n2y = -s * fx, k = 1 + n1x * n2x + n1y * n2y;
+    out.push([b[0] + d * (n1x + n2x) / k, b[1] + d * (n1y + n2y) / k]);
   }
-  // flat caps with their own vertices
-  const capAt = (r, flip) => {
+  return out;
+}
+function polyShape(P, shape = new THREE.Shape()) { P.forEach(([x, y], i) => i ? shape.lineTo(x, y) : shape.moveTo(x, y)); shape.closePath(); return shape; }
+const polyPath = (P) => polyShape(P, new THREE.Path());
+// Regular n-gon of circumradius r in the (u, v) plane, centred on (0, cy).
+const ngon = (n, r, phase = 0, cy = 0) => Array.from({ length: n }, (_, k) => { const a = phase + (k / n) * Math.PI * 2; return [r * Math.cos(a), cy + r * Math.sin(a)]; });
+
+// Loft polygon sections along an axis: stations [{ w, P }], every P with the same vertex count and w increasing;
+// map(u, v, w) -> [x, y, z] places them. Faces come out outward-facing for either polygon orientation or handedness.
+function prism(stations, map) {
+  const n = stations[0].P.length, pos = [], idx = [];
+  const area = signedArea(stations[0].P);
+  const o = map(0, 0, 0), dv = (p) => [p[0] - o[0], p[1] - o[1], p[2] - o[2]];
+  const U = dv(map(1, 0, 0)), V = dv(map(0, 1, 0)), W = dv(map(0, 0, 1));
+  const det = (U[1] * V[2] - U[2] * V[1]) * W[0] + (U[2] * V[0] - U[0] * V[2]) * W[1] + (U[0] * V[1] - U[1] * V[0]) * W[2];
+  const flip = (area < 0) !== (det < 0);
+  const tri = (a, b, c) => flip ? idx.push(a, c, b) : idx.push(a, b, c);
+  for (const s of stations) for (const [u, v] of s.P) pos.push(...map(u, v, s.w));
+  for (let i = 0; i < stations.length - 1; i++) for (let j = 0; j < n; j++) {
+    const a = i * n + j, b = i * n + (j + 1) % n, c = (i + 1) * n + (j + 1) % n, d = (i + 1) * n + j;
+    tri(a, b, c); tri(a, c, d);
+  }
+  const cap = (s, end) => {
     const base = pos.length / 3;
-    const cx = r.reduce((s, p) => s + p[1], 0) / r.length;
-    pos.push(r[0][0], cx, 0);
-    r.forEach(p => pos.push(...p));
-    for (let j = 0; j < seg; j++) {
-      const a = base + 1 + j, b = base + 1 + (j + 1) % seg;
-      flip ? idx.push(base, a, b) : idx.push(base, b, a);
+    for (const [u, v] of s.P) pos.push(...map(u, v, s.w));
+    for (let [a, b, c] of THREE.ShapeUtils.triangulateShape(s.P.map(([u, v]) => new THREE.Vector2(u, v)), [])) {
+      if ((signedArea([s.P[a], s.P[b], s.P[c]]) < 0) !== (area < 0)) [b, c] = [c, b];
+      end ? tri(base + a, base + b, base + c) : tri(base + a, base + c, base + b);
     }
   };
-  capAt(rings[0], true);
-  capAt(rings[rings.length - 1], false);
+  cap(stations[0], false); cap(stations[stations.length - 1], true);
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setIndex(idx);
   g.computeVertexNormals();
   return g;
 }
+// Stations for one polygon offset by d at each w: list = [[w, d], ...].
+const offsets = (P, list) => list.map(([w, d]) => ({ w, P: offsetPoly(P, d) }));
+// Sections drawn in (z, y) stacked along +X.
+const alongX = (u, v, w) => [w, v, u];
 
-// Polygon with per-corner radius: pts = [[x, y, r], ...]
-function roundedShape(pts, shape = new THREE.Shape()) {
-  const n = pts.length;
-  const P = pts.map(p => new THREE.Vector2(p[0], p[1]));
-  for (let i = 0; i < n; i++) {
-    const prev = P[(i - 1 + n) % n], cur = P[i], next = P[(i + 1) % n], r = pts[i][2] || 0;
-    const v1 = prev.clone().sub(cur), v2 = next.clone().sub(cur);
-    const l1 = v1.length(), l2 = v2.length();
-    const rr = Math.min(r, l1 / 2.05, l2 / 2.05);
-    const a = cur.clone().add(v1.normalize().multiplyScalar(rr));
-    const b = cur.clone().add(v2.normalize().multiplyScalar(rr));
-    if (i === 0) shape.moveTo(a.x, a.y); else shape.lineTo(a.x, a.y);
-    if (rr > 0) shape.quadraticCurveTo(cur.x, cur.y, b.x, b.y);
-  }
-  shape.closePath();
-  return shape;
-}
-function roundedPath(pts) { return roundedShape(pts, new THREE.Path()); }
-
-// Extrude a side-profile shape (in the XY plane) across Z, centred on zc.
-function slab(shape, width, { bevel = 0.04, segs = 3, zc = 0, curveSegments = 24 } = {}) {
-  const depth = Math.max(0.001, width - 2 * bevel);
-  const g = new THREE.ExtrudeGeometry(shape, {
-    depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel * 0.9, bevelSegments: segs, curveSegments,
-  });
+// Extrude a side profile (polygon or Shape in XY) across Z with 45-degree chamfers of c on both faces.
+// The silhouette stays exactly the profile; the faces sit at zc +- width / 2.
+function cslab(P, width, { c = 0.03, zc = 0, curveSegments = 12 } = {}) {
+  c = Math.min(c, width / 2 - 0.0005);
+  const depth = Math.max(0.0005, width - 2 * c);
+  const shape = Array.isArray(P) ? polyShape(P) : P;
+  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: c > 0, bevelThickness: c, bevelSize: c, bevelOffset: -c, bevelSegments: 1, curveSegments });
   g.translate(0, 0, zc - depth / 2);
   return g;
+}
+// Cutter for a pocket in a face at z = s * zFace (s = 1 right, -1 left): floor `depth` down, 45-degree lip of `lip`.
+function recess(P, s, zFace, depth, lip = depth, out = 0.1) {
+  const st = [[zFace - depth, 0]];
+  if (lip < depth) st.push([zFace - lip, 0]);
+  st.push([zFace, lip], [zFace + out, lip + out]);
+  return prism(offsets(P, st), (u, v, w) => [u, v, s * w]);
 }
 
 // Lathe around the X axis. pts = [[x, r], ...]
 function latheX(pts, seg = 64) {
   const g = new THREE.LatheGeometry(pts.map(([x, r]) => new THREE.Vector2(r, x)), seg);
-  g.rotateZ(-Math.PI / 2);
-  g.scale(1, 1, 1);
-  // after rotateZ(-90deg) the lathe axis (y) maps to +x
+  g.rotateZ(-Math.PI / 2);   // the lathe axis (y) maps to +x
   return g;
 }
 
@@ -322,17 +350,124 @@ function clean(g) {
   if (!g.attributes.normal) g.computeVertexNormals();
   return g;
 }
-function creased(g, angle = 34) { return toCreasedNormals(clean(g), THREE.MathUtils.degToRad(angle)); }
+// Normals smoothed across edges flatter than `angle`, weighted by face area and matched on a fine
+// position grid. CSG leaves long sliver triangles; with equal weights (as in toCreasedNormals, which
+// also matches positions on a 0.01-unit grid) their noisy normals tint the faces around them.
+function creased(g, angle = 30) {
+  g = clean(g);
+  const P = g.attributes.position.array, nv = P.length / 3, nt = nv / 3, cosA = Math.cos(THREE.MathUtils.degToRad(angle));
+  const F = new Float64Array(nt * 3), U = new Float64Array(nt * 3);
+  for (let t = 0; t < nt; t++) {
+    const a = 9 * t;
+    const e1x = P[a + 3] - P[a], e1y = P[a + 4] - P[a + 1], e1z = P[a + 5] - P[a + 2];
+    const e2x = P[a + 6] - P[a], e2y = P[a + 7] - P[a + 1], e2z = P[a + 8] - P[a + 2];
+    const cx = e1y * e2z - e1z * e2y, cy = e1z * e2x - e1x * e2z, cz = e1x * e2y - e1y * e2x, l = Math.hypot(cx, cy, cz);
+    F[3 * t] = cx; F[3 * t + 1] = cy; F[3 * t + 2] = cz;
+    if (l > 0) { U[3 * t] = cx / l; U[3 * t + 1] = cy / l; U[3 * t + 2] = cz / l; }
+  }
+  const Q = 1e4, keys = new Array(nv), map = new Map();
+  for (let i = 0; i < nv; i++) {
+    const k = Math.round(P[3 * i] * Q) + ',' + Math.round(P[3 * i + 1] * Q) + ',' + Math.round(P[3 * i + 2] * Q);
+    keys[i] = k;
+    let list = map.get(k); if (!list) map.set(k, list = []);
+    list.push((i / 3) | 0);
+  }
+  const N = new Float32Array(nv * 3);
+  for (let i = 0; i < nv; i++) {
+    const t = (i / 3) | 0, list = map.get(keys[i]), degenerate = U[3 * t] === 0 && U[3 * t + 1] === 0 && U[3 * t + 2] === 0;
+    let sx = 0, sy = 0, sz = 0;
+    for (const s of list) {
+      if (degenerate || U[3 * t] * U[3 * s] + U[3 * t + 1] * U[3 * s + 1] + U[3 * t + 2] * U[3 * s + 2] > cosA) { sx += F[3 * s]; sy += F[3 * s + 1]; sz += F[3 * s + 2]; }
+    }
+    const l = Math.hypot(sx, sy, sz) || 1;
+    N[3 * i] = sx / l; N[3 * i + 1] = sy / l; N[3 * i + 2] = sz / l;
+  }
+  g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+  return g;
+}
+const merge = (list) => mergeGeometries(list.map(clean));
+
+// Close the T-junctions CSG leaves behind (a vertex resting on the middle of a neighbour's edge): every
+// such edge is split and the triangle re-fanned from its centroid, so all edges are shared. Left open,
+// they show as rows of hairline cracks with the background shining through.
+function fixT(g, eps = 2e-5) {
+  g = clean(g);
+  const src = g.attributes.position.array, n = src.length / 3;
+  const Q = 1e5, vmap = new Map(), V = [], id = new Int32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = src[3 * i], y = src[3 * i + 1], z = src[3 * i + 2];
+    const k = Math.round(x * Q) + ',' + Math.round(y * Q) + ',' + Math.round(z * Q);
+    let j = vmap.get(k);
+    if (j === undefined) { j = V.length / 3; V.push(x, y, z); vmap.set(k, j); }
+    id[i] = j;
+  }
+  const H = 0.04, grid = new Map(), cell = (x, y, z) => Math.floor(x / H) + ',' + Math.floor(y / H) + ',' + Math.floor(z / H);
+  for (let j = 0; j < V.length / 3; j++) { const k = cell(V[3 * j], V[3 * j + 1], V[3 * j + 2]); let c = grid.get(k); if (!c) grid.set(k, c = []); c.push(j); }
+  const cache = new Map();
+  const onEdge = (a, b) => {
+    const lo = Math.min(a, b), hi = Math.max(a, b), key = lo + '_' + hi;
+    let hit = cache.get(key);
+    if (!hit) {
+      hit = [];
+      const ax = V[3 * lo], ay = V[3 * lo + 1], az = V[3 * lo + 2], dx = V[3 * hi] - ax, dy = V[3 * hi + 1] - ay, dz = V[3 * hi + 2] - az;
+      const L2 = dx * dx + dy * dy + dz * dz, steps = Math.ceil(Math.sqrt(L2) / H) + 1, seen = new Set(), visited = new Set();
+      for (let s = 0; s <= steps && L2 > 0; s++) {
+        const t = s / steps, cx = Math.floor((ax + dx * t) / H), cy = Math.floor((ay + dy * t) / H), cz = Math.floor((az + dz * t) / H);
+        for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (let k = -1; k <= 1; k++) {
+          const ck = (cx + i) + ',' + (cy + j) + ',' + (cz + k);
+          if (visited.has(ck)) continue; visited.add(ck);
+          const c = grid.get(ck); if (!c) continue;
+          for (const v of c) {
+            if (v === lo || v === hi || seen.has(v)) continue; seen.add(v);
+            const vx = V[3 * v] - ax, vy = V[3 * v + 1] - ay, vz = V[3 * v + 2] - az, u = (vx * dx + vy * dy + vz * dz) / L2;
+            if (u <= 1e-7 || u >= 1 - 1e-7) continue;
+            const ex = vx - dx * u, ey = vy - dy * u, ez = vz - dz * u;
+            if (ex * ex + ey * ey + ez * ez < eps * eps) hit.push([u, v]);
+          }
+        }
+      }
+      hit.sort((p, q) => p[0] - q[0]);
+      hit = hit.map(h => h[1]);
+      cache.set(key, hit);
+    }
+    return a === lo ? hit : hit.slice().reverse();
+  };
+  // zero-height triangles (CSG leaves stacks of them along cut lines) cover nothing: drop them, and the
+  // vertices they carried become T-junctions that the split below closes
+  const height = (a, b, c) => {
+    const e1x = V[3 * b] - V[3 * a], e1y = V[3 * b + 1] - V[3 * a + 1], e1z = V[3 * b + 2] - V[3 * a + 2];
+    const e2x = V[3 * c] - V[3 * a], e2y = V[3 * c + 1] - V[3 * a + 1], e2z = V[3 * c + 2] - V[3 * a + 2];
+    const e3x = e2x - e1x, e3y = e2y - e1y, e3z = e2z - e1z;
+    const cr = Math.hypot(e1y * e2z - e1z * e2y, e1z * e2x - e1x * e2z, e1x * e2y - e1y * e2x);
+    const L = Math.sqrt(Math.max(e1x * e1x + e1y * e1y + e1z * e1z, e2x * e2x + e2y * e2y + e2z * e2z, e3x * e3x + e3y * e3y + e3z * e3z));
+    return L > 0 ? cr / L : 0;
+  };
+  const out = [], put = (j) => out.push(V[3 * j], V[3 * j + 1], V[3 * j + 2]);
+  for (let t = 0; t < n / 3; t++) {
+    const tri = [id[3 * t], id[3 * t + 1], id[3 * t + 2]];
+    if (tri[0] === tri[1] || tri[1] === tri[2] || tri[0] === tri[2]) continue;   // collapsed by the weld
+    if (height(tri[0], tri[1], tri[2]) < eps * 0.25) continue;
+    const poly = [];
+    for (let e = 0; e < 3; e++) poly.push(tri[e], ...onEdge(tri[e], tri[(e + 1) % 3]));
+    if (poly.length === 3) { put(tri[0]); put(tri[1]); put(tri[2]); continue; }
+    let cx = 0, cy = 0, cz = 0;
+    for (const j of tri) { cx += V[3 * j] / 3; cy += V[3 * j + 1] / 3; cz += V[3 * j + 2] / 3; }
+    for (let i = 0; i < poly.length; i++) { out.push(cx, cy, cz); put(poly[i]); put(poly[(i + 1) % poly.length]); }
+  }
+  const r = new THREE.BufferGeometry();
+  r.setAttribute('position', new THREE.Float32BufferAttribute(out, 3));
+  r.computeVertexNormals();
+  return r;
+}
 
 const evaluator = new Evaluator();
 evaluator.attributes = ['position', 'normal'];
 evaluator.useGroups = false;
 // Cutters passed together must not overlap each other (they are merged into one brush).
 function subtract(base, ...cutters) {
-  let a = new Brush(clean(base)); a.updateMatrixWorld();
+  const a = new Brush(clean(base)); a.updateMatrixWorld();
   const cut = new Brush(mergeGeometries(cutters.map(clean))); cut.updateMatrixWorld();
-  const r = evaluator.evaluate(a, cut, SUBTRACTION);
-  return r.geometry;
+  return fixT(evaluator.evaluate(a, cut, SUBTRACTION).geometry);
 }
 // For cutters that overlap, subtract them one after another.
 function subtractEach(base, ...cutters) {
@@ -345,23 +480,22 @@ function box(x0, x1, y0, y1, z0, z1) {
   g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
   return g;
 }
+// z range [a, b] measured outward from the centre plane on side s (1 right, -1 left)
+const zs = (s, a, b) => s > 0 ? [a, b] : [-b, -a];
+function rodX(x0, x1, r, y = 0, z = 0, seg = 48) {
+  const c = new THREE.CylinderGeometry(r, r, x1 - x0, seg);
+  c.rotateZ(Math.PI / 2); c.translate((x0 + x1) / 2, y, z);
+  return c;
+}
 
-// Screw head with its drive recess ("inlet"). Built along +y with the underside at y = 0.
-// style: 'slot' (flat blade), 'phillips' (cross), 'hex' (socket). countersunk heads sit nearly flush.
-function screwHead(r, { style = 'slot', h, countersunk = false, seg = 36 } = {}) {
-  if (h === undefined) h = countersunk ? r * 0.5 : r * 0.6;
-  const prof = countersunk
-    ? [[0, 0], [r * 0.5, 0], [r, h - 0.006], [r, h], [0, h]]
-    : [[0, 0], [r, 0], [r, h * 0.45], [r * 0.86, h * 0.82], [r * 0.55, h * 0.97], [0, h]];
+// Screw head with its drive recess. Built along +y with the underside at y = 0.
+// Every screw on this gun is a hex socket (the house style); the recess is cut for real.
+function screwHead(r, { h, seg = 36 } = {}) {
+  if (h === undefined) h = r * 0.6;
+  const prof = [[0, 0], [r, 0], [r, h * 0.45], [r * 0.86, h * 0.82], [r * 0.55, h * 0.97], [0, h]];
   let g = new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x, y)), seg);
-  // the recess a driver goes into: deep enough to grip, open across the head for a blade
   const d = Math.min(h * 0.85, r * 0.62);
-  if (style === 'slot') g = subtract(g, box(-r * 1.3, r * 1.3, h - d, h + 0.2, -r * 0.17, r * 0.17));
-  else if (style === 'phillips') {
-    g = subtractEach(g, box(-r * 0.68, r * 0.68, h - d, h + 0.2, -r * 0.13, r * 0.13), box(-r * 0.13, r * 0.13, h - d, h + 0.2, -r * 0.68, r * 0.68));
-  } else if (style === 'hex') {
-    g = subtract(g, new THREE.CylinderGeometry(r * 0.5, r * 0.5, d * 2, 6).translate(0, h, 0));
-  }
+  g = subtract(g, new THREE.CylinderGeometry(r * 0.5, r * 0.5, d * 2, 6).translate(0, h, 0));
   return creased(g, 35);
 }
 // Put a screw head at pos with its axis along normal; spin turns the recess about that axis.
@@ -371,6 +505,7 @@ function placeScrew(geo, pos, normal, spin = 0) {
   geo.translate(pos.x, pos.y, pos.z);
   return geo;
 }
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
 /* ------------------------------------------------------------------ materials */
 
@@ -384,16 +519,19 @@ float vnoise(vec3 x){
              mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x), mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x), f.y), f.z);
 }
 float fbm3(vec3 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 4; i++){ s += a*vnoise(p); p = p*2.03 + 1.7; a *= 0.5; } return s; }
+// fw = pixel footprint in noise cells at the first octave; octaves near or below a pixel fade to their mean
+float fbmAA(vec3 p, float fw){ float a = 0.5, s = 0.0; for (int i = 0; i < 4; i++){ s += a*mix(vnoise(p), 0.5, smoothstep(0.3, 1.0, fw)); p = p*2.03 + 1.7; a *= 0.5; fw *= 2.03; } return s; }
 `;
 
-// Physical material with object-space grain: slight colour mottling plus roughness breakup,
-// so phosphate, anodising and polymer each read as a real surface instead of flat CG paint.
+// The house grain values are per metre; this model is built in inches.
+const GRAIN_UNIT = 0.0254;
+// Physical material with object-space grain (colour mottling + roughness breakup), viewer only: not exported.
 function surface(params, noise = {}) {
   const m = new THREE.MeshPhysicalMaterial(params);
   const u = {
-    uGrain: { value: noise.grain ?? 6 },
-    uColorVar: { value: noise.colorVar ?? 0.06 },
-    uRoughVar: { value: noise.roughVar ?? 0.08 },
+    uGrain: { value: (noise.grain ?? 260) * GRAIN_UNIT },
+    uColorVar: { value: noise.colorVar ?? 0.035 },
+    uRoughVar: { value: noise.roughVar ?? 0.05 },
   };
   m.userData.u = u;
   m.onBeforeCompile = (s) => {
@@ -401,44 +539,48 @@ function surface(params, noise = {}) {
     s.vertexShader = 'varying vec3 vObjPos;\n' + s.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vObjPos = position;');
     s.fragmentShader = NOISE + s.fragmentShader
       .replace('#include <color_fragment>', `#include <color_fragment>
-        float n1 = fbm3(vObjPos * uGrain);
+        float n1 = fbmAA(vObjPos * uGrain, length(fwidth(vObjPos * uGrain)));
         diffuseColor.rgb *= 1.0 + uColorVar * (n1 - 0.5) * 2.0;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = clamp(roughnessFactor + uRoughVar * (fbm3(vObjPos * uGrain * 3.7 + 7.1) - 0.5) * 2.0, 0.04, 1.0);`);
+        roughnessFactor = clamp(roughnessFactor + uRoughVar * (fbmAA(vObjPos * uGrain * 3.7 + 7.1, length(fwidth(vObjPos * uGrain * 3.7))) - 0.5) * 2.0, 0.04, 1.0);`);
   };
-  m.customProgramCacheKey = () => 'grain-v2';
+  m.customProgramCacheKey = () => 'grain-aa-v3';
   return m;
 }
 
+const LED_LEVEL = 2.6;   // emissive intensity of the LEDs, and exactly what the exported file carries
 const MAT = {
-  park: surface({ color: '#2f3130', metalness: 0.85, roughness: 0.58 }, { grain: 9, colorVar: 0.08, roughVar: 0.12 }),
-  anod: surface({ color: '#1f2021', metalness: 0.7, roughness: 0.46, clearcoat: 0.2, clearcoatRoughness: 0.55 }, { grain: 5, colorVar: 0.05, roughVar: 0.07 }),
-  steel: surface({ color: '#a9aaa6', metalness: 1.0, roughness: 0.22 }, { grain: 14, colorVar: 0.05, roughVar: 0.06 }),
-  bolt: surface({ color: '#555754', metalness: 1.0, roughness: 0.4 }, { grain: 16, colorVar: 0.08, roughVar: 0.1 }),
-  dark: surface({ color: '#2a2b2a', metalness: 0.9, roughness: 0.48 }, { grain: 8, colorVar: 0.06, roughVar: 0.08 }),
-  poly: surface({ color: '#0e0f0e', metalness: 0.0, roughness: 0.74, specularIntensity: 0.6, sheen: 0.12, sheenRoughness: 0.8, sheenColor: '#2a2a2a' }, { grain: 22, colorVar: 0.06, roughVar: 0.14 }),
-  rubber: surface({ color: '#111111', metalness: 0.0, roughness: 0.92 }, { grain: 18, colorVar: 0.04, roughVar: 0.05 }),
+  frame: surface({ color: '#2a2c33', metalness: 0.7, roughness: 0.40 }, { grain: 260, colorVar: 0.035, roughVar: 0.05 }),
+  composite: surface({ color: '#1d1e24', metalness: 0.15, roughness: 0.55 }, { grain: 200, colorVar: 0.04, roughVar: 0.06 }),
+  barrel: surface({ color: '#34363d', metalness: 0.85, roughness: 0.33 }, { grain: 320, colorVar: 0.03, roughVar: 0.05 }),
+  dark: surface({ color: '#111216', metalness: 0.45, roughness: 0.62 }, { grain: 300, colorVar: 0.03, roughVar: 0.05 }),
+  fast: surface({ color: '#45474f', metalness: 0.85, roughness: 0.32 }, { grain: 400, colorVar: 0.03, roughVar: 0.04 }),
+  rubber: surface({ color: '#0c0c0e', metalness: 0.0, roughness: 0.9 }, { grain: 300, colorVar: 0.03, roughVar: 0.04 }),
+  led: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: LED_LEVEL, roughness: 0.35, metalness: 0 }),
+  // viewer only: an ammo segment that is switched off (exported segments are all lit)
+  ledOff: new THREE.MeshStandardMaterial({ color: '#0f0b18', emissive: '#8a4dff', emissiveIntensity: 0.05, roughness: 0.3, metalness: 0 }),
   void: new THREE.MeshStandardMaterial({ color: '#050505', roughness: 1, metalness: 0 }),
-  hull: surface({ color: '#a32a1c', metalness: 0.0, roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.35 }, { grain: 10, colorVar: 0.05, roughVar: 0.05 }),
-  brass: surface({ color: '#c79a4a', metalness: 1.0, roughness: 0.28 }, { grain: 12, colorVar: 0.06, roughVar: 0.06 }),
-  primer: surface({ color: '#b9b2a2', metalness: 1.0, roughness: 0.32 }, { grain: 20, colorVar: 0.05, roughVar: 0.06 }),
+  // inside faces of hollows (receiver interior, chamber); exported flipped as 'void'
+  cavity: new THREE.MeshStandardMaterial({ color: '#060606', roughness: 0.9, metalness: 0, side: THREE.BackSide, envMapIntensity: 0.1 }),
+  hull: surface({ color: '#a32a1c', metalness: 0.0, roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.35 }, { grain: 400, colorVar: 0.05, roughVar: 0.05 }),
+  brass: surface({ color: '#c79a4a', metalness: 1.0, roughness: 0.28 }, { grain: 470, colorVar: 0.06, roughVar: 0.06 }),
+  primer: surface({ color: '#b9b2a2', metalness: 1.0, roughness: 0.32 }, { grain: 790, colorVar: 0.05, roughVar: 0.06 }),
 };
-
-const MAT_NAMES = { park: 'barrel_steel', anod: 'receiver_finish', steel: 'bright_steel', bolt: 'bolt_steel', dark: 'small_parts', poly: 'polymer', rubber: 'rubber', void: 'void', hull: 'shell_hull', brass: 'shell_brass', primer: 'shell_primer' };
+const MAT_NAMES = {
+  frame: 'frame_alloy', composite: 'shell_composite', barrel: 'barrel_steel', dark: 'black_steel', fast: 'fasteners',
+  rubber: 'rubber', led: 'led_purple', ledOff: 'led_off', void: 'void', cavity: 'cavity', hull: 'shell_hull', brass: 'shell_brass', primer: 'shell_primer',
+};
 for (const [k, v] of Object.entries(MAT_NAMES)) MAT[k].name = v;
 
-// [colour, metalness, roughness] for barrel/tube steel, receiver and small parts
+// Furniture colourways: shell_composite only. Graphite is the exported one.
 const FINISHES = {
-  black:      { park: ['#2f3130', 0.85, 0.58], anod: ['#1f2021', 0.7, 0.46], dark: ['#2a2b2a', 0.9, 0.48] },
-  parkerized: { park: ['#4b4d48', 0.92, 0.62], anod: ['#252627', 0.75, 0.42], dark: ['#33342f', 0.9, 0.5] },
-  tungsten:   { park: ['#3f4346', 0.3, 0.62],  anod: ['#3a3d40', 0.3, 0.6],   dark: ['#34373a', 0.4, 0.55] },
+  graphite: { color: '#1d1e24', roughness: 0.55 },
+  arctic: { color: '#c9ccd2', roughness: 0.6 },
+  sand: { color: '#8a7a62', roughness: 0.55 },
 };
 function applyFinish(name) {
-  const f = FINISHES[name] || FINISHES.black;
-  for (const k of ['park', 'anod', 'dark']) {
-    const [c, me, ro] = f[k];
-    MAT[k].color.set(c); MAT[k].metalness = me; MAT[k].roughness = ro;
-  }
+  const f = FINISHES[name] || FINISHES.graphite;
+  MAT.composite.color.set(f.color); MAT.composite.roughness = f.roughness;
 }
 
 /* ------------------------------------------------------------------ parts */
@@ -449,6 +591,7 @@ gun.add(moving.forend, moving.bolt);
 const anchors = {};
 const RAIL_H = 0.275;               // Picatinny rail height above the receiver
 const SIGHT_Y = IN.receiverTop + RAIL_H + 0.42; // ghost ring centre = front post tip
+const ammoSegments = [];
 
 // Every mesh gets the name of the part being built (used as node names in the exported .glb).
 let PART = 'part';
@@ -462,102 +605,155 @@ function add(geo, mat, parent = gun, { cast = true, receive = true } = {}) {
   parent.add(m);
   return m;
 }
-function rodX(x0, x1, r, y = 0, z = 0, seg = 48) {
-  const c = new THREE.CylinderGeometry(r, r, x1 - x0, seg);
-  c.rotateZ(Math.PI / 2); c.translate((x0 + x1) / 2, y, z);
-  return c;
+// LEDs are their own meshes: emissive, no shadows, and they feed the glow pass.
+function addLed(geo, parent = gun) {
+  const m = add(geo, MAT.led, parent, { cast: false, receive: false });
+  m.userData.led = true;
+  return m;
 }
+// An LED bar standing 0.4 mm (0.016") proud of a side face at z = s * zFace, rooted in its channel.
+const ledBar = (x0, x1, y0, y1, s, zFace, root = 0.035) => box(x0, x1, y0, y1, ...zs(s, zFace - root, zFace + 0.016));
 
 function buildStock() {
-  // Factory synthetic stock: straight comb, semi-pistol grip with a hooked belly, recessed side panels.
+  // Factory synthetic stock outline: straight comb, semi-pistol grip with a hooked belly. The butt is an
+  // angular composite prism; the section rounds off where the hand wraps the grip.
   const top = curve([[0.9, -1.74], [4.5, -1.38], [8.0, -1.02], [9.3, -0.86], [10.4, -0.6], [11.3, -0.2], [12.0, 0.14], [12.6, 0.36]]);
   const bot = curve([[0.9, -6.62], [4.0, -5.42], [7.3, -4.25], [8.55, -3.78], [9.35, -3.92], [10.05, -3.62], [10.75, -2.92], [11.5, -2.28], [12.1, -1.98], [12.6, -1.82]]);
-  const hw = curve([[0.9, 0.82], [5.0, 0.8], [8.4, 0.72], [9.6, 0.6], [11.0, 0.6], [12.6, 0.64]]);
+  const hw = curve([[0.9, 0.82], [5.0, 0.8], [8.4, 0.72], [9.6, 0.6], [11.0, 0.6], [12.6, 0.6]]);
   const n = curve([[0.9, 3.2], [8, 3.0], [9.8, 2.5], [11.5, 2.5], [12.6, 2.8]]);
-  let g = loft({ x0: 0.92, x1: 12.6, top, bot, hw, n, roundStart: 0.18, roundEnd: 0.02, steps: 190 });
-
-  // shallow flat-bottomed panels pressed into both sides of the butt
-  const panelPts = (inset) => {
-    const xs = [1.8, 7.6], pts = [];
-    pts.push([xs[0], bot(xs[0]) + 0.95 + inset, 0.45], [xs[1], bot(xs[1]) + 0.7 + inset, 0.45]);
-    pts.push([xs[1], top(xs[1]) - 0.75 - inset, 0.45], [xs[0], top(xs[0]) - 0.8 - inset, 0.45]);
-    return pts;
+  const roundness = (x) => smooth01((x - 8.3) / 1.4);
+  const CT = 0.3, CB = 0.22;
+  // octagon (flat sides, top and bottom, 45-degree corner facets), sampled with a fixed count per edge
+  const SEGS = [10, 5, 8, 5, 10, 5, 8, 5];
+  const section = (x, g = 0) => {
+    const T = top(x) - g, B = bot(x) + g, W = hw(x) - g, cT = CT - 0.586 * g, cB = CB - 0.586 * g;
+    const w = roundness(x), e = 2 / n(x), yc = (T + B) / 2, ry = (T - B) / 2;
+    const C = [[W, B + cB], [W, T - cT], [W - cT, T], [-(W - cT), T], [-W, T - cT], [-W, B + cB], [-(W - cB), B], [W - cB, B]];
+    const P = [];
+    for (let k = 0; k < 8; k++) {
+      const [z0, y0] = C[k], [z1, y1] = C[(k + 1) % 8];
+      for (let i = 0; i < SEGS[k]; i++) {
+        const t = i / SEGS[k], pz = z0 + (z1 - z0) * t, py = y0 + (y1 - y0) * t;
+        if (w <= 0) { P.push([pz, py]); continue; }
+        const th = Math.atan2((py - yc) / ry, pz / W), co = Math.cos(th), si = Math.sin(th);
+        const sz = W * Math.sign(co) * Math.pow(Math.abs(co), e), sy = yc + ry * Math.sign(si) * Math.pow(Math.abs(si), e);
+        P.push([pz + (sz - pz) * w, py + (sy - py) * w]);
+      }
+    }
+    return P;
   };
-  const panels = [-1, 1].map(s => slab(roundedShape(panelPts(0)), 0.4, { bevel: 0, zc: s * (0.74 + 0.2), curveSegments: 10 }));
-  g = subtract(g, ...panels);
+  // a 1 mm panel seam rings the stock where the butt module meets the grip
+  const SEAM = 7.7, SW = 0.02, SD = 0.03;
+  const xs = [];
+  for (let x = 0.92; x < 12.5; x += 0.06) if (Math.abs(x - SEAM) > 0.05) xs.push(x);
+  xs.push(12.5);   // the nose sits in the receiver's rear wall (12.375 to 12.82)
+  const st = xs.map(x => ({ w: x, P: section(x) }));
+  st.push({ w: SEAM - SW, P: section(SEAM - SW) }, { w: SEAM - SW + 0.001, P: section(SEAM - SW + 0.001, SD) },
+    { w: SEAM + SW - 0.001, P: section(SEAM + SW - 0.001, SD) }, { w: SEAM + SW, P: section(SEAM + SW) });
+  st.sort((a, b) => a.w - b.w);
+  let g = prism(st, alongX);
+
+  // shallow angular panels pressed into both sides of the butt, 45-degree walls
+  const zSide = (x) => hw(1.9) + (hw(7.1) - hw(1.9)) * (x - 1.9) / 5.2;
+  const panel = cornerPoly([[1.9, bot(1.9) + 0.78, 0.34], [7.1, bot(7.1) + 0.72, 0.34], [7.1, top(7.1) - 0.82, 0.34], [1.9, top(1.9) - 0.86, 0.34]]);
+  const PD = 0.05;
+  const cut = [1, -1].map(s => prism(offsets(panel, [[-PD, 0], [0, PD], [0.12, PD + 0.12]]), (u, v, w) => [u, v, s * (zSide(u) + w)]));
+  g = subtract(g, ...cut);
   part('stock');
-  add(creased(g, 38), MAT.poly);
+  add(creased(g, 30), MAT.composite);
 
-  // recoil pad
-  const T = top(0.92) + 0.02, B = bot(0.92) - 0.02, W = hw(0.92) + 0.02;
+  // rubber recoil pad: same section a touch proud of the stock, softened rear edge and a moulded groove
+  const x0 = 0.92, T = top(x0) + 0.02, B = bot(x0) - 0.02, W = hw(x0) + 0.02;
+  const oct = cornerPoly([[W, B, CB + 0.012], [W, T, CT + 0.012], [-W, T, CT + 0.012], [-W, B, CB + 0.012]]);
   part('recoil_pad');
-  add(loft({
-    x0: 0.0, x1: 0.96, top: constant(T), bot: constant(B), hw: constant(W), n: constant(3.2),
-    roundStart: 0.32, roundEnd: 0.0, steps: 40,
-  }), MAT.rubber);
+  add(creased(prism(offsets(oct, [[0.0, -0.1], [0.06, -0.03], [0.15, 0], [0.5, 0], [0.501, -0.022], [0.539, -0.022], [0.54, 0], [0.96, 0]]), alongX), 30), MAT.rubber);
 
-  // rear sling stud
-  const sx = 3.4, sy = bot(sx);
+  // rear sling stud: hex boss and a chamfered tab with a swivel hole, square to the toe line
+  const sx = 3.4, sy = bot(sx), slope = (bot(sx + 0.05) - bot(sx - 0.05)) / 0.1;
   part('sling_stud_rear');
-  const stud = new THREE.CylinderGeometry(0.1, 0.13, 0.42, 24); stud.translate(sx, sy - 0.12, 0);
-  add(creased(stud), MAT.dark);
-  const eye = new THREE.TorusGeometry(0.12, 0.045, 12, 28); eye.translate(sx, sy - 0.36, 0);
-  add(eye, MAT.dark);
-  anchors.stock = new THREE.Vector3(5.5, top(5.5) + 0.05, 0);
+  const boss = new THREE.CylinderGeometry(0.15, 0.15, 0.22, 6); boss.translate(0, 0.02, 0);
+  const tabS = polyShape(cornerPoly([[-0.15, 0.06], [0.15, 0.06], [0.12, -0.36, 0.07], [-0.12, -0.36, 0.07]]));
+  tabS.holes.push(polyPath(ngon(20, 0.065, 0, -0.22).reverse()));
+  const tab = cslab(tabS, 0.13, { c: 0.02 });
+  const stud = merge([boss, tab]);
+  stud.rotateZ(Math.atan(slope)); stud.translate(sx, sy, 0);
+  add(creased(stud, 30), MAT.dark);
+  anchors.stock = V3(5.5, top(5.5) + 0.05, 0);
 }
 
 function buildReceiver() {
-  const R = IN;
-  const outer = roundedShape([
-    [R.receiverRear, R.receiverBot, 0.1],
-    [R.receiverRear, 0.22, 0.32],
-    [12.98, R.receiverTop, 0.28],
-    [R.receiverFront, R.receiverTop, 0.08],
-    [R.receiverFront, -0.9, 0.0],
-    [R.receiverFront - 0.06, R.receiverBot, 0.14],
-  ]);
-  let g = slab(outer, R.receiverHW * 2, { bevel: 0.05, segs: 4 });
+  const R = RCV;
+  const outline = cornerPoly([[R.x0, R.bot, 0.08], [R.x0, 0.239, 0.1], [12.961, R.top, 0.12], [R.x1, R.top, 0.07], [R.x1, -0.9, 0], [R.x1 - 0.06, R.bot, 0.1]]);
+  let g = cslab(outline, R.hw * 2, { c: 0.06 });
+  // the action bay, open underneath for the loading port; its ceiling follows the rear facet so the
+  // bolt has room at full stroke (its tail reaches 12.85) without the bay breaking through
+  g = subtract(g, cslab([[12.82, -2.2], [20.28, -2.2], [20.28, 0.6], [12.849, 0.6], [12.82, 0.571]], 1.04, { c: 0 }));
 
-  const port = slab(roundedShape([[16.85, -0.40, 0.1], [19.5, -0.40, 0.1], [19.5, 0.44, 0.1], [16.85, 0.44, 0.1]]), 0.8, { bevel: 0, zc: 0.7, curveSegments: 8 });
-  const hollow = box(13.15, 20.28, -2.2, 0.6, -0.52, 0.52);
-  const panel = slab(roundedShape([[14.4, -1.1, 0.12], [19.6, -1.1, 0.12], [19.6, -0.15, 0.12], [14.4, -0.15, 0.12]]), 0.06, { bevel: 0, zc: -R.receiverHW - 0.02, curveSegments: 6 });
-  g = subtractEach(g, hollow, port, panel);
+  const port = recess(cornerPoly([[16.85, -0.40, 0.1], [19.5, -0.40, 0.1], [19.5, 0.44, 0.1], [16.85, 0.44, 0.1]]), 1, R.hw, 0.26, 0.03);
+  const leftPanel = recess(cornerPoly([[14.3, -0.6, 0.12], [19.9, -0.6, 0.12], [19.9, 0.52, 0.12], [14.3, 0.52, 0.12]]), -1, R.hw, 0.025);
+  const pipPocket = recess(cornerPoly([[13.62, -1.17, 0.02], [14.28, -1.17, 0.02], [14.28, -1.07, 0.02], [13.62, -1.07, 0.02]]), 1, R.hw, 0.03, 0.008);
+  const ammoWindow = recess(cornerPoly([[17.9, -1.2, 0.025], [19.5, -1.2, 0.025], [19.5, -1.04, 0.025], [17.9, -1.04, 0.025]]), -1, R.hw, 0.03, 0.008);
+  const plateSeam = box(16.33, 16.37, -0.8, 0.9, 0.57, 0.75);   // splits the right side into a rear and a front plate
+  // safety marks engraved beside the tang safety: dot = safe (back), bar = fire (forward)
+  const dot = new THREE.CylinderGeometry(0.028, 0.028, 0.1, 20); dot.translate(13.16, R.top + 0.035, -0.36);
+  const bar = box(13.4, 13.56, R.top - 0.015, R.top + 0.08, -0.3775, -0.3425);
+  g = subtract(g, port, leftPanel, pipPocket, ammoWindow, plateSeam, dot, bar);
+  // the side seam runs the full length of both sides as a V-groove (1.1 mm wide, 0.75 mm deep: both
+  // walls face out, so it reads as a steady line, not a sub-pixel lit wall); the LED channel opens it up
+  const seamV = (s) => prism(offsets([[R.hw + 0.06, -0.8 + 0.0215 + 0.0437], [R.hw - 0.0295, -0.8], [R.hw + 0.06, -0.8 - 0.0215 - 0.0437]].map(([z, y]) => [s * z, y]), [[12.3, 0], [20.6, 0]]), alongX);
+  g = subtract(g, seamV(1), seamV(-1));
+  g = subtract(g, ...[1, -1].map(s => box(16.5, 19.95, -0.865, -0.735, ...zs(s, R.hw - 0.035, 0.75))));
   part('receiver');
-  add(creased(g, 32), MAT.anod);
+  add(creased(g, 30), MAT.frame);
 
   // dark cavity behind the ports
   part('receiver_cavity');
-  add(box(13.2, 20.25, -1.62, 0.58, -0.5, 0.5), new THREE.MeshStandardMaterial({ name: 'cavity', color: '#0a0a0a', roughness: 0.9, side: THREE.BackSide }), gun, { cast: false, receive: false });
+  add(box(12.88, 20.25, -1.62, 0.58, -0.5, 0.5), MAT.cavity, gun, { cast: false, receive: false });
+
+  // LED strips in the side-seam channels, both sides
+  part('receiver_led');
+  addLed(merge([1, -1].map(s => ledBar(16.53, 19.92, -0.85, -0.75, s, R.hw))));
+  // three status pips above the trigger guard (right side)
+  part('status_pips');
+  addLed(merge([13.75, 13.95, 14.15].map(x => box(x - 0.0425, x + 0.0425, -1.145, -1.095, ...zs(1, R.hw - 0.025, R.hw + 0.014)))));
+  // ammo indicator on the left side: four segments, two shells each, rear segment first
+  part('ammo_indicator');
+  for (let i = 0; i < 4; i++) {
+    const xa = 17.97 + i * 0.38;
+    ammoSegments.push(addLed(box(xa, xa + 0.32, -1.155, -1.085, ...zs(-1, R.hw - 0.025, R.hw + 0.014))));
+  }
 
   // chamber end, visible with the action open
   part('chamber');
-  add(creased(latheX([[19.62, 0.37], [19.6, 0.37], [19.6, 0.5], [20.6, 0.5]], 48)), MAT.steel);
-  add(latheX([[19.62, 0.37], [20.6, 0.37]], 48), new THREE.MeshStandardMaterial({ name: 'bore', color: '#080808', roughness: 0.8, side: THREE.BackSide }), gun, { cast: false, receive: false });
+  add(creased(latheX([[19.62, 0.37], [19.6, 0.37], [19.6, 0.5], [20.6, 0.5]], 48)), MAT.barrel);
+  add(latheX([[19.62, 0.37], [20.6, 0.37]], 48), MAT.cavity, gun, { cast: false, receive: false });
 
   // elevator, seen through the loading port
   part('elevator');
-  add(creased(slab(roundedShape([[16.5, -1.42, 0.05], [19.3, -1.42, 0.2], [19.3, -1.32, 0.05], [16.5, -1.32, 0.05]]), 0.82, { bevel: 0.02 })), MAT.dark);
+  add(creased(cslab(cornerPoly([[16.48, -1.44, 0.03], [19.32, -1.44, 0.18], [19.32, -1.3, 0.03], [16.48, -1.3, 0.03]]), 0.82, { c: 0.02 })), MAT.dark);
 
   // bolt
   part('bolt');
-  const bolt = slab(roundedShape([[16.2, -0.36, 0.06], [19.58, -0.36, 0.04], [19.58, 0.48, 0.04], [16.2, 0.48, 0.06]]), 0.7, { bevel: 0.035, segs: 3 });
-  add(creased(subtract(bolt, box(18.2, 19.7, 0.0, 0.14, 0.3, 0.5), box(16.5, 18.0, 0.2, 0.25, 0.32, 0.5))), MAT.bolt, moving.bolt);
-  add(box(18.25, 19.56, 0.015, 0.125, 0.23, 0.33), MAT.dark, moving.bolt);
+  const bolt = cslab(cornerPoly([[16.45, -0.39, 0.06], [19.61, -0.39, 0.04], [19.61, 0.51, 0.04], [16.45, 0.51, 0.06]]), 0.7, { c: 0.03 });
+  add(creased(subtract(bolt, box(18.2, 19.7, 0.0, 0.14, 0.3, 0.5), box(16.5, 18.0, 0.2, 0.25, 0.32, 0.5))), MAT.barrel, moving.bolt);
+  add(creased(box(18.25, 19.56, 0.015, 0.125, 0.23, 0.33)), MAT.dark, moving.bolt);
 
-  // tang safety
+  // tang safety: angular slide with three grip grooves
   part('safety');
-  const safety = slab(roundedShape([[13.05, R.receiverTop - 0.02, 0.0], [13.62, R.receiverTop - 0.02, 0.0], [13.57, R.receiverTop + 0.12, 0.05], [13.1, R.receiverTop + 0.12, 0.05]]), 0.4, { bevel: 0.03 });
-  const ridges = [0, 1, 2].map(i => box(13.18 + i * 0.13, 13.23 + i * 0.13, R.receiverTop + 0.08, R.receiverTop + 0.2, -0.3, 0.3));
+  const safety = cslab(cornerPoly([[13.05, R.top - 0.065], [13.62, R.top - 0.065], [13.57, R.top + 0.105, 0.05], [13.1, R.top + 0.105, 0.05]]), 0.4, { c: 0.03 });
+  const ridges = [0, 1, 2].map(i => box(13.18 + i * 0.13, 13.23 + i * 0.13, R.top + 0.065, R.top + 0.2, -0.3, 0.3));
   add(creased(subtract(safety, ...ridges)), MAT.dark);
 
-  // trigger group pins
+  // trigger group pins with hex-socket heads on both sides
   part('trigger_pins');
   for (const x of [13.0, 15.75]) {
-    const p = new THREE.CylinderGeometry(0.085, 0.085, R.receiverHW * 2 + 0.06, 24);
-    p.rotateX(Math.PI / 2); p.translate(x, -1.36, 0);
-    add(creased(p), MAT.dark);
+    const p = new THREE.CylinderGeometry(0.085, 0.085, R.hw * 2, 24); p.rotateX(Math.PI / 2); p.translate(x, -1.36, 0);
+    const heads = [1, -1].map(s => placeScrew(screwHead(0.11, { h: 0.045 }), V3(x, -1.36, s * R.hw), V3(0, 0, s), 0.4 + x));
+    add(merge([creased(p), ...heads]), MAT.fast);
   }
-  anchors.port = new THREE.Vector3(18.2, -0.45, R.receiverHW);
+  anchors.port = V3(18.6, -0.45, R.hw);
+  anchors.pips = V3(13.95, -1.17, R.hw);
+  anchors.ammo = V3(18.7, -1.2, -R.hw);
 }
 
 function buildRail() {
@@ -566,152 +762,189 @@ function buildRail() {
   const half = [[0.45, 0], [0.45, 0.06], [0.33, 0.08], [0.33, 0.11], [0.4175, 0.17], [0.4175, 0.19], [0.31, RAIL_H]];
   const pts = [...half, ...half.slice().reverse().map(([z, y]) => [-z, y])];
   const s = new THREE.Shape(); pts.forEach(([z, y], i) => i ? s.lineTo(z, t + y) : s.moveTo(z, t + y)); s.closePath();
-  const g = new THREE.ExtrudeGeometry(s, { depth: x1 - x0, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.012, bevelSegments: 2 });
+  const g = new THREE.ExtrudeGeometry(s, { depth: x1 - x0, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.012, bevelSegments: 1 });
   g.rotateY(Math.PI / 2); g.translate(x0, 0, 0);
   const slots = [];
   for (let c = x0 + 0.32; c < x1 - 0.2; c += 0.394) slots.push(box(c - 0.103, c + 0.103, t + 0.135, t + 0.5, -0.7, 0.7));
   part('rail');
-  add(creased(subtract(g, ...slots), 30), MAT.anod);
+  add(creased(subtract(g, ...slots), 30), MAT.dark);
   // rail screws seated in the cross slots, hex sockets
   part('rail_screws');
   [2, 8, 14].forEach((k, i) => {
     const c = x0 + 0.32 + k * 0.394;
-    add(placeScrew(screwHead(0.092, { style: 'hex', h: 0.05 }), new THREE.Vector3(c, t + 0.135, 0), new THREE.Vector3(0, 1, 0), 0.3 + i * 0.7), MAT.dark);
+    add(placeScrew(screwHead(0.092, { h: 0.05 }), V3(c, t + 0.135, 0), V3(0, 1, 0), 0.3 + i * 0.7), MAT.fast);
   });
-  anchors.rail = new THREE.Vector3(19.9, t + RAIL_H + 0.05, 0);
+  anchors.rail = V3(19.9, t + RAIL_H + 0.05, 0);
 }
 
 function buildRearSight() {
-  // Ghost ring that clamps onto the back of the rail, with protective wings.
+  // Ghost ring that clamps onto the back of the rail, with protective wings and two lit dots.
   const top = IN.receiverTop + RAIL_H, xa = 13.85, xb = 15.05, xm = (xa + xb) / 2;
   part('rear_sight');
-  add(creased(slab(roundedShape([[xa, top - 0.2, 0.0], [xb, top - 0.2, 0.0], [xb, top + 0.12, 0.06], [xa, top + 0.12, 0.06]]), 0.98, { bevel: 0.03 })), MAT.anod);
+  add(creased(cslab(cornerPoly([[xa - 0.03, top - 0.225, 0], [xb + 0.03, top - 0.225, 0], [xb + 0.03, top + 0.145, 0.07], [xa - 0.03, top + 0.145, 0.07]]), 0.98, { c: 0.03 })), MAT.dark);
   for (const z of [-0.36, 0.36]) {
-    const ear = slab(roundedShape([[xa + 0.04, top + 0.08, 0.0], [xb - 0.04, top + 0.08, 0.0], [xb - 0.07, top + 0.3, 0.22], [xb - 0.32, top + 0.64, 0.1], [xa + 0.28, top + 0.64, 0.1], [xa + 0.07, top + 0.3, 0.22]]), 0.08, { bevel: 0.02, zc: z });
-    add(creased(ear), MAT.anod);
+    const ear = cornerPoly([[xa + 0.04, top + 0.08], [xb - 0.04, top + 0.08], [xb - 0.07, top + 0.3, 0.18], [xb - 0.32, top + 0.64, 0.09], [xa + 0.28, top + 0.64, 0.09], [xa + 0.07, top + 0.3, 0.18]]);
+    add(creased(cslab(ear, 0.09, { c: 0.015, zc: z })), MAT.dark);
   }
-  const ring = new THREE.TorusGeometry(0.15, 0.048, 18, 48); ring.rotateY(Math.PI / 2); ring.translate(xm, SIGHT_Y, 0);
-  add(ring, MAT.dark);
-  add(creased(slab(roundedShape([[xm - 0.19, top + 0.1, 0.02], [xm + 0.19, top + 0.1, 0.02], [xm + 0.12, SIGHT_Y - 0.14, 0.04], [xm - 0.12, SIGHT_Y - 0.14, 0.04]]), 0.16, { bevel: 0.02 })), MAT.dark);
-  // clamp screw on the right side, slotted
+  // the ring: octagonal outside, round aperture, extruded along the sight line
+  const ringS = polyShape(ngon(8, 0.205, Math.PI / 8));
+  ringS.holes.push(polyPath(ngon(36, 0.105).reverse()));
+  let ring = cslab(ringS, 0.1, { c: 0.015 });
+  ring.rotateY(Math.PI / 2); ring.translate(xm, SIGHT_Y, 0);
+  ring = subtract(ring, rodX(xm - 0.08, xm - 0.03, 0.027, SIGHT_Y, 0.152, 20), rodX(xm - 0.08, xm - 0.03, 0.027, SIGHT_Y, -0.152, 20));
+  add(creased(ring, 30), MAT.dark);
+  add(creased(cslab(cornerPoly([[xm - 0.19, top + 0.1], [xm + 0.19, top + 0.1], [xm + 0.12, SIGHT_Y - 0.14, 0.03], [xm - 0.12, SIGHT_Y - 0.14, 0.03]]), 0.16, { c: 0.02 })), MAT.dark);
+  // tritium-style dots at 3 and 9 o'clock on the ring's rear face, 0.3 mm proud
+  part('rear_sight_dots');
+  addLed(merge([0.152, -0.152].map(z => rodX(xm - 0.062, xm - 0.032, 0.024, SIGHT_Y, z, 20))));
+  // clamp screw on the right side, hex socket
   part('rear_sight_clamp_screw');
-  add(placeScrew(screwHead(0.12, { style: 'slot', h: 0.09 }), new THREE.Vector3(xm, top - 0.05, 0.49), new THREE.Vector3(0, 0, 1), 0.6), MAT.dark);
-  anchors.ghost = new THREE.Vector3(xm, top + 0.8, 0);
+  add(placeScrew(screwHead(0.1, { h: 0.06 }), V3(xm, top - 0.05, 0.49), V3(0, 0, 1), 0.6), MAT.fast);
+  anchors.ghost = V3(xm, top + 0.8, 0);
 }
 
 function buildTriggerGroup() {
   part('trigger_housing');
-  add(creased(slab(roundedShape([[12.5, -1.98, 0.12], [16.15, -1.98, 0.12], [16.15, -1.55, 0.0], [12.5, -1.55, 0.0]]), 1.18, { bevel: 0.05 })), MAT.anod);
+  add(creased(cslab(cornerPoly([[12.455, -2.025, 0.08], [16.195, -2.025, 0.08], [16.195, -1.505], [12.455, -1.505]]), 1.18, { c: 0.04 })), MAT.frame);
 
-  // rounded metal guard, an open oval loop
+  // metal guard: the same open loop, drawn with facets instead of round corners
   part('trigger_guard');
-  const outer = [[16.12, -1.92, 0.04], [15.95, -2.55, 0.55], [15.0, -3.1, 0.6], [13.55, -3.05, 0.6], [12.72, -2.4, 0.45], [12.62, -1.92, 0.04]];
-  const inner = [[15.72, -1.97, 0.03], [15.6, -2.5, 0.42], [14.9, -2.88, 0.45], [13.7, -2.84, 0.45], [13.02, -2.36, 0.33], [12.98, -1.97, 0.03]];
-  const s = roundedShape(outer); s.holes.push(roundedPath(inner));
-  add(creased(slab(s, 0.34, { bevel: 0.045, segs: 3, curveSegments: 32 })), MAT.anod);
+  const outer = offsetPoly(cornerPoly([[16.12, -1.92, 0.02], [15.95, -2.55, 0.5, 'r'], [15.0, -3.1, 0.55, 'r'], [13.55, -3.05, 0.55, 'r'], [12.72, -2.4, 0.42, 'r'], [12.62, -1.92, 0.02]], 3), 0.04);
+  const inner = offsetPoly(cornerPoly([[15.72, -1.97, 0.02], [15.6, -2.5, 0.38, 'r'], [14.9, -2.88, 0.42, 'r'], [13.7, -2.84, 0.42, 'r'], [13.02, -2.36, 0.3, 'r'], [12.98, -1.97, 0.02]], 3), -0.04);
+  const s = polyShape(outer); s.holes.push(polyPath(inner.reverse()));
+  add(creased(cslab(s, 0.34, { c: 0.025 }), 30), MAT.frame);
 
-  // trigger blade: bowed back, curled tip
+  // trigger blade: bowed back, curled tip, chamfered faces
   part('trigger');
   const N = 24, L = [], Rr = [];
   for (let i = 0; i <= N; i++) {
     const t = i / N;
     const x = 14.5 + 0.18 * t - 0.2 * Math.sin(Math.PI * t * 0.95) + 0.14 * t * t * t;
     const y = -1.95 - 0.72 * t;
-    const w = 0.09 - 0.025 * t;
+    const w = 0.12 - 0.03 * t;
     L.push([x - w, y]); Rr.push([x + w, y]);
   }
-  const ts = new THREE.Shape(); ts.moveTo(...L[0]); L.forEach(p => ts.lineTo(...p)); Rr.reverse().forEach(p => ts.lineTo(...p));
-  add(creased(slab(ts, 0.24, { bevel: 0.035 })), MAT.dark);
+  add(creased(cslab([...L, ...Rr.reverse()], 0.24, { c: 0.03 }), 30), MAT.dark);
 
   // action lock lever (left side, behind the guard)
   part('action_lock_lever');
-  add(creased(slab(roundedShape([[12.55, -1.98, 0.02], [12.95, -1.98, 0.02], [12.84, -2.34, 0.1], [12.6, -2.4, 0.08]]), 0.14, { bevel: 0.025, zc: -0.24 })), MAT.dark);
-  anchors.trigger = new THREE.Vector3(14.3, -3.1, 0.17);
+  add(creased(cslab(offsetPoly(cornerPoly([[12.55, -1.98], [12.95, -1.98], [12.84, -2.34, 0.08], [12.6, -2.4, 0.06]]), 0.02), 0.14, { c: 0.02, zc: -0.24 })), MAT.dark);
+  anchors.trigger = V3(14.3, -3.1, 0.17);
 }
 
 function buildBarrel() {
   const B = IN.barrelR;
   part('barrel');
-  add(creased(latheX([[20.5, 0.0], [20.5, 0.6], [21.05, 0.6], [21.12, B + 0.02], [21.2, B]], 64), 40), MAT.park);
-  add(creased(latheX([[21.15, B], [IN.muzzle - 0.04, B], [IN.muzzle, B - 0.04], [IN.muzzle, 0.37], [IN.muzzle - 3.0, 0.364]], 72), 40), MAT.park);
+  // faceted collar where the barrel seats in the receiver, flat underneath to clear the magazine tube
+  const collar = cornerPoly([[0.6, -0.46, 0.14], [0.6, 0.56, 0.24], [-0.6, 0.56, 0.24], [-0.6, -0.46, 0.14]]);
+  add(creased(prism(offsets(collar, [[20.45, 0], [20.88, 0], [20.94, -0.06]]), alongX), 30), MAT.barrel);   // ends short of the racked forend (21.0)
+  add(creased(latheX([[20.9, B], [IN.muzzle - 0.04, B], [IN.muzzle, B - 0.04], [IN.muzzle, 0.37], [IN.muzzle - 3.0, 0.364]], 72), 40), MAT.barrel);
   part('bore_plug');
   const boreCap = new THREE.CircleGeometry(0.37, 32); boreCap.rotateY(Math.PI / 2); boreCap.translate(IN.muzzle - 3, 0, 0);
   add(boreCap, MAT.void);
 
+  // front sight: an angular saddle on the barrel, a post inside protective wings, tall enough to meet the ghost ring
   part('front_sight');
-  // front sight: clamp band and a post inside protective wings, tall enough to meet the rail-mounted ghost ring
-  add(creased(latheX([[39.7, B], [39.7, B + 0.07], [40.5, B + 0.07], [40.5, B]], 56)), MAT.park);
-  add(creased(slab(roundedShape([[39.72, 0.3, 0.05], [40.48, 0.3, 0.05], [40.48, 0.7, 0.08], [39.72, 0.7, 0.08]]), 0.56, { bevel: 0.03 })), MAT.park);
+  let saddle = prism(offsets(cornerPoly([[0.33, 0.05], [0.33, 0.72, 0.1], [-0.33, 0.72, 0.1], [-0.33, 0.05]]), [[39.68, -0.03], [39.71, 0], [40.49, 0], [40.52, -0.03]]), alongX);
+  saddle = subtract(saddle, rodX(39.5, 40.7, B - 0.005, 0, 0, 72));
+  add(creased(saddle, 30), MAT.dark);
   for (const z of [-0.24, 0.24]) {
-    add(creased(slab(roundedShape([[39.74, 0.62, 0.0], [40.46, 0.62, 0.0], [40.46, SIGHT_Y + 0.06, 0.18], [39.95, SIGHT_Y + 0.14, 0.14]]), 0.08, { bevel: 0.02, zc: z })), MAT.park);
+    add(creased(cslab(cornerPoly([[39.74, 0.62], [40.46, 0.62], [40.46, SIGHT_Y + 0.06, 0.16], [39.95, SIGHT_Y + 0.14, 0.12]]), 0.08, { c: 0.012, zc: z })), MAT.dark);
   }
-  add(creased(slab(roundedShape([[40.0, 0.62, 0.0], [40.24, 0.62, 0.0], [40.2, SIGHT_Y, 0.02], [40.07, SIGHT_Y, 0.02]]), 0.075, { bevel: 0.012 })), MAT.dark);
-  anchors.front = new THREE.Vector3(40.1, SIGHT_Y + 0.2, 0);
+  const rearX = (y) => 40.0 + 0.07 * (y - 0.62) / (SIGHT_Y - 0.62);   // the post's sloped rear face
+  const dotY = SIGHT_Y - 0.075, dx = rearX(dotY);
+  let post = cslab(cornerPoly([[40.0, 0.62], [40.24, 0.62], [40.2, SIGHT_Y, 0.015], [40.07, SIGHT_Y, 0.015]]), 0.085, { c: 0.012 });
+  post = subtract(post, rodX(dx - 0.06, dx + 0.025, 0.028, dotY, 0, 20));
+  add(creased(post, 30), MAT.dark);
+  part('front_sight_dot');
+  addLed(rodX(dx - 0.012, dx + 0.022, 0.025, dotY, 0, 20));
+  part('front_sight_screw');
+  add(placeScrew(screwHead(0.055, { h: 0.03 }), V3(40.1, 0.42, 0.33), V3(0, 0, 1), 0.2), MAT.fast);
+  anchors.front = V3(40.1, SIGHT_Y + 0.2, 0);
 }
 
 function buildMagazine() {
   const y = IN.magY, r = IN.magR;
+  // machined 12-flat tube (a flat on top), same outside size as the round tube
   part('magazine_tube');
-  add(creased(rodX(19.3, 39.5, r, y, 0, 64)), MAT.park);
+  add(creased(prism(offsets(ngon(12, r, Math.PI / 12, y), [[19.3, 0], [39.5, 0]]), alongX), 20), MAT.barrel);
 
-  // a band that ties barrel and tube together: wraps the tube, bridges up to the barrel
-  const band = (xa, xb) => loft({ x0: xa, x1: xb, top: constant(-0.12), bot: constant(y - r - 0.11), hw: constant(0.58), n: constant(4.2), round: 0.07, steps: 30 });
+  // bands that tie barrel and tube together: faceted, chamfered ends
+  const bandP = cornerPoly([[0.58, y - r - 0.11, 0.3], [0.58, -0.12, 0.18], [-0.58, -0.12, 0.18], [-0.58, y - r - 0.11, 0.3]]);
+  const band = (xa, xb) => prism(offsets(bandP, [[xa, -0.04], [xa + 0.04, 0], [xb - 0.04, 0], [xb, -0.04]]), alongX);
   part('barrel_lug');
-  add(creased(band(38.55, 39.35), 40), MAT.park);     // barrel lug the cap screws against
+  add(creased(band(38.55, 39.35), 30), MAT.frame);     // barrel lug the cap screws against
   part('bayonet_band');
-  add(creased(band(34.7, 35.45), 40), MAT.park);      // bayonet band
+  add(creased(band(34.7, 35.45), 30), MAT.frame);
   // bayonet lug under the band
   part('bayonet_lug');
   const by = y - r - 0.06;
-  add(creased(slab(roundedShape([[34.55, by, 0.0], [35.75, by, 0.04], [35.85, by - 0.16, 0.06], [35.75, by - 0.32, 0.04], [34.55, by - 0.32, 0.06]]), 0.34, { bevel: 0.03 })), MAT.park);
-  add(creased(slab(roundedShape([[34.75, by - 0.32, 0.0], [35.7, by - 0.32, 0.0], [35.7, by - 0.4, 0.03], [34.75, by - 0.4, 0.03]]), 0.52, { bevel: 0.02 })), MAT.park);
-  anchors.bayonet = new THREE.Vector3(35.2, by - 0.42, 0);
+  add(creased(cslab(cornerPoly([[34.55, by], [35.75, by, 0.04], [35.85, by - 0.16, 0.06], [35.75, by - 0.32, 0.04], [34.55, by - 0.32, 0.06]]), 0.34, { c: 0.03 })), MAT.frame);
+  add(creased(cslab(cornerPoly([[34.75, by - 0.32], [35.7, by - 0.32], [35.7, by - 0.4, 0.03], [34.75, by - 0.4, 0.03]]), 0.52, { c: 0.02 })), MAT.frame);
+  anchors.bayonet = V3(35.2, by - 0.42, 0);
 
-  // knurled magazine cap, domed, with a sling stud on the nose
+  // magazine cap: a 16-flat grip ring with a flute down every flat, a faceted nose and the sling stud
   part('magazine_cap');
-  const cap = new THREE.CylinderGeometry(0.505, 0.505, 0.8, 96, 1, false);
-  const p = cap.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const vx = p.getX(i), vz = p.getZ(i);
-    if (Math.hypot(vx, vz) < 0.3) continue;
-    const k = 1 + 0.03 * (Math.cos(Math.atan2(vz, vx) * 48) > 0 ? 1 : -1);
-    p.setXYZ(i, vx * k, p.getY(i), vz * k);
+  const ring = prism(offsets(ngon(16, 0.51, Math.PI / 16, y), [[39.35, -0.03], [39.38, 0], [40.12, 0], [40.15, -0.03]]), alongX);
+  const rIn = 0.51 * Math.cos(Math.PI / 16) - 0.035, flutes = [];
+  for (let k = 0; k < 16; k++) {
+    const f = box(39.46, 40.04, -0.03, 0.03, rIn, rIn + 0.12);
+    f.rotateX(-k * Math.PI / 8); f.translate(0, y, 0);
+    flutes.push(f);
   }
-  cap.rotateZ(-Math.PI / 2); cap.translate(39.75, y, 0);
-  add(creased(cap, 50), MAT.park);
-  const dome = latheX([[40.15, 0.0], [40.15, 0.0001], [40.15, 0.47], [40.3, 0.43], [40.42, 0.32], [40.48, 0.18], [40.5, 0]], 64);
-  dome.translate(0, y, 0);
-  add(creased(dome, 40), MAT.park);
-  const stud = latheX([[40.44, 0.0], [40.44, 0.15], [40.62, 0.12], [40.66, 0.15], [40.74, 0.13], [40.8, 0.07], [40.81, 0]], 40);
-  stud.translate(0, y, 0);
-  add(creased(stud, 40), MAT.dark);
+  add(creased(subtract(ring, ...flutes), 30), MAT.frame);
+  add(creased(prism([[40.14, 0.49], [40.2, 0.49], [40.42, 0.3], [40.48, 0.26]].map(([x, rr]) => ({ w: x, P: ngon(16, rr, Math.PI / 16, y) })), alongX), 30), MAT.frame);
+  const hex = new THREE.CylinderGeometry(0.17, 0.17, 0.1, 6); hex.rotateZ(Math.PI / 2); hex.translate(40.51, y, 0);
+  let stud = latheX([[40.5, 0.0], [40.5, 0.1], [40.74, 0.1], [40.78, 0.07], [40.785, 0.0]], 32); stud.translate(0, y, 0);
+  const hole = new THREE.CylinderGeometry(0.035, 0.035, 0.4, 16); hole.rotateX(Math.PI / 2); hole.translate(40.67, y, 0);
+  stud = subtract(merge([hex, stud]), hole);
+  add(creased(stud, 35), MAT.dark);
 }
 
 function buildForend() {
-  // M-LOK forend: boxy shell with a barrel channel, hollow round the tube, two staggered rows of slots.
+  // M-LOK forend as a faceted composite piece: octagonal section, end chamfers, a wedge under the nose,
+  // the two staggered rows of slots cut as raked vents, and LED lines along the upper facets.
   const x0 = 24.6, x1 = 32.6, y = IN.magY;
-  let g = loft({ x0, x1, top: constant(-0.18), bot: constant(-2.0), hw: constant(0.8), n: constant(7), round: 0.1, steps: 70, seg: 96 });
+  const FT = -0.18, FW = 0.8, CT = 0.24, CB = 0.28;
+  const bottom = (x) => -2.0 + 0.2 * Math.max(0, (x - (x1 - 0.45)) / 0.45) + 0.12 * Math.max(0, (x0 + 0.3 - x) / 0.3);
+  const sec = (x) => { const b = bottom(x); return [[FW - CT, FT], [-(FW - CT), FT], [-FW, FT - CT], [-FW, b + CB], [-(FW - CB), b], [FW - CB, b], [FW, b + CB], [FW, FT - CT]]; };
+  const end = (x) => Math.min(0, -0.05 + (x - x0), -0.05 + (x1 - x));   // 45-degree chamfer on both ends
+  let g = prism([x0, x0 + 0.05, x0 + 0.3, x1 - 0.45, x1 - 0.05, x1].map(x => ({ w: x, P: offsetPoly(sec(x), end(x)) })), alongX);
   const channel = rodX(x0 - 1, x1 + 1, 0.47, 0, 0, 64);
-  const cavity = box(x0 + 0.22, x1 - 0.22, -1.8, -0.56, -0.6, 0.6);
+  const cavity = prism(offsets(cornerPoly([[0.6, -1.8, 0.2], [0.6, -0.56, 0.06], [-0.6, -0.56, 0.06], [-0.6, -1.8, 0.2]]), [[x0 + 0.22, 0], [x1 - 0.22, 0]]), alongX);
   const tube = rodX(x0 - 1, x1 + 1, 0.5, y, 0, 64);
-  const slotShape = (xa, yc) => roundedShape([[xa, yc - 0.16, 0.15], [xa + 1.18, yc - 0.16, 0.15], [xa + 1.18, yc + 0.16, 0.15], [xa, yc + 0.16, 0.15]]);
-  const slots = [];
+  // a raked vent: parallelogram leaning forward, chamfered 0.8 mm at the surface
+  const RAKE = 0.17, H = 0.3;
+  const vent = (cx, yc, len, s) => {
+    const P = cornerPoly([[cx - (len + RAKE) / 2, yc - H / 2, 0.02], [cx + (len - RAKE) / 2, yc - H / 2, 0.02], [cx + (len + RAKE) / 2, yc + H / 2, 0.02], [cx - (len - RAKE) / 2, yc + H / 2, 0.02]]);
+    return prism(offsets(P, [[0.5, 0], [FW - 0.03, 0], [FW, 0.03], [FW + 0.06, 0.09]]), (u, v, w) => [u, v, s * w]);
+  };
+  const vents = [];
   for (const s of [-1, 1]) {
     for (let i = 0; i < 4; i++) {
-      slots.push(slab(slotShape(x0 + 0.55 + i * 1.62, -0.74), 0.5, { bevel: 0, zc: s * 0.8, curveSegments: 8 }));
-      slots.push(slab(slotShape(x0 + 1.36 + i * 1.62, -1.46), 0.5, { bevel: 0, zc: s * 0.8, curveSegments: 8 }));
+      vents.push(vent(x0 + 1.14 + i * 1.62, -0.74, 1.06, s));
+      vents.push(vent(x0 + 1.95 + i * 1.62, -1.46, 1.06, s));
     }
-    // short slot closing the upper row
-    slots.push(slab(roundedShape([[x0 + 7.08, -0.9, 0.15], [x0 + 7.5, -0.9, 0.15], [x0 + 7.5, -0.58, 0.15], [x0 + 7.08, -0.58, 0.15]]), 0.5, { bevel: 0, zc: s * 0.8, curveSegments: 8 }));
+    vents.push(vent(x0 + 7.29, -0.74, 0.3, s));   // short vent closing the upper row
   }
-  g = subtractEach(g, channel, cavity, tube, mergeGeometries(slots.map(clean)));
+  // LED channels along the upper chamfer facets: facet midpoint m, along-facet t, outward normal k
+  const m = [(FW - CT + FW) / 2, (FT + FT - CT) / 2], t = [Math.SQRT1_2, -Math.SQRT1_2], k = [Math.SQRT1_2, Math.SQRT1_2];
+  const facetRect = (half, d0, d1, s) => [[-half, d0], [half, d0], [half, d1], [-half, d1]].map(([a, b]) => [s * (m[0] + a * t[0] + b * k[0]), m[1] + a * t[1] + b * k[1]]);
+  const RUNS = [[25.2, 31.3], [31.55, 32.05]];
+  const chan = [];
+  for (const s of [-1, 1]) for (const [a, b] of RUNS) chan.push(prism(offsets(facetRect(0.075, -0.035, 0.05, s), [[a, 0], [b, 0]]), alongX));
+  g = subtractEach(g, channel, cavity, tube, mergeGeometries(vents.map(clean)), mergeGeometries(chan.map(clean)));
   part('forend');
-  add(creased(g, 35), MAT.poly, moving.forend);
+  add(creased(g, 30), MAT.composite, moving.forend);
+  part('forend_led');
+  const leds = [];
+  for (const s of [-1, 1]) for (const [a, b] of RUNS) leds.push(prism(offsets(facetRect(0.055, -0.033, 0.016, s), [[a + 0.03, 0], [b - 0.03, 0]]), alongX));   // 2.8 mm wide
+  addLed(merge(leds), moving.forend);
 
   // twin action bars running back into the receiver
   part('action_bars');
-  for (const z of [-0.5, 0.5]) add(creased(box(19.7, x0 + 0.4, y - 0.15, y + 0.15, z - 0.025, z + 0.025)), MAT.dark, moving.forend);
-  anchors.forend = new THREE.Vector3((x0 + x1) / 2, -2.02, 0.5);
+  for (const z of [-0.5, 0.5]) add(creased(box(19.7, x0 + 0.4, y - 0.15, y + 0.15, z - 0.025, z + 0.025)), MAT.barrel, moving.forend);
+  anchors.forend = V3((x0 + x1) / 2, -2.02, 0.5);
 }
 
 function buildAll() {
@@ -728,6 +961,7 @@ function buildAll() {
 /* ------------------------------------------------------------------ shells */
 
 // 12 gauge 2 3/4" shell, unfired: 0.875" rim, 0.80" hull, 2.51" long, low brass head, 8-point star crimp.
+// No headstamp, no print.
 const SHELL = { length: 2.51, rimR: 0.4375, hullR: 0.4, crimpR: 0.335 };
 const shellGeo = (() => {
   const { length: L, rimR, hullR, crimpR } = SHELL;
@@ -793,11 +1027,17 @@ stage.appendChild(labelRenderer.domElement);
 
 const scene = new THREE.Scene();
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 1.05;
+// Studio room with a dark floor: a white floor would light every downward face and wash the dark metals out.
+const roomEnv = new RoomEnvironment();
+{ const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshBasicMaterial({ color: '#262626' })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.85; roomEnv.add(floor); }
+// mirror the room's big +z panel onto the -z wall so the left side reads as well as the right
+{ const p = roomEnv.children.find(o => o.isMesh && o.material.emissiveIntensity === 43); if (p) { const q = p.clone(); q.material = p.material.clone(); q.material.emissiveIntensity = 30; q.position.z = -13.3; roomEnv.add(q); } }
+scene.environment = pmrem.fromScene(roomEnv, 0.04).texture;
+scene.environmentIntensity = 1.3;
 
 const camera = new THREE.PerspectiveCamera(28, stage.clientWidth / stage.clientHeight, 0.5, 600);
-// Ambient occlusion adds contact shading where parts meet. Alpha is kept so the page backdrop shows through.
+// Ambient occlusion adds contact shading where parts meet; the LEDs get a glow from their own pass.
+// Alpha is kept so the page backdrop shows through.
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
 const renderPass = new RenderPass(scene, camera); renderPass.clearAlpha = 0;
 composer.addPass(renderPass);
@@ -805,9 +1045,27 @@ const ao = new GTAOPass(scene, camera, 1, 1);
 ao.updateGtaoMaterial({ radius: 0.9, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 16 });
 ao.blendIntensity = 0.85;
 composer.addPass(ao);
+// Glow: the LEDs alone (everything else black, so the gun still hides what is behind it) go through a bloom
+// whose halo is added over the frame. The halo also lifts the alpha, so it shows over the page backdrop.
+const glowComposer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }));
+glowComposer.renderToScreen = false;
+const glowRender = new RenderPass(scene, camera); glowRender.clearAlpha = 0;
+glowComposer.addPass(glowRender);
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.08, 0.0);
+glowComposer.addPass(bloom);
+const mixPass = new ShaderPass(new THREE.ShaderMaterial({
+  uniforms: { baseTexture: { value: null }, glowTexture: { value: null } },
+  vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform sampler2D baseTexture, glowTexture; varying vec2 vUv;
+    void main() {
+      vec4 base = texture2D(baseTexture, vUv);
+      vec3 g = texture2D(glowTexture, vUv).rgb;
+      gl_FragColor = vec4(base.rgb + g, max(base.a, clamp(max(g.r, max(g.g, g.b)), 0.0, 1.0)));
+    }`,
+}), 'baseTexture');
+composer.addPass(mixPass);
 composer.addPass(new OutputPass());
-composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-composer.setSize(stage.clientWidth, stage.clientHeight);
+for (const c of [composer, glowComposer]) { c.setPixelRatio(Math.min(window.devicePixelRatio, 2)); c.setSize(stage.clientWidth, stage.clientHeight); }
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -817,15 +1075,20 @@ controls.maxDistance = 280;
 controls.maxPolarAngle = Math.PI * 0.62;
 controls.target.set(0, 0, 0);
 
-const key = new THREE.DirectionalLight('#fff4e6', 2.4);
+const key = new THREE.DirectionalLight('#fff4e6', 2.5);
 key.position.set(-14, 40, 26);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
 const sc = key.shadow.camera; sc.left = -30; sc.right = 30; sc.top = 20; sc.bottom = -20; sc.near = 1; sc.far = 120;
 key.shadow.bias = -0.0004; key.shadow.normalBias = 0.03; key.shadow.radius = 6;
 scene.add(key);
-const rim = new THREE.DirectionalLight('#cfe0ff', 1.6); rim.position.set(30, 18, -40); scene.add(rim);
-const fill = new THREE.DirectionalLight('#ffffff', 0.45); fill.position.set(10, -6, 30); scene.add(fill);
+// rim sits behind the gun (from the default view) so it edges the top without glinting off forward faces
+const rim = new THREE.DirectionalLight('#e6ecff', 1.6); rim.position.set(4, 30, -40); scene.add(rim);
+// left fill so the left side keeps its form when the camera goes round
+const leftFill = new THREE.DirectionalLight('#fff6ec', 0.55); leftFill.position.set(-12, 26, -28); scene.add(leftFill);
+const fill = new THREE.DirectionalLight('#ffffff', 0.5); fill.position.set(10, 5, 30); scene.add(fill);
+scene.add(new THREE.HemisphereLight('#ffffff', '#3a3a40', 0.15));
+const under = new THREE.DirectionalLight('#dfe6ff', 0.08); under.position.set(6, -20, 26); scene.add(under);
 
 const GROUND_Y = -8.2;
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.ShadowMaterial({ opacity: 0.28 }));
@@ -838,23 +1101,59 @@ scene.add(pivot);
 pivot.add(gun);
 gun.position.set(-20.5, 1.2, 0);
 
+// glow source: LEDs that are lit show their emission, everything else renders black
+const BLACK = new THREE.MeshBasicMaterial({ color: '#000000' });
+const GLOW = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+const swapped = new Map();
+function renderGlow() {
+  GLOW.color.copy(MAT.led.emissive).multiplyScalar(MAT.led.emissiveIntensity * 0.5);
+  scene.traverse(o => { if (o.isMesh) { swapped.set(o, o.material); o.material = o.userData.led && o.material === MAT.led ? GLOW : BLACK; } });
+  ground.visible = false;
+  glowComposer.render();
+  ground.visible = true;
+  for (const [o, mat] of swapped) o.material = mat;
+  swapped.clear();
+  mixPass.uniforms.glowTexture.value = bloom.renderTargetsHorizontal[0].texture;
+}
+function render(dt) {
+  updateLabels();
+  renderGlow();
+  composer.render(dt);
+  labelRenderer.render(scene, camera);
+}
+// Block until the GPU has drawn the frame (a one-pixel read waits for it), so a caller that takes a
+// screenshot right after a still is not left waiting on a slow software renderer.
+function finishFrame() {
+  const gl = renderer.getContext();
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+}
+
 /* ------------------------------------------------------------------ labels */
 
+// [anchor, text, side]: side 1 = right-side feature, -1 = left, 0 = either. One-sided labels only show
+// while the camera is on their side, so nothing is labelled through the gun.
 const LABELS = [
-  ['ghost', 'Ghost ring rear sight'], ['rail', 'Picatinny rail'], ['port', 'Ejection port'],
-  ['front', 'Protected front post'], ['bayonet', 'Bayonet lug'], ['forend', 'M-LOK forend'],
-  ['trigger', 'Metal trigger guard'], ['stock', 'Synthetic stock'],
+  ['ghost', 'Ghost ring rear sight', 0], ['rail', 'Picatinny rail', 0], ['port', 'Ejection port', 1],
+  ['front', 'Protected front post', 0], ['bayonet', 'Bayonet lug', 0], ['forend', 'M-LOK forend', 0],
+  ['trigger', 'Metal trigger guard', 0], ['stock', 'Composite stock', 0], ['pips', 'Status pips', 1], ['ammo', 'Ammo indicator', -1],
 ];
-const BELOW = new Set(['bayonet', 'forend', 'trigger', 'port']);
+const BELOW = new Set(['bayonet', 'forend', 'trigger', 'port', 'pips', 'ammo']);
 const labelObjs = [];
+let labelsOn = false;
 function buildLabels() {
-  for (const [k, text] of LABELS) {
+  for (const [k, text, side] of LABELS) {
     if (!anchors[k]) continue;
     const el = document.createElement('div'); el.className = 'label' + (BELOW.has(k) ? ' below' : ''); el.textContent = text;
     const o = new CSS2DObject(el); o.position.copy(anchors[k]);
+    o.userData.side = side;
     (k === 'forend' ? moving.forend : gun).add(o);
     o.visible = false; labelObjs.push(o);
   }
+}
+const camLocal = new THREE.Vector3();
+function updateLabels() {
+  const side = Math.sign(gun.worldToLocal(camLocal.copy(camera.position)).z) || 1;
+  labelObjs.forEach(o => { o.visible = labelsOn && (o.userData.side === 0 || o.userData.side === side); });
 }
 
 /* ------------------------------------------------------------------ views */
@@ -878,38 +1177,70 @@ function goView(name, instant = false) {
 /* ------------------------------------------------------------------ action + sound */
 
 let audio = null;
-function click(when = 0, tone = 1) {
+function click(when = 0, tone = 1, gain = 0.55, len = 0.06) {
   try {
     audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-    const t0 = audio.currentTime + when, len = 0.06;
+    const t0 = audio.currentTime + when;
     const buf = audio.createBuffer(1, Math.floor(audio.sampleRate * len), audio.sampleRate);
     const d = buf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 5);
     const src = audio.createBufferSource(); src.buffer = buf;
     const bp = audio.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800 * tone; bp.Q.value = 1.2;
     const lo = audio.createBiquadFilter(); lo.type = 'lowpass'; lo.frequency.value = 5200;
-    const gn = audio.createGain(); gn.gain.value = 0.55;
+    const gn = audio.createGain(); gn.gain.value = gain;
     src.connect(bp).connect(lo).connect(gn).connect(audio.destination);
     src.start(t0);
   } catch (e) { /* audio is optional */ }
 }
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let toastTimer = 0;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+// 8 in the tube and one chambered to start. Racking ejects the chambered shell and feeds the next one;
+// the ammo indicator shows the tube, two shells per segment.
+const TUBE = 8;
+const ammo = { tube: TUBE, chambered: true };
+function updateAmmo() {
+  const lit = Math.ceil(ammo.tube / 2);
+  ammoSegments.forEach((m, i) => { m.material = i < lit ? MAT.led : MAT.ledOff; });
+  document.getElementById('tube-state').textContent = `${ammo.tube} / ${TUBE}`;
+  document.getElementById('chamber-state').textContent = ammo.chambered ? 'Loaded' : 'Empty';
+}
 const action = { t: -1, ejected: false };
+const loading = { on: false, t: 0 };
 const shells = [];
 function rack() {
   if (action.t >= 0) return;
+  loading.on = false;
   action.t = 0; action.ejected = false;
   click(0, 0.8); click(0.36, 1.15);
 }
+function cycleAmmo() {
+  if (ammo.chambered) ejectShell();
+  if (ammo.tube > 0) { ammo.tube -= 1; ammo.chambered = true; }
+  else { ammo.chambered = false; toast('Tube empty: press Load (L) to top it up.'); }
+  updateAmmo();
+}
+function load() {
+  if (ammo.tube >= TUBE) { toast(`The tube is full: ${TUBE} shells.`); return; }
+  if (action.t >= 0) return;
+  loading.on = true; loading.t = 0.12;
+}
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const RACK_END = 0.46;
 function actionOffset(t) {
   // 0..0.2 back, 0.2..0.28 hold, 0.28..0.46 forward (seconds)
   if (t < 0.2) return ease(t / 0.2);
   if (t < 0.28) return 1;
-  if (t < 0.46) return 1 - ease((t - 0.28) / 0.18);
+  if (t < RACK_END) return 1 - ease((t - 0.28) / 0.18);
   return 0;
 }
+function setAction(off) { moving.forend.position.x = off; moving.bolt.position.x = off; }
 function ejectShell() {
   const s = makeShell();
   const p = new THREE.Vector3(18.2, 0.05, 0.4);
@@ -946,23 +1277,25 @@ const $ = (id) => document.getElementById(id);
 let spinning = !reduceMotion;
 $('spin').setAttribute('aria-pressed', String(spinning));
 $('rack').addEventListener('click', rack);
+$('load').addEventListener('click', load);
 window.addEventListener('keydown', (e) => {
   if (e.target.closest && e.target.closest('input,textarea')) return;
-  if (e.key === 'r' || e.key === 'R' || e.code === 'Space') { e.preventDefault(); rack(); }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'r' || e.key === 'R' || e.code === 'Space') { e.preventDefault(); if (!e.repeat) rack(); }
+  if ((e.key === 'l' || e.key === 'L') && !e.repeat) load();
 });
 document.querySelectorAll('[data-finish]').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('[data-finish]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   applyFinish(b.dataset.finish);
-  try { localStorage.setItem('m590a1-finish', b.dataset.finish); } catch (e) { }
+  try { localStorage.setItem('m590a1-furniture', b.dataset.finish); } catch (e) { }
 }));
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
   spinning = false; $('spin').setAttribute('aria-pressed', 'false');
   goView(b.dataset.view);
 }));
 $('labels').addEventListener('click', (e) => {
-  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
-  e.currentTarget.setAttribute('aria-pressed', String(on));
-  labelObjs.forEach(o => o.visible = on);
+  labelsOn = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(labelsOn));
 });
 $('spin').addEventListener('click', (e) => {
   spinning = !spinning; e.currentTarget.setAttribute('aria-pressed', String(spinning));
@@ -971,7 +1304,7 @@ controls.addEventListener('start', () => { camTween = null; });
 
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
-  renderer.setSize(w, h); labelRenderer.setSize(w, h); composer.setSize(w, h);
+  renderer.setSize(w, h); labelRenderer.setSize(w, h); composer.setSize(w, h); glowComposer.setSize(w, h);
   camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 window.addEventListener('resize', resize);
@@ -1004,26 +1337,29 @@ function bakeMesh(mesh, matrix) {
   let mat = mesh.material;
   // glTF has no back-face-only materials: turn inward-facing cavities into normal geometry
   if (mat.side === THREE.BackSide) { g = flipWinding(g); mat = MAT.void; }
+  // every LED ships lit (the viewer dims ammo segments as the tube empties)
+  if (mesh.userData.led) mat = MAT.led;
   g = mergeVertices(g, 1e-6);
   const out = new THREE.Mesh(g, mat);
   out.name = mesh.name;
   return out;
 }
-// Transform from a mesh to rifle space, built from local matrices only (the live
+// Transform from a mesh to gun space, built from local matrices only (the live
 // turntable rotation never enters, so exports are byte-for-byte repeatable).
 function relMatrix(o) {
   const m = new THREE.Matrix4();
   for (let p = o; p && p !== gun; p = p.parent) { p.updateMatrix(); m.premultiply(p.matrix); }
   return m;
 }
-// Exact quarter turn about Y: rifle +X (muzzle) -> glTF +Z, rifle +Z (right) -> glTF -X.
+// Exact quarter turn about Y: gun +X (muzzle) -> glTF +Z, gun +Z (right) -> glTF -X.
 const QUARTER_Y = new THREE.Matrix4().set(0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
 function exportScenes() {
   const S = 0.0254, ORIGIN_X = 14.6;
   const toGltf = QUARTER_Y.clone()
     .multiply(new THREE.Matrix4().makeScale(S, S, S))
     .multiply(new THREE.Matrix4().makeTranslation(-ORIGIN_X, 0, 0));
-  moving.forend.position.set(0, 0, 0); moving.bolt.position.set(0, 0, 0);
+  setAction(0);
+  MAT.led.emissiveIntensity = LED_LEVEL;
   const root = new THREE.Group(); root.name = 'M590A1';
   root.userData = { units: 'metres', up: '+Y', forward: '+Z (muzzle)', origin: 'bore axis above the trigger', source: 'shotguns/m590a1/viewer.html' };
   const forend = new THREE.Group(); forend.name = 'forend_assembly';
@@ -1037,7 +1373,7 @@ function exportScenes() {
   });
   const times = [], values = [];
   for (let i = 0; i <= 28; i++) { const t = i / 60; times.push(t); values.push(0, 0, -IN.stroke * S * actionOffset(t)); }
-  const rack = new THREE.AnimationClip('rack', -1, [
+  const rackClip = new THREE.AnimationClip('rack', -1, [
     new THREE.VectorKeyframeTrack('forend_assembly.position', times, values),
     new THREE.VectorKeyframeTrack('bolt_assembly.position', times, values),
   ]);
@@ -1047,7 +1383,7 @@ function exportScenes() {
   const shellM = QUARTER_Y.clone().multiply(new THREE.Matrix4().makeScale(S, S, S));
   makeShell().children.forEach(c => shell.add(bakeMesh(c, shellM)));
   return [
-    { file: 'm590a1.glb', root, animations: [rack] },
+    { file: 'm590a1.glb', root, animations: [rackClip] },
     { file: 'shell-12ga.glb', root: shell, animations: [] },
   ];
 }
@@ -1060,22 +1396,26 @@ function toBase64(buf) {
 async function exportGLB() {
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
   const exporter = new GLTFExporter();
-  const out = [];
-  for (const s of exportScenes()) {
-    const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations });
-    out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
-  }
+  const out = [], pose = moving.forend.position.x;
+  try {
+    for (const s of exportScenes()) {
+      const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations });
+      out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
+    }
+  } finally { setAction(pose); }
   return out;
 }
 // A clean still for the repo: no UI, default view, one frame.
 function preview() {
   renderer.setAnimationLoop(null);
-  document.querySelectorAll('.plate, .bar, .hint').forEach(e => { e.hidden = true; });
+  document.querySelectorAll('.plate, .bar, .hint, .toast').forEach(e => { e.hidden = true; });
   spinning = false; pivot.rotation.y = 0; camTween = null;
   goView('34', true);
   camera.position.lerp(controls.target, 0.2); // fill the frame a little more than the interactive default
   controls.update();
+  renderGlow();
   composer.render();
+  finishFrame();
 }
 window.__model = { id: 'm590a1', exportScenes, exportGLB, preview };
 
@@ -1083,10 +1423,11 @@ window.__model = { id: 'm590a1', exportScenes, exportGLB, preview };
 
 buildAll();
 buildLabels();
-let startFinish = 'black';
-try { const f = localStorage.getItem('m590a1-finish'); if (f && FINISHES[f]) startFinish = f; } catch (e) { }
+let startFinish = 'graphite';
+try { const f = localStorage.getItem('m590a1-furniture'); if (f && FINISHES[f]) startFinish = f; } catch (e) { }
 applyFinish(startFinish);
 document.querySelectorAll('[data-finish]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.finish === startFinish)));
+updateAmmo();
 goView('34', true);
 $('loading').hidden = true;
 
@@ -1102,10 +1443,18 @@ function tick(dt) {
   }
   if (action.t >= 0) {
     action.t += dt;
-    const off = -IN.stroke * actionOffset(action.t);
-    moving.forend.position.x = off; moving.bolt.position.x = off;
-    if (!action.ejected && action.t > 0.16) { action.ejected = true; ejectShell(); }
-    if (action.t > 0.46) { action.t = -1; moving.forend.position.x = 0; moving.bolt.position.x = 0; }
+    setAction(-IN.stroke * actionOffset(action.t));
+    if (!action.ejected && action.t > 0.16) { action.ejected = true; cycleAmmo(); }
+    if (action.t > RACK_END) { action.t = -1; setAction(0); }
+  }
+  if (loading.on) {
+    // shells go in through the loading port one at a time
+    loading.t += dt;
+    if (loading.t >= 0.26) {
+      loading.t = 0; ammo.tube += 1; click(0, 1.7, 0.45); click(0.05, 0.9, 0.3);
+      updateAmmo();
+      if (ammo.tube >= TUBE) loading.on = false;
+    }
   }
   stepShells(dt);
 }
@@ -1113,11 +1462,15 @@ renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 1 / 30);
   tick(dt);
   controls.update();
-  composer.render(dt);
-  labelRenderer.render(scene, camera);
+  render(dt);
 });
 window.__model.ready = true;
-window.__model.debug = { tick, stop: () => renderer.setAnimationLoop(null), renderOnce: () => { controls.update(); composer.render(); labelRenderer.render(scene, camera); }, labels: on => labelObjs.forEach(o => o.visible = on), moving, renderer, scene, camera, controls, pivot, gun, rack, goView, setSpin: v => { spinning = v; }, applyFinish };
+window.__model.debug = {
+  tick, stop: () => renderer.setAnimationLoop(null),
+  renderOnce: () => { controls.update(); render(); finishFrame(); },
+  labels: on => { labelsOn = on; }, moving, renderer, scene, camera, controls, pivot, gun,
+  rack, load, setAction, actionOffset, ammo, updateAmmo, goView, setSpin: v => { spinning = v; }, applyFinish, MAT, IN, bloom,
+};
 </script>
 </body>
 </html>

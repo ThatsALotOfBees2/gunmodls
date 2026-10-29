@@ -6,33 +6,33 @@
 <title>AK-47 Model</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Chivo+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Chivo+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
 <style>
-  /* Layout: full-bleed studio canvas; a stamped data plate top-left, an operating strip along the bottom. */
+  /* Layout: full-bleed studio canvas; a data plate top-left, an operating strip along the bottom. */
   :root {
-    --bg: #d9dad6;
-    --bg-deep: #b9bbb6;
-    --fg: #1d201e;
-    --muted: #5d625d;
-    --panel: rgba(244, 245, 241, 0.78);
-    --line: rgba(29, 32, 30, 0.16);
-    --accent: #a8502c;      /* lacquered steel-case brown-red */
-    --accent-fg: #fff7f1;
-    --font-display: "Big Shoulders Display", "Oswald", "Arial Narrow", sans-serif;
+    --bg: #e6e6ec;
+    --bg-deep: #c9cad3;
+    --fg: #16171d;
+    --muted: #5b5e6b;
+    --panel: rgba(240, 240, 246, 0.8);
+    --line: rgba(22, 23, 29, 0.16);
+    --accent: #6a3fe0;      /* the faction's LED violet */
+    --accent-fg: #f7f3ff;
+    --font-display: "Chakra Petch", "Arial Narrow", sans-serif;
     --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
     --font-mono: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #1b1d1c; --bg-deep: #0d0f0e; --fg: #e8e9e4; --muted: #949a93;
-      --panel: rgba(24, 27, 25, 0.74); --line: rgba(232, 233, 228, 0.14);
-      --accent: #d06a3c; --accent-fg: #1a0e08; color-scheme: dark;
+      --bg: #1a1b21; --bg-deep: #0b0c10; --fg: #e8e8f0; --muted: #8e92a6;
+      --panel: rgba(18, 19, 26, 0.74); --line: rgba(232, 232, 240, 0.13);
+      --accent: #8f63ff; --accent-fg: #0e0819; color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #1b1d1c; --bg-deep: #0d0f0e; --fg: #e8e9e4; --muted: #949a93;
-    --panel: rgba(24, 27, 25, 0.74); --line: rgba(232, 233, 228, 0.14);
-    --accent: #d06a3c; --accent-fg: #1a0e08; color-scheme: dark;
+    --bg: #1a1b21; --bg-deep: #0b0c10; --fg: #e8e8f0; --muted: #8e92a6;
+    --panel: rgba(18, 19, 26, 0.74); --line: rgba(232, 232, 240, 0.13);
+    --accent: #8f63ff; --accent-fg: #0e0819; color-scheme: dark;
   }
   html, body { height: 100%; }
   body {
@@ -56,8 +56,8 @@
     font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
   }
   .plate h1 {
-    margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(44px, 8vw, 76px);
-    line-height: 0.86; letter-spacing: 0.01em; text-wrap: balance;
+    margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(38px, 7vw, 64px);
+    line-height: 0.92; letter-spacing: 0.01em; text-transform: uppercase; text-wrap: balance;
   }
   .plate h1 span { color: var(--accent); }
   .specs {
@@ -138,7 +138,7 @@
 </style>
 </head>
 <body>
-<div id="stage" aria-label="Interactive 3D model of an AK-47 rifle in the AKM pattern"></div>
+<div id="stage" aria-label="Interactive 3D model of an AK-47 rifle in the AKM pattern, in a machined sci-fi finish"></div>
 
 <header class="plate">
   <div class="eyebrow">Gas-operated rifle · 7.62×39 mm · 3D study</div>
@@ -148,8 +148,8 @@
     <dt>Barrel</dt><dd>16.3″ (415 mm)</dd>
     <dt>Overall</dt><dd>35.3″ (897 mm) over the brake</dd>
     <dt>Sight radius</dt><dd>14.9″ (378 mm)</dd>
-    <dt>Magazine</dt><dd>30-round, curved</dd>
-    <dt>Pattern</dt><dd>AKM, stamped receiver, matte black</dd>
+    <dt>Magazine</dt><dd>30-round, curved, LED indicator</dd>
+    <dt>Pattern</dt><dd>AKM, machined alloy receiver</dd>
   </dl>
   <div class="state" aria-live="polite">
     <span class="chip">Selector <b id="sel-state">Safe</b></span>
@@ -159,18 +159,18 @@
 </header>
 
 <div class="hint">Drag to orbit · Scroll to zoom<br>Right-drag to pan</div>
-<div id="loading">Stamping the receiver…</div>
+<div id="loading">Machining the receiver…</div>
 <div class="toast" id="toast" hidden></div>
 
 <nav class="bar" aria-label="Model controls">
   <div class="controls">
     <button id="charge" class="primary" type="button" title="Pull the charging handle (R or Space)">Charge <kbd>R</kbd></button>
-    <button id="selector" type="button" title="Move the selector: safe, auto, semi (F)">Selector <kbd>F</kbd></button>
+    <button id="selector" type="button" title="Move the selector: safe (one dot), auto (three bars), semi (one bar) (F)">Selector <kbd>F</kbd></button>
     <button id="magazine" type="button" title="Drop or insert the magazine (M)">Drop mag <kbd>M</kbd></button>
-    <div class="group" role="group" aria-label="Furniture">
-      <button type="button" id="fin-black" data-finish="black" aria-pressed="true">Matte black</button>
-      <button type="button" id="fin-wood" data-finish="wood" aria-pressed="false">Wood</button>
-      <button type="button" id="fin-tan" data-finish="tan" aria-pressed="false">Tan</button>
+    <div class="group" role="group" aria-label="Colourway">
+      <button type="button" id="fin-graphite" data-finish="graphite" aria-pressed="true">Graphite</button>
+      <button type="button" id="fin-arctic" data-finish="arctic" aria-pressed="false">Arctic</button>
+      <button type="button" id="fin-sand" data-finish="sand" aria-pressed="false">Sand</button>
     </div>
     <div class="group" role="group" aria-label="View">
       <button type="button" id="v-34" data-view="34">¾</button>
@@ -202,6 +202,8 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { Pass } from 'three/addons/postprocessing/Pass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
@@ -323,9 +325,9 @@ function slab(shape, width, { bevel = 0.04, segs = 3, zc = 0, curveSegments = 24
   return g;
 }
 
-// Lathe around the X axis. pts = [[x, r], ...]
-function latheX(pts, seg = 64) {
-  const g = new THREE.LatheGeometry(pts.map(([x, r]) => new THREE.Vector2(r, x)), seg);
+// Lathe around the X axis. pts = [[x, r], ...]; phiStart = OCT with seg = 8 puts octagon flats on the axes.
+function latheX(pts, seg = 64, phiStart = 0) {
+  const g = new THREE.LatheGeometry(pts.map(([x, r]) => new THREE.Vector2(r, x)), seg, phiStart);
   g.rotateZ(-Math.PI / 2);
   g.scale(1, 1, 1);
   // after rotateZ(-90deg) the lathe axis (y) maps to +x
@@ -362,6 +364,140 @@ function box(x0, x1, y0, y1, z0, z1) {
   return g;
 }
 
+
+/* ------------------------------------------------------------------ faceted / machined helpers */
+
+const OCT = Math.PI / 8;                                   // start angle that puts an octagon's flats on the axes
+const octR = (r) => r / Math.cos(Math.PI / 8);             // octagon circumradius whose flats sit at r
+
+// Extrude a side profile (XY plane) across Z, centred on zc, with 45-degree chamfers of size c round
+// both faces. Unlike slab(), the outline stays exactly where the shape puts it: the chamfers cut into the edges.
+function chamferSlab(shape, width, { c = 0.03, zc = 0, curveSegments = 12 } = {}) {
+  c = Math.max(0, Math.min(c, width / 2 - 0.0005));
+  const depth = Math.max(0.0005, width - 2 * c);
+  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: c > 0, bevelThickness: c, bevelSize: c, bevelOffset: -c, bevelSegments: 1, curveSegments });
+  g.translate(0, 0, zc - depth / 2);
+  return g;
+}
+// Extrude a (z, y) section (shape x -> rifle +z) along X from x0 to x1, chamfered at both ends.
+function chamferX(shape, x0, x1, { c = 0.02, curveSegments = 12 } = {}) {
+  const L = x1 - x0;
+  c = Math.max(0, Math.min(c, L / 2 - 0.0005));
+  const g = new THREE.ExtrudeGeometry(shape, { depth: Math.max(0.0005, L - 2 * c), bevelEnabled: c > 0, bevelThickness: c, bevelSize: c, bevelOffset: -c, bevelSegments: 1, curveSegments });
+  g.rotateY(-Math.PI / 2);
+  g.translate(x1 - c, 0, 0);
+  return g;
+}
+// Mirror a geometry through z = 0, keeping its faces pointing outward.
+function mirrorZ(g) {
+  g = g.index ? g.toNonIndexed() : g;
+  g.scale(1, 1, -1);
+  for (const a of Object.values(g.attributes)) {
+    const k = a.itemSize, arr = a.array;
+    for (let i = 0; i < a.count; i += 3) for (let j = 0; j < k; j++) { const t = arr[(i + 1) * k + j]; arr[(i + 1) * k + j] = arr[(i + 2) * k + j]; arr[(i + 2) * k + j] = t; }
+  }
+  return g;
+}
+// Cutter for a machined pocket in a face at |z| = zf (side +1 faces +z, -1 faces -z): `shape` (XY) is the
+// opening at the surface and the walls taper at 45 degrees to a floor `depth` below it.
+function pocketZ(shape, zf, depth, side = 1, { curveSegments = 12, out = 0.2 } = {}) {
+  const g = new THREE.ExtrudeGeometry(shape, { depth: out, bevelEnabled: true, bevelThickness: depth, bevelSize: depth, bevelOffset: -depth, bevelSegments: 1, curveSegments });
+  g.translate(0, 0, zf);
+  return side < 0 ? mirrorZ(g) : g;
+}
+// Cutter that chamfers the rim of an opening `shape` through a face at |z| = zf by c (45 degrees).
+function flareZ(shape, zf, c, side = 1, { curveSegments = 12, out = 0.2 } = {}) {
+  const g = new THREE.ExtrudeGeometry(shape, { depth: out, bevelEnabled: true, bevelThickness: c, bevelSize: c, bevelOffset: 0, bevelSegments: 1, curveSegments });
+  g.translate(0, 0, zf);
+  return side < 0 ? mirrorZ(g) : g;
+}
+// Corners of a box section with chamfered corners, counter-clockwise (h to the right, v up) from the +h side.
+// c = [c(+h,+v), c(-h,+v), c(-h,-v), c(+h,-v)] or one number; a zero chamfer gives a single square corner.
+function chamferRect(h0, h1, v0, v1, c) {
+  const [a, b, d, e] = typeof c === 'number' ? [c, c, c, c] : c;
+  const p = [];
+  p.push(e > 0 ? [h1, v0 + e] : [h1, v0]);
+  if (a > 0) p.push([h1, v1 - a], [h1 - a, v1]); else p.push([h1, v1]);
+  if (b > 0) p.push([h0 + b, v1], [h0, v1 - b]); else p.push([h0, v1]);
+  if (d > 0) p.push([h0, v0 + d], [h0 + d, v0]); else p.push([h0, v0]);
+  if (e > 0) p.push([h1 - e, v0]);
+  return p;
+}
+// n + 1 evenly spaced stations from x0 to x1 plus extra ones (crisp ends, seam ends), sorted.
+function stations(x0, x1, n, extra = []) {
+  const xs = [];
+  for (let i = 0; i <= n; i++) xs.push(x0 + (x1 - x0) * (i / n));
+  for (const e of extra) if (e > x0 && e < x1) xs.push(e);
+  xs.sort((a, b) => a - b);
+  return xs.filter((x, i) => i === 0 || x - xs[i - 1] > 1e-5);
+}
+// Fill a polygon (points in 2D) for a cap; dir picks which way its faces look along the third axis.
+function capFaces(r2, base, dir, idx) {
+  for (const [a, b, c] of THREE.ShapeUtils.triangulateShape(r2.map(([u, v]) => new THREE.Vector2(u, v)), [])) {
+    const cr = (r2[b][0] - r2[a][0]) * (r2[c][1] - r2[a][1]) - (r2[b][1] - r2[a][1]) * (r2[c][0] - r2[a][0]);
+    if (cr * dir > 0) idx.push(base + a, base + b, base + c); else idx.push(base + a, base + c, base + b);
+  }
+}
+// Loft a polygon section along X through the stations xs. ring(x) returns [[z, y], ...] with the same number
+// of points everywhere, counter-clockwise with z to the right and y up. Both ends get flat caps.
+function loftRings(xs, ring) {
+  const R = xs.map(ring), n = R[0].length, pos = [], idx = [];
+  R.forEach((r, i) => r.forEach(([z, y]) => pos.push(xs[i], y, z)));
+  for (let i = 0; i < R.length - 1; i++) for (let j = 0; j < n; j++) {
+    const a = i * n + j, b = i * n + (j + 1) % n, c = (i + 1) * n + j, d = (i + 1) * n + (j + 1) % n;
+    idx.push(a, c, b, b, c, d);
+  }
+  // in (z, y) a positive 2D cross product is a face looking toward -x
+  for (const [k, dir] of [[0, 1], [R.length - 1, -1]]) {
+    const base = pos.length / 3;
+    R[k].forEach(([z, y]) => pos.push(xs[k], y, z));
+    capFaces(R[k], base, dir, idx);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+// Sweep a polygon section along a 2D centre line in the XY plane through the parameters us.
+// center(u) -> [x, y]; ring(u) -> [[s, z], ...], s along the in-plane normal (left of travel), z across,
+// counter-clockwise from +s toward +z, same count everywhere. Both ends get flat caps.
+function sweepRings({ center, ring, us }) {
+  const pos = [], idx = [], R = us.map(ring), n = R[0].length, frames = [];
+  us.forEach((u, i) => {
+    const e = 1e-4, [x, y] = center(u), [xa, ya] = center(u - e), [xb, yb] = center(u + e);
+    let tx = xb - xa, ty = yb - ya; const tl = Math.hypot(tx, ty); tx /= tl; ty /= tl;
+    frames.push([x, y, -ty, tx]);
+    R[i].forEach(([s, z]) => pos.push(x - ty * s, y + tx * s, z));
+  });
+  for (let i = 0; i < R.length - 1; i++) for (let j = 0; j < n; j++) {
+    const a = i * n + j, b = i * n + (j + 1) % n, c = (i + 1) * n + j, d = (i + 1) * n + (j + 1) % n;
+    idx.push(a, b, c, b, d, c);
+  }
+  // in (s, z) a positive 2D cross product is a face looking along the direction of travel
+  for (const [k, dir] of [[0, -1], [R.length - 1, 1]]) {
+    const base = pos.length / 3, [x, y, nx, ny] = frames[k];
+    R[k].forEach(([s, z]) => pos.push(x + nx * s, y + ny * s, z));
+    capFaces(R[k], base, dir, idx);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+// Offset an open polyline [[a, b], ...] by d to its right (outward for a contour drawn round the top
+// from +a to -a), mitring the corners.
+function offsetPolyline(P, d) {
+  const n = [];
+  for (let i = 0; i < P.length - 1; i++) { const dx = P[i + 1][0] - P[i][0], dy = P[i + 1][1] - P[i][1], l = Math.hypot(dx, dy); n.push([dy / l, -dx / l]); }
+  return P.map((p, i) => {
+    if (i === 0) return [p[0] + n[0][0] * d, p[1] + n[0][1] * d];
+    if (i === P.length - 1) return [p[0] + n[i - 1][0] * d, p[1] + n[i - 1][1] * d];
+    const a = n[i - 1], b = n[i], k = d / (1 + a[0] * b[0] + a[1] * b[1]);
+    return [p[0] + (a[0] + b[0]) * k, p[1] + (a[1] + b[1]) * k];
+  });
+}
 
 
 // Sweep a superellipse section along a 2D centre line in the XY plane (used for the curved magazine).
@@ -437,42 +573,28 @@ function rodX(x0, x1, r, y = 0, z = 0, seg = 48, r1 = r) {
   c.rotateZ(-Math.PI / 2); c.translate((x0 + x1) / 2, y, z);
   return c;
 }
-// Rivet head: a low spherical cap on a side wall (radius r at the base, h tall). side = +1 right, -1 left.
-function rivet(x, y, side, z0, r = 0.135, h = 0.07) {
-  const R = (r * r + h * h) / (2 * h), th = Math.asin(Math.min(1, r / R));
-  const g = new THREE.SphereGeometry(R, 24, 6, 0, Math.PI * 2, 0, th);
-  g.translate(0, h - R, 0);
-  g.rotateX(side > 0 ? Math.PI / 2 : -Math.PI / 2); g.translate(x, y, z0);
-  return g;
-}
-
 /* ------------------------------------------------------------------ materials */
 
 const NOISE = /* glsl */`
 varying vec3 vObjPos;
-uniform float uGrain, uColorVar, uRoughVar, uWood;
-uniform vec3 uWoodDark;
+uniform float uGrain, uColorVar, uRoughVar;
 float h3(vec3 p){ p = fract(p*0.3183099 + 0.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
 float vnoise(vec3 x){
   vec3 i = floor(x), f = fract(x); f = f*f*(3.0-2.0*f);
   return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x), mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x), f.y),
              mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x), mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x), f.y), f.z);
 }
-float fbm3(vec3 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 4; i++){ s += a*vnoise(p); p = p*2.03 + 1.7; a *= 0.5; } return s; }
 // fw = pixel footprint in noise cells at the first octave; octaves near or below a pixel fade to their mean
 float fbmAA(vec3 p, float fw){ float a = 0.5, s = 0.0; for (int i = 0; i < 4; i++){ s += a*mix(vnoise(p), 0.5, smoothstep(0.3, 1.0, fw)); p = p*2.03 + 1.7; a *= 0.5; fw *= 2.03; } return s; }
 `;
 
-// Physical material with object-space grain (colour mottling + roughness breakup); wood adds
-// laminate figure running along the stock.
+// Physical material with object-space grain (colour mottling + roughness breakup).
 function surface(params, noise = {}) {
   const m = new THREE.MeshPhysicalMaterial(params);
   const u = {
     uGrain: { value: noise.grain ?? 6 },
     uColorVar: { value: noise.colorVar ?? 0.06 },
     uRoughVar: { value: noise.roughVar ?? 0.08 },
-    uWood: { value: noise.wood ? 1 : 0 },
-    uWoodDark: { value: new THREE.Color(noise.woodDark ?? '#3a1a0c') },
   };
   m.userData.u = u;
   m.onBeforeCompile = (s) => {
@@ -481,53 +603,46 @@ function surface(params, noise = {}) {
     s.fragmentShader = NOISE + s.fragmentShader
       .replace('#include <color_fragment>', `#include <color_fragment>
         float n1 = fbmAA(vObjPos * uGrain, length(fwidth(vObjPos * uGrain)));
-        if (uWood > 0.5) {
-          float warp = fbm3(vObjPos * vec3(0.08, 0.7, 0.7));
-          float lines = fbm3(vec3(vObjPos.x * 0.12, vObjPos.y * 11.0 + warp * 4.0, vObjPos.z * 11.0));
-          float bands = 0.5 + 0.5 * sin((vObjPos.y * 1.6 + vObjPos.z * 0.6 + warp * 5.0 + lines * 1.6) * 6.2831);
-          float t = smoothstep(0.35, 1.0, bands * 0.45 + lines * 0.6);
-          diffuseColor.rgb = mix(diffuseColor.rgb, uWoodDark, t * 0.6);
-        }
         diffuseColor.rgb *= 1.0 + uColorVar * (n1 - 0.5) * 2.0;`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
         roughnessFactor = clamp(roughnessFactor + uRoughVar * (fbmAA(vObjPos * uGrain * 3.7 + 7.1, length(fwidth(vObjPos * uGrain * 3.7))) - 0.5) * 2.0, 0.04, 1.0);`);
   };
-  m.customProgramCacheKey = () => 'grain-wood-v2';
+  m.customProgramCacheKey = () => 'grain-v3';
   return m;
 }
 
+// House sci-fi materials (STYLE.md). Its grain values are per metre; this model is built in inches.
+const PER_M = 0.0254;
 const MAT = {
-  recv: surface({ color: '#1c1d1e', metalness: 0.6, roughness: 0.62 }, { grain: 24, colorVar: 0.035, roughVar: 0.05 }),
-  steel: surface({ color: '#1e1f1f', metalness: 0.5, roughness: 0.62 }, { grain: 26, colorVar: 0.035, roughVar: 0.05 }),
-  dark: surface({ color: '#1d1e1e', metalness: 0.5, roughness: 0.72 }, { grain: 26, colorVar: 0.035, roughVar: 0.05 }),
-  carrier: surface({ color: '#2b2c2b', metalness: 0.7, roughness: 0.5 }, { grain: 30, colorVar: 0.035, roughVar: 0.05 }),
-  bright: surface({ color: '#a7a8a4', metalness: 1.0, roughness: 0.24 }, { grain: 14, colorVar: 0.05, roughVar: 0.06 }),
-  poly: surface({ color: '#0e0f0e', metalness: 0.0, roughness: 0.74, specularIntensity: 0.6, sheen: 0.12, sheenRoughness: 0.8, sheenColor: '#2a2a2a' }, { grain: 30, colorVar: 0.045, roughVar: 0.1 }),
-  mag: surface({ color: '#0f1010', metalness: 0.0, roughness: 0.7, specularIntensity: 0.55 }, { grain: 30, colorVar: 0.04, roughVar: 0.08 }),
+  alloy: surface({ color: '#2a2c33', metalness: 0.7, roughness: 0.40 }, { grain: 260 * PER_M, colorVar: 0.035, roughVar: 0.05 }),
+  shell: surface({ color: '#1d1e24', metalness: 0.15, roughness: 0.55 }, { grain: 200 * PER_M, colorVar: 0.04, roughVar: 0.06 }),
+  steel: surface({ color: '#34363d', metalness: 0.85, roughness: 0.33 }, { grain: 320 * PER_M, colorVar: 0.03, roughVar: 0.05 }),
+  dark: surface({ color: '#111216', metalness: 0.45, roughness: 0.62 }, { grain: 300 * PER_M, colorVar: 0.03, roughVar: 0.05 }),
+  fast: surface({ color: '#45474f', metalness: 0.85, roughness: 0.32 }, { grain: 400 * PER_M, colorVar: 0.03, roughVar: 0.04 }),
+  led: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2.6, roughness: 0.35, metalness: 0 }),
+  // viewer only: an ammo-indicator segment that has gone dark (exported lit, as led_purple)
+  ledOff: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 0.06, roughness: 0.35, metalness: 0 }),
   void: new THREE.MeshStandardMaterial({ color: '#050505', roughness: 1, metalness: 0 }),
   // inside faces of hollows (receiver interior, compensator bore); exported flipped as 'void'
   cavity: new THREE.MeshStandardMaterial({ color: '#060606', roughness: 0.9, metalness: 0, side: THREE.BackSide, envMapIntensity: 0.1 }),
   brass: surface({ color: '#c99a4c', metalness: 1.0, roughness: 0.3 }, { grain: 12, colorVar: 0.06, roughVar: 0.06 }),
   copper: surface({ color: '#b5683f', metalness: 1.0, roughness: 0.3 }, { grain: 14, colorVar: 0.06, roughVar: 0.06 }),
 };
-const MAT_NAMES = { recv: 'receiver_finish', steel: 'barrel_steel', dark: 'small_parts', carrier: 'bolt_carrier_steel', bright: 'bright_steel', poly: 'furniture', mag: 'magazine', void: 'void', cavity: 'cavity', brass: 'case_brass', copper: 'bullet_jacket' };
+const MAT_NAMES = { alloy: 'frame_alloy', shell: 'shell_composite', steel: 'barrel_steel', dark: 'black_steel', fast: 'fasteners', led: 'led_purple', ledOff: 'led_purple', void: 'void', cavity: 'cavity', brass: 'case_brass', copper: 'bullet_jacket' };
 for (const [k, v] of Object.entries(MAT_NAMES)) MAT[k].name = v;
 
-// Furniture options. Metal stays matte black in all of them.
+// Colourways of the composite shell (furniture and magazine). Metals and LEDs stay as they are. The lighter
+// shells take less of the studio's ambient reflection (viewer only) so they keep their form instead of washing out.
 const FINISHES = {
-  black: { color: '#0e0f0e', roughness: 0.74, wood: false, clearcoat: 0, mag: '#0f1010' },
-  wood: { color: '#4a2111', roughness: 0.48, wood: true, woodDark: '#1c0904', clearcoat: 0.45, mag: '#0f1010' },
-  tan: { color: '#6b5a40', roughness: 0.74, wood: false, clearcoat: 0, mag: '#65553d' },
+  graphite: { color: '#1d1e24', roughness: 0.55, env: 1.0 },
+  arctic: { color: '#c9ccd2', roughness: 0.6, env: 0.5 },
+  sand: { color: '#8a7a62', roughness: 0.55, env: 0.7 },
 };
+let finish = 'graphite';
 function applyFinish(name) {
-  const f = FINISHES[name] || FINISHES.black, p = MAT.poly, u = p.userData.u;
-  p.color.set(f.color); p.roughness = f.roughness; p.clearcoat = f.clearcoat; p.clearcoatRoughness = 0.35;
-  p.sheen = f.wood ? 0 : 0.12;
-  u.uWood.value = f.wood ? 1 : 0;
-  u.uWoodDark.value.set(f.woodDark || '#3a1a0c');
-  u.uGrain.value = f.wood ? 6 : 30;
-  u.uColorVar.value = f.wood ? 0.08 : 0.045;
-  MAT.mag.color.set(f.mag);
+  finish = FINISHES[name] ? name : 'graphite';
+  const f = FINISHES[finish];
+  MAT.shell.color.set(f.color); MAT.shell.roughness = f.roughness; MAT.shell.envMapIntensity = f.env;
 }
 
 /* ------------------------------------------------------------------ parts */
@@ -560,16 +675,15 @@ const MM = 1 / 25.4;
 const D = {
   overall: 897 * MM,
   muzzle: 877 * MM, breech: 462 * MM,          // 415 mm barrel
-  // receiver: 1 mm sheet, 35 mm wide, bottom 20 mm below the bore
+  // receiver: 35 mm wide, bottom 20 mm below the bore
   recvRear: 235 * MM, recvFront: 494 * MM, recvBot: -20 * MM, recvTop: 23 * MM, recvHW: 17.5 * MM,
   slotTop: 10 * MM,                            // right wall cut down for the charging-handle slot
   slotRear: 344 * MM,
   rearTrunnionEnd: 258 * MM, frontTrunnionStart: 432 * MM,
   magWell: [377 * MM, 449 * MM],
   port: [394 * MM, 444 * MM], portBot: -5 * MM,
-  dimple: [402 * MM, 427 * MM], dimpleY: [-16 * MM, -5.5 * MM],
   // dust cover: 239 mm long, 38 mm wide, crown 37 mm above the bore; deep left flange, short right one
-  cover: [242.5 * MM, 480 * MM], coverTop: 37 * MM, coverHW: 19 * MM, coverArchR: 19 * MM,
+  cover: [242.5 * MM, 480 * MM], coverTop: 37 * MM, coverHW: 19 * MM,
   coverLeft: 4 * MM, coverRight: 17.5 * MM,
   coverRibs: 11, coverRibSpan: [278 * MM, 462 * MM],
   // barrel group
@@ -598,6 +712,12 @@ const D = {
   magTop: [413 * MM, -20 * MM], magDepth: 2.72, magHW: 0.62, magR: 10.6, magArc: 7.1, magTilt: 0.05,
   // scene placement
   groundY: -9.4, centerLift: 2.9,          // floor about 1.1 in under the magazine floorplate
+  // sci-fi treatment (surfaces only; the outline above is the real rifle's)
+  wall: 2.5 * MM,                          // machined receiver walls (the stamped AKM's sheet is 1 mm)
+  edge: 1.0 * MM,                          // 45-degree chamfer round the receiver's edges
+  coverFlat: 9.5 * MM,                     // half-width of the dust cover's flat top, 45-degree facets either side
+  ledX: [334 * MM, 449 * MM], ledY: 0.8 * MM,   // receiver LED strip, left side, just under the dust cover's flange
+  ledW: 2.4 * MM,
 };
 D.safeTravel = (D.handleX - 7.5 * MM) - D.selectorTip - 0.05;
 D.magPivot = new THREE.Vector3(D.magTop[0] + D.magDepth / 2, D.magTop[1], 0);
@@ -610,144 +730,161 @@ function orientDown(geo, origin, tilt) {
   m.setPosition(origin[0], origin[1], 0);
   return geo.applyMatrix4(m);
 }
-// rounded-rectangle plate lying in a YZ plane between x0 and x1
-function plateX(x0, x1, y0, y1, hw, n = 7) {
-  return loft({ x0, x1, top: constant(y1), bot: constant(y0), hw: constant(hw), n: constant(n), steps: 6, seg: 48, round: Math.min(0.02, (x1 - x0) / 3) });
-}
 // ring standing off a side wall, lying in the XZ plane
 function sideRing(x, y, z, R = 0.3, r = 0.05) {
   const t = new THREE.TorusGeometry(R, r, 12, 36);
   t.rotateX(Math.PI / 2); t.translate(x, y, z);
   return t;
 }
-// extrude a (z, y) cross-section along X from x0 to x1
-function extrudeX(shape, x0, x1, bevel = 0.015) {
-  const g = new THREE.ExtrudeGeometry(shape, { depth: x1 - x0, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel * 0.8, bevelSegments: 2, curveSegments: 40 });
-  g.rotateY(-Math.PI / 2);         // shape x -> rifle +z (right), extrusion depth -> -x
-  g.translate(x1, 0, 0);           // so the extrusion runs from x1 back to x0
-  return g;
+const poly = (pts) => roundedShape(pts.map(p => p.length > 2 ? p : [p[0], p[1], 0]));
+const mm = (pts) => pts.map(p => p.map(v => v * MM));
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+// lathe profile [x, r] of a solid sleeve from x0 to x1 at radius r with c chamfers at both ends
+const sleeveProfile = (x0, x1, r, c) => [[x0, 0], [x0, r - c], [x0 + c, r], [x1 - c, r], [x1, r - c], [x1, 0]];
+// octagonal sleeve along X (flats at r: top, bottom, sides and the diagonals), chamfered ends
+const octSleeve = (x0, x1, r, c, y = 0, z = 0) => latheX(sleeveProfile(x0, x1, octR(r), c), 8, OCT).translate(0, y, z);
+const octRodX = (x0, x1, r, y = 0, z = 0) => rodX(x0, x1, octR(r), y, z, 8, octR(r), OCT);
+// hex-socket button head, or a countersunk one, with a real cut drive recess
+const hexScrew = (r, pos, normal, { h = r * 0.45, countersunk = false, spin = 0.3 } = {}) => placeScrew(screwHead(r, { style: 'hex', h, countersunk, seg: 24 }), pos, normal, spin);
+// LED strip set into a face at |z| = zf (side s): a pill-shaped light bar from x0 to x1 centred on y and w wide,
+// standing 0.4 mm proud of the face, and the cutter for its channel (0.4 mm wider all round, 0.9 mm deep).
+function ledZ(x0, x1, y, w, zf, s) {
+  const pill = (a0, a1, h) => roundedShape([[a0, y - h, h], [a1, y - h, h], [a1, y + h, h], [a0, y + h, h]]);
+  return {
+    bar: chamferSlab(pill(x0, x1, w / 2), 1.6 * MM, { c: 0.2 * MM, zc: s * (zf - 0.4 * MM), curveSegments: 6 }),
+    cut: slab(pill(x0 - 0.4 * MM, x1 + 0.4 * MM, w / 2 + 0.4 * MM), 2 * MM, { bevel: 0, zc: s * (zf + 0.1 * MM), curveSegments: 6 }),
+  };
 }
+const NO_SHADOW = { cast: false, receive: false };
 
 /* ----------------------------------------------------------------- receiver */
 
 function buildReceiver() {
-  const { recvRear: xr, recvFront: xf, recvTop: yt, recvBot: yb, recvHW: hw } = D;
-  const wall = 1 * MM, inner = hw - wall;
+  const { recvRear: xr, recvFront: xf, recvTop: yt, recvBot: yb, recvHW: hw, wall } = D;
+  const inner = hw - wall;
   part('receiver');
-  let g = slab(roundedShape([[xr, yb, 0.06], [xr, yt, 0.03], [xf, yt, 0.03], [xf, yb, 0.06]]), hw * 2, { bevel: 0.018, segs: 2 });
+  // milled body: square at the back (the stock's wrist covers it), a 45-degree cut at the lower front corner,
+  // a 1 mm chamfer round every edge
+  let g = chamferSlab(poly([[xr, yb], [xr, yt], [xf, yt], [xf, yb + 3 * MM], [xf - 3 * MM, yb]]), hw * 2, { c: D.edge, curveSegments: 1 });
   const hollow = box(xr + wall, xf - wall, yb + wall, yt + 0.5, -inner, inner);
+  g = subtract(g, hollow);
+  // magazine well, trigger slot, and one opening through the right wall for the charging-handle slot and the port
+  const [p0, p1] = D.port, sx1 = D.handleX + 0.27;
+  const opening = poly([[D.slotRear, D.slotTop, 0.06], [p0, D.slotTop, 0.03], [p0, D.portBot, 0.06], [p1 - 0.2, D.portBot], [p1, D.portBot + 0.2], [p1, D.slotTop, 0.03],
+    [sx1, D.slotTop, 0.06], [sx1, yt + 0.3], [D.slotRear, yt + 0.3]]);
   const well = box(D.magWell[0], D.magWell[1], yb - 0.3, yb + 0.25, -13 * MM, 13 * MM);
   const trig = box(D.triggerX - 0.3, D.triggerX + 0.36, yb - 0.3, yb + 0.2, -0.14, 0.14);
-  const slot = box(D.slotRear, D.handleX + 0.27, D.slotTop, yt + 0.5, hw - 0.12, hw + 0.12);
-  // ejection port: under the slot, front edge chamfered 45 degrees
-  const [p0, p1] = D.port;
-  const port = slab(roundedShape([[p0, D.portBot, 0.06], [p1 - 0.2, D.portBot, 0.0], [p1, D.portBot + 0.2, 0.0], [p1, yt + 0.4, 0.0], [p0, yt + 0.4, 0.0]]), 0.5, { bevel: 0, zc: hw, curveSegments: 6 });
-  const dimples = [-1, 1].map(s => slab(roundedShape([[D.dimple[0], D.dimpleY[0], 0.15], [D.dimple[1], D.dimpleY[0], 0.15], [D.dimple[1], D.dimpleY[1], 0.15], [D.dimple[0], D.dimpleY[1], 0.15]]), 0.12, { bevel: 0, zc: s * (hw + 0.06 - 3 * MM), curveSegments: 10 }));
-  // countersunk front-trunnion rivets sit in small conical dimples
-  // countersunk rivet dimple: 0.33 in across at the surface, 0.02 in deep
-  const csink = [-1, 1].map(s => { const c = new THREE.ConeGeometry(0.495, 0.06, 32); c.rotateX(s > 0 ? -Math.PI / 2 : Math.PI / 2); c.translate(442 * MM, -15 * MM, s * (hw + 0.01)); return c; });
-  g = subtractEach(g, hollow, well, trig, slot, port, mergeGeometries([...dimples, ...csink].map(clean)));
-  const backs = [-1, 1].map(s => slab(roundedShape([[D.dimple[0], D.dimpleY[0], 0.15], [D.dimple[1], D.dimpleY[0], 0.15], [D.dimple[1], D.dimpleY[1], 0.15], [D.dimple[0], D.dimpleY[1], 0.15]]), wall, { bevel: 0, zc: s * (hw - 3 * MM - wall / 2), curveSegments: 10 }));
-  add(creased(mergeGeometries([g, ...backs].map(clean)), 32), MAT.recv);
+  g = subtract(g, well, trig, slab(opening, 0.3, { bevel: 0, zc: hw, curveSegments: 6 }));
+  // surface work, all in one pass (none of these cutters touch each other):
+  const cuts = [flareZ(opening, hw, 0.6 * MM, 1, { curveSegments: 6 })];          // 0.6 mm chamfer round the opening
+  // machined pockets over the magazine well where the stamped receiver has its dimples
+  const pocket = poly(mm([[405, -16.5], [426, -16.5], [428, -14.5], [428, -8], [426, -6], [405, -6], [403, -8], [403, -14.5]]));
+  for (const s of [-1, 1]) cuts.push(pocketZ(pocket, hw, 1.0 * MM, s, { curveSegments: 1 }));
+  // panel seams: the rear and front trunnion blocks read as separate plates (they wrap under the receiver too)
+  const seamX = [262 * MM, 455 * MM], sw = 0.5 * MM, sd = 0.8 * MM;
+  for (const x of seamX) cuts.push(box(x - sw, x + sw, yb - 0.1, yt + 0.1, hw - sd, hw + 0.1), box(x - sw, x + sw, yb - 0.1, yt + 0.1, -hw - 0.1, -hw + sd));
+  // LED channel along the left side seam, just under the dust cover's flange
+  const led = ledZ(D.ledX[0], D.ledX[1], D.ledY, D.ledW, hw, -1);
+  cuts.push(led.cut);
+  // status-pip window above the trigger guard, right side
+  cuts.push(pocketZ(poly(mm([[332, -17.9], [344, -17.9], [344, -14.7], [332, -14.7]])), hw, 0.8 * MM, 1, { curveSegments: 1 }));
+  // selector marks under the lever's sweep, just behind the port: the first mark showing below the lever is the mode
+  // it is in (one dot = safe, three bars = auto, one bar = semi). Tiny LED pips sit recessed in engraved sockets,
+  // because the lever slides over them.
+  const MX = 389.5, MARKS = [['dot', 3.0], ['bar', -5.0], ['bar', -6.2], ['bar', -7.4], ['bar', -15.0]];   // clear of the thumb tab in every position
+  const markGeo = (kind, y, grow, z0, z1) => {
+    if (kind === 'dot') { const c = new THREE.CylinderGeometry((0.75 + grow) * MM, (0.75 + grow) * MM, z1 - z0, 20); c.rotateX(Math.PI / 2); c.translate(MX * MM, y * MM, (z0 + z1) / 2); return c; }
+    return box((MX - 1.5 - grow) * MM, (MX + 1.5 + grow) * MM, (y - 0.28 - grow) * MM, (y + 0.28 + grow) * MM, z0, z1);
+  };
+  for (const [k, y] of MARKS) cuts.push(markGeo(k, y, 0.1, hw - 0.35 * MM, hw + 0.1));
+  // counterbores: flush plugs (front trunnion and centre support) both sides; the right-side pin ends, which
+  // sit just under flush because the selector lever sweeps over them
+  const bore = (x, y, r, depth, s) => { const c = new THREE.CylinderGeometry(r, r, depth + 0.2, 28); c.rotateX(Math.PI / 2); c.translate(x, y, s * (hw - depth + (depth + 0.2) / 2)); return c; };
+  for (const s of [-1, 1]) for (const [x, y] of [[442, -15], [374, -9]]) cuts.push(bore(x * MM, y * MM, 3.3 * MM, 0.6 * MM, s));
+  for (const [x, y] of [D.trigPin, D.hammerPin, D.searPin]) cuts.push(bore(x, y, 2.75 * MM, 0.4 * MM, 1));
+  g = subtract(g, ...cuts);
+  g = subtract(g, ...seamX.map(x => box(x - sw, x + sw, yb - 0.1, yb + sd, -hw + 0.3 * MM, hw - 0.3 * MM)));
+  add(creased(g, 32), MAT.alloy);
+  // one mesh per mode so the active one can be lit on its own (the viewer does; the file has all three lit)
+  selectorMarks.length = 0;
+  for (const [name, ks] of [['safe', [0]], ['auto', [1, 2, 3]], ['semi', [4]]]) {
+    part('selector_mark_' + name);
+    selectorMarks.push(add(mergeGeometries(ks.map(k => clean(markGeo(MARKS[k][0], MARKS[k][1], 0, hw - 0.45 * MM, hw - 0.05 * MM)))), MAT.led, gun, NO_SHADOW));
+  }
+  part('receiver_led');
+  add(led.bar, MAT.led, gun, NO_SHADOW);
+  part('status_pips');
+  add(mergeGeometries([334.5, 338, 341.5].map(x => clean(chamferSlab(roundedShape(mm([[x - 0.8, -16.8, 0.4], [x + 0.8, -16.8, 0.4], [x + 0.8, -15.8, 0.4], [x - 0.8, -15.8, 0.4]])), 1.4 * MM, { c: 0.15 * MM, zc: hw - 0.3 * MM, curveSegments: 3 })))), MAT.led, gun, NO_SHADOW);
+
   // trunnions sit inside the shell, inset from the walls so no faces coincide
   part('trunnions');
   add(creased(mergeGeometries([
     box(xr + wall + 0.02, D.rearTrunnionEnd, yb + wall + 0.02, yt - 0.05, -(inner - 0.02), inner - 0.02),
     box(D.frontTrunnionStart, xf - wall - 0.02, yb + wall + 0.02, yt - 0.05, -(inner - 0.02), inner - 0.02),
-  ].map(clean)), 30), MAT.dark);
+  ].map(clean)), 30), MAT.alloy);
 
   part('receiver_cavity');
-  // top kept under the dust cover's arch (at z = +-0.64 the arch is at y = 1.10) so no face can poke through it
+  // top kept under the dust cover so no face can poke through it
   add(box(D.rearTrunnionEnd + 0.02, D.frontTrunnionStart - 0.02, yb + wall + 0.01, yt + 0.17, -(inner - 0.01), inner - 0.01),
     MAT.cavity, gun, { cast: false, receive: true });
 
-  // rivet heads: front trunnion pair, centre support, rear trunnion pair (both sides)
-  part('rivets');
-  const rv = [];
-  for (const s of [-1, 1]) {
-    for (const [x, y] of [[484, -13.5], [467, -13.5], [374, -9], [246, 16], [257, -12]]) rv.push(rivet(x * MM, y * MM, s, s * hw, 3.5 * MM, 1.8 * MM));
-    const flush = new THREE.CylinderGeometry(0.125, 0.125, 0.012, 28); flush.rotateX(Math.PI / 2); flush.translate(442 * MM, -15 * MM, s * (hw - 0.004));
-    rv.push(flush);
-  }
-  add(mergeGeometries(rv.map(clean)), MAT.dark);
+  // hex-socket screws where the stamped AKM has its trunnion rivets (the upper rear one shows on the right only;
+  // on the left the dust cover's deep flange hides it)
+  part('receiver_screws');
+  const sc = [];
+  for (const s of [-1, 1]) for (const [x, y] of [[484, -13.5], [467, -13.5], [257, -12]]) sc.push(hexScrew(3.0 * MM, V(x * MM, y * MM, s * (hw - 0.05 * MM)), V(0, 0, s), { h: 1.3 * MM, spin: 0.2 + x * 0.013 }));
+  sc.push(hexScrew(3.0 * MM, V(246 * MM, 12.5 * MM, hw - 0.05 * MM), V(0, 0, 1), { h: 1.3 * MM, spin: 0.9 }));
+  add(mergeGeometries(sc.map(clean)), MAT.fast);
+  // flush machined plugs, a hair under the surface, each in its counterbore
+  part('receiver_plugs');
+  const plug = () => { const r = 3.0 * MM, h = 0.7 * MM, c = 0.25 * MM; return creased(new THREE.LatheGeometry([[0, 0], [r, 0], [r, h - c], [r - c, h], [0, h]].map(([a, b]) => new THREE.Vector2(a, b)), 32), 30); };
+  const pl = [];
+  for (const s of [-1, 1]) for (const [x, y] of [[442, -15], [374, -9]]) pl.push(placeScrew(plug(), V(x * MM, y * MM, s * (hw - 0.75 * MM)), V(0, 0, s)));
+  add(mergeGeometries(pl.map(clean)), MAT.fast);
 
-  // fire-control pins: 7 mm heads on the left, 5 mm ends on the right (plus the auto-sear pin)
+  // fire-control pins: 7 mm heads standing proud on the left, 5 mm ends just under flush on the right
   part('fire_control_pins');
   const pins = [];
   for (const [x, y] of [D.trigPin, D.hammerPin, D.searPin]) {
     for (const s of [-1, 1]) {
-      // short flat-topped pin end with a chamfered rim, so it reads as a pin rather than a painted disc
-      const r = s < 0 ? 3.5 * MM : 2.5 * MM, h = 0.03, c = 0.014;
+      const r = s < 0 ? 3.5 * MM : 2.5 * MM, h = s < 0 ? 0.03 : 0.4 * MM, c = s < 0 ? 0.014 : 0.1 * MM;
       const p = new THREE.LatheGeometry([[0, 0], [r, 0], [r, h - c], [r - c, h], [0, h]].map(([a, b]) => new THREE.Vector2(a, b)), 28);
-      p.rotateX(s > 0 ? Math.PI / 2 : -Math.PI / 2); p.translate(x, y, s * (hw - 0.006)); pins.push(creased(p, 30));
+      p.rotateX(s > 0 ? Math.PI / 2 : -Math.PI / 2); p.translate(x, y, s > 0 ? hw - 0.52 * MM : -(hw - 0.006)); pins.push(creased(p, 30));
     }
   }
-  add(mergeGeometries(pins.map(clean)), MAT.dark);
+  add(mergeGeometries(pins.map(clean)), MAT.fast);
   buildDustCover();
   anchors.port = new THREE.Vector3((D.port[0] + D.port[1]) / 2, D.portBot - 0.05, hw);
 }
 
-// One pressed rib across the cover at x = xc: a cosine bump swept over the arch (right end -> crown -> left wall).
-// Its height fades to zero over the last `fade` inches at both ends; the edges sit just under the skin.
-function coverRib(xc, { hw, R, cy, yRight, yLeft, width = 0.16, height = 0.035, fade = 0.15, sink = 0.004 }) {
-  const path = [];
-  const th0 = Math.asin(Math.min(1, (yRight - cy) / R)), arcN = 56, wallN = 12;
-  for (let i = 0; i <= arcN; i++) { const th = th0 + (Math.PI - th0) * (i / arcN); path.push([R * Math.cos(th), cy + R * Math.sin(th), Math.cos(th), Math.sin(th)]); }
-  for (let i = 1; i <= wallN; i++) path.push([-hw, cy + (yLeft - cy) * (i / wallN), -1, 0]);
-  const s = [0];
-  for (let i = 1; i < path.length; i++) s.push(s[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]));
-  const L = s[s.length - 1], sm = (e0, e1, v) => { const k = Math.min(1, Math.max(0, (v - e0) / (e1 - e0))); return k * k * (3 - 2 * k); };
-  const M = 9, pos = [], idx = [];
-  path.forEach(([z, y, nz, ny], i) => {
-    const taper = sm(0, fade, s[i]) * sm(0, fade, L - s[i]);
-    for (let j = 0; j < M; j++) {
-      const u = -1 + 2 * (j / (M - 1));
-      const off = height * taper * 0.5 * (1 + Math.cos(Math.PI * u)) - sink;
-      pos.push(xc + u * width / 2, y + ny * off, z + nz * off);
-    }
-  });
-  for (let i = 0; i < path.length - 1; i++) for (let j = 0; j < M - 1; j++) {
-    const a = i * M + j, b = a + 1, c = a + M, d = c + 1;
-    idx.push(a, b, c, b, d, c);
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setIndex(idx);
-  g.computeVertexNormals();
-  return g;
+// Outer contour of the faceted dust cover in (z, y), from the right flange's lower edge round the top to the
+// left flange's: vertical sides, 45-degree facets and a flat top. grow offsets it outward.
+function coverContour(grow = 0, yRight = D.coverRight, yLeft = D.coverLeft) {
+  const hw = D.coverHW + grow, top = D.coverTop + grow, a = D.coverFlat + grow * Math.tan(Math.PI / 8);
+  const yF = top - (hw - a);
+  return [[hw, yRight], [hw, yF], [a, top], [-a, top], [-hw, yF], [-hw, yLeft]];
 }
-
 function buildDustCover() {
-  const [c0, c1] = D.cover, hw = D.coverHW, R = D.coverArchR, top = D.coverTop, rh = D.recvHW, yt = D.recvTop;
-  const cy = top - R;
-  // cross-section in (z, y): arched crown, deep left flange, short right flange, notch where the receiver sits
-  const section = (grow = 0, leftEdge = D.coverLeft, rightEdge = D.coverRight) => {
-    const s = new THREE.Shape();
-    s.moveTo(hw + grow, rightEdge);
-    s.lineTo(hw + grow, cy);
-    s.absarc(0, cy, R + grow, 0, Math.PI, false);
-    s.lineTo(-hw - grow, leftEdge);
-    s.lineTo(-rh - 0.005, leftEdge);
-    s.lineTo(-rh - 0.005, yt + 0.02);
-    s.lineTo(rh + 0.005, yt + 0.02);
-    s.lineTo(rh + 0.005, rightEdge);
-    s.closePath();
-    return s;
-  };
+  const [c0, c1] = D.cover, top = D.coverTop, rh = D.recvHW, yt = D.recvTop;
+  // section: the faceted crown, the deep left flange and the short right one, notched where the receiver sits
+  const section = (grow = 0, yLeft = D.coverLeft, yRight = D.coverRight) => poly([...coverContour(grow, yRight, yLeft),
+    [-rh - 0.005, yLeft], [-rh - 0.005, yt + 0.02], [rh + 0.005, yt + 0.02], [rh + 0.005, yRight]]);
   part('dust_cover');
-  const bits = [extrudeX(section(), c0, c1, 0.02)];
-  // transverse ribs pressed into the sheet: soft ridges over the crown that fade out above the flange edges
+  const bits = [chamferX(section(), c0, c1, { c: 0.8 * MM, curveSegments: 1 })];
+  // crisp machined ribs across the crown: flat-topped bands 0.8 mm high that stop square above the flange edges
   const [r0, r1] = D.coverRibSpan, n = D.coverRibs;
-  for (let i = 0; i < n; i++) bits.push(coverRib(r0 + (r1 - r0) * (i / (n - 1)), { hw, R, cy, yRight: 0.86, yLeft: 0.53 }));
-  // front seating rib
-  bits.push(extrudeX(section(0.022, 0.45, 0.8), c1 - 0.11, c1 - 0.03, 0.016));
-  add(creased(mergeGeometries(bits.map(clean)), 40), MAT.recv);
-  // longitudinal bead along the deep left flange
+  const P = coverContour(0, 21 * MM, 12 * MM);
+  const band = poly([...offsetPolyline(P, 0.8 * MM), ...offsetPolyline(P, -0.15 * MM).reverse()]);
+  for (let i = 0; i < n; i++) { const xc = r0 + (r1 - r0) * (i / (n - 1)); bits.push(chamferX(band, xc - 2 * MM, xc + 2 * MM, { c: 0.3 * MM, curveSegments: 1 })); }
+  // front seating collar
+  bits.push(chamferX(section(0.022, 0.45, 0.8), c1 - 0.11, c1 - 0.03, { c: 0.3 * MM, curveSegments: 1 }));
+  add(creased(mergeGeometries(bits.map(clean)), 30), MAT.alloy);
+  // machined bead along the deep left flange
   part('dust_cover_bead');
-  add(creased(slab(roundedShape([[c0 + 0.3, 0.3, 0.05], [c1 - 0.3, 0.3, 0.05], [c1 - 0.3, 0.38, 0.05], [c0 + 0.3, 0.38, 0.05]]), 0.04, { bevel: 0.012, zc: -hw - 0.005 })), MAT.recv);
-  // recoil-spring-guide button standing proud of the crown near the rear
+  add(creased(chamferSlab(poly([[c0 + 0.3, 0.32], [c1 - 0.3, 0.32], [c1 - 0.26, 0.34], [c1 - 0.3, 0.36], [c0 + 0.3, 0.36], [c0 + 0.26, 0.34]]), 0.04, { c: 0.25 * MM, zc: -D.coverHW - 0.005, curveSegments: 1 }), 30), MAT.alloy);
+  // recoil-spring-guide button standing proud of the flat top near the rear
   part('recoil_spring_button');
-  add(creased(slab(roundedShape([[c0 + 0.32, top - 0.1, 0.0], [c0 + 0.8, top - 0.1, 0.0], [c0 + 0.78, top + 0.19, 0.1], [c0 + 0.36, top + 0.19, 0.1]]), 0.4, { bevel: 0.03 })), MAT.dark);
+  add(creased(chamferSlab(poly([[c0 + 0.32, top - 0.1], [c0 + 0.8, top - 0.1], [c0 + 0.8, top + 0.12], [c0 + 0.73, top + 0.19], [c0 + 0.39, top + 0.19], [c0 + 0.32, top + 0.12]]), 0.4, { c: 0.5 * MM, curveSegments: 1 }), 30), MAT.dark);
   anchors.cover = new THREE.Vector3(13.2, top + 0.08, 0);
 }
 
@@ -757,20 +894,20 @@ function buildCarrier() {
   const P = moving.carrier, hw = D.recvHW;
   part('bolt_carrier');
   // the flat right side of the carrier fills the ejection port when closed
-  const section = roundedShape([[-0.56, -0.21, 0.05], [0.56, -0.21, 0.05], [0.56, 1.18, 0.42], [-0.56, 1.18, 0.42]]);
-  const body = extrudeX(section, 13.9, 18.8, 0.025);
-  const relief = slab(roundedShape([[15.2, 0.05, 0.06], [16.95, 0.05, 0.06], [16.95, 0.28, 0.06], [15.2, 0.28, 0.06]]), 0.3, { bevel: 0, zc: 0.56, curveSegments: 6 });
-  add(creased(subtract(body, relief)), MAT.carrier, P);
+  const section = poly([[-0.56, -0.21], [0.56, -0.21], [0.56, 0.86], [0.24, 1.18], [-0.24, 1.18], [-0.56, 0.86]]);
+  const body = chamferX(section, 13.9, 18.8, { c: 0.6 * MM, curveSegments: 1 });
+  const relief = pocketZ(poly([[15.2, 0.05], [16.95, 0.05], [16.95, 0.28], [15.2, 0.28]]), 0.56, 1.2 * MM, 1, { curveSegments: 1 });
+  add(creased(subtract(body, relief), 30), MAT.steel, P);
   part('bolt');
-  add(creased(rodX(17.2, D.breech, 0.26, 0.0, 0, 32)), MAT.bright, P);
+  add(creased(rodX(17.2, D.breech, 0.26, 0.0, 0, 32)), MAT.steel, P);
   part('charging_handle');
-  // flat neck out through the slot, then a domed knob tilted up ~17 degrees
-  add(creased(slab(roundedShape([[D.handleX - 0.13, D.handleY - 0.16, 0.03], [D.handleX + 0.13, D.handleY - 0.16, 0.03], [D.handleX + 0.13, D.handleY + 0.025, 0.03], [D.handleX - 0.13, D.handleY + 0.025, 0.03]]), 0.5, { bevel: 0.02, zc: hw + 0.12 })), MAT.carrier, P);
-  const knob = latheX([[0, 0.0], [0, 0.26], [0.04, 0.295], [0.62, 0.295], [0.7, 0.25], [0.75, 0.15], [0.765, 0.0]], 40);
+  // flat neck out through the slot, then a faceted octagonal knob tilted up ~17 degrees
+  add(creased(chamferSlab(poly([[D.handleX - 0.13, D.handleY - 0.16], [D.handleX + 0.13, D.handleY - 0.16], [D.handleX + 0.13, D.handleY + 0.025], [D.handleX - 0.13, D.handleY + 0.025]]), 0.5, { c: 0.4 * MM, zc: hw + 0.12, curveSegments: 1 }), 30), MAT.steel, P);
+  const knob = latheX([[0, 0.0], [0, 0.25], [0.04, 0.29], [0.66, 0.29], [0.72, 0.23], [0.72, 0.0]], 8, OCT);
   knob.rotateY(-Math.PI / 2);   // lathe axis +x -> +z
   knob.rotateX(-0.3);           // tip up
   knob.translate(D.handleX, D.handleY, hw + 0.28);
-  add(creased(knob), MAT.carrier, P);
+  add(creased(knob, 30), MAT.steel, P);
   anchors.handle = new THREE.Vector3(D.handleX, D.handleY + 0.45, hw + 0.9);
 }
 
@@ -785,12 +922,14 @@ function buildSelector() {
     [px - 0.52, py - 0.05, 0.18], [px - 0.2, py - 0.3, 0.2], [px + 0.6, top - 0.5, 0.25], [tip - 0.4, top - 0.36, 0.1], [tip, top - 0.36, 0.06],
     [tip, top, 0.03], [px - 0.2, top, 0.12], [px - 0.52, py + 0.18, 0.15],
   ]);
-  add(creased(slab(lever, 2 * MM, { bevel: 0.012, zc: hw + 0.041, curveSegments: 16 })), MAT.dark, P);
+  add(creased(chamferSlab(lever, 2 * MM, { c: 0.35 * MM, zc: hw + 0.041, curveSegments: 10 }), 30), MAT.dark, P);
   // stiffening bead along the blade and the bent-out thumb tab at the tip
-  add(creased(slab(roundedShape([[px + 0.4, top - 0.2, 0.03], [tip - 0.45, top - 0.2, 0.03], [tip - 0.45, top - 0.14, 0.03], [px + 0.4, top - 0.14, 0.03]]), 0.04, { bevel: 0.01, zc: hw + 0.085 })), MAT.dark, P);
-  add(creased(slab(roundedShape([[tip - 0.1, top - 0.42, 0.05], [tip + 0.02, top - 0.42, 0.04], [tip + 0.02, top, 0.03], [tip - 0.1, top, 0.04]]), 7 * MM, { bevel: 0.012, zc: hw + 0.08 + 3.5 * MM })), MAT.dark, P);
-  const boss = new THREE.CylinderGeometry(8 * MM, 8 * MM, 0.12, 30); boss.rotateX(Math.PI / 2); boss.translate(px, py, hw + 0.07);
-  add(creased(boss), MAT.dark, P);
+  add(creased(chamferSlab(poly([[px + 0.4, top - 0.2], [tip - 0.45, top - 0.2], [tip - 0.45, top - 0.14], [px + 0.4, top - 0.14]]), 0.04, { c: 0.15 * MM, zc: hw + 0.085, curveSegments: 1 }), 30), MAT.dark, P);
+  add(creased(chamferSlab(poly([[tip - 0.1, top - 0.42], [tip + 0.02, top - 0.42], [tip + 0.02, top], [tip - 0.1, top]]), 7 * MM, { c: 0.4 * MM, zc: hw + 0.08 + 3.5 * MM, curveSegments: 1 }), 30), MAT.dark, P);
+  // octagonal pivot boss with a hex-socket axle head in it
+  const boss = new THREE.CylinderGeometry(octR(8 * MM), octR(8 * MM), 0.12, 8, 1, false, OCT); boss.rotateX(Math.PI / 2); boss.translate(px, py, hw + 0.07);
+  add(creased(boss, 30), MAT.dark, P);
+  add(hexScrew(3.2 * MM, V(px, py, hw + 0.13 - 0.1 * MM), V(0, 0, 1), { h: 1.0 * MM, spin: 0.15 }), MAT.fast, P);
   anchors.selector = new THREE.Vector3(px + 0.5, py - 0.25, hw + 0.1);
 }
 
@@ -808,176 +947,210 @@ function buildBarrel() {
 
   buildRearSight();
 
-  // gas tube; its front coupling sleeve slides over the gas-block spigot and butts against the cylinder
+  // faceted (octagonal) gas tube; its front coupling sleeve slides over the gas-block spigot and butts against the cylinder
   part('gas_tube');
   const cylRear = g0 - 0.1;   // rear face of the gas-cylinder housing
-  add(creased(rodX(D.gasTube[0] - 0.05, cylRear - 0.4, D.gasR, D.gasY, 0, 48)), MAT.steel);
-  add(creased(latheX([[cylRear - 0.66, D.gasR], [cylRear - 0.62, 10.3 * MM], [cylRear - 0.01, 10.3 * MM], [cylRear - 0.01, D.gasR - 0.05]], 48).translate(0, D.gasY, 0)), MAT.steel);
+  add(creased(octRodX(D.gasTube[0] - 0.05, cylRear - 0.4, D.gasR, D.gasY, 0), 30), MAT.steel);
+  add(creased(latheX([[cylRear - 0.66, octR(D.gasR)], [cylRear - 0.62, octR(10.3 * MM)], [cylRear - 0.01, octR(10.3 * MM)], [cylRear - 0.01, octR(D.gasR - 0.05)]], 8, OCT).translate(0, D.gasY, 0), 30), MAT.steel);
 
-  // gas block: barrel ring, neck, gas cylinder and rear spigot, bayonet collar underneath.
+  // gas block: octagonal barrel ring and gas cylinder, neck between them, bayonet collar underneath.
   // One 45-degree plane (x + y = K) trims the cylinder and the neck together, top edge furthest back;
   // its foot meets the ring front just above the ring, leaving a small vertical land.
   part('gas_block');
-  const ring = rodX(g0, g1, 11 * MM, 0, 0, 48);
+  const ring = latheX(sleeveProfile(g0, g1, octR(11 * MM), 0.8 * MM), 8, OCT);
   const cylR = 10 * MM, K = g1 + 0.52;
-  const cyl = latheX([[D.gasSpigot, 0.0], [D.gasSpigot, 8.5 * MM], [cylRear - 0.02, 8.5 * MM], [cylRear, cylR], [K, cylR], [K, 0.0]], 48).translate(0, D.gasY, 0);
-  const neck = slab(roundedShape([[g0 + 0.02, 0.2, 0], [g1, 0.2, 0], [g1, D.gasY, 0], [g0 + 0.02, D.gasY, 0]]), 0.72, { bevel: 0.015 });
+  const cyl = latheX([[D.gasSpigot, 0.0], [D.gasSpigot, octR(8.5 * MM)], [cylRear - 0.02, octR(8.5 * MM)], [cylRear, octR(cylR)], [K, octR(cylR)], [K, 0.0]], 8, OCT).translate(0, D.gasY, 0);
+  const neck = chamferSlab(poly([[g0 + 0.02, 0.2], [g1, 0.2], [g1, D.gasY], [g0 + 0.02, D.gasY]]), 0.72, { c: 0.8 * MM, curveSegments: 1 });
   const face45 = box(0, 3, -3, 3, -1, 1);
   face45.rotateZ(Math.PI / 4);
   face45.translate(g1, K - g1, 0);
   const relief = [];
   for (let i = 0; i < 6; i++) {
     const a = Math.PI * (0.15 + 0.7 * (i / 5));
-    const c = new THREE.CylinderGeometry(0.035, 0.035, 0.3, 12);
+    const c = new THREE.CylinderGeometry(0.035, 0.035, 0.3, 6);
     c.rotateX(Math.PI / 2 - a);
     c.translate(g0 - 0.02, D.gasY + Math.sin(a) * cylR, Math.cos(a) * cylR);
     relief.push(c);
   }
-  // gas-port plug: a shallow dimple in the lower part of the 45-degree face
+  // gas-port plug: a shallow hex socket in the lower part of the 45-degree face
   const n45 = new THREE.Vector3(1, 1, 0).normalize();
-  const port = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 16);
+  const port = new THREE.CylinderGeometry(0.05, 0.05, 0.1, 6);
   port.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), n45));
   port.translate(K - 0.78, 0.78, 0);
   const gb = subtract(subtract(cyl, face45), ...relief, port);
-  const collar = rodX(g0 + 0.08, g1 - 0.05, 3.6 * MM + 0.05, D.rodY, 0, 24);
-  add(creased(mergeGeometries([ring, subtract(neck, face45), gb, collar].map(clean)), 40), MAT.steel);
+  const collar = octSleeve(g0 + 0.08, g1 - 0.05, 3.6 * MM + 0.05, 0.4 * MM, D.rodY);
+  add(creased(mergeGeometries([ring, subtract(neck, face45), gb, collar].map(clean)), 30), MAT.alloy);
   part('gas_block_pin');
   const pin = new THREE.CylinderGeometry(1.5 * MM, 1.5 * MM, 0.9, 12); pin.rotateX(Math.PI / 2); pin.translate((g0 + g1) / 2, -0.12, 0);
-  add(creased(pin), MAT.dark);
+  add(creased(pin), MAT.fast);
   anchors.gas = new THREE.Vector3((g0 + g1) / 2, D.gasY + cylR + 0.05, 0);
 
-  // front sight block: collar on the 14.5 mm journal, tower with chamfered shoulders, lower lug that
+  // front sight block: octagonal collar on the 14.5 mm journal, tower with chamfered shoulders, lower lug that
   // holds the cleaning-rod head, two ears flush with the tower sides, windage drum showing on both sides
   part('front_sight');
   const fsbW = D.fsbHW * 2, gapHW = 5.8 * MM, earT = D.fsbHW - gapHW;
   const drumY = 1.24, drumR = 5 * MM;
-  const fsbCollar = rodX(f0, f1, 0.42, 0, 0, 40);
-  const tower = slab(roundedShape([[f0, 0.1, 0.0], [f1, 0.1, 0.0], [f1, 1.2, 0.0], [f1 - 0.1, 1.34, 0.06], [f0 + 0.12, 1.34, 0.06], [f0, 1.18, 0.0]]), fsbW, { bevel: 0.018 });
+  const fsbCollar = octSleeve(f0, f1, 0.42, 0.8 * MM);
+  const tower = chamferSlab(poly([[f0, 0.1], [f1, 0.1], [f1, 1.2], [f1 - 0.12, 1.34], [f0 + 0.14, 1.34], [f0, 1.18]]), fsbW, { c: 0.9 * MM, curveSegments: 1 });
   const gap = box(f0 - 0.1, f1 + 0.1, drumY, 3, -gapHW, gapHW);
   const drumHole = new THREE.CylinderGeometry(drumR + 0.3 * MM, drumR + 0.3 * MM, fsbW + 0.2, 32); drumHole.rotateX(Math.PI / 2); drumHole.translate(D.postX, drumY, 0);
-  const lug = slab(roundedShape([[f0 + 0.06, D.fsbBot, 0.1], [f1 - 0.04, D.fsbBot, 0.08], [f1 - 0.02, -0.15, 0.0], [f0 + 0.04, -0.15, 0.0]]), 0.44, { bevel: 0.02 });
-  const ears = [-1, 1].map(s => subtract(slab(roundedShape([[f0 + 0.02, 1.0, 0.0], [f1 - 0.02, 1.0, 0.0], [f1 - 0.04, D.earTop - 0.06, 0.12], [f0 + 0.1, D.earTop, 0.14]]), earT, { bevel: 0.012, zc: s * (gapHW + earT / 2) }), drumHole));
-  add(creased(mergeGeometries([fsbCollar, subtractEach(tower, gap, drumHole), lug, ...ears].map(clean)), 38), MAT.steel);
+  const lug = chamferSlab(poly([[f0 + 0.08, D.fsbBot], [f1 - 0.06, D.fsbBot], [f1 - 0.02, D.fsbBot + 0.04], [f1 - 0.02, -0.15], [f0 + 0.04, -0.15], [f0 + 0.04, D.fsbBot + 0.04]]), 0.44, { c: 0.6 * MM, curveSegments: 1 });
+  const ears = [-1, 1].map(s => subtract(chamferSlab(poly([[f0 + 0.02, 1.0], [f1 - 0.02, 1.0], [f1 - 0.04, D.earTop - 0.1], [f1 - 0.14, D.earTop], [f0 + 0.18, D.earTop], [f0 + 0.08, D.earTop - 0.1]]), earT, { c: 0.5 * MM, zc: s * (gapHW + earT / 2), curveSegments: 1 }), drumHole));
+  add(creased(mergeGeometries([fsbCollar, subtractEach(tower, gap, drumHole), lug, ...ears].map(clean)), 30), MAT.alloy);
   // windage drum: ends sit 0.5 mm inside the side holes, each with a scribed index line
   const drum = new THREE.CylinderGeometry(drumR, drumR, fsbW - 1 * MM, 28); drum.rotateX(Math.PI / 2); drum.translate(D.postX, drumY, 0);
   const marks = [-1, 1].map(s => box(D.postX - 0.006, D.postX + 0.006, drumY - drumR * 0.8, drumY + drumR * 0.8, s * (fsbW / 2 - 0.5 * MM) - 0.02, s * (fsbW / 2 - 0.5 * MM) + 0.02));
   add(creased(subtract(drum, ...marks)), MAT.dark);
-  // post: conical shoulder, then a 2 mm round tip about 4 mm tall
-  add(creased(new THREE.CylinderGeometry(1 * MM, 2.6 * MM, D.sightY - 1.28, 16).translate(D.postX, (D.sightY + 1.28) / 2 - 0.08, 0)), MAT.dark);
-  add(creased(new THREE.CylinderGeometry(1 * MM, 1 * MM, 4 * MM, 12).translate(D.postX, D.sightY - 2 * MM, 0)), MAT.dark);
+  // post: octagonal shoulder, then a 2 mm octagonal tip about 4 mm tall with a flat rear face for the sight dot
+  add(creased(new THREE.CylinderGeometry(octR(1 * MM), octR(2.6 * MM), D.sightY - 1.28, 8, 1, false, OCT).translate(D.postX, (D.sightY + 1.28) / 2 - 0.08, 0), 30), MAT.dark);
+  const tipG = new THREE.CylinderGeometry(octR(1 * MM), octR(1 * MM), 4 * MM, 8, 1, false, OCT).translate(D.postX, D.sightY - 2 * MM, 0);
+  const dotBore = new THREE.CylinderGeometry(0.7 * MM, 0.7 * MM, 0.6 * MM, 16); dotBore.rotateZ(Math.PI / 2); dotBore.translate(D.postX - 1 * MM, D.sightY - 1.1 * MM, 0);
+  add(creased(subtract(tipG, dotBore), 30), MAT.dark);
   // cross pin ends through the collar, and the comp detent plunger at 12 o'clock on the front face
   for (const s of [-1, 1]) {
-    const cp = new THREE.CylinderGeometry(1.5 * MM, 1.5 * MM, 0.02, 12); cp.rotateX(Math.PI / 2); cp.translate(D.postX - 0.05, -0.18, s * (D.fsbHW + 0.005));
-    add(cp, MAT.dark);
+    const cp = new THREE.CylinderGeometry(1.5 * MM, 1.5 * MM, 0.02, 12); cp.rotateX(Math.PI / 2); cp.translate(D.postX - 0.05, -0.12, s * (0.42 + 0.005));
+    add(cp, MAT.fast);
   }
-  add(creased(rodX(f1 - 0.05, f1 + 0.08, 1.2 * MM, 0.33, 0, 12)), MAT.dark);
+  add(creased(rodX(f1 - 0.05, f1 + 0.08, 1.2 * MM, 0.33, 0, 12)), MAT.fast);
   anchors.front = new THREE.Vector3(D.postX, D.earTop + 0.12, 0);
+  // tritium-style sight dot, facing the shooter
+  part('front_sight_dot');
+  const fdot = new THREE.CylinderGeometry(0.6 * MM, 0.6 * MM, 0.6 * MM, 16); fdot.rotateZ(Math.PI / 2); fdot.translate(D.postX - 1 * MM, D.sightY - 1.1 * MM, 0);   // 0.3 mm proud of the rear flat
+  add(fdot, MAT.led, gun, NO_SHADOW);
 
-  // AKM slant compensator: a sleeve cut by one plane at 45 degrees to the bore. The plane starts at the
-  // top-right edge 0.53 in ahead of the rear face and opens up and to the right; the lower-left lip runs
-  // to the front and ends in a small flat square to the bore.
+  // AKM slant compensator, machined as an octagonal sleeve: cut by one plane at 45 degrees to the bore. The plane
+  // starts at the top-right flat 0.53 in ahead of the rear face and opens up and to the right; the lower-left lip
+  // runs to the front and ends in a small flat square to the bore.
   part('muzzle_brake');
   const [b0, b1] = D.brake, R = D.brakeR;
-  const comp = latheX([[b0, 0.28], [b0, R - 0.03], [b0 + 0.03, R], [b1 - 0.015, R], [b1, R - 0.015], [b1, 0.19], [b0 + 0.55, 0.19], [b0 + 0.55, 0.24], [b0 + 0.45, 0.24], [b0 + 0.45, 0.28], [b0, 0.28]], 56);
+  const shell = latheX(sleeveProfile(b0, b1, octR(R), 0.9 * MM), 8, OCT);
+  const boreCut = latheX([[b0 - 0.1, 0], [b0 - 0.1, 0.28], [b0 + 0.45, 0.28], [b0 + 0.45, 0.24], [b0 + 0.55, 0.24], [b0 + 0.55, 0.19], [b1 + 0.1, 0.19], [b1 + 0.1, 0]], 40);
   const nCut = new THREE.Vector3(Math.SQRT1_2, 0.5, 0.5);
   const cut = box(0, 2, -1.5, 1.5, -1.5, 1.5);
   cut.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(1, 0, 0), nCut));
   cut.translate(D.brakeCutStart, R * Math.SQRT1_2, R * Math.SQRT1_2);
   const detent = box(b0 - 0.1, b0 + 0.14, R - 0.07, R + 0.2, -0.05, 0.05);
-  add(creased(subtractEach(comp, cut, detent), 38), MAT.dark);
+  add(creased(subtractEach(subtract(shell, boreCut), cut, detent), 30), MAT.dark);
   // dark liner inside the bore so the opening reads as a hole, not lit metal
   const liner = latheX([[b0 + 0.45, 0.0], [b0 + 0.45, 0.185], [b1 - 0.006, 0.185], [b1 - 0.006, 0.0]], 40);
   add(subtract(liner, cut), MAT.cavity, gun, { cast: false, receive: true });
   anchors.brake = new THREE.Vector3(b0 + 0.6, R + 0.05, 0);
 
-  // cleaning rod under the barrel; head with a cross hole tucked under the FSB lug
+  // cleaning rod under the barrel; octagonal head with a cross hole tucked under the FSB lug
   part('cleaning_rod');
   add(creased(rodX(D.ferrule[1] - 0.1, f0 + 0.05, D.rodR, D.rodY, 0, 20)), MAT.steel);
-  const head = latheX([[f0 - 0.42, 0.0], [f0 - 0.42, 0.11], [f0 - 0.4, 0.15], [f0 + 0.05, 0.15], [f0 + 0.05, 0.0]], 24);
+  const head = latheX([[f0 - 0.42, 0.0], [f0 - 0.42, octR(0.11)], [f0 - 0.4, octR(0.15)], [f0 + 0.05, octR(0.15)], [f0 + 0.05, 0.0]], 8, OCT);
   head.translate(0, D.rodY, 0);
   const hole = new THREE.CylinderGeometry(0.05, 0.05, 0.5, 12); hole.rotateX(Math.PI / 2); hole.translate(f0 - 0.2, D.rodY, 0);
-  add(creased(subtract(head, hole)), MAT.steel);
+  add(creased(subtract(head, hole), 30), MAT.steel);
   anchors.rod = new THREE.Vector3((g1 + f0) / 2, D.rodY - 0.12, 0.1);
 }
 
 function buildRearSight() {
   const [r0, r1] = D.rsb, tail = D.rsbTail;
   part('rear_sight_block');
-  // barrel collar
-  const collar = rodX(r0, r1, 0.5, 0, 0, 48);
+  // octagonal barrel collar
+  const collar = octSleeve(r0, r1, 0.5, 0.8 * MM);
   // tower: holds the gas tube and the piston passage, overhangs back over the receiver front
-  const tower = slab(roundedShape([[r0, 0.15, 0.0], [r1, 0.15, 0.0], [r1, D.gasY + 0.4, 0.1], [r1 - 0.25, 1.47, 0.1], [tail, 1.47, 0.08], [tail, D.recvTop + 0.02, 0.04], [r0, D.recvTop + 0.02, 0.0]]), 1.2, { bevel: 0.025 });
+  const tower = chamferSlab(poly([[r0, 0.15], [r1, 0.15], [r1, D.gasY + 0.4], [r1 - 0.25, 1.47], [tail, 1.47], [tail, D.recvTop + 0.02], [r0, D.recvTop + 0.02]]), 1.2, { c: 1.0 * MM, curveSegments: 1 });
   const channel = rodX(tail - 0.1, tail + 0.14, 0.07, D.coverTop - 0.05, 0, 16); // dust-cover rib seat
-  add(creased(mergeGeometries([collar, subtract(tower, channel)].map(clean)), 38), MAT.steel);
+  add(creased(mergeGeometries([collar, subtract(tower, channel)].map(clean)), 30), MAT.alloy);
   // sight base cheeks: stepped cam sectors under the leaf, one tread per range setting,
   // lowest at the rear (battle setting) and rising toward the hinge
   part('rear_sight_base');
   const nStep = 8, sx0 = 21.0, sx1 = 19.1, sy0 = 1.66, sy1 = 1.47;
-  const pts = [[tail + 0.05, 1.38, 0.0], [D.leafHinge + 0.3, 1.38, 0.0], [D.leafHinge + 0.3, sy0, 0.02]];
+  const pts = [[tail + 0.05, 1.38, 0.0], [D.leafHinge + 0.3, 1.38, 0.0], [D.leafHinge + 0.3, sy0, 0.0]];
   for (let i = 0; i < nStep; i++) {
     const xa = sx0 + (sx1 - sx0) * (i / nStep), xb = sx0 + (sx1 - sx0) * ((i + 1) / nStep);
     const y = sy0 + (sy1 - sy0) * (i / nStep), yn = sy0 + (sy1 - sy0) * ((i + 1) / nStep);
-    pts.push([xa, y, 0.003], [xb, y, 0.003]);
-    if (i === nStep - 1) pts.push([xb, yn, 0.003]);
+    pts.push([xa, y, 0], [xb, y, 0]);
+    if (i === nStep - 1) pts.push([xb, yn, 0]);
   }
-  pts.push([tail + 0.05, sy1, 0.02]);
-  for (const s of [-1, 1]) add(creased(slab(roundedShape(pts), 0.08, { bevel: 0.01, zc: s * 0.33 }), 30), MAT.steel);
+  pts.push([tail + 0.05, sy1, 0.0]);
+  for (const s of [-1, 1]) add(creased(chamferSlab(roundedShape(pts), 0.08, { c: 0.25 * MM, zc: s * 0.33, curveSegments: 1 }), 30), MAT.dark);
   // leaf: about 57 mm, hinged at the front, U-notch block at its rear end
   part('rear_sight_leaf');
   const leafY = 1.58, w = 13.5 * MM;
-  add(creased(slab(roundedShape([[D.notchX - 0.05, leafY - 0.01, 0.02], [D.leafHinge + 0.08, leafY + 0.05, 0.03], [D.leafHinge + 0.08, leafY + 0.15, 0.03], [D.notchX - 0.05, leafY + 0.09, 0.02]]), w, { bevel: 0.012 })), MAT.dark);
-  const nb = slab(roundedShape([[D.notchX - 0.1, leafY - 0.02, 0.02], [D.notchX + 0.14, leafY - 0.02, 0.02], [D.notchX + 0.14, D.sightY + 0.1, 0.03], [D.notchX - 0.1, D.sightY + 0.1, 0.03]]), 0.58, { bevel: 0.012 });
+  add(creased(chamferSlab(poly([[D.notchX - 0.05, leafY - 0.01], [D.leafHinge + 0.08, leafY + 0.05], [D.leafHinge + 0.08, leafY + 0.15], [D.notchX - 0.05, leafY + 0.09]]), w, { c: 0.3 * MM, curveSegments: 1 }), 30), MAT.dark);
+  const nb = chamferSlab(poly([[D.notchX - 0.1, leafY - 0.02], [D.notchX + 0.14, leafY - 0.02], [D.notchX + 0.14, D.sightY + 0.1], [D.notchX - 0.1, D.sightY + 0.1]]), 0.58, { c: 0.4 * MM, curveSegments: 1 });
   const notch = box(D.notchX - 0.3, D.notchX + 0.3, D.sightY, D.sightY + 0.4, -1 * MM, 1 * MM);
   const round = rodX(D.notchX - 0.3, D.notchX + 0.3, 1 * MM, D.sightY, 0, 12);
-  add(creased(subtractEach(nb, notch, round)), MAT.dark);
-  // leaf hinge pin ends and the leaf spring under it
-  for (const s of [-1, 1]) add(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 14).rotateX(Math.PI / 2).translate(D.leafHinge, 1.5, s * 0.38), MAT.dark);
+  // two sight-dot sockets on the rear face, either side of the notch
+  const dotX = D.notchX - 0.1, dotY = D.sightY + 0.3 * MM;
+  const sockets = [-1, 1].map(s => { const c = new THREE.CylinderGeometry(0.8 * MM, 0.8 * MM, 1.2 * MM, 16); c.rotateZ(Math.PI / 2); c.translate(dotX, dotY, s * 3.4 * MM); return c; });
+  add(creased(subtract(subtractEach(nb, notch, round), ...sockets), 30), MAT.dark);
+  // leaf hinge pin ends
+  for (const s of [-1, 1]) add(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 14).rotateX(Math.PI / 2).translate(D.leafHinge, 1.5, s * 0.38), MAT.fast);
+  part('rear_sight_dots');
+  add(mergeGeometries([-1, 1].map(s => { const c = new THREE.CylinderGeometry(0.62 * MM, 0.62 * MM, 0.9 * MM, 16); c.rotateZ(Math.PI / 2); c.translate(dotX + 0.15 * MM, dotY, s * 3.4 * MM); return clean(c); })), MAT.led, gun, NO_SHADOW);   // 0.3 mm proud of the rear face
   part('rear_sight_slider');
   const sx = 19.0;   // rear-most: battle setting
-  add(creased(slab(roundedShape([[sx, leafY - 0.06, 0.03], [sx + 17 * MM, leafY - 0.04, 0.03], [sx + 17 * MM, leafY + 0.18, 0.04], [sx, leafY + 0.16, 0.04]]), 0.62, { bevel: 0.015 })), MAT.dark);
-  for (const s of [-1, 1]) add(creased(new THREE.CylinderGeometry(0.075, 0.075, 0.1, 18).rotateX(Math.PI / 2).translate(sx + 8.5 * MM, leafY + 0.06, s * 0.35)), MAT.dark);
+  add(creased(chamferSlab(poly([[sx, leafY - 0.06], [sx + 17 * MM, leafY - 0.04], [sx + 17 * MM, leafY + 0.18], [sx, leafY + 0.16]]), 0.62, { c: 0.4 * MM, curveSegments: 1 }), 30), MAT.dark);
+  for (const s of [-1, 1]) add(creased(new THREE.CylinderGeometry(octR(0.075), octR(0.075), 0.1, 8, 1, false, OCT).rotateX(Math.PI / 2).translate(sx + 8.5 * MM, leafY + 0.06, s * 0.35), 30), MAT.dark);
   // gas-tube lock lever (flag) on the right
   part('gas_tube_lever');
   const lx = r1 - 0.28;   // pivot, kept behind the block's front face
-  add(creased(slab(roundedShape([[20.62, 0.78, 0.1], [lx, 0.76, 0.13], [lx, 1.04, 0.13], [20.62, 1.02, 0.1]]), 0.07, { bevel: 0.012, zc: 0.64 })), MAT.dark);
-  add(creased(new THREE.CylinderGeometry(0.15, 0.15, 0.09, 28).rotateX(Math.PI / 2).translate(lx, 0.9, 0.645)), MAT.dark);
-  add(creased(slab(roundedShape([[20.5, 0.8, 0.04], [20.68, 0.8, 0.04], [20.68, 1.0, 0.04], [20.5, 1.0, 0.04]]), 0.06, { bevel: 0.01, zc: 0.7 })), MAT.dark);
+  add(creased(chamferSlab(poly([[20.62, 0.78], [lx, 0.76], [lx, 1.04], [20.62, 1.02]]), 0.07, { c: 0.3 * MM, zc: 0.64, curveSegments: 1 }), 30), MAT.dark);
+  add(creased(new THREE.CylinderGeometry(octR(0.15), octR(0.15), 0.09, 8, 1, false, OCT).rotateX(Math.PI / 2).translate(lx, 0.9, 0.645), 30), MAT.dark);
+  add(hexScrew(0.09, V(lx, 0.9, 0.69 - 0.1 * MM), V(0, 0, 1), { h: 0.03, spin: 0.4 }), MAT.fast);
+  add(creased(chamferSlab(poly([[20.5, 0.8], [20.68, 0.8], [20.68, 1.0], [20.5, 1.0]]), 0.06, { c: 0.3 * MM, zc: 0.7, curveSegments: 1 }), 30), MAT.dark);
   anchors.rear_sight = new THREE.Vector3(D.notchX + 0.6, D.sightY + 0.2, 0);
 }
 
 /* ----------------------------------------------------------------- handguards */
 
 function buildHandguards() {
-  // lower: wraps the barrel, palm swells at the rear, held by the ferrule at the front
+  // lower: faceted composite shell round the barrel, raised grip panels at the rear, angular vents ahead of them,
+  // held by the ferrule at the front
   part('lower_handguard');
   const [l0, l1] = D.lowerHG;
   const hw = curve([[l0, 0.68], [l0 + 0.5, 0.75], [l1 - 0.6, 0.75], [l1, 0.7]]);
   const bot = curve([[l0, -0.95], [l0 + 0.5, -1.07], [l1 - 0.6, -1.07], [l1, -0.95]]);
-  let lg = loft({ x0: l0, x1: l1, top: constant(0.6), bot, hw, n: constant(3.0), round: 0.14, steps: 90, seg: 60 });
+  const e = 0.06, ins = (x) => Math.max(0, e - (x - l0), e - (l1 - x));
+  let lg = loftRings(stations(l0, l1, 44, [l0 + e, l1 - e]), (x) => { const i = ins(x); return chamferRect(-(hw(x) - i), hw(x) - i, bot(x) + i, 0.6 - i, [0.1, 0.1, 0.24, 0.24]); });
   lg = subtractEach(lg, rodX(l0 - 1, l1 + 1, 0.37, 0, 0, 48), box(l0 - 1, l1 + 1, 0.15, 2, -0.37, 0.37));
-  const paddles = [-1, 1].map(sd => {
-    const pg = loft({ x0: l0 + 0.35, x1: l0 + 4.3, top: constant(0.5), bot: constant(-0.3), hw: curve([[l0 + 0.35, 0.05], [l0 + 1.2, 0.16], [l0 + 3.0, 0.17], [l0 + 4.3, 0.04]]), n: constant(2.4), round: 0.3, steps: 40, seg: 32 });
-    return pg.translate(0, 0, sd * 0.72);
-  });
-  add(creased(mergeGeometries([lg, ...paddles].map(clean)), 40), MAT.poly);
+  // three angular vent slots through both walls, raked forward
+  const vents = [];
+  for (let i = 0; i < 3; i++) { const xa = l0 + 4.5 + i * 0.36; vents.push(slab(poly([[xa, -0.3], [xa + 0.16, -0.3], [xa + 0.41, 0.36], [xa + 0.25, 0.36]]), 2.2, { bevel: 0, curveSegments: 1 })); }
+  lg = subtract(lg, ...vents);
+  // raised grip panels where the AKM has its palm swells
+  const panel = poly([[l0 + 0.62, -0.3], [l0 + 4.05, -0.3], [l0 + 4.3, -0.05], [l0 + 4.3, 0.28], [l0 + 4.08, 0.5], [l0 + 0.62, 0.5], [l0 + 0.55, 0.43], [l0 + 0.55, -0.23]]);
+  const panels = [-1, 1].map(s => chamferSlab(panel, 0.16, { c: 0.05, zc: s * 0.82, curveSegments: 1 }));
+  add(creased(mergeGeometries([lg, ...panels].map(clean)), 30), MAT.shell);
   part('handguard_ferrule');
-  const [h0, h1] = D.ferrule;
-  add(creased(loft({ x0: h0, x1: h1, top: constant(0.56), bot: constant(-1.1), hw: constant(0.8), n: constant(3.4), round: 0.04, steps: 12 })), MAT.steel);
+  const [h0, h1] = D.ferrule, fe = 0.03, fins = (x) => Math.max(0, fe - (x - h0), fe - (h1 - x));
+  add(creased(loftRings([h0, h0 + fe, h1 - fe, h1], (x) => { const i = fins(x); return chamferRect(-(0.8 - i), 0.8 - i, -1.1 + i, 0.56 - i, [0.12, 0.12, 0.2, 0.2]); }), 30), MAT.dark);
   part('ferrule_lever');
-  add(creased(slab(roundedShape([[h0 + 0.04, -0.3, 0.05], [h1 - 0.04, -0.3, 0.05], [h1 - 0.06, 0.2, 0.05], [h0 + 0.06, 0.2, 0.05]]), 0.07, { bevel: 0.012, zc: 0.84 })), MAT.dark);
+  add(creased(chamferSlab(poly([[h0 + 0.04, -0.3], [h1 - 0.04, -0.3], [h1 - 0.06, 0.2], [h0 + 0.06, 0.2]]), 0.07, { c: 0.3 * MM, zc: 0.84, curveSegments: 1 }), 30), MAT.dark);
   part('front_sling_loop');
   add(sideRing((h0 + h1) / 2, -0.45, -1.02, 0.24, 0.045), MAT.dark);
-  add(creased(slab(roundedShape([[h0 + 0.03, -0.62, 0.04], [h1 - 0.03, -0.62, 0.04], [h1 - 0.03, -0.3, 0.04], [h0 + 0.03, -0.3, 0.04]]), 0.12, { bevel: 0.015, zc: -0.82 })), MAT.dark);
+  add(creased(chamferSlab(poly([[h0 + 0.03, -0.62], [h1 - 0.03, -0.62], [h1 - 0.03, -0.3], [h0 + 0.03, -0.3]]), 0.12, { c: 0.4 * MM, zc: -0.82, curveSegments: 1 }), 30), MAT.dark);
   anchors.handguard = new THREE.Vector3(l0 + 3.0, -1.0, 0.6);
 
-  // upper: covers the gas tube, 35 mm wide, rounded top
+  // upper: covers the gas tube, 35 mm wide, flat top between broad 45-degree facets; an LED line along each side
   part('upper_handguard');
   const [u0, u1] = D.upperHG;
   const uhw = curve([[u0, 0.62], [u0 + 0.35, 0.69], [u1 - 0.5, 0.69], [u1, 0.6]]);
   const utop = curve([[u0, 1.62], [u0 + 0.5, 1.69], [u1 - 0.8, 1.66], [u1, 1.5]]);
-  let ug = loft({ x0: u0, x1: u1, top: utop, bot: constant(0.2), hw: uhw, n: constant(2.6), round: 0.12, steps: 70, seg: 56 });
-  ug = subtractEach(ug, rodX(u0 - 1, u1 + 1, D.gasR + 0.01, D.gasY, 0, 48), box(u0 - 1, u1 + 1, -2, 0.63, -2, 2));
-  add(creased(ug, 40), MAT.poly);
+  const ue = 0.05, uins = (x) => Math.max(0, ue - (x - u0), ue - (u1 - x));
+  let ug = loftRings(stations(u0, u1, 40, [u0 + ue, u1 - ue]), (x) => { const i = uins(x); return chamferRect(-(uhw(x) - i), uhw(x) - i, 0.2 + i, utop(x) - i, [0.24, 0.24, 0, 0]); });
+  ug = subtractEach(ug, octRodX(u0 - 1, u1 + 1, D.gasR + 0.3 * MM, D.gasY, 0), box(u0 - 1, u1 + 1, -2, 0.63, -2, 2));
+  const leds = [-1, 1].map(s => ledZ(u0 + 0.62, u1 - 1.05, 1.28, D.ledW, 0.69, s));
+  ug = subtract(ug, ...leds.map(l => l.cut));
+  // four chevron vents across the flat top near the gas block, pointing forward, open to the gas tube below
+  const chev = [];
+  for (let i = 0; i < 4; i++) {
+    const xc = u1 - 0.55 - i * 0.28;
+    for (const s of [-1, 1]) {
+      const v = new THREE.ExtrudeGeometry(poly([[xc, -s * 0.04], [xc + 0.09, -s * 0.04], [xc - 0.07, -s * 0.34], [xc - 0.16, -s * 0.34]]), { depth: 0.8, bevelEnabled: false, curveSegments: 1 });
+      v.rotateX(-Math.PI / 2); v.translate(0, 1.2, 0);   // shape y -> rifle -z, extrusion -> +y
+      chev.push(v);
+    }
+  }
+  ug = subtract(ug, ...chev);
+  add(creased(ug, 30), MAT.shell);
+  part('handguard_led');
+  add(mergeGeometries(leds.map(l => clean(l.bar))), MAT.led, gun, NO_SHADOW);
 }
 
 /* ----------------------------------------------------------------- stock */
@@ -988,44 +1161,57 @@ function buildStock() {
   const top = curve([[x0, -0.39], [4.5, 0.19], [8.0, 0.67], [x1, D.recvTop - 0.02]]);
   const bot = curve([[x0, -4.59], [2.5, -3.72], [5.5, -2.6], [7.6, -1.8], [8.6, -1.3], [9.1, -0.98], [x1, D.recvBot - 0.03]]);
   const hw = curve([[x0, 0.8], [4.0, 0.78], [7.6, 0.66], [x1, 0.6]]);
-  const n = curve([[x0, 3.2], [6, 3.0], [x1, 2.8]]);
+  // section: flat sides, a chamfered belly and a soft comb where the cheek goes. Each side carries a machined
+  // recess 1 mm deep with 45-degree walls, running from the buttplate to the wrist parallel to comb and belly.
+  const K = 0.3, CB = 0.16, PD = 1.0 * MM, pA = 0.75, pB = 7.0;
+  const depth = (x) => Math.max(0, Math.min(PD, x - pA, pB - x));
+  const ring = (x, grow = 0, panel = true) => {
+    const W = hw(x) + grow, T = top(x) + grow, B = bot(x) - grow, k = Math.min(K, (T - B) * 0.3);
+    const d = panel ? depth(x) : 0, yT = top(x) - 0.5, yB = bot(x) + 0.36;
+    const arc = [];
+    for (let i = 0; i <= 16; i++) { const t = (i / 16) * Math.PI, co = Math.cos(t), si = Math.sin(t), ex = 2 / 2.4; arc.push([W * Math.sign(co) * Math.abs(co) ** ex, T - k + k * Math.abs(si) ** ex]); }
+    return [[W, B + CB], [W, yB], [W - d, yB + d], [W - d, yT - d], [W, yT], ...arc,
+      [-W, yT], [-W + d, yT - d], [-W + d, yB + d], [-W, yB], [-W, B + CB], [-W + CB, B], [W - CB, B]];
+  };
   part('stock');
-  add(creased(loft({ x0, x1, top, bot, hw, n, roundStart: 0.06, roundEnd: 0.02, steps: 110, seg: 64 }), 40), MAT.poly);
-  // rear trunnion tang lying on the wrist, two stock screws
+  add(creased(loftRings(stations(x0, x1, 90, [pA, pA + PD, pB - PD, pB]), (x) => ring(x)), 34), MAT.shell);
+  // rear trunnion tang lying on the wrist, two hex-socket stock screws
   part('stock_tang');
-  add(creased(slab(roundedShape([[7.7, top(7.7) - 0.06, 0.1], [x1 + 0.05, top(x1) - 0.06, 0], [x1 + 0.05, top(x1) + 0.03, 0], [7.7, top(7.7) + 0.03, 0.1]]), 0.5, { bevel: 0.02 })), MAT.dark);
+  add(creased(chamferSlab(roundedShape([[7.7, top(7.7) - 0.06, 0.1], [x1 + 0.05, top(x1) - 0.06, 0], [x1 + 0.05, top(x1) + 0.03, 0], [7.7, top(7.7) + 0.03, 0.1]]), 0.5, { c: 0.5 * MM }), 30), MAT.alloy);
   part('stock_screws');
   const slope = (top(8.9) - top(7.9)) / 1.0;
   [[8.05, 0.5], [8.75, -0.35]].forEach(([x, spin]) => {
-    add(placeScrew(screwHead(0.17, { style: 'slot', h: 0.085, countersunk: true }), new THREE.Vector3(x, top(x) + 0.03 + 0.018 + 0.008 - 0.085, 0), new THREE.Vector3(-slope, 1, 0), spin), MAT.dark);   // tang top includes its 0.018 bevel
+    add(hexScrew(0.17, V(x, top(x) + 0.03 - 0.085 + 0.008, 0), V(-slope, 1, 0), { h: 0.085, countersunk: true, spin }), MAT.fast);
   });
 
-  // steel buttplate, 4.2 in tall: trapdoor up top, horizontal ribs below it
+  // machined buttplate: chamfered round its rear face, horizontal ribs, trapdoor up top
   part('buttplate');
+  const be = 0.05;
+  add(creased(loftRings([0, be, x0 + 0.02], (x) => ring(x0, 0.03 - Math.max(0, be - x), false)), 34), MAT.dark);
   const T = top(x0) + 0.03, B = bot(x0) - 0.03, W = hw(x0) + 0.03;
-  add(creased(loft({ x0: 0, x1: x0 + 0.02, top: constant(T), bot: constant(B), hw: constant(W), n: constant(3.2), roundStart: 0.08, roundEnd: 0, steps: 14 }), 40), MAT.steel);
   part('buttplate_ribs');
   const ribs = [];
-  for (let y = B + 0.7; y < -2.2; y += 0.24) ribs.push(plateX(-0.022, 0.01, y - 0.035, y + 0.035, W - 0.14, 8));
-  add(creased(mergeGeometries(ribs.map(clean)), 40), MAT.dark);
+  for (let y = B + 0.7; y < -2.2; y += 0.24) ribs.push(chamferX(poly([[-(W - 0.14), y - 0.035], [W - 0.14, y - 0.035], [W - 0.14, y + 0.035], [-(W - 0.14), y + 0.035]]), -0.022, 0.01, { c: 0.006, curveSegments: 1 }));
+  add(creased(mergeGeometries(ribs.map(clean)), 30), MAT.dark);
   part('buttplate_trapdoor');
   // trapdoor hinged at the top, thumb tab at the bottom
-  add(creased(plateX(-0.03, 0.02, -2.05, -0.86, 0.42, 6)), MAT.dark);
-  add(creased(rodX(-0.06, 0.0, 0.065, -0.8, 0, 16)), MAT.dark);
-  add(creased(plateX(-0.05, -0.02, -2.12, -1.96, 0.13, 4)), MAT.dark);
+  add(creased(chamferX(poly([[-0.42, -2.05], [0.42, -2.05], [0.42, -0.86], [-0.42, -0.86]]), -0.03, 0.01, { c: 0.008, curveSegments: 1 }), 30), MAT.dark);
+  { const k = new THREE.CylinderGeometry(octR(0.05), octR(0.05), 0.5, 8, 1, false, OCT); k.rotateX(Math.PI / 2); k.translate(-0.035, -0.84, 0); add(creased(k, 30), MAT.dark); }   // hinge knuckle
+  add(creased(chamferX(poly([[-0.13, -2.12], [0.13, -2.12], [0.13, -1.96], [-0.13, -1.96]]), -0.05, -0.01, { c: 0.006, curveSegments: 1 }), 30), MAT.dark);
   part('buttplate_screws');
   [[T - 0.2, 0.9], [B + 0.36, 0.2]].forEach(([y, spin]) => {
-    add(placeScrew(screwHead(0.13, { style: 'slot', h: 0.07, countersunk: true }), new THREE.Vector3(0.07 - 0.008, y, 0), new THREE.Vector3(-1, 0, 0), spin), MAT.dark);
+    add(hexScrew(0.13, V(0.07 - 0.008, y, 0), V(-1, 0, 0), { h: 0.07, countersunk: true, spin }), MAT.fast);
   });
 
   // sling loop on the left side near the heel
   part('rear_sling_loop');
   const sx = 2.0, sy = top(sx) - 0.85;
-  add(creased(slab(roundedShape([[sx - 0.3, sy - 0.18, 0.08], [sx + 0.3, sy - 0.18, 0.08], [sx + 0.3, sy + 0.18, 0.08], [sx - 0.3, sy + 0.18, 0.08]]), 0.08, { bevel: 0.015, zc: -hw(sx) - 0.01 })), MAT.dark);
+  // its plate sits on the floor of the side recess
+  add(creased(chamferSlab(poly([[sx - 0.3, sy - 0.12], [sx - 0.24, sy - 0.18], [sx + 0.24, sy - 0.18], [sx + 0.3, sy - 0.12], [sx + 0.3, sy + 0.12], [sx + 0.24, sy + 0.18], [sx - 0.24, sy + 0.18], [sx - 0.3, sy + 0.12]]), 0.06 + PD, { c: 0.4 * MM, zc: -(hw(sx) + 0.02 - PD / 2), curveSegments: 1 }), 30), MAT.dark);
   add(sideRing(sx, sy, -hw(sx) - 0.25, 0.25, 0.045), MAT.dark);
   part('sling_loop_screws');
   [[sx - 0.2, 0.4], [sx + 0.2, -0.6]].forEach(([x, spin]) => {
-    add(placeScrew(screwHead(0.07, { style: 'slot', h: 0.035 }), new THREE.Vector3(x, sy, -hw(sx) - 0.05), new THREE.Vector3(0, 0, -1), spin), MAT.dark);
+    add(hexScrew(0.07, V(x, sy, -hw(sx) - 0.05), V(0, 0, -1), { h: 0.035, spin }), MAT.fast);
   });
   anchors.stock = new THREE.Vector3(5.0, top(5.0) + 0.05, 0);
 }
@@ -1038,17 +1224,31 @@ function buildGrip() {
   const front = curve([[-0.15, 0.6], [0.6, 0.6], [1.8, 0.64], [3.0, 0.68], [L, 0.68]]);
   const back = curve([[-0.15, -0.62], [0.5, -0.68], [1.5, -0.8], [2.7, -0.83], [L, -0.77]]);
   const hw = curve([[-0.15, 0.52], [1.2, 0.58], [L, 0.62]]);
-  let g = orientDown(loft({ x0: -0.15, x1: L, top: front, bot: back, hw, n: constant(2.5), roundStart: 0.0, roundEnd: 0.16, steps: 70, seg: 56 }), origin, D.gripTilt);
-  // grip bolt: counterbored hole in the base with a slotted screw head down inside it
+  // section: flat sides and a chamfered front strap, a soft rounded backstrap where the palm sits;
+  // the base is chamfered
+  // machined traction grooves run across the flat part of each side (1.3 mm wide floors, 0.6 mm deep, 45-degree walls)
+  const e = 0.1, CF = 0.1, ex = 2 / 2.5, GD = 0.6 * MM, GW = 0.05, grooves = [1.0, 1.32, 1.64, 1.96, 2.28, 2.6];
+  const gd = (x) => Math.max(0, ...grooves.map(g => Math.min(GD, x - g, g + GW + 2 * GD - x)));
+  const gx = grooves.flatMap(g => [g, g + GD, g + GW + GD, g + GW + 2 * GD]);
+  const ring = (x) => {
+    const i = Math.max(0, x - (L - e));
+    const F = front(x) - i, Bk = back(x) + i, W = hw(x) - i, mid = (F + Bk) / 2, ry = mid - Bk, d = gd(x), m = 0.05;
+    const side = (s) => [[s * W, mid + m], [s * (W - d), mid + m + d], [s * (W - d), F - CF - m - d], [s * W, F - CF - m]];
+    const pts = [[W, mid], ...side(1), [W, F - CF], [W - CF, F], [-W + CF, F], [-W, F - CF], ...side(-1).reverse(), [-W, mid]];
+    for (let k = 1; k < 16; k++) { const t = Math.PI + (k / 16) * Math.PI, co = Math.cos(t), si = Math.sin(t); pts.push([W * Math.sign(co) * Math.abs(co) ** ex, mid + ry * Math.sign(si) * Math.abs(si) ** ex]); }
+    return pts;
+  };
+  let g = orientDown(loftRings(stations(-0.15, L, 60, [L - e, ...gx]), ring), origin, D.gripTilt);
+  // grip bolt: counterbored hole in the base with a hex-socket screw head down inside it
   const dn = new THREE.Vector3(-Math.sin(D.gripTilt), -Math.cos(D.gripTilt), 0);
   const base = new THREE.Vector3(origin[0], origin[1], 0).addScaledVector(dn, L - 0.04);
-  const bore = new THREE.CylinderGeometry(0.2, 0.2, 0.7, 28);
+  const bore = new THREE.CylinderGeometry(0.2, 0.2, 0.7, 6);
   bore.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dn));
   bore.translate(base.x, base.y, base.z);
   g = subtract(g, bore);
-  add(creased(g, 40), MAT.poly);
+  add(creased(g, 34), MAT.shell);
   part('grip_screw');
-  add(placeScrew(screwHead(0.16, { style: 'slot', h: 0.06 }), base.clone().addScaledVector(dn, -0.3), dn, 0.7), MAT.dark);
+  add(hexScrew(0.16, base.clone().addScaledVector(dn, -0.3), dn, { h: 0.06, spin: 0.7 }), MAT.fast);
   anchors.grip = new THREE.Vector3(origin[0] - Math.sin(D.gripTilt) * L * 0.75 - 0.75, origin[1] - Math.cos(D.gripTilt) * L * 0.75, 0.5);
 }
 
@@ -1058,9 +1258,9 @@ function buildTriggerGroup() {
   const outer = [[g1, yb + 0.02, 0.0], [g1 - 0.08, gb + 0.32, 0.3], [g1 - 0.42, gb, 0.32], [g0 + 0.5, gb, 0.32], [g0 + 0.05, gb + 0.3, 0.22], [g0, yb + 0.02, 0.0]];
   const inner = [[g1 - 0.26, yb - 0.02, 0.0], [g1 - 0.3, gb + 0.4, 0.25], [g1 - 0.55, gb + 0.12, 0.26], [g0 + 0.58, gb + 0.12, 0.26], [g0 + 0.24, gb + 0.38, 0.18], [g0 + 0.22, yb - 0.02, 0.0]];
   const s = roundedShape(outer); s.holes.push(roundedPath(inner));
-  add(creased(slab(s, 12.3 * MM, { bevel: 0.025, curveSegments: 24 })), MAT.dark);
+  add(creased(chamferSlab(s, 12.3 * MM, { c: 0.6 * MM, curveSegments: 16 }), 30), MAT.dark);
   // box-like magazine-catch housing at the front of the guard
-  add(creased(slab(roundedShape([[g1 - 0.7, yb - 0.32, 0.04], [g1, yb - 0.32, 0.04], [g1, yb + 0.01, 0.0], [g1 - 0.7, yb + 0.01, 0.0]]), 0.62, { bevel: 0.02 })), MAT.dark);
+  add(creased(chamferSlab(poly([[g1 - 0.7, yb - 0.32], [g1, yb - 0.32], [g1, yb + 0.01], [g1 - 0.7, yb + 0.01]]), 0.62, { c: 0.6 * MM, curveSegments: 1 }), 30), MAT.dark);
   part('trigger');
   const N = 24, A = [], B = [], tx = D.triggerX;
   for (let i = 0; i <= N; i++) {
@@ -1070,10 +1270,10 @@ function buildTriggerGroup() {
     A.push([x - w, y]); B.push([x + w, y]);
   }
   const ts = new THREE.Shape(); ts.moveTo(...A[0]); A.forEach(p => ts.lineTo(...p)); B.reverse().forEach(p => ts.lineTo(...p));
-  add(creased(slab(ts, 0.22, { bevel: 0.03 })), MAT.dark);
+  add(creased(chamferSlab(ts, 0.22, { c: 0.5 * MM }), 30), MAT.dark);
   part('magazine_release');
-  // paddle hangs down and forward just behind the magazine, slightly cupped, rounded end
-  add(creased(slab(roundedShape([[g1 - 0.12, yb - 0.3, 0.02], [g1 + 0.02, yb - 0.3, 0.02], [g1 + 0.22, yb - 1.08, 0.12], [g1 + 0.02, yb - 1.12, 0.1], [g1 - 0.14, yb - 0.6, 0.05]]), 13 * MM, { bevel: 0.02 })), MAT.dark);
+  // paddle hangs down and forward just behind the magazine, rounded end
+  add(creased(chamferSlab(roundedShape([[g1 - 0.12, yb - 0.3, 0.02], [g1 + 0.02, yb - 0.3, 0.02], [g1 + 0.22, yb - 1.08, 0.12], [g1 + 0.02, yb - 1.12, 0.1], [g1 - 0.14, yb - 0.6, 0.05]]), 13 * MM, { c: 0.5 * MM, curveSegments: 8 }), 30), MAT.dark);
   anchors.trigger = new THREE.Vector3(D.triggerX - 0.2, gb - 0.08, 0.2);
 }
 
@@ -1082,47 +1282,66 @@ function buildTriggerGroup() {
 function buildMagazine() {
   const P = moving.magazine;
   P.position.copy(D.magPivot);
-  const [mx, my] = D.magTop, R = D.magR, L = D.magArc, th0 = -Math.PI / 2 + D.magTilt;
-  // centre line: starts heading down (tilted forward by magTilt) and curves forward with radius R
-  const center = (u) => { const th = th0 + (u * L) / R; return [mx + R * (Math.sin(th) - Math.sin(th0)), my + R * (Math.cos(th0) - Math.cos(th))]; };
-  const normal = (u) => { const th = th0 + (u * L) / R; return [-Math.sin(th), Math.cos(th)]; };
-  const offset = (off) => (u) => { const c = center(u), nn = normal(u); return [c[0] + nn[0] * off, c[1] + nn[1] * off]; };
-  const hd = (u) => D.magDepth / 2 + 0.05 * u;
-  // the top runs up inside the magazine well, so start the body a little above the receiver floor
-  const top = (u) => center(-0.07 + 1.07 * u);
+  const [mx, my] = D.magTop, R = D.magR, L = D.magArc, th0 = -Math.PI / 2 + D.magTilt, W = D.magHW;
+  // centre line (arc parameter a = 0 at the receiver floor, 1 at the floorplate, arc length a * L): starts heading
+  // down (tilted forward by magTilt) and curves forward with radius R
+  const center = (a) => { const th = th0 + (a * L) / R; return [mx + R * (Math.sin(th) - Math.sin(th0)), my + R * (Math.cos(th0) - Math.cos(th))]; };
+  const normal = (a) => { const th = th0 + (a * L) / R; return [-Math.sin(th), Math.cos(th)]; };
+  const offset = (off) => (a) => { const c = center(a), nn = normal(a); return [c[0] + nn[0] * off, c[1] + nn[1] * off]; };
+  // half depth front to back (s > 0 is the front); the body starts a little above the receiver floor
+  const hd = (a) => D.magDepth / 2 + 0.05 * Math.max(0, (a + 0.07) / 1.07);
+  const span = (a0, a1, n, extra = []) => stations(a0, a1, n, extra);
   part('magazine_body');
-  add(creased(sweep({ center: top, hd: (u) => hd(Math.max(0, u)), hw: () => D.magHW, n: () => 7, steps: 90, seg: 52 }), 40), MAT.mag, P);
+  // composite body: crisp chamfered corners; the rear (convex) corners are the spine
+  let body = sweepRings({ center, us: span(-0.07, 1.0, 80), ring: (a) => chamferRect(-hd(a), hd(a), -W, W, [0.09, 0.07, 0.07, 0.09]) });
+  // LED ammo indicator: six segments along the spine on each side face (channel 0.9 mm deep)
+  const segL = 5.6 * MM / L, gapL = 1.6 * MM / L, aS = 0.13, aE = aS + 6 * segL + 5 * gapL;
+  const sIn = (a, d) => -hd(a) + d;     // distance d in from the rear face
+  const chan = [-1, 1].map(s => sweepRings({ center, us: span(aS - 0.006, aE + 0.006, 30), ring: (a) => s > 0
+    ? chamferRect(sIn(a, 3.4 * MM), sIn(a, 6.6 * MM), W - 0.9 * MM, W + 0.2, 0)
+    : chamferRect(sIn(a, 3.4 * MM), sIn(a, 6.6 * MM), -W - 0.2, -W + 0.9 * MM, 0) }));
+  body = subtract(body, ...chan);
+  add(creased(body, 30), MAT.shell, P);
   part('magazine_ribs');
-  const along = (off) => (u) => offset(off)(0.05 + 0.78 * u);   // longitudinal ribs stop above the bottom ribs
-  const ribs = [
-    sweep({ center: along(0.72), hd: () => 0.07, hw: () => D.magHW + 0.03, n: () => 6, steps: 56, seg: 28 }),
-    sweep({ center: along(0.0), hd: () => 0.07, hw: () => D.magHW + 0.03, n: () => 6, steps: 56, seg: 28 }),
-    sweep({ center: along(-0.72), hd: () => 0.07, hw: () => D.magHW + 0.03, n: () => 6, steps: 56, seg: 28 }),
-    sweep({ center: offset(-D.magDepth / 2), hd: () => 0.05, hw: () => 0.3, n: () => 4, steps: 56, seg: 24 }),
-  ];
-  // short horizontal ribs across the sides near the floorplate
+  // crisp longitudinal ribs (ends chamfered), the spine rib down the back, short ribs across near the floorplate
+  const ribRing = (a0, a1, hs, wz) => (a) => { const i = Math.max(0, 0.03 - (a - a0) * L, 0.03 - (a1 - a) * L); return chamferRect(-hs + i * 0.5, hs - i * 0.5, -(wz - i), wz - i, 0.012); };
+  const ribs = [0.72, 0.0, -0.72].map(off => sweepRings({ center: offset(off), us: span(0.05, 0.83, 40, [0.05 + 0.03 / L, 0.83 - 0.03 / L]), ring: ribRing(0.05, 0.83, 0.07, W + 0.03) }));
+  ribs.push(sweepRings({ center, us: span(0.0, 0.975, 50), ring: (a) => chamferRect(-hd(a) - 0.04, -hd(a) + 0.06, -0.3, 0.3, [0, 0.015, 0.015, 0]) }));
   for (let i = 0; i < 4; i++) {
-    const uc = 0.865 + i * 0.03;
-    ribs.push(sweep({ center: (u) => center(uc - 0.006 + 0.012 * u), hd: () => D.magDepth / 2 - 0.22, hw: () => D.magHW + 0.03, n: () => 6, steps: 3, seg: 28 }));
+    const uc = 0.865 + i * 0.03, hs = D.magDepth / 2 - 0.22;
+    ribs.push(sweepRings({ center, us: [uc - 0.006, uc + 0.006], ring: () => chamferRect(-hs, hs, -(W + 0.03), W + 0.03, 0.012) }));
   }
-  add(creased(mergeGeometries(ribs.map(clean)), 40), MAT.mag, P);
+  add(creased(mergeGeometries(ribs.map(clean)), 30), MAT.shell, P);
   part('magazine_floorplate');
-  const u0 = 0.975;
-  add(creased(sweep({ center: (u) => center(u0 + (1.014 - u0) * u), hd: () => D.magDepth / 2 + 0.11, hw: () => D.magHW + 0.06, n: () => 6, steps: 6 }), 40), MAT.mag, P);
+  const f0 = 0.975, f1 = 1.014, fc = 0.04 / L, fRing = (a) => { const i = Math.max(0, fc - (a - f0), fc - (f1 - a)) * L; return chamferRect(-(hd(a) + 0.11 - i), hd(a) + 0.11 - i, -(W + 0.06 - i), W + 0.06 - i, 0.05); };
+  add(creased(sweepRings({ center, us: [f0, f0 + fc, f1 - fc, f1], ring: fRing }), 30), MAT.shell, P);
   part('magazine_catches');
   const [fx, fy] = offset(D.magDepth / 2)(0.0);
-  add(creased(slab(roundedShape([[fx - 0.05, fy + 0.02, 0.03], [fx + 0.15, fy + 0.04, 0.03], [fx + 0.15, fy + 0.24, 0.03], [fx - 0.05, fy + 0.24, 0.03]]), 0.5, { bevel: 0.02 })), MAT.mag, P);
+  add(creased(chamferSlab(poly([[fx - 0.05, fy + 0.02], [fx + 0.15, fy + 0.04], [fx + 0.15, fy + 0.24], [fx - 0.05, fy + 0.24]]), 0.5, { c: 0.5 * MM, curveSegments: 1 }), 30), MAT.shell, P);
   const [bx, by] = offset(-D.magDepth / 2)(0.03);
-  add(creased(slab(roundedShape([[bx - 0.14, by - 0.16, 0.03], [bx + 0.05, by - 0.16, 0.03], [bx + 0.05, by + 0.04, 0.03], [bx - 0.14, by + 0.04, 0.03]]), 0.56, { bevel: 0.02 })), MAT.mag, P);
+  add(creased(chamferSlab(poly([[bx - 0.14, by - 0.16], [bx + 0.05, by - 0.16], [bx + 0.05, by + 0.04], [bx - 0.14, by + 0.04]]), 0.56, { c: 0.5 * MM, curveSegments: 1 }), 30), MAT.shell, P);
   part('magazine_top_round');
   for (const [geo, mat] of [[cartGeo.case, MAT.brass], [cartGeo.bullet, MAT.copper]]) {
     const g = geo.clone();
     g.rotateZ(-0.04); g.translate(mx - D.magDepth / 2 + 0.16, -0.37, 0.12);
     add(g, mat, P);
   }
+  // the ammo indicator: segment 1 at the top; each mesh lights both sides' segment at that height
+  part('magazine_ammo_indicator');
+  ammoSegments.length = 0;
+  for (let k = 0; k < 6; k++) {
+    const a0 = aS + k * (segL + gapL), a1 = a0 + segL;
+    const seg = [-1, 1].map(s => clean(sweepRings({ center, us: span(a0, a1, 4), ring: (a) => s > 0
+      ? chamferRect(sIn(a, 3.8 * MM), sIn(a, 6.2 * MM), W - 1.2 * MM, W + 0.4 * MM, [0.25 * MM, 0.25 * MM, 0, 0])
+      : chamferRect(sIn(a, 3.8 * MM), sIn(a, 6.2 * MM), -W - 0.4 * MM, -W + 1.2 * MM, [0, 0, 0.25 * MM, 0.25 * MM]) })));
+    ammoSegments.push(add(mergeGeometries(seg), MAT.led, P, NO_SHADOW));
+  }
   const lab = center(0.55);
   anchors.mag = new THREE.Vector3(lab[0] + 1.35, lab[1], 0.6);
+  const ind = offset(-D.magDepth / 2 + 0.2)((aS + aE) / 2);
+  anchors.ammo = new THREE.Vector3(ind[0], ind[1], W + 0.05);
 }
+const ammoSegments = [], selectorMarks = [];
 
 /* ----------------------------------------------------------------- labels + build */
 
@@ -1131,6 +1350,7 @@ const LABELS = [
   ['selector', 'Selector lever', true, 'selector'], ['gas', '45° gas block', false], ['front', 'Front sight', false],
   ['brake', 'Slant compensator', false], ['mag', '30-round magazine', true, 'magazine'], ['grip', 'Pistol grip', true],
   ['stock', 'Fixed stock', false], ['handguard', 'Lower handguard', true], ['rod', 'Cleaning rod', true],
+  ['ammo', 'Ammo indicator', false, 'magazine'],
 ];
 
 function buildAll() {
@@ -1182,7 +1402,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(stage.clientWidth, stage.clientHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.15;
+renderer.toneMappingExposure = 1.05;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);
@@ -1200,7 +1420,7 @@ const roomEnv = new RoomEnvironment();
 // mirror the room's big +z panel onto the -z wall so the left side reads as well as the right
 { const p = roomEnv.children.find(o => o.isMesh && o.material.emissiveIntensity === 43); const q = p.clone(); q.material = p.material.clone(); q.material.emissiveIntensity = 30; q.position.z = -13.3; roomEnv.add(q); }
 scene.environment = pmrem.fromScene(roomEnv, 0.04).texture;
-scene.environmentIntensity = 1.05;
+scene.environmentIntensity = 0.75;   // the machined alloy and composite reflect more than the old matte black did
 
 const camera = new THREE.PerspectiveCamera(28, stage.clientWidth / stage.clientHeight, 0.5, 600);
 // Ambient occlusion adds contact shading where parts meet. Alpha is kept so the page backdrop shows through.
@@ -1211,6 +1431,36 @@ const ao = new GTAOPass(scene, camera, 1, 1);
 ao.updateGtaoMaterial({ radius: 0.8, distanceExponent: 1.4, thickness: 1.0, scale: 1.0, samples: 16 });
 ao.blendIntensity = 0.85;
 composer.addPass(ao);
+// A soft halo round the purple LEDs, and only them: a pre-pass draws the LEDs over a black silhouette of everything
+// else (so the rifle still hides LEDs behind it), and the bloom's bright pass reads that instead of the frame, so
+// metal glints never flare.
+const glowRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+const glowBlack = new THREE.MeshBasicMaterial({ color: '#000000' });
+class GlowSourcePass extends Pass {
+  constructor() { super(); this.needsSwap = false; }
+  setSize(w, h) { glowRT.setSize(Math.ceil(w / 2), Math.ceil(h / 2)); }   // a halo needs no fine detail
+  render(renderer) {
+    const swapped = [], cc = renderer.getClearColor(new THREE.Color()), ca = renderer.getClearAlpha();
+    scene.traverse(o => { if (o.isMesh && o.material !== MAT.led && o.material !== MAT.ledOff) { swapped.push([o, o.material]); o.material = glowBlack; } });
+    const shadowAuto = renderer.shadowMap.autoUpdate, gv = ground.visible;
+    renderer.shadowMap.autoUpdate = false; ground.visible = false;
+    renderer.setRenderTarget(glowRT); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(scene, camera);
+    renderer.shadowMap.autoUpdate = shadowAuto; ground.visible = gv; renderer.setClearColor(cc, ca);
+    for (const [o, m] of swapped) o.material = m;
+  }
+}
+const glowSource = new GlowSourcePass();
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.45, 0.35, 0.0);
+bloom.highPassUniforms.tDiffuse = { get value() { return glowRT.texture; }, set value(v) { } };
+{ const setSize = bloom.setSize.bind(bloom); bloom.setSize = (w, h) => setSize(Math.ceil(w / 2), Math.ceil(h / 2)); }   // blur at quarter size: cheap, and as soft
+// add the glow to the colour only: the canvas keeps its alpha, so the page backdrop and the floor shadow still show
+// and the halo lights the backdrop where it spills past the rifle
+Object.assign(bloom.blendMaterial, {
+  blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor,
+  blendEquationAlpha: THREE.AddEquation, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor,
+});
+composer.addPass(glowSource);
+composer.addPass(bloom);
 composer.addPass(new OutputPass());
 composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 composer.setSize(stage.clientWidth, stage.clientHeight);
@@ -1332,6 +1582,9 @@ const ammo = { mag: 30, chambered: true };
 function updateAmmoUI() {
   document.getElementById('chamber-state').textContent = ammo.chambered ? 'Loaded' : 'Empty';
   moving.magazine.children.forEach(o => { if (o.name && o.name.startsWith('magazine_top_round')) o.visible = ammo.mag > 0; });
+  // the indicator shows the rounds left in fifths, from the bottom segment up
+  const lit = Math.ceil(ammo.mag / 5);
+  ammoSegments.forEach((m, k) => { m.material = k >= ammoSegments.length - lit ? MAT.led : MAT.ledOff; });
   updateMagUI();
 }
 function cycleAmmo() {
@@ -1350,14 +1603,17 @@ function doCharge() {
 }
 
 // Selector: safe (up) -> auto (middle) -> semi (down) -> safe
-const SELECTOR = [{ name: 'Safe', angle: 0 }, { name: 'Auto · АВ', angle: -1 }, { name: 'Semi · ОД', angle: -2 }];
+const SELECTOR = [{ name: 'Safe', angle: 0 }, { name: 'Auto', angle: -1 }, { name: 'Semi', angle: -2 }];
 const selector = { state: 0, from: 0, to: 0, t: 1 };
 function cycleSelector() {
   selector.from = selectorAngle(); selector.state = (selector.state + 1) % 3;
   selector.to = SELECTOR[selector.state].angle * D.selectorStep; selector.t = 0;
   document.getElementById('sel-state').textContent = SELECTOR[selector.state].name;
+  updateSelectorMarks();
   click(0, 1.6, 0.4);
 }
+// the LED pip of the active mode is lit, the other two go dark
+function updateSelectorMarks() { selectorMarks.forEach((m, i) => { m.material = i === selector.state ? MAT.led : MAT.ledOff; }); }
 function selectorAngle() { return selector.from + (selector.to - selector.from) * ease(Math.min(1, selector.t)); }
 
 // Magazine: rock forward off the rear catch, drop free; insert reverses it.
@@ -1462,7 +1718,7 @@ window.addEventListener('keydown', (e) => {
 document.querySelectorAll('[data-finish]').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('[data-finish]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   applyFinish(b.dataset.finish);
-  try { localStorage.setItem('ak47-finish', b.dataset.finish); } catch (e) { }
+  try { localStorage.setItem('ak47-colourway', b.dataset.finish); } catch (e) { }
 }));
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => {
   spinning = false; $('spin').setAttribute('aria-pressed', 'false');
@@ -1511,6 +1767,7 @@ function bakeMesh(mesh, matrix) {
   g.applyMatrix4(matrix);
   let mat = mesh.material;
   if (mat.side === THREE.BackSide) { g = flipWinding(g); mat = MAT.void; }
+  if (mat === MAT.ledOff) mat = MAT.led;
   g = mergeVertices(g, 1e-6);
   const out = new THREE.Mesh(g, mat);
   out.name = mesh.name;
@@ -1526,6 +1783,7 @@ function relMatrix(o) {
 // Exact quarter turn about Y: rifle +X (muzzle) -> glTF +Z, rifle +Z (right) -> glTF -X.
 const QUARTER_Y = new THREE.Matrix4().set(0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
 function exportScenes() {
+  MAT.led.emissiveIntensity = 2.6;
   const S = 0.0254;
   const toGltf = QUARTER_Y.clone()
     .multiply(new THREE.Matrix4().makeScale(S, S, S))
@@ -1535,7 +1793,7 @@ function exportScenes() {
   for (const g of Object.values(moving)) g.rotation.set(0, 0, 0);
   moving.carrier.position.set(0, 0, 0); moving.magazine.position.copy(D.magPivot); moving.selector.position.copy(D.selectorPivot);
   const root = new THREE.Group(); root.name = 'AK47';
-  root.userData = { units: 'metres', up: '+Y', forward: '+Z (muzzle)', origin: 'bore axis above the trigger', pattern: 'AKM', source: 'rifles/ak47/viewer.html' };
+  root.userData = { units: 'metres', up: '+Y', forward: '+Z (muzzle)', origin: 'bore axis above the trigger', pattern: 'AKM', finish: 'graphite', source: 'rifles/ak47/viewer.html' };
   const nodes = {
     carrier: Object.assign(new THREE.Group(), { name: 'bolt_carrier_assembly' }),
     selector: Object.assign(new THREE.Group(), { name: 'selector_assembly' }),
@@ -1586,13 +1844,20 @@ function toBase64(buf) {
 async function exportGLB() {
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
   const exporter = new GLTFExporter();
-  const out = [];
-  for (const s of exportScenes()) {
-    const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations });
-    out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
-  }
+  const out = [], was = finish;
+  applyFinish('graphite');                       // the files always carry the default colourway
+  try {
+    for (const s of exportScenes()) {
+      const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations });
+      out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
+    }
+  } finally { applyFinish(was); }
   return out;
 }
+// Block until the GPU has finished the frame. Headless tools screenshot right after a render, and under
+// software WebGL a frame (and the turntable frames still queued before it) can take several seconds.
+const syncPixel = new Uint8Array(4);
+function finishFrame() { const gl = renderer.getContext(); renderer.setRenderTarget(null); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, syncPixel); }
 // A clean still for the repo: no UI, default view, one frame.
 function preview() {
   renderer.setAnimationLoop(null);
@@ -1602,6 +1867,7 @@ function preview() {
   camera.position.lerp(controls.target, 0.2);
   controls.update();
   composer.render();
+  finishFrame();
 }
 window.__model = { id: 'ak47', exportScenes, exportGLB, preview };
 
@@ -1611,9 +1877,10 @@ buildAll();
 buildLabels();
 gun.position.set(-D.overall / 2, D.centerLift, 0);
 ground.position.y = D.groundY + D.centerLift;
-let startFinish = 'black';
-try { const f = localStorage.getItem('ak47-finish'); if (f && FINISHES[f]) startFinish = f; } catch (e) { }
+let startFinish = 'graphite';
+try { const f = localStorage.getItem('ak47-colourway'); if (f && FINISHES[f]) startFinish = f; } catch (e) { }
 applyFinish(startFinish);
+updateSelectorMarks();
 document.querySelectorAll('[data-finish]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.finish === startFinish)));
 goView('34', true);
 $('loading').hidden = true;
@@ -1648,9 +1915,10 @@ renderer.setAnimationLoop(() => {
 window.__model.ready = true;
 window.__model.debug = {
   tick, stop: () => renderer.setAnimationLoop(null),
-  renderOnce: () => { controls.update(); composer.render(); labelRenderer.render(scene, camera); },
-  labels: on => labelObjs.forEach(o => o.visible = on), moving, renderer, scene, camera, controls, pivot, gun,
-  rack: doCharge, doCharge, cycleSelector, toggleMag, goView, setSpin: v => { spinning = v; }, applyFinish, D, MAT, renderer,
+  renderOnce: () => { controls.update(); composer.render(); labelRenderer.render(scene, camera); finishFrame(); },
+  labels: on => labelObjs.forEach(o => o.visible = on), moving, renderer, scene, camera, controls, pivot, gun, composer, bloom, ao, selectorMarks, updateSelectorMarks,
+  rack: doCharge, doCharge, cycleSelector, toggleMag, goView, setSpin: v => { spinning = v; }, applyFinish, D, MAT,
+  setAmmo: (n) => { ammo.mag = n; updateAmmoUI(); }, ammo, charge, selector, mag, chargeOffset, selectorAngle, stepMag, ammoSegments, labelObjs,
 };
 </script>
 </body>
