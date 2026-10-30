@@ -7,7 +7,7 @@
 //   - three LODs per merged mesh, children named <node>_LOD0 / _LOD1 / _LOD2;
 //   - box colliders as children named <node>_COL (invisible material; unity/Editor turns them into
 //     BoxColliders);
-//   - effect nodes (fx_*, laser_*) keep a single mesh named <node>_mesh, without LODs or colliders;
+//   - effect nodes (fx_*, laser_*, lattice traces) keep a single mesh named <node>_mesh, without LODs or colliders;
 //   - the animation clips, unchanged.
 // With --sealed it also writes <name>-sealed.glb: the rest pose baked into one static mesh (minus any
 // node named in --drop), for swapping in once an animation has finished.
@@ -139,7 +139,7 @@ window.convert = async (b64, opts) => {
       meshes.forEach((m) => p.remove(m));
       const { geo, mats } = merge(entries);
       const base = p === root ? 'body' : p.name;
-      if (/^(fx_|laser_)/.test(base)) {   // effect geometry (laser beam, kerf glow): one mesh, no LODs, no collider
+      if (/^(fx_|laser_|lattice_[0-9]|lattice_glow)/.test(base)) {   // effect geometry (laser beam, kerf glow): one mesh, no LODs, no collider
         const m = new THREE.Mesh(geo, mats.length === 1 ? mats[0] : mats); m.name = base + '_mesh'; p.add(m); nodes++; continue;
       }
       addLods(p, base, geo, mats, stats); cols += addCollider(p, base, geo); nodes++;

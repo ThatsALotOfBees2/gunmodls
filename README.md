@@ -10,6 +10,8 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 | [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
 | [Recon Tablet](gadgets/recon-tablet/) | Gadgets | `recon-tablet.glb` (left-hand scanner), sounds, Unity ability script |
+| [Conductive Lattice](gadgets/conductive-lattice/) | Gadgets | `conductive-lattice-{soft,reinforced}.glb` (wall electrification), sounds, trace paths |
+| [Cameras](gadgets/cameras/) | Gadgets | `security-camera.glb`, `sticky-camera.glb`, sounds |
 
 Open `index.html` to browse every model in one page: pick one at the top, or press F2 for the next
 (Shift+F2 for the previous). Each model runs in its own viewer with its animations and sounds.
@@ -23,6 +25,10 @@ Open `index.html` to browse every model in one page: pick one at the top, or pre
 ![Breach Spider](gadgets/breach-spider/preview.png)
 
 ![Recon Tablet](gadgets/recon-tablet/preview.png)
+
+![Conductive Lattice](gadgets/conductive-lattice/preview.png)
+
+![Cameras](gadgets/cameras/preview.png)
 
 ## Layout
 
@@ -77,7 +83,11 @@ To use them:
 
 The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
 to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
-(see `gadgets/recon-tablet/INTEGRATION.md`).
+(see `gadgets/recon-tablet/INTEGRATION.md`). The lattice runs on `unity/Runtime/ConductiveLattice.cs` and the cameras on
+`unity/Runtime/DeviceCamera.cs`.
+
+glTFast converts glTF's right-handed axes to Unity's by negating X, so any x coordinate quoted in these
+docs (glTF space) has its sign flipped in a prefab's local space.
 
 Materials import as glTFast PBR materials with emissive LEDs (enable Bloom in your post-processing to
 make them glow). The fine surface grain seen in the viewers is not part of the files.
