@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gunmodls Armory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Chivo+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a slim switcher strip on top; the selected model's own viewer fills everything below it. */
+  :root {
+    --bg: #07080b; --strip: #0e0f15; --fg: #e8e8f0; --muted: #8e92a6; --line: rgba(232, 232, 240, 0.13);
+    --accent: #8f63ff; --accent-fg: #0e0819;
+    --font-display: "Chakra Petch", "Arial Narrow", sans-serif;
+    --font-mono: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); display: flex; flex-direction: column; overflow: hidden; }
+  .strip {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background: var(--strip); border-bottom: 1px solid var(--line);
+  }
+  .brand { font: 700 15px/1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+  .brand span { color: var(--accent); }
+  .models { display: flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--line); flex-wrap: wrap; min-width: 0; }
+  .models button {
+    font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--fg); background: transparent; border: 0;
+    padding: 8px 10px; border-radius: 7px; cursor: pointer; white-space: nowrap;
+  }
+  .models button:hover { background: var(--line); }
+  .models button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+  .models button:focus-visible, .nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .models small { color: var(--muted); margin-left: 6px; }
+  .models button[aria-pressed="true"] small { color: inherit; opacity: 0.7; }
+  .nav { margin-left: auto; display: flex; align-items: center; gap: 8px; font: 11px var(--font-mono); color: var(--muted); }
+  .nav button { font: 500 12px/1 var(--font-mono); color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; cursor: pointer; }
+  kbd { font: 500 11px var(--font-mono); border: 1px solid currentColor; border-radius: 4px; padding: 1px 4px; }
+  .frame { flex: 1; min-height: 0; position: relative; }
+  iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: var(--bg); }
+  @media (max-width: 640px) { .nav .hint { display: none; } .models small { display: none; } }
+</style>
+
+</head>
+<body>
+<header class="strip">
+  <div class="brand">Gun<span>modls</span></div>
+  <div class="models" id="models" role="group" aria-label="Model"></div>
+  <div class="nav">
+    <span class="hint"><kbd>F2</kbd> next · <kbd>Shift</kbd> <kbd>F2</kbd> back</span>
+    <button type="button" id="prev" aria-label="Previous model">‹</button>
+    <button type="button" id="next" aria-label="Next model">›</button>
+  </div>
+</header>
+<main class="frame"><iframe id="view" title="Model viewer" allow="autoplay"></iframe></main>
+
+<script>
+  // Each model's own viewer (with its animations, actions and sounds) runs in the frame.
+  const MODELS = [
+    { id: 'breach-spider', name: 'Breach Spider', kind: 'gadget', src: 'gadgets/breach-spider/viewer.html' },
+    { id: 'wall-fortification', name: 'Wall Fortification', kind: 'gadget', src: 'gadgets/wall-fortification/viewer.html' },
+    { id: 'm590a1', name: 'Mossberg 590A1', kind: 'shotgun', src: 'shotguns/m590a1/viewer.html' },
+    { id: 'ak47', name: 'AK-47', kind: 'rifle', src: 'rifles/ak47/viewer.html' },
+  ];
+  const view = document.getElementById('view'), bar = document.getElementById('models');
+  let cur = -1;
+  MODELS.forEach((m, i) => {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.i = i;
+    b.innerHTML = `${m.name}<small>${m.kind}</small>`;
+    b.addEventListener('click', () => show(i));
+    bar.appendChild(b);
+  });
+  function show(i) {
+    i = (i + MODELS.length) % MODELS.length;
+    if (i === cur) return;
+    cur = i;
+    const m = MODELS[i];
+    view.src = m.src;
+    bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === i)));
+    document.title = m.name + ' · Gunmodls Armory';
+    if (location.hash !== '#' + m.id) history.replaceState(null, '', '#' + m.id);
+    try { localStorage.setItem('gunmodls-model', m.id); } catch (e) { }
+  }
+  function onKey(e) {
+    if (e.key !== 'F2') return;
+    e.preventDefault(); e.stopPropagation();
+    show(cur + (e.shiftKey ? -1 : 1));
+    view.focus();
+  }
+  window.addEventListener('keydown', onKey, true);
+  // F2 also works while the model's own viewer has the keyboard
+  view.addEventListener('load', () => { try { view.contentWindow.addEventListener('keydown', onKey, true); view.contentWindow.focus(); } catch (e) { } });
+  document.getElementById('prev').addEventListener('click', () => show(cur - 1));
+  document.getElementById('next').addEventListener('click', () => show(cur + 1));
+  window.addEventListener('hashchange', () => { const i = MODELS.findIndex(m => '#' + m.id === location.hash); if (i >= 0) show(i); });
+  let start = MODELS.findIndex(m => '#' + m.id === location.hash);
+  if (start < 0) { try { start = MODELS.findIndex(m => m.id === localStorage.getItem('gunmodls-model')); } catch (e) { } }
+  show(Math.max(0, start));
+</script>
+</body>
+</html>

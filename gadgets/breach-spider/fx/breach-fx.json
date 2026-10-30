@@ -1,0 +1,321 @@
+{
+ "about": "Breach spider effects. Times are seconds from the start of the deploy clip (breach starts at deploy_s). Locators are nodes in breach-spider.glb; +Z is out of the wall (toward the attacker). Sizes in metres, speeds in m/s, gravity as a multiplier of world gravity, drag as velocity damping per second. See ../INTEGRATION.md.",
+ "deploy_s": 0.8,
+ "breach_s": 9.292,
+ "laser_on": 1.15,
+ "laser_off": 6.587,
+ "detonate": 10.092,
+ "corner_holds": [
+  {
+   "start": 2.95,
+   "stop": 3.324
+  },
+  {
+   "start": 4.324,
+   "stop": 4.698
+  }
+ ],
+ "hole_m": {
+  "x0": 0.0,
+  "x1": 1.0,
+  "y0": 0.0,
+  "y1": 1.8,
+  "note": "in the spider root frame; the panel blows out toward -Z"
+ },
+ "emitters": [
+  {
+   "burst": 0,
+   "rate": 170,
+   "grow": 1,
+   "gravity": 0.6,
+   "drag": 2.5,
+   "cone": 60,
+   "radius": 0.01,
+   "hemisphere": false,
+   "alpha0": 1,
+   "alpha1": 0.2,
+   "name": "lance_sparks",
+   "locator": "fx_laser_hit",
+   "start": 1.15,
+   "stop": 6.587,
+   "lifetime": [
+    0.25,
+    0.7
+   ],
+   "speed": [
+    0.6,
+    2.8
+   ],
+   "size": [
+    0.006,
+    0.018
+   ],
+   "color0": "#fff1c8",
+   "color1": "#ff5a10",
+   "texture": "spark",
+   "blend": "additive"
+  },
+  {
+   "burst": 0,
+   "rate": 30,
+   "grow": 3,
+   "gravity": -0.03,
+   "drag": 1.2,
+   "cone": 35,
+   "radius": 0.01,
+   "hemisphere": false,
+   "alpha0": 0.35,
+   "alpha1": 0,
+   "name": "lance_smoke",
+   "locator": "fx_laser_hit",
+   "start": 1.15,
+   "stop": 6.587,
+   "lifetime": [
+    1.0,
+    2.0
+   ],
+   "speed": [
+    0.1,
+    0.25
+   ],
+   "size": [
+    0.06,
+    0.1
+   ],
+   "color0": "#bdb6ad",
+   "color1": "#77726c",
+   "texture": "smoke",
+   "blend": "alpha"
+  },
+  {
+   "burst": 0,
+   "rate": 60,
+   "grow": 1,
+   "gravity": 0,
+   "drag": 0,
+   "cone": 0,
+   "radius": 0.01,
+   "hemisphere": false,
+   "alpha0": 1,
+   "alpha1": 0.6,
+   "name": "lance_glow",
+   "locator": "fx_laser_hit",
+   "start": 1.15,
+   "stop": 6.587,
+   "lifetime": [
+    0.03,
+    0.06
+   ],
+   "speed": [
+    0,
+    0
+   ],
+   "size": [
+    0.06,
+    0.1
+   ],
+   "color0": "#ffd2a0",
+   "color1": "#ffd2a0",
+   "texture": "glow",
+   "blend": "additive"
+  },
+  {
+   "burst": 1,
+   "rate": 0,
+   "grow": 1.4,
+   "gravity": 0,
+   "drag": 0,
+   "cone": 0,
+   "radius": 0.01,
+   "hemisphere": false,
+   "alpha0": 1,
+   "alpha1": 0,
+   "name": "blast_flash",
+   "locator": "fx_charge",
+   "start": 10.092,
+   "lifetime": [
+    0.16,
+    0.16
+   ],
+   "speed": [
+    0,
+    0
+   ],
+   "size": [
+    3.2,
+    3.2
+   ],
+   "color0": "#fff6e0",
+   "color1": "#ffb060",
+   "texture": "flash",
+   "blend": "additive"
+  },
+  {
+   "burst": 40,
+   "rate": 0,
+   "grow": 2.2,
+   "gravity": 0,
+   "drag": 4,
+   "cone": 25,
+   "radius": 0.01,
+   "hemisphere": true,
+   "alpha0": 1,
+   "alpha1": 0,
+   "name": "blast_fire",
+   "locator": "fx_charge",
+   "start": 10.092,
+   "lifetime": [
+    0.4,
+    0.6
+   ],
+   "speed": [
+    2,
+    5
+   ],
+   "size": [
+    0.25,
+    0.55
+   ],
+   "color0": "#ffd08a",
+   "color1": "#ff3a08",
+   "texture": "glow",
+   "blend": "additive"
+  },
+  {
+   "burst": 90,
+   "rate": 0,
+   "grow": 3.2,
+   "gravity": -0.025,
+   "drag": 1.8,
+   "cone": 80,
+   "radius": 0.5,
+   "hemisphere": false,
+   "alpha0": 0.75,
+   "alpha1": 0,
+   "name": "blast_smoke",
+   "locator": "fx_charge",
+   "start": 10.092,
+   "lifetime": [
+    3.0,
+    5.5
+   ],
+   "speed": [
+    0.8,
+    2.6
+   ],
+   "size": [
+    0.4,
+    0.9
+   ],
+   "color0": "#8a847c",
+   "color1": "#4a4744",
+   "texture": "smoke",
+   "blend": "alpha",
+   "note": "a third of them should go through the hole (-Z)"
+  },
+  {
+   "burst": 220,
+   "rate": 0,
+   "grow": 1.6,
+   "gravity": 0.35,
+   "drag": 1.2,
+   "cone": 70,
+   "radius": 0.6,
+   "hemisphere": false,
+   "alpha0": 0.8,
+   "alpha1": 0,
+   "name": "blast_dust",
+   "locator": "fx_charge",
+   "start": 10.092,
+   "lifetime": [
+    1.2,
+    2.7
+   ],
+   "speed": [
+    1,
+    4
+   ],
+   "size": [
+    0.02,
+    0.08
+   ],
+   "color0": "#b3aa9c",
+   "color1": "#8c857a",
+   "texture": "smoke",
+   "blend": "alpha"
+  },
+  {
+   "burst": 160,
+   "rate": 0,
+   "grow": 1,
+   "gravity": 0.7,
+   "drag": 1.1,
+   "cone": 25,
+   "radius": 0.01,
+   "hemisphere": true,
+   "alpha0": 1,
+   "alpha1": 0,
+   "name": "blast_embers",
+   "locator": "fx_charge",
+   "start": 10.092,
+   "lifetime": [
+    0.6,
+    1.6
+   ],
+   "speed": [
+    3,
+    9
+   ],
+   "size": [
+    0.012,
+    0.024
+   ],
+   "color0": "#ffe0a8",
+   "color1": "#ff3a08",
+   "texture": "spark",
+   "blend": "additive"
+  }
+ ],
+ "lights": [
+  {
+   "name": "lance_light",
+   "locator": "fx_laser_hit",
+   "offset": [
+    0,
+    0,
+    0.08
+   ],
+   "start": 1.15,
+   "stop": 6.587,
+   "color": "#ffb070",
+   "intensity": 1.4,
+   "flicker": 0.4,
+   "range": 1.6
+  },
+  {
+   "name": "blast_light",
+   "locator": "fx_charge",
+   "offset": [
+    0,
+    0,
+    0.6
+   ],
+   "start": 10.092,
+   "stop": 12.592,
+   "color": "#ffb060",
+   "intensity": 8.0,
+   "flicker": 0,
+   "range": 9,
+   "decay": [
+    0.09,
+    0.6
+   ]
+  }
+ ],
+ "textures": {
+  "spark": "spark.png",
+  "glow": "glow.png",
+  "smoke": "smoke.png",
+  "flash": "flash.png"
+ }
+}

@@ -8,12 +8,18 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Mossberg 590A1](shotguns/m590a1/) | Shotguns | `m590a1.glb`, `shell-12ga.glb` |
 | [AK-47 (AKM)](rifles/ak47/) | Rifles | `ak47.glb`, `cartridge-7.62x39.glb` |
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
+| [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
+
+Open `index.html` to browse every model in one page: pick one at the top, or press F2 for the next
+(Shift+F2 for the previous). Each model runs in its own viewer with its animations and sounds.
 
 ![Mossberg 590A1](shotguns/m590a1/preview.png)
 
 ![AK-47](rifles/ak47/preview.png)
 
 ![Wall Fortification](gadgets/wall-fortification/preview.png)
+
+![Breach Spider](gadgets/breach-spider/preview.png)
 
 ## Layout
 
@@ -65,6 +71,9 @@ To use them:
    Animation to Legacy (or Mecanim) if you need the clips.
 4. Select them (or their folder) and run Tools > Gunmodls > Build Prefabs From Selection. Each prefab
    gets a LODGroup and BoxColliders.
+
+The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
+to your project and see `gadgets/breach-spider/INTEGRATION.md`.
 
 Materials import as glTFast PBR materials with emissive LEDs (enable Bloom in your post-processing to
 make them glow). The fine surface grain seen in the viewers is not part of the files.
