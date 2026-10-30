@@ -16,7 +16,9 @@ expands into a reinforced wall:
    into the floor. Tie rods then punch through the wall, and X-shaped star anchors twist-lock on
    the far side.
 
-Retracting runs the same steps backwards, so the furthest panels come off first.
+4. **Terminal ejects.** 0.3 s after the lock the terminal (the loose control module with the touch
+   screen) unlatches, kicks off and drops to the floor, dark. With the only controls gone, the wall
+   cannot be deactivated or retracted.
 
 Every part is rigid and slides or turns, except the tie rods: they scale up from nothing as they punch
 through the wall. There are no logos, decals or printed text: the only graphic is
@@ -48,10 +50,11 @@ Panels share one mesh per file, so the files stay around 2 MB.
   the animation: the servo runs while the parts move and stops with them, and each clank lands on the
   frame a column, rail or row hits its stop. The tie rods thump one after another, and the slam lands
   on the lock frame.
-- **`retract_<size>.wav`:** start it when you play `deploy` backwards (at normal speed).
+- **`eject.wav`:** start it with the `eject` clip: latch kick, screen power-down, and the terminal
+  landing 0.62 s in.
 - **One-shots:** `place`, `touch_tap`, `arm_confirmed` play before the clip, when the base goes on
   and the operator traces the arm code. `button_press`, `motor_spread`, `rail_extend`,
-  `panel_latch`, `lock_bolt`, `anchor_set`, `locked` and `retract` are separate pieces for custom
+  `panel_latch`, `lock_bolt`, `anchor_set` and `locked` are separate pieces for custom
   setups.
 - **`cues.json`:** lists every animation event's time for each size.
 
@@ -60,14 +63,17 @@ Panels share one mesh per file, so the files stay around 2 MB.
 - **Units:** metres, +Y up. The unit faces +Z, away from the wall.
 - **Origin:** bottom centre of the reinforced area, on the wall surface (z = 0). Put it on the
   defender side of the wall.
-- **Rest pose:** fully deployed and locked.
+- **Rest pose:** fully deployed and locked, terminal still latched.
 - **Animation:** `deploy` runs from the stowed base to the locked wall, in this order:
   1. Confirm press.
   2. The sideways spread.
   3. The vertical spread.
   4. Lock.
 
-  Play it after your touch-screen interaction, and play it backwards to retract.
+  Play it after your touch-screen interaction. Then play `eject` (1.0 s, starting 0.3 s after `deploy`
+  ends): the `terminal` node drops to the floor in front of the wall (beside the hatch on the hatch).
+  There is no retract; never play `deploy` backwards. You can also detach `terminal` and hand it to
+  physics instead.
 - **Far side:** the star anchors and tie rods sit under the `far_side` node, set for a 0.3 m wall.
   Set that node's z to minus your wall's thickness.
 - **Hatch:** a perfect square laid face-up. The origin is the centre of the square, on the floor
@@ -75,7 +81,7 @@ Panels share one mesh per file, so the files stay around 2 MB.
   into the floor. The star anchors are on the underside, 0.3 m down; move `far_side` for other floor
   thicknesses.
 - **Nodes:**
-  - `core` (with `confirm_button`)
+  - `terminal` (the ejectable control module, with `confirm_button`; its LEDs use `led_terminal`)
   - `rail_left` / `rail_right` (sleeves, `*_upper_n` / `*_lower_n` stages, clamps and `*_lockbolt_top` / `*_lockbolt_bottom`)
   - `post_centre` (large and XL only)
   - `beam_top`, `beam_bottom` (with `*_left_n` / `*_right_n` stages)
@@ -86,5 +92,6 @@ Panels share one mesh per file, so the files stay around 2 MB.
 
 ## Viewer
 
-Open `viewer.html`. **Deploy** (D or Space) plays the whole sequence, and pressing it again
-retracts. There are size buttons (1–5), views including **Far side**, part labels and a slow orbit.
+Open `viewer.html`. **Deploy** (D or Space) plays the whole sequence, ending with the terminal
+ejecting. While placing or arming the button cancels; once the wall is going up it cannot be stopped,
+and once sealed the button reads **Reset** and starts over with a fresh unit. There are size buttons (1–5), views including **Far side**, part labels and a slow orbit.

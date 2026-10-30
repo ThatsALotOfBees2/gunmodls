@@ -1,8 +1,10 @@
 {
  "small": {
   "clip_seconds": 2.8,
+  "eject_clip_seconds": 1.0,
+  "eject_delay_seconds": 0.3,
   "deploy_track": "deploy_small.wav",
-  "retract_track": "retract_small.wav",
+  "eject_sound": "eject.wav",
   "events": [
    {
     "t": 0.14,
@@ -51,13 +53,23 @@
    {
     "t": 2.8,
     "event": "locked"
+   },
+   {
+    "t": 3.1,
+    "event": "terminal ejects (eject clip and eject.wav start)"
+   },
+   {
+    "t": 3.72,
+    "event": "terminal hits the floor"
    }
   ]
  },
  "standard": {
   "clip_seconds": 2.8,
+  "eject_clip_seconds": 1.0,
+  "eject_delay_seconds": 0.3,
   "deploy_track": "deploy_standard.wav",
-  "retract_track": "retract_standard.wav",
+  "eject_sound": "eject.wav",
   "events": [
    {
     "t": 0.14,
@@ -106,13 +118,23 @@
    {
     "t": 2.8,
     "event": "locked"
+   },
+   {
+    "t": 3.1,
+    "event": "terminal ejects (eject clip and eject.wav start)"
+   },
+   {
+    "t": 3.72,
+    "event": "terminal hits the floor"
    }
   ]
  },
  "large": {
   "clip_seconds": 3.18,
+  "eject_clip_seconds": 1.0,
+  "eject_delay_seconds": 0.3,
   "deploy_track": "deploy_large.wav",
-  "retract_track": "retract_large.wav",
+  "eject_sound": "eject.wav",
   "events": [
    {
     "t": 0.14,
@@ -173,13 +195,23 @@
    {
     "t": 3.18,
     "event": "locked"
+   },
+   {
+    "t": 3.48,
+    "event": "terminal ejects (eject clip and eject.wav start)"
+   },
+   {
+    "t": 4.1,
+    "event": "terminal hits the floor"
    }
   ]
  },
  "xl": {
   "clip_seconds": 3.56,
+  "eject_clip_seconds": 1.0,
+  "eject_delay_seconds": 0.3,
   "deploy_track": "deploy_xl.wav",
-  "retract_track": "retract_xl.wav",
+  "eject_sound": "eject.wav",
   "events": [
    {
     "t": 0.14,
@@ -252,13 +284,23 @@
    {
     "t": 3.56,
     "event": "locked"
+   },
+   {
+    "t": 3.86,
+    "event": "terminal ejects (eject clip and eject.wav start)"
+   },
+   {
+    "t": 4.48,
+    "event": "terminal hits the floor"
    }
   ]
  },
  "hatch": {
   "clip_seconds": 2.45,
+  "eject_clip_seconds": 1.0,
+  "eject_delay_seconds": 0.3,
   "deploy_track": "deploy_hatch.wav",
-  "retract_track": "retract_hatch.wav",
+  "eject_sound": "eject.wav",
   "events": [
    {
     "t": 0.14,
@@ -307,6 +349,14 @@
    {
     "t": 2.45,
     "event": "locked"
+   },
+   {
+    "t": 2.75,
+    "event": "terminal ejects (eject clip and eject.wav start)"
+   },
+   {
+    "t": 3.37,
+    "event": "terminal hits the floor"
    }
   ]
  }

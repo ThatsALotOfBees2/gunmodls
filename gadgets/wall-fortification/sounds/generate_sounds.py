@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Synthesises the Wall Fortification sound set (numpy only) and writes 44.1 kHz mono 16-bit WAVs.
 
-    python3 generate_sounds.py            # writes the one-shots and the deploy_<size>.wav / retract_<size>.wav mixes
+    python3 generate_sounds.py            # writes the one-shots and the deploy_<size>.wav mixes
 
 One-shots are for gameplay events; deploy_<size>.wav is a full mix timed to that size's `deploy` clip,
-and retract_<size>.wav goes with the clip played backwards.
+and eject.wav goes with the eject clip that follows it.
 """
 import json, os, wave
 import numpy as np
@@ -200,15 +200,24 @@ def s_locked():
     return room(note(880, 0.0, 0.25, 0.45) + note(1318.5, 0.12, 0.35, 0.5) + note(1760, 0.24, 0.5, 0.35) + hum, 0.5, 0.12)
 
 
-def s_retract():
-    d = 1.6
-    return room(mix(motor(1.35, 150, 80, 1200, 0.95), ratchet(1.35, 30, 18, 3500, 0.3), at(clank(560, 0.8), 1.3, d)), 0.45, 0.12)
+def s_eject():
+    """the terminal is cut loose: latches fire, the screen dies, and it lands on the concrete 0.62 s later"""
+    d = 1.6; t = tt(d)
+    latch = mix(burst(0.25, 1700, 0.8, 0.012) * 1.6, thud(130, 70, 0.25, 0.04) * 0.9, click(3000) * 0.8)
+    vent = biquad(noise(0.3), 'hp', 1800) * decay(0.3, 0.09) * 0.35
+    f = 900 * np.exp(-t / 0.08) + 180                                  # power-down blip as the screen goes dark
+    dies = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.clip(t / 0.004, 0, 1) * np.exp(-t / 0.07) * 0.18
+    hit = mix(thud(95, 42, 0.6, 0.11) * 1.5, ring(330, [1, 2.4, 3.9, 6.1], [0.09, 0.06, 0.04, 0.025], [0.5, 0.35, 0.22, 0.12], 0.6),
+              burst(0.6, 2400, 0.7, 0.018) * 1.3, biquad(noise(0.6), 'bp', 600, 0.6) * decay(0.6, 0.05) * 0.6)
+    bounce = mix(thud(120, 60, 0.3, 0.05) * 0.5, ring(420, [1, 2.4, 3.9], [0.05, 0.035, 0.02], [0.3, 0.2, 0.1], 0.3), burst(0.3, 2600, 0.8, 0.01) * 0.5)
+    rattle = sum(at(click(2400 + 300 * k) * (0.35 - 0.1 * k), 0.06 + 0.035 * k, 0.3) for k in range(3))
+    return room(mix(at(latch, 0.0, d), at(vent, 0.01, d), at(dies, 0.05, d), at(hit, 0.62, d), at(bounce, 0.78, d), at(rattle, 0.78, d)), 0.5, 0.14)
 
 
 ONESHOTS = {
     'place': s_place, 'touch_tap': s_touch_tap, 'arm_confirmed': s_arm_confirmed, 'button_press': s_button_press,
     'motor_spread': s_motor_spread, 'rail_extend': s_rail_extend, 'panel_latch': s_panel_latch,
-    'lock_bolt': s_lock_bolt, 'anchor_set': s_anchor_set, 'locked': s_locked, 'retract': s_retract,
+    'lock_bolt': s_lock_bolt, 'anchor_set': s_anchor_set, 'locked': s_locked, 'eject': s_eject,
 }
 
 # ----------------------------------------------------------------- timeline-locked tracks
@@ -292,34 +301,6 @@ def deploy_track(m, stars, rows, cols):
     return room(out, 0.5, 0.1)[:int(L * SR)]
 
 
-def retract_track(m, stars, rows, cols):
-    """deploy played backwards at normal speed: the far corners come off first"""
-    T = timeline(m, rows, cols); total = T['total']; L = total + 1.0
-    out = np.zeros(int(L * SR))
-    def put(x, when, gain=1.0):
-        nonlocal out
-        out += at(x * gain, when, L)
-    r = lambda t: total - t
-    l0, vs, (b0, b1) = T['l0'], T['v_s'], T['beam']
-    put(burst(0.2, 1800, 0.8, 0.012) * 1.2 + thud(120, 70, 0.2, 0.05) * 0.6, 0.03)   # bolts release
-    put(hiss(0.45), r(l0 + 0.5), 0.9)
-    put(ratchet(0.46, 22, 34, 3300, 0.45), r(l0 + 0.5), 0.8)                 # stars untwist
-    for i in range(stars):
-        put(grind(0.4), r(l0 + 0.1 + i * 0.03), 0.3)                        # rods withdraw
-    put(motor(T['v_end'] - vs, 185, 110, 1500), r(T['v_end']), 0.7)         # rows come in, corners first
-    put(ratchet(b1 - b0, 30, 24, 3800, 0.4), r(b1), 0.7)                    # beams and rail ends come in with the outer rows
-    for (j, k), (a, b) in T['v_win'].items():
-        put(clank(700 - 60 * k - 15 * max(j, 0), 0.35 + 0.1 * k), r(a))     # each row stowed behind the band
-    put(clank(470, 1.0), r(b0))                                              # beams and rails fully in with the last row
-    put(motor(T['h_end'] - 0.45, 150, 85, 1150), r(T['h_end']), 0.75)        # columns slide back in, outermost first, rails riding on them
-    for j, (a, b) in T['h_win'].items():
-        put(clank(720 - 40 * j, 0.5), r(a))
-    put(clank(980, 0.3), r(T['rail_step'][1]))                               # rails let go of the band
-    put(clank(480, 1.0), r(0.45))                                            # rails back in the housing
-    put(beeps([1318.5, 880], 0.13, 0.11, 0.4), r(0.25))                      # stowed
-    return room(out, 0.5, 0.1)[:int(L * SR)]
-
-
 def write_wav(path, x):
     x = np.clip(x, -1, 1)
     with wave.open(path, 'wb') as w:
@@ -333,7 +314,7 @@ def main():
     sheet = {}
     for size, (m, stars, rows, cols) in SIZES.items():
         T = timeline(m, rows, cols)
-        for kind, fn in (('deploy', deploy_track), ('retract', retract_track)):
+        for kind, fn in (('deploy', deploy_track),):
             x = fn(m, stars, rows, cols)
             x = np.tanh(x / (np.max(np.abs(x)) + 1e-9) * 1.6) / np.tanh(1.6)
             write_wav(os.path.join(HERE, f'{kind}_{size}.wav'), norm(x, 0.9))
@@ -344,8 +325,10 @@ def main():
                (round(T['beam'][1], 3), 'beams and rails at full travel with the first top / bottom row')]
         ev += [(round(b, 3), f'row {k} of column {j} lands') for (j, k), (a, b) in sorted(T['v_win'].items(), key=lambda e: e[1][1])]
         ev += [(round(T['l0'] - 0.3, 3), 'tie rods start punching through'), (round(T['l0'] + 0.49, 3), 'lock: bolts, panels and star anchors seat'),
-               (round(T['total'], 3), 'locked')]
-        sheet[size] = {'clip_seconds': round(T['total'], 3), 'deploy_track': f'deploy_{size}.wav', 'retract_track': f'retract_{size}.wav',
+               (round(T['total'], 3), 'locked'),
+               (round(T['total'] + 0.3, 3), 'terminal ejects (eject clip and eject.wav start)'), (round(T['total'] + 0.92, 3), 'terminal hits the floor')]
+        sheet[size] = {'clip_seconds': round(T['total'], 3), 'eject_clip_seconds': 1.0, 'eject_delay_seconds': 0.3,
+                       'deploy_track': f'deploy_{size}.wav', 'eject_sound': 'eject.wav',
                        'events': [{'t': t, 'event': e} for t, e in ev]}
     with open(os.path.join(HERE, 'cues.json'), 'w') as f:
         json.dump(sheet, f, indent=1)
