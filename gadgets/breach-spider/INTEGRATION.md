@@ -22,10 +22,10 @@ The test wall, the panel fragments and the viewer's particles are not in the `.g
 
 - The spider's root node (`spider`) sits at the **bottom-left corner of the breach**, on the wall
   surface. +X runs along the wall to the right, +Y is up, +Z points out of the wall toward the attacker.
-- The breach is an upside-down U: **1.0 m wide (x 0 to 1) and 1.8 m tall (y 0 to 1.8)**, open at
+- The breach is an upside-down U: **2.0 m wide (x 0 to 2) and 1.8 m tall (y 0 to 1.8)**, open at
   the floor. The spider walks on the wall face (z = 0) on the attacker's side.
 - To place it, put the root at the floor line where the left edge of the doorway should be, with +Z
-  along the wall's outward normal on the thrower's side. The area x 0..1, y 0..1.8 must be breakable
+  along the wall's outward normal on the thrower's side. The area x 0..2, y 0..1.8 must be breakable
   wall.
 
 ## Sequence
@@ -34,7 +34,7 @@ The test wall, the panel fragments and the viewer's particles are not in the `.g
    `deploy` is the tucked pose). On impact, snap it to the placement above. Play `sounds/throw.wav`
    on release.
 2. **`deploy` (0.80 s).** It unfolds on the wall. Start `breach.wav` here, as a 3D sound on the spider.
-3. **`breach` (9.29 s).** Plays right after `deploy`. Times below are from the start of `deploy`:
+3. **`breach` (10.64 s).** Plays right after `deploy`. Times below are from the start of `deploy`:
 
 | t (s) | move | duration | lance |
 | --- | --- | --- | --- |
@@ -42,22 +42,22 @@ The test wall, the panel fragments and the viewer's particles are not in the `.g
 | 1.15 | cut | 0.20 | on |
 | 1.35 | cut | 1.60 | on |
 | 2.95 | turn | 0.37 | on |
-| 3.32 | cut | 1.00 | on |
-| 4.32 | turn | 0.37 | on |
-| 4.70 | cut | 1.60 | on |
-| 6.30 | settle | 0.09 | on |
-| 6.39 | cut | 0.20 | on |
-| 6.59 | cool | 0.25 | off |
-| 6.84 | turn | 0.61 | off |
-| 7.45 | walk | 1.08 | off |
-| 8.53 | turn | 0.14 | off |
-| 8.67 | settle | 0.12 | off |
-| 8.79 | arm | 1.30 | off |
+| 3.32 | cut | 2.00 | on |
+| 5.32 | turn | 0.37 | on |
+| 5.70 | cut | 1.60 | on |
+| 7.30 | settle | 0.14 | on |
+| 7.43 | cut | 0.20 | on |
+| 7.63 | cool | 0.25 | off |
+| 7.88 | turn | 0.53 | off |
+| 8.41 | walk | 1.49 | off |
+| 9.90 | turn | 0.22 | off |
+| 10.12 | settle | 0.02 | off |
+| 10.14 | arm | 1.30 | off |
 
-   The lance is on from 1.15 s to 6.59 s. It holds still at the two top corners while
-   the spider turns (2.95, 4.32 s), then cuts down the right side, walks to the
+   The lance is on from 1.15 s to 7.63 s. It holds still at the two top corners while
+   the spider turns (2.95, 5.32 s), then cuts down the right side, walks to the
    middle of the panel and arms (beeps speed up, the charge slit glows, the body crouches).
-4. **Detonation at 10.09 s** (the end of `breach`). Hide the spider, cut the hole, blow the panel out
+4. **Detonation at 11.45 s** (the end of `breach`). Hide the spider, cut the hole, blow the panel out
    toward -Z (the far side), play the blast effects. `breach.wav` already contains the boom and the debris.
 
 The sequence is deterministic: over a network, sync the placement and the start time only.
@@ -70,7 +70,7 @@ The sequence is deterministic: over a network, sync the placement and the start 
   while the lance is off). Emissive material `laser_beam`.
 - `fx_laser_hit`: follows the point the lance is cutting. Attach sparks, smoke, the hit glow and a
   flickering light here.
-- `fx_cut/fx_cut_NN`: 92 short glowing segments of the kerf; each scales from 0 to 1 when the lance
+- `fx_cut/fx_cut_NN`: 112 short glowing segments of the kerf; each scales from 0 to 1 when the lance
   passes it. Emissive material `cut_glow`. In the viewer the kerf also cools from white-hot through
   orange to a dark scorch over about 4 s; do that with a material if your engine can.
 - Materials follow the house style; LEDs `led_purple`, the charge `charge_glow`.

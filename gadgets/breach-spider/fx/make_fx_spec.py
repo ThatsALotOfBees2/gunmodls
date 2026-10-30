@@ -13,7 +13,7 @@ spec = {
              'gravity as a multiplier of world gravity, drag as velocity damping per second. See ../INTEGRATION.md.',
     'deploy_s': c['deploy_s'], 'breach_s': c['breach_s'], 'laser_on': on, 'laser_off': off, 'detonate': det,
     'corner_holds': holds,
-    'hole_m': {'x0': 0.0, 'x1': 1.0, 'y0': 0.0, 'y1': 1.8, 'note': 'in the spider root frame; the panel blows out toward -Z'},
+    'hole_m': {'x0': 0.0, 'x1': 2.0, 'y0': 0.0, 'y1': 1.8, 'note': 'in the spider root frame; the panel blows out toward -Z'},
     'emitters': [
         E(name='lance_sparks', locator='fx_laser_hit', start=on, stop=off, rate=170, lifetime=[0.25, 0.7], speed=[0.6, 2.8], size=[0.006, 0.018], gravity=0.6, drag=2.5, cone=60, color0='#fff1c8', color1='#ff5a10', alpha1=0.2, texture='spark', blend='additive'),
         E(name='lance_smoke', locator='fx_laser_hit', start=on, stop=off, rate=30, lifetime=[1.0, 2.0], speed=[0.1, 0.25], size=[0.06, 0.1], grow=3, gravity=-0.03, drag=1.2, cone=35, color0='#bdb6ad', color1='#77726c', alpha0=0.35, texture='smoke', blend='alpha'),

@@ -1,23 +1,23 @@
 {
  "about": "Breach spider effects. Times are seconds from the start of the deploy clip (breach starts at deploy_s). Locators are nodes in breach-spider.glb; +Z is out of the wall (toward the attacker). Sizes in metres, speeds in m/s, gravity as a multiplier of world gravity, drag as velocity damping per second. See ../INTEGRATION.md.",
  "deploy_s": 0.8,
- "breach_s": 9.292,
+ "breach_s": 10.645,
  "laser_on": 1.15,
- "laser_off": 6.587,
- "detonate": 10.092,
+ "laser_off": 7.634,
+ "detonate": 11.445,
  "corner_holds": [
   {
    "start": 2.95,
    "stop": 3.324
   },
   {
-   "start": 4.324,
-   "stop": 4.698
+   "start": 5.324,
+   "stop": 5.698
   }
  ],
  "hole_m": {
   "x0": 0.0,
-  "x1": 1.0,
+  "x1": 2.0,
   "y0": 0.0,
   "y1": 1.8,
   "note": "in the spider root frame; the panel blows out toward -Z"
@@ -37,7 +37,7 @@
    "name": "lance_sparks",
    "locator": "fx_laser_hit",
    "start": 1.15,
-   "stop": 6.587,
+   "stop": 7.634,
    "lifetime": [
     0.25,
     0.7
@@ -69,7 +69,7 @@
    "name": "lance_smoke",
    "locator": "fx_laser_hit",
    "start": 1.15,
-   "stop": 6.587,
+   "stop": 7.634,
    "lifetime": [
     1.0,
     2.0
@@ -101,7 +101,7 @@
    "name": "lance_glow",
    "locator": "fx_laser_hit",
    "start": 1.15,
-   "stop": 6.587,
+   "stop": 7.634,
    "lifetime": [
     0.03,
     0.06
@@ -132,7 +132,7 @@
    "alpha1": 0,
    "name": "blast_flash",
    "locator": "fx_charge",
-   "start": 10.092,
+   "start": 11.445,
    "lifetime": [
     0.16,
     0.16
@@ -163,7 +163,7 @@
    "alpha1": 0,
    "name": "blast_fire",
    "locator": "fx_charge",
-   "start": 10.092,
+   "start": 11.445,
    "lifetime": [
     0.4,
     0.6
@@ -194,7 +194,7 @@
    "alpha1": 0,
    "name": "blast_smoke",
    "locator": "fx_charge",
-   "start": 10.092,
+   "start": 11.445,
    "lifetime": [
     3.0,
     5.5
@@ -226,7 +226,7 @@
    "alpha1": 0,
    "name": "blast_dust",
    "locator": "fx_charge",
-   "start": 10.092,
+   "start": 11.445,
    "lifetime": [
     1.2,
     2.7
@@ -257,7 +257,7 @@
    "alpha1": 0,
    "name": "blast_embers",
    "locator": "fx_charge",
-   "start": 10.092,
+   "start": 11.445,
    "lifetime": [
     0.6,
     1.6
@@ -286,7 +286,7 @@
     0.08
    ],
    "start": 1.15,
-   "stop": 6.587,
+   "stop": 7.634,
    "color": "#ffb070",
    "intensity": 1.4,
    "flicker": 0.4,
@@ -300,8 +300,8 @@
     0,
     0.6
    ],
-   "start": 10.092,
-   "stop": 12.592,
+   "start": 11.445,
+   "stop": 13.945,
    "color": "#ffb060",
    "intensity": 8.0,
    "flicker": 0,
