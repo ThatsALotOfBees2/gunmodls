@@ -563,7 +563,7 @@ function buildTablet() {
     const knuckle = new THREE.CylinderGeometry(0.005, 0.005, 0.15, 20); knuckle.rotateZ(Math.PI / 2);
     hinge.add(mesh(knuckle, MAT.steel, 'sensor_knuckle'));
     hinge.add(mesh(box(-0.07, 0.07, 0.0275, 0.0295, -0.016, 0.004), MAT.led, 'sensor_led', { cast: false }));
-    // the emitter head pans during a scan
+    // the emitter head (fixed; it only moves with the bar when the tablet is equipped)
     const em = node('sensor_emitter', hinge); em.position.set(0, 0.016, 0.012);
     const head = plateXY(rect(-0.055, 0.055, -0.011, 0.011, 0.005), 0, 0.012, 0.002);
     em.add(mesh(creased(head, 30), MAT.dark, 'emitter_head'));
@@ -598,16 +598,15 @@ function pose(N, clip, t) {
     N.emitter.rotation.y = 0; N.cone.scale.setScalar(1e-4); N.button.position.y = 0.079;
     return;
   }
-  // scan: the thumb presses the pulse button, the emitter pans across the cone and back, the cone flies out
+  // scan: the thumb presses the pulse button and the pulse fan flies out; the sensor head itself stays still
   N.hinge.rotation.x = 0; N.ant1.position.y = 0; N.ant2.position.y = 0.045;
   N.button.position.y = 0.079 - 0.0025 * Math.sin(Math.PI * clamp01(t / 0.18));
-  const p = clamp01((t - 0.15) / 0.9);
-  N.emitter.rotation.y = Math.sin(p * Math.PI * 2) * 0.6 * (1 - p * 0.2);
+  N.emitter.rotation.y = 0;
   const c = clamp01((t - 0.12) / 1.1); N.cone.scale.setScalar(c > 0 && c < 1 ? 0.05 + c * 1.6 : 1e-4);
   N.coneK = c;
 }
 function sampleClip(N, name, len) {
-  const fps = 30, n = Math.round(len * fps), list = [[N.hinge, ['quaternion']], [N.ant1, ['position']], [N.ant2, ['position']], [N.emitter, ['quaternion']], [N.cone, ['scale']], [N.button, ['position']]];
+  const fps = 30, n = Math.round(len * fps), list = [[N.hinge, ['quaternion']], [N.ant1, ['position']], [N.ant2, ['position']], [N.cone, ['scale']], [N.button, ['position']]];
   const data = list.map(() => ({})), times = [];
   for (let i = 0; i <= n; i++) {
     const t = Math.min(len, i / fps); times.push(t); pose(N, name, t);

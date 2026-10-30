@@ -44,7 +44,7 @@ your import, tick `flipVertical` or `flipHorizontal`.
 
 ## Nodes and effects
 
-- `body/sensor_hinge/sensor_emitter`: pans left and right during `scan`. `fx_sensor` sits on its lens.
+- `body/sensor_hinge/sensor_emitter`: the fixed sensor head; it only moves with the bar in `deploy`. `fx_sensor` sits on its lens.
 - `fx_scan_cone`: a 90-degree fan of 1 m radius in its local XZ plane, pointing +Z. `scan` scales it from
   0 to about 1.65 m. Keep it level in the world (the script does) and fade it out over the clip if your
   material allows it; or replace it with your own effect.
