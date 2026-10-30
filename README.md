@@ -9,6 +9,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [AK-47 (AKM)](rifles/ak47/) | Rifles | `ak47.glb`, `cartridge-7.62x39.glb` |
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 | [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
+| [Recon Tablet](gadgets/recon-tablet/) | Gadgets | `recon-tablet.glb` (left-hand scanner), sounds, Unity ability script |
 
 Open `index.html` to browse every model in one page: pick one at the top, or press F2 for the next
 (Shift+F2 for the previous). Each model runs in its own viewer with its animations and sounds.
@@ -20,6 +21,8 @@ Open `index.html` to browse every model in one page: pick one at the top, or pre
 ![Wall Fortification](gadgets/wall-fortification/preview.png)
 
 ![Breach Spider](gadgets/breach-spider/preview.png)
+
+![Recon Tablet](gadgets/recon-tablet/preview.png)
 
 ## Layout
 
@@ -73,7 +76,8 @@ To use them:
    gets a LODGroup and BoxColliders.
 
 The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
-to your project and see `gadgets/breach-spider/INTEGRATION.md`.
+to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
+(see `gadgets/recon-tablet/INTEGRATION.md`).
 
 Materials import as glTFast PBR materials with emissive LEDs (enable Bloom in your post-processing to
 make them glow). The fine surface grain seen in the viewers is not part of the files.
