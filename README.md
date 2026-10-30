@@ -41,6 +41,34 @@ and a model id without spaces (`m590a1`).
 - **Materials:** PBR metal/roughness, named by role (`barrel_steel`, `receiver_finish`, `polymer`, ...).
   The viewers add a fine procedural grain on top; that shader is not stored in the `.glb`.
 
+## Unity
+
+Every model has a `unity/` folder with game-ready copies of its `.glb` files, made by
+`node tools/unity-export.js` (rerun it after re-exporting a model):
+
+- meshes merged per moving part, one sub-mesh per material, welded and indexed;
+- UV0 on every mesh: box projection in metres (1 UV unit = 1 m), for tiling detail or wear textures
+  (the screen keeps its own UVs);
+- three LODs per mesh, as children named `<part>_LOD0`, `_LOD1`, `_LOD2` (roughly 100 / 45 / 15 % of
+  the triangles);
+- box colliders as invisible children named `<part>_COL`;
+- the same animation clips and node names as the main file.
+
+The Wall Fortification also ships `<size>-sealed.glb`: the locked wall baked into one static mesh
+without the terminal. Play `deploy` and `eject` on the animated prefab, then swap in the sealed prefab.
+
+To use them:
+
+1. Install glTFast: Package Manager > Add package by name > `com.unity.cloud.gltfast`.
+2. Copy `unity/Editor/GunmodlsPrefabBuilder.cs` into an `Editor` folder in your project.
+3. Copy the `unity/` .glb files you want into your project. In each one's import settings, set
+   Animation to Legacy (or Mecanim) if you need the clips.
+4. Select them (or their folder) and run Tools > Gunmodls > Build Prefabs From Selection. Each prefab
+   gets a LODGroup and BoxColliders.
+
+Materials import as glTFast PBR materials with emissive LEDs (enable Bloom in your post-processing to
+make them glow). The fine surface grain seen in the viewers is not part of the files.
+
 ## Viewing
 
 - Open a model's `viewer.html` in a browser. It loads three.js from jsDelivr, so it needs a connection.

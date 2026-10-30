@@ -4,6 +4,7 @@
   "description": "Export .glb files and preview images from the model viewers in this repo.",
   "license": "UNLICENSED",
   "dependencies": {
+    "meshoptimizer": "0.25.0",
     "playwright": "1.63.0",
     "three": "0.180.0",
     "three-bvh-csg": "0.0.18",
