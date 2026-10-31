@@ -1,0 +1,11 @@
+[{"name":"p1_dep_000","pos":[0.3,0.2,0.36],"target":[0,0.05,0],"setup":"m.set('deploy',0.0,{bub:0})"},
+ {"name":"p2_dep_025","pos":[0.3,0.2,0.36],"target":[0,0.05,0],"setup":"m.set('deploy',0.25,{bub:0})"},
+ {"name":"p3_dep_060","pos":[0.3,0.2,0.36],"target":[0,0.05,0],"setup":"m.set('deploy',0.6,{bub:0})"},
+ {"name":"p4_dep_085","pos":[0.3,0.2,0.36],"target":[0,0.05,0],"setup":"m.set('deploy',0.85,{bub:0})"},
+ {"name":"p5_dep_160","pos":[0.3,0.2,0.36],"target":[0,0.05,0],"setup":"m.set('deploy',1.6,{bub:0})"},
+ {"name":"q_low","pos":[0.24,0.03,0.22],"target":[0,0.05,0],"setup":"m.set('idle',0.3,{bub:0,charge:0.45})"},
+ {"name":"q_lantern","pos":[0.1,0.13,0.12],"target":[0,0.095,0],"fov":24,"setup":"m.set('idle',0.3,{bub:0})"},
+ {"name":"q_top_half","pos":[0.01,0.42,0.06],"target":[0,0.05,0],"setup":"m.set('idle',0.3,{bub:0,charge:0.45})"},
+ {"name":"q_under","pos":[0.2,0.012,0.05],"target":[0,0.03,0],"setup":"m.set('idle',0.3,{bub:0})"},
+ {"name":"q_shut","pos":[0.3,0.2,0.36],"target":[0,0.04,0],"setup":"m.set('shutdown',1.2)"},
+ {"name":"q_off","pos":[0.3,0.2,0.36],"target":[0,0.05,0],"setup":"m.set('power_off',0.8,{bub:0})"}]

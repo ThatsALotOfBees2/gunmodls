@@ -1,0 +1,331 @@
+/*@@HEAD@@*/
+<div id="stage" aria-label="Interactive 3D model of N1CK, a forged-iron robot operator with a screen for a face"></div>
+
+<header class="plate">
+  <div class="eyebrow">Operator</div>
+  <h1>N1<span>CK</span></h1>
+  <dl class="specs">
+    <dt>Height</dt><dd>1.85 m</dd>
+    <dt>Frame</dt><dd>Forged iron plate, riveted and welded</dd>
+    <dt class="wide">Power</dt><dd class="wide">Veinite cell in a stainless shroud</dd>
+    <dt>Gadget</dt><dd>Nullfield, two emitters on the back</dd>
+  </dl>
+  <div class="state" aria-live="polite">
+    <span class="chip">Clip <b id="st-clip">Idle</b></span>
+    <span class="chip" id="st-face-chip">Face <b id="st-face">Neutral</b></span>
+  </div>
+</header>
+
+<div class="hint">Drag to orbit · scroll to zoom</div>
+<div id="loading">Forging N1CK…</div>
+
+<nav class="bar" aria-label="Model controls">
+  <div class="controls">
+    <div class="row">
+      <div class="group" role="group" aria-label="Clip" id="clips"></div>
+    </div>
+    <div class="row">
+      <div class="group" role="group" aria-label="Expression" id="faces">
+        <button type="button" data-face="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-face="neutral">Neutral</button>
+        <button type="button" data-face="happy">Happy</button>
+        <button type="button" data-face="worried">Worried</button>
+        <button type="button" data-face="laughing">Laughing</button>
+        <button type="button" data-face="sad">Sad</button>
+        <button type="button" data-face="alert">Alert</button>
+      </div>
+      <div class="group" role="group" aria-label="Toggles">
+        <button type="button" class="toggle" id="alarm" aria-pressed="false" title="Screen tints dark red">Alarm</button>
+        <button type="button" class="toggle" id="field" aria-pressed="false" title="Nullfield emitters flare">Nullfield</button>
+        <button type="button" class="toggle" id="panel" aria-pressed="false" title="Open the chest panel">Chest</button>
+      </div>
+      <div class="group" role="group" aria-label="View">
+        <button type="button" data-view="full">Full</button>
+        <button type="button" data-view="face">Face</button>
+        <button type="button" data-view="hands">Hands</button>
+        <button type="button" data-view="back">Back</button>
+      </div>
+      <button type="button" class="toggle" id="spin" aria-pressed="true" title="Turn slowly on the plinth">Orbit</button>
+    </div>
+  </div>
+</nav>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+    "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.7/src/index.js",
+    "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { TessellateModifier } from 'three/addons/modifiers/TessellateModifier.js';
+import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
+
+// Metres, +Y up, N1CK faces +Z, his left is +X. Origin on the plinth top between his feet.
+
+/*@@HELPERS@@*/
+
+/*@@SCREWS@@*/
+
+/*@@CORE@@*/
+
+/*@@PARTS@@*/
+
+/*@@ANIM@@*/
+
+/* ------------------------------------------------------------------ scene: a dark concrete bay with a low plinth */
+
+/*@@SCENE@@*/
+scene.background = new THREE.Color('#06070a');
+scene.fog = new THREE.Fog('#06070a', 8, 20);
+scene.environmentIntensity = 0.6;
+camera.fov = 30; camera.near = 0.03; camera.far = 60; camera.updateProjectionMatrix();
+controls.minDistance = 0.25; controls.maxDistance = 9;
+controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.maxPolarAngle = Math.PI * 0.52;
+ao.updateGtaoMaterial({ radius: 0.09, distanceExponent: 1.5, thickness: 0.5, scale: 1.0, samples: 16 });
+bloom.strength = 0.55; bloom.radius = 0.4; bloom.threshold = 0.85;
+renderer.toneMappingExposure = 1.05;
+
+const PLINTH_H = 0.07;
+const wallTex = concreteTexture(3, 2, '#55544f'); wallTex.repeat.set(2, 1);
+const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.93, metalness: 0, color: '#9c9a95' });
+const backWall = new THREE.Mesh(new THREE.BoxGeometry(14, 6, 0.3), wallMat); backWall.position.set(0, 3 - PLINTH_H, -4.8); backWall.receiveShadow = true; scene.add(backWall);
+const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 6, 12), wallMat); sideWall.position.set(-5.2, 3 - PLINTH_H, 0.2); sideWall.receiveShadow = true; scene.add(sideWall);
+const floorTex = concreteTexture(1, 1, '#3a3936'); floorTex.repeat.set(7, 6);
+const floor = new THREE.Mesh(new THREE.BoxGeometry(16, 0.3, 14), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.66, metalness: 0.05, color: '#8f8d89' }));
+floor.position.set(0, -0.15 - PLINTH_H, 1.5); floor.receiveShadow = true; scene.add(floor);
+// turntable: the plinth and N1CK turn together
+const pivot = new THREE.Group(); scene.add(pivot);
+{
+  const steel = new THREE.MeshStandardMaterial({ color: '#2a2c31', roughness: 0.48, metalness: 0.75 });
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.66, PLINTH_H, 72), steel); top.position.y = -PLINTH_H / 2; top.receiveShadow = top.castShadow = true; pivot.add(top);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.635, 0.0035, 8, 120), new THREE.MeshStandardMaterial({ color: '#120a22', emissive: '#8a4dff', emissiveIntensity: 1.1 })); ring.rotation.x = Math.PI / 2; ring.position.y = -0.008; pivot.add(ring);
+  const deck = new THREE.Mesh(new THREE.CircleGeometry(0.58, 72), new THREE.MeshStandardMaterial({ color: '#1d1f23', roughness: 0.62, metalness: 0.6 })); deck.rotation.x = -Math.PI / 2; deck.position.y = 0.0005; deck.receiveShadow = true; pivot.add(deck);
+}
+// hero lighting: warm key high front-left, violet and warm-red rims behind, cool low fill
+const key = new THREE.SpotLight('#ffe4c8', 110, 0, 0.5, 0.75, 2); key.position.set(-2.2, 4.3, 3.4); key.target.position.set(0, 1.0, 0);
+key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.00015; key.shadow.normalBias = 0.015; scene.add(key, key.target);
+const rimL = new THREE.SpotLight('#a08cff', 45, 0, 0.55, 0.8, 2); rimL.position.set(-2.6, 2.9, -2.6); rimL.target.position.set(0, 1.25, 0); scene.add(rimL, rimL.target);
+const rimR = new THREE.SpotLight('#ffc9b0', 18, 0, 0.55, 0.8, 2); rimR.position.set(2.7, 2.3, -2.4); rimR.target.position.set(0, 1.1, 0); scene.add(rimR, rimR.target);
+const fill = new THREE.DirectionalLight('#b8c4ff', 0.6); fill.position.set(3, 1.4, 4); scene.add(fill);
+scene.add(new THREE.HemisphereLight('#8e94ab', '#1a1817', 0.28));
+// the screen and the cell light their surroundings a little (viewer only; they follow the bones)
+const screenLight = new THREE.PointLight('#ffe6c4', 0.12, 0.6, 2); scene.add(screenLight);
+const cellLight = new THREE.PointLight('#ff2a2a', 0.5, 0.8, 2); scene.add(cellLight);
+
+// hidden 1.85 m reference bar with 10 cm ticks (debug renders: m.showRef(true))
+const refBar = new THREE.Group(); refBar.visible = false; scene.add(refBar);
+{
+  const white = new THREE.MeshBasicMaterial({ color: '#dcdce4' }), red = new THREE.MeshBasicMaterial({ color: '#ff3b30' }), x0 = -0.62;
+  const bar = new THREE.Mesh(new THREE.BoxGeometry(0.01, HEIGHT, 0.01), white); bar.position.set(x0, HEIGHT / 2, 0); refBar.add(bar);
+  for (let i = 0; i <= 18; i++) { const t = new THREE.Mesh(new THREE.BoxGeometry(i % 5 ? 0.03 : 0.07, 0.003, 0.004), white); t.position.set(x0 + (i % 5 ? 0.015 : 0.035), i * 0.1, 0); refBar.add(t); }
+  for (const y of [HEIGHT, J.upper_arm_l.y, J.upper_leg_l.y, J.lower_leg_l.y]) { const l = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.003, 0.003), y === HEIGHT ? red : white); l.position.set(0, y, -0.25); refBar.add(l); }
+}
+
+/* ------------------------------------------------------------------ build */
+
+await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+const N = buildN1CK();
+const { rig, K } = N;
+pivot.add(rig.root);
+rig.root.traverse((o) => { if (o.isMesh && o.geometry.attributes.position.count < 90) o.castShadow = false; });
+
+/* ------------------------------------------------------------------ playback */
+
+const st = { clip: 'idle', t: 0, prevPose: null, blend: 1, last: null, expr: null, forceFace: null, alarmOn: false, alarm: 0, fieldOn: false, field: 0, panelOn: false, panel: 0, spin: true, now: 0, face: 'neutral' };
+const $ = (id) => document.getElementById(id);
+function play(name) {
+  if (!ANIM.CLIPS[name]) return;
+  st.prevPose = st.last; st.blend = st.last ? 0 : 1; st.clip = name; st.t = 0;
+  document.querySelectorAll('[data-clip]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.clip === name)));
+  $('st-clip').textContent = ANIM.LABELS[name] || name;
+}
+// an expression picked in the UI: blinks now and then; laughing flips between its two frames
+function exprFace(e, t) {
+  if (e === 'laughing') return Math.floor(t * 7) % 2 ? 'laughing_b' : 'laughing_a';
+  return (t % 3.7) < 0.12 && FACE_INDEX[e + '_blink'] !== undefined ? e + '_blink' : e;
+}
+const FACE_LABEL = (f) => f.replace(/_(a|b|blink)$/, '').replace(/^./, (c) => c.toUpperCase());
+function poseAt(name, t) { const C = ANIM.CLIPS[name]; return C.pose(C.loop ? t % C.len : Math.min(t, C.len)); }
+function tick(dt) {
+  st.now += dt; st.t += dt;
+  let C = ANIM.CLIPS[st.clip];
+  if (!C.loop && st.t >= C.len + 0.15) { play('idle'); C = ANIM.CLIPS.idle; }
+  const tt = C.loop ? st.t % C.len : Math.min(st.t, C.len);
+  const pose = C.pose(tt);
+  st.blend = Math.min(1, st.blend + dt / 0.35);
+  POSE.apply(rig, pose, st.blend < 1 ? st.prevPose : null, ease(st.blend));
+  st.last = pose;
+  // face, alarm tint, emitters, chest panel
+  st.alarm += ((st.alarmOn ? 1 : 0) - st.alarm) * (1 - Math.exp(-dt * 6));
+  const face = st.forceFace || (st.expr ? exprFace(st.expr, st.now) : C.face(tt));
+  const clipField = C.field ? C.field(tt) : 0;
+  setFace(rig, face, Math.max(st.alarm, C.tint ? C.tint(tt) : 0), clipField);
+  if (face !== st.face) { st.face = face; $('st-face').textContent = FACE_LABEL(face); }
+  st.field += ((st.fieldOn ? 1 : 0) - st.field) * (1 - Math.exp(-dt * 5));
+  const f = Math.max(st.field, clipField), pulse = 0.85 + 0.15 * Math.sin(st.now * 9);
+  M.field.emissiveIntensity = M.field.userData.rest * (1 + 4.5 * f * pulse);
+  M.fieldRim.emissiveIntensity = M.fieldRim.userData.rest * (1 + 2 * f * pulse);
+  M.core.emissiveIntensity = M.core.userData.rest * (0.92 + 0.08 * Math.sin(st.now * 2.1));
+  st.panel = clamp01(st.panel + (st.panelOn ? dt : -dt) / 0.7);
+  if (K.hooks.chestPanel) K.hooks.chestPanel(ease(st.panel));
+  if (st.spin) pivot.rotation.y += dt * 0.22;
+  else if (st.view && st.view !== 'full') pivot.rotation.y -= Math.atan2(Math.sin(pivot.rotation.y), Math.cos(pivot.rotation.y)) * (1 - Math.exp(-dt * 4));
+  followLights();
+  if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+}
+const _w = new THREE.Vector3();
+function followLights() {
+  const h = rig.bones.head, sp = rig.bones.spine;
+  h.updateWorldMatrix(true, false); sp.updateWorldMatrix(true, false);
+  screenLight.position.copy(_w.set(0, K.D.head.screen.cy - J.head.y, K.D.head.front + 0.2 - J.head.z).applyMatrix4(h.matrixWorld));
+  screenLight.color.set('#ffe6c4').lerp(new THREE.Color('#ff2020'), st.alarm);
+  cellLight.position.copy(_w.set(0, K.D.cell.y - J.spine.y, K.D.cell.z - 0.1 - J.spine.z).applyMatrix4(sp.matrixWorld));
+}
+
+/* ------------------------------------------------------------------ views and UI */
+
+const VIEWS = {
+  full: { pos: [1.55, 1.3, 4.5], target: [0, 0.96, 0] },
+  face: { pos: [0.3, 1.78, 0.8], target: [0, 1.73, 0.03] },
+  hands: { pos: [0.95, 1.08, 1.0], target: [0.3, 0.9, 0.06] },
+  back: { pos: [-1.35, 1.55, -3.0], target: [0, 1.18, -0.05] },
+  chest: { pos: [0.22, 1.4, 0.82], target: [0, 1.36, 0.1] },
+};
+let camTween = null, sampleBoard = null;
+function viewFor(name) {
+  const v = (name === 'chest' && K.hooks.chestView) || VIEWS[name], t = V3(...v.target), off = V3(...v.pos).sub(t);
+  const asp = camera.aspect, kk = asp < 1.1 ? 1.25 / Math.max(asp, 0.45) : 1;
+  return { pos: t.clone().add(off.multiplyScalar(kk)), target: t };
+}
+function goView(name, instant = false) {
+  st.view = name; const v = viewFor(name); camTween = null;
+  if (name !== 'full') setSpin(false);
+  document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
+  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 };
+}
+function setSpin(on) { st.spin = on; $('spin').setAttribute('aria-pressed', String(on)); }
+function setToggle(id, key, on) { st[key] = on; $(id).setAttribute('aria-pressed', String(on)); }
+{
+  const box = $('clips');
+  for (const name of ANIM.ORDER) {
+    const b = document.createElement('button'); b.type = 'button'; b.dataset.clip = name; b.textContent = ANIM.LABELS[name] || name;
+    b.setAttribute('aria-pressed', String(name === st.clip)); if (!ANIM.CLIPS[name]) { b.disabled = true; b.title = 'Not animated yet'; }
+    b.addEventListener('click', () => play(name)); box.appendChild(b);
+  }
+}
+document.querySelectorAll('[data-face]').forEach((b) => b.addEventListener('click', () => {
+  st.expr = b.dataset.face === 'auto' ? null : b.dataset.face;
+  document.querySelectorAll('[data-face]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+}));
+$('alarm').addEventListener('click', () => { setToggle('alarm', 'alarmOn', !st.alarmOn); $('st-face-chip').classList.toggle('alarm', st.alarmOn); });
+$('field').addEventListener('click', () => setToggle('field', 'fieldOn', !st.fieldOn));
+$('panel').addEventListener('click', () => { setToggle('panel', 'panelOn', !st.panelOn); if (st.panelOn) goView('chest'); });
+document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => goView(b.dataset.view)));
+$('spin').addEventListener('click', () => setSpin(!st.spin));
+controls.addEventListener('start', () => { camTween = null; });
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+window.addEventListener('resize', resize);
+
+/* ------------------------------------------------------------------ export */
+
+function sampleClip(name, len, list, fn) {
+  const fps = 30, n = Math.round(len * fps), data = list.map(() => ({})), times = [];
+  for (let i = 0; i <= n; i++) { const t = Math.min(len, i / fps); times.push(t); fn(t); list.forEach(([o, props], j) => { o.updateMatrix(); for (const p of props) (data[j][p] = data[j][p] || []).push(...o[p].toArray()); }); }
+  const tracks = []; list.forEach(([o, props], j) => { for (const p of props) tracks.push(new (p === 'quaternion' ? THREE.QuaternionKeyframeTrack : THREE.VectorKeyframeTrack)(`${o.name}.${p}`, times, data[j][p])); });
+  return new THREE.AnimationClip(name, len, tracks);
+}
+function toBase64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+// sets the live rig to its rest state for export (viewer-only effects off)
+function restState() {
+  POSE.rest(rig); setFace(rig, 'neutral', 0);
+  M.field.emissiveIntensity = M.field.userData.rest; M.fieldRim.emissiveIntensity = M.fieldRim.userData.rest; M.core.emissiveIntensity = M.core.userData.rest;
+  if (K.hooks.chestPanel) K.hooks.chestPanel(0);
+}
+function exportScenes() {
+  const Q = 'quaternion', R = rig;
+  const list = [...BONE_NAMES.map((n) => [R.bones[n], [Q]]), [R.bones.hips, ['position']], [R.faceCtrl, ['position']], ...R.pistons.flatMap((p) => [[p.a, [Q]], [p.b, [Q]]])];
+  const clips = Object.entries(ANIM.CLIPS).map(([name, C]) => {
+    const clip = sampleClip(name, C.len, list, (t) => { POSE.apply(R, C.pose(t)); setFace(R, C.face(t), C.tint ? C.tint(t) : 0, C.field ? C.field(t) : 0); });
+    for (const tr of clip.tracks) if (tr.name === 'face_ctrl.position') tr.setInterpolation(THREE.InterpolateDiscrete);
+    return clip;
+  });
+  restState(); R.root.updateMatrixWorld(true);
+  R.root.userData = {
+    units: 'metres', up: '+Y', forward: '+Z', left: '+X', height_m: HEIGHT, origin: 'on the ground between the feet',
+    rest_pose: 'T-pose, every bone at identity rotation; palms down, thumbs forward',
+    joints: Object.fromEntries(BONE_NAMES.map((n) => [n, J[n].toArray().map((v) => +v.toFixed(4))])),
+    humanoid: HUMAN,
+    face_atlas: { texture: 'textures/n1ck-face-atlas.png', cols: FACE_COLS, rows: FACE_ROWS, cell_px: FACE_CELL, faces: FACES,
+      note: 'screen UVs cover cell 0 (top-left); show cell i by offsetting the emissive map by (i % 4 / 4, -floor(i / 4) / 4)' },
+    face_channel: 'face_ctrl.position.x = face atlas cell index, .y = alarm tint 0..1 (warm -> dark red), .z = nullfield emitter glow 0..1 (STEP keys)',
+    clips: Object.fromEntries(Object.entries(ANIM.CLIPS).map(([n, C]) => [n, { seconds: C.len, loop: !!C.loop }])),
+    source: 'operators/n1ck/viewer.html',
+  };
+  return [{ file: 'n1ck.glb', root: R.root, animations: clips }];
+}
+async function exportGLB() {
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const exporter = new GLTFExporter(), out = [], was = looping; setLoop(false);
+  const pr = pivot.rotation.y; pivot.rotation.y = 0;
+  try { for (const s of exportScenes()) { const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations }); out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) }); } }
+  finally { pivot.rotation.y = pr; if (was) setLoop(true); }
+  return out;
+}
+// the face atlas as a PNG (base64) for textures/
+function faceAtlasPNG() { return TX.faceAtlasCanvas.toDataURL('image/png').split(',')[1]; }
+function preview() {
+  setLoop(false); setSpin(false);
+  document.querySelectorAll('.plate, .bar, .hint').forEach((e) => { e.hidden = true; });
+  pivot.rotation.y = 0; st.clip = 'idle'; st.t = 1.0; st.expr = 'happy'; st.blend = 1;
+  tick(0); camTween = null;
+  camera.position.set(1.45, 1.45, 3.3); controls.target.set(0, 1.0, 0); controls.update();
+  composer.render();
+}
+window.__model = { id: 'n1ck', exportScenes, exportGLB, preview, faceAtlasPNG, timings: N.timings, partErrors: window.__partErrors };
+
+/* ------------------------------------------------------------------ go */
+
+goView('full', true); setSpin(true);
+$('loading').hidden = true;
+const clock = new THREE.Clock();
+let looping = false;
+function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
+function loop() { const dt = Math.min(clock.getDelta(), 1 / 30); tick(dt); controls.update(); composer.render(dt); }
+tick(0);
+setLoop(true);
+window.__model.ready = true;
+// debug contract (closeups.js / evalpage.js use m = window.__model.debug)
+window.__model.debug = {
+  // renderOnce waits for the GPU (a 1-pixel read), so a screenshot never races a slow shader compile
+  tick, stop: () => setLoop(false), renderOnce: () => { controls.update(); composer.render(); const gl = renderer.getContext(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); },
+  // set(clip, t): hold one clip's pose and face at time t
+  set: (clip, t) => { if (!ANIM.CLIPS[clip]) throw new Error('no clip ' + clip); st.clip = clip; st.t = t; st.blend = 1; st.prevPose = null; tick(0); },
+  // face(name): hold one face cell (null to let the clip drive it again)
+  face: (name) => { st.forceFace = name; tick(0); },
+  expr: (e) => { st.expr = e; tick(0); },
+  alarm: (on) => { st.alarmOn = on; st.alarm = on ? 1 : 0; tick(0); },
+  field: (on) => { st.fieldOn = on; st.field = on ? 1 : 0; tick(0); },
+  panel: (u) => { st.panelOn = u > 0; st.panel = u; if (K.hooks.chestPanel) K.hooks.chestPanel(u); },
+  showRef: (on = true) => { refBar.visible = on; },
+  // board(true): hide N1CK and show samples of every helper and material on the plinth
+  board: (on = true) => { if (!sampleBoard) { sampleBoard = buildSampleBoard(K); pivot.add(sampleBoard); } sampleBoard.visible = on; rig.root.visible = !on; },
+  rest: () => { restState(); st.clip = 'idle'; },
+  goView, camera, controls, scene, renderer, composer, bloom, ao, pivot, rig, bones: rig.bones, K, D, J, M, TX, POSE, ANIM, st,
+  setSway: () => { }, setSpin: (on) => setSpin(on), timings: N.timings, partErrors: window.__partErrors,
+};
+</script>

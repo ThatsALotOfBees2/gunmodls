@@ -1,0 +1,413 @@
+
+gadgets/nullfield/nullfield-emitter.glb  1326 KB
+{
+  "root": [
+    "nullfield_emitter"
+  ],
+  "extras": {
+    "name": "nullfield_emitter",
+    "units": "metres",
+    "up": "+Y",
+    "forward": "+Z (leg 0)",
+    "origin": "on the ground under the middle of the emitter",
+    "puck_radius_m": 0.064,
+    "puck_height_m": 0.04,
+    "leg_azimuths_deg": [
+      0,
+      120,
+      240
+    ],
+    "leg_swing_standing_deg": 145,
+    "body_lift_standing_m": 0.0269,
+    "mast_rise_m": [
+      0.032,
+      0.0255
+    ],
+    "core_height_standing_m": 0.1134,
+    "field_radius_m": 4,
+    "battery_field_s": 25,
+    "battery_recharge_s": 50,
+    "battery_recharge_delay_s": 2,
+    "battery_min_to_switch_on": 0.2,
+    "gauge": "12 segments gauge_00..gauge_11, anticlockwise seen from above starting at +Z; segment i is lit while charge > i/12; scale an unlit one to 0",
+    "fx_bubble": "unit sphere at the field centre; its scale is the bubble radius in metres (the clips grow it to 4); rest scale 0.0001",
+    "notes": "rest pose: standing, mast up, rings at 0, bubble hidden. glTF leg rotation = Ry(azimuth) * Rx(swing).",
+    "source": "gadgets/nullfield/viewer.html",
+    "clips": {
+      "deploy": "lands folded on its belly: legs swing out and stand it up (by 0.6 s), then the mast rises and the bubble grows to 4 m (the power_on motion from 0.6 s)",
+      "idle": "loop: lower ring 1 turn anticlockwise, upper ring 2 turns clockwise and the core 1 turn (seen from above) per 3 s; play it at a speed ramped 0-1 to spin up and down",
+      "power_on": "standing with the mast down: mast rises, bubble grows over 0.45-0.95 s",
+      "power_off": "switched off or battery empty: bubble collapses in 0.25 s, mast sinks; legs stay out",
+      "shutdown": "shot: bubble collapses in 0.12 s, the legs give way and it sags; keys only body, legs and bubble, so play power_off at 2.5x with it if the mast was up"
+    }
+  },
+  "size_m": [
+    0.1519,
+    0.1385,
+    0.1483
+  ],
+  "min_m": [
+    -0.076,
+    -0.0016,
+    -0.0649
+  ],
+  "max_m": [
+    0.076,
+    0.1369,
+    0.0834
+  ],
+  "triangles": 21607,
+  "meshes": 47,
+  "materials": [
+    "shell_composite",
+    "led_purple",
+    "gauge_led",
+    "gauge_cell",
+    "fasteners",
+    "frame_alloy",
+    "joint_steel",
+    "foot_rubber",
+    "black_steel",
+    "core_glow",
+    "nullfield_bubble"
+  ],
+  "parts": [
+    {
+      "name": "shell",
+      "parent": "body",
+      "material": "shell_composite",
+      "triangles": 3326
+    },
+    {
+      "name": "wall_leds",
+      "parent": "body",
+      "material": "led_purple",
+      "triangles": 1116
+    },
+    {
+      "name": "gauge_00_led",
+      "parent": "gauge_00",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_01_led",
+      "parent": "gauge_01",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_02_led",
+      "parent": "gauge_02",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_03_led",
+      "parent": "gauge_03",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_04_led",
+      "parent": "gauge_04",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_05_led",
+      "parent": "gauge_05",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_06_led",
+      "parent": "gauge_06",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_07_led",
+      "parent": "gauge_07",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_08_led",
+      "parent": "gauge_08",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_09_led",
+      "parent": "gauge_09",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_10_led",
+      "parent": "gauge_10",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_11_led",
+      "parent": "gauge_11",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_cells",
+      "parent": "body",
+      "material": "gauge_cell",
+      "triangles": 624
+    },
+    {
+      "name": "top_screws",
+      "parent": "body",
+      "material": "fasteners",
+      "triangles": 612
+    },
+    {
+      "name": "leg_0_plate",
+      "parent": "leg_0",
+      "material": "frame_alloy",
+      "triangles": 1056
+    },
+    {
+      "name": "leg_0_knuckle",
+      "parent": "leg_0",
+      "material": "joint_steel",
+      "triangles": 80
+    },
+    {
+      "name": "leg_0_foot",
+      "parent": "leg_0",
+      "material": "foot_rubber",
+      "triangles": 96
+    },
+    {
+      "name": "leg_0_screw",
+      "parent": "leg_0",
+      "material": "fasteners",
+      "triangles": 204
+    },
+    {
+      "name": "leg_0_led",
+      "parent": "leg_0",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "leg_1_plate",
+      "parent": "leg_1",
+      "material": "frame_alloy",
+      "triangles": 1056
+    },
+    {
+      "name": "leg_1_knuckle",
+      "parent": "leg_1",
+      "material": "joint_steel",
+      "triangles": 80
+    },
+    {
+      "name": "leg_1_foot",
+      "parent": "leg_1",
+      "material": "foot_rubber",
+      "triangles": 96
+    },
+    {
+      "name": "leg_1_screw",
+      "parent": "leg_1",
+      "material": "fasteners",
+      "triangles": 204
+    },
+    {
+      "name": "leg_1_led",
+      "parent": "leg_1",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "leg_2_plate",
+      "parent": "leg_2",
+      "material": "frame_alloy",
+      "triangles": 1056
+    },
+    {
+      "name": "leg_2_knuckle",
+      "parent": "leg_2",
+      "material": "joint_steel",
+      "triangles": 80
+    },
+    {
+      "name": "leg_2_foot",
+      "parent": "leg_2",
+      "material": "foot_rubber",
+      "triangles": 96
+    },
+    {
+      "name": "leg_2_screw",
+      "parent": "leg_2",
+      "material": "fasteners",
+      "triangles": 204
+    },
+    {
+      "name": "leg_2_led",
+      "parent": "leg_2",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "stage_a_tube",
+      "parent": "stage_a",
+      "material": "joint_steel",
+      "triangles": 384
+    },
+    {
+      "name": "stage_a_collar",
+      "parent": "stage_a",
+      "material": "joint_steel",
+      "triangles": 576
+    },
+    {
+      "name": "stage_a_led",
+      "parent": "stage_a",
+      "material": "led_purple",
+      "triangles": 576
+    },
+    {
+      "name": "ring_lower_flange",
+      "parent": "ring_lower",
+      "material": "frame_alloy",
+      "triangles": 2088
+    },
+    {
+      "name": "ring_lower_leds",
+      "parent": "ring_lower",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "stage_b_tube",
+      "parent": "stage_b",
+      "material": "black_steel",
+      "triangles": 1253
+    },
+    {
+      "name": "stage_b_collar",
+      "parent": "stage_b",
+      "material": "joint_steel",
+      "triangles": 384
+    },
+    {
+      "name": "stage_b_cap",
+      "parent": "stage_b",
+      "material": "frame_alloy",
+      "triangles": 576
+    },
+    {
+      "name": "stage_b_screws",
+      "parent": "stage_b",
+      "material": "fasteners",
+      "triangles": 612
+    },
+    {
+      "name": "stage_b_pins",
+      "parent": "stage_b",
+      "material": "joint_steel",
+      "triangles": 256
+    },
+    {
+      "name": "stage_b_leds",
+      "parent": "stage_b",
+      "material": "led_purple",
+      "triangles": 648
+    },
+    {
+      "name": "core_crystal",
+      "parent": "core",
+      "material": "core_glow",
+      "triangles": 36
+    },
+    {
+      "name": "ring_upper_hoop",
+      "parent": "ring_upper",
+      "material": "joint_steel",
+      "triangles": 1440
+    },
+    {
+      "name": "ring_upper_spokes",
+      "parent": "ring_upper",
+      "material": "frame_alloy",
+      "triangles": 356
+    },
+    {
+      "name": "ring_upper_leds",
+      "parent": "ring_upper",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "fx_bubble_sphere",
+      "parent": "fx_bubble",
+      "material": "nullfield_bubble",
+      "triangles": 960
+    }
+  ],
+  "animations": [
+    {
+      "name": "deploy",
+      "seconds": 1.6,
+      "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
+        "stage_a.position",
+        "stage_b.position",
+        "fx_bubble.scale"
+      ]
+    },
+    {
+      "name": "idle",
+      "seconds": 3,
+      "tracks": [
+        "ring_lower.quaternion",
+        "ring_upper.quaternion",
+        "core.quaternion"
+      ]
+    },
+    {
+      "name": "power_on",
+      "seconds": 1,
+      "tracks": [
+        "stage_a.position",
+        "stage_b.position",
+        "fx_bubble.scale"
+      ]
+    },
+    {
+      "name": "power_off",
+      "seconds": 0.8,
+      "tracks": [
+        "stage_a.position",
+        "stage_b.position",
+        "fx_bubble.scale"
+      ]
+    },
+    {
+      "name": "shutdown",
+      "seconds": 1.2,
+      "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
+        "fx_bubble.scale"
+      ]
+    }
+  ]
+}

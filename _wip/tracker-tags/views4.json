@@ -1,0 +1,8 @@
+[{"name":"crouch","pos":[-0.6,1.6,6.6],"target":[-0.9,0.6,3.6],"setup":"m.stage0({s: 11.6, gait: 'crouch'}); m.simulate(1.0)"},
+ {"name":"sprint","pos":[2.6,1.7,4.6],"target":[0.9,0.7,1.6],"setup":"m.stage0({s: 4.0, gait: 'sprint'}); m.simulate(0.5)"},
+ {"name":"walkside","pos":[2.6,1.2,3.8],"target":[0.9,0.7,1.6],"setup":"m.stage0({s: 4.0, gait: 'walk'}); m.simulate(0.9)"},
+ {"name":"breach","pos":[0.2,2.4,5.6],"target":[-1.4,0.9,0.6],"setup":"m.stage0({s: 0.2}); m.att.moving = false; m.breach(); m.simulate(0.35)"},
+ {"name":"shoot","pos":[0.2,5.8,9.8],"target":[0.3,0.3,2.3],"setup":"m.stage0({s: 0.2}); m.att.moving = false; m.shootTag(m.tags[2]); m.simulate(0.7)"},
+ {"name":"doortag","pos":[1.99,1.07,0.63],"target":[1.885,1.02,0.56],"fov":30,"setup":"m.stage0({s: 0.2}); m.simulate(0.2); m.ui(false)"},
+ {"name":"hatchtag","pos":[-1.72,0.1,2.45],"target":[-1.79,0.015,2.36],"fov":30,"setup":"m.stage0({s: 0.2}); m.simulate(0.2); m.ui(false)"},
+ {"name":"floorlow","pos":[1.16,0.15,1.27],"target":[0.92,0.03,0.82],"setup":"m.stage0({s: 2.9}); m.simulate(1.25)"}]

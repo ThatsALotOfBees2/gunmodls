@@ -1,0 +1,991 @@
+/*@@HEAD@@*/
+<div id="stage" aria-label="Interactive 3D room with coin-sized tracker tags stuck to the floor, a wall, a door and a hatch, picking up an attacker's footsteps"></div>
+<div id="pins" class="pins" aria-hidden="true"></div>
+<div id="hud" class="hud" aria-label="Nox's tracker display: rough direction and distance of movement the tags feel">
+  <canvas id="hudc"></canvas>
+  <div class="hud-tag"><span id="hud-dot"></span><span>Nox · Tracker</span></div>
+  <div id="hud-alert" class="hud-alert" hidden>Tamper</div>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<header class="plate">
+  <div class="eyebrow">Intel gadget · Nox</div>
+  <h1>Tracker <span>Tags</span></h1>
+  <dl class="specs">
+    <dt>Tags</dt><dd>5 adhesive pucks, 32 mm across, 8 mm thick</dd>
+    <dt>Sense</dt><dd>Steps and breaches through the surface, about 3 m</dd>
+    <dt>Tell</dt><dd>Faint purple ring light; shooting one alerts Nox</dd>
+  </dl>
+  <div class="state" aria-live="polite"><span class="chip">Pack <b id="count">5</b></span><span class="chip">Stuck <b id="live">0</b></span><span class="chip">Attacker <b id="gait">Walking</b></span></div>
+</header>
+
+<div class="hint">Click a surface to stick a tag · Shift-click a tag to shoot it · drag to orbit</div>
+<div id="loading">Peeling the backing…</div>
+
+<nav class="bar" aria-label="Model controls">
+  <div class="controls">
+    <div class="group" role="group" aria-label="Attacker's gait">
+      <button type="button" data-gait="crouch" title="Crouch-walk (1)">Crouch</button>
+      <button type="button" data-gait="walk" aria-pressed="true" title="Walk (2)">Walk</button>
+      <button type="button" data-gait="sprint" title="Sprint (3)">Sprint</button>
+    </div>
+    <button id="breach" class="primary" type="button" title="Breach charge on the far wall (B)">Breach <kbd>B</kbd></button>
+    <button type="button" id="shoot" aria-pressed="false" title="Click tags to shoot them (X)">Shoot <kbd>X</kbd></button>
+    <button type="button" id="retag" title="Pick the tags up and stick them again (R)">Re-tag</button>
+    <div class="group" role="group" aria-label="View">
+      <button type="button" data-view="room">Room</button>
+      <button type="button" data-view="tag">Tag</button>
+      <button type="button" data-view="pack">Pack</button>
+    </div>
+    <button type="button" id="sound" aria-pressed="true" title="Sounds">Sound</button>
+  </div>
+</nav>
+
+<style>
+  .hud { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 64px); width: min(27vw, 270px); aspect-ratio: 1 / 1.1;
+    border: 1px solid rgba(167, 123, 255, 0.55); border-radius: 10px; overflow: hidden; pointer-events: none;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), inset 0 0 60px rgba(0, 0, 0, 0.75);
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px), rgba(6, 6, 10, 0.82); }
+  .hud canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hud-tag { position: absolute; left: 10px; top: 8px; display: flex; gap: 6px; align-items: center; font: 500 11px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: #e8e8f0; text-shadow: 0 1px 2px #000; }
+  #hud-dot { width: 7px; height: 7px; border-radius: 50%; background: #8a4dff; box-shadow: 0 0 6px #8a4dff; }
+  .hud-alert { position: absolute; left: 50%; top: 30px; transform: translateX(-50%); font: 600 11px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase;
+    color: #ffd6d6; background: rgba(160, 20, 30, 0.75); border: 1px solid rgba(255, 90, 90, 0.8); border-radius: 5px; padding: 3px 8px; white-space: nowrap; }
+  .pins { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .pin { position: absolute; left: 0; top: 0; width: 17px; height: 17px; margin: -30px 0 0 -9px; border-radius: 50%; display: grid; place-items: center;
+    font: 600 10px var(--font-mono); color: #e8e8f0; background: rgba(13, 14, 20, 0.6); border: 1.5px solid rgba(167, 123, 255, 0.85); transition: background 0.15s, box-shadow 0.15s; }
+  .pin::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 12px; background: rgba(167, 123, 255, 0.6); }
+  .pin.flash { background: rgba(138, 77, 255, 0.85); box-shadow: 0 0 12px #8a4dff; }
+  .pin.dead { border-color: rgba(255, 77, 77, 0.9); color: #ff9a9a; background: rgba(40, 6, 8, 0.7); }
+  .pin.dead::after { background: rgba(255, 77, 77, 0.6); }
+  .pin.note { width: auto; height: auto; padding: 3px 7px; border-radius: 6px; margin: -34px 0 0 0; transform: translateX(-50%); font-weight: 500; letter-spacing: 0.04em; border-color: rgba(232, 232, 240, 0.3); }
+  .pin.note::after { background: rgba(232, 232, 240, 0.4); }
+  .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); transform: translateX(-50%); font: 500 12px var(--font-mono); letter-spacing: 0.04em;
+    color: #e8e8f0; background: rgba(13, 14, 20, 0.85); border: 1px solid rgba(232, 232, 240, 0.16); border-radius: 8px; padding: 7px 12px; pointer-events: none; max-width: calc(100vw - 32px); }
+  body.shooting #stage canvas { cursor: crosshair; }
+  @media (max-width: 640px) { .hud { width: 44vw; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); } .toast { bottom: calc(env(safe-area-inset-bottom, 0px) + 140px); } }
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+    "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.7/src/index.js",
+    "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
+
+// Metres, +Y up. Tag: origin at the centre of its back, on the surface it sticks to; the surface normal is +Y.
+// Pack: origin under the middle of its base, the tags stack up +Y, the exit slot faces +Z.
+
+/*@@HELPERS@@*/
+
+/*@@SCREWS@@*/
+
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const seg = (t, a, b) => ease(clamp01((t - a) / (b - a)));
+const springK = (u, k = 5, w = 7) => u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.exp(-k * u) * Math.cos(w * u);
+const deg = THREE.MathUtils.degToRad;
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+// small seeded random numbers (the HUD's fuzz is the same every run)
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+/*@@SURFACE@@*/
+
+const CM = {
+  alloy: surface({ color: '#2a2c33', metalness: 0.7, roughness: 0.4 }, { grain: 900, colorVar: 0.035, roughVar: 0.05 }),
+  shell: surface({ color: '#1d1e24', metalness: 0.15, roughness: 0.55 }, { grain: 800, colorVar: 0.04, roughVar: 0.06 }),
+  steel: surface({ color: '#34363d', metalness: 0.85, roughness: 0.33 }, { grain: 1200, colorVar: 0.03, roughVar: 0.04 }),
+  dark: surface({ color: '#111216', metalness: 0.45, roughness: 0.62 }, { grain: 1000, colorVar: 0.03, roughVar: 0.05 }),
+  bolt: surface({ color: '#45474f', metalness: 0.85, roughness: 0.32 }, { grain: 1500, colorVar: 0.03, roughVar: 0.04 }),
+  rubber: surface({ color: '#16161b', metalness: 0, roughness: 0.78 }, { grain: 1600, colorVar: 0.03, roughVar: 0.05 }),
+  gel: new THREE.MeshPhysicalMaterial({ color: '#221c30', metalness: 0, roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.35, specularIntensity: 0.5 }),
+  led: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 1.4, roughness: 0.35, metalness: 0 }),
+  pulse: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2.8, roughness: 0.35, metalness: 0 }),
+  dormant: new THREE.MeshStandardMaterial({ color: '#211830', emissive: '#8a4dff', emissiveIntensity: 0.05, roughness: 0.4, metalness: 0 }),
+};
+const CM_NAMES = { alloy: 'housing_alloy', shell: 'shell_composite', steel: 'contact_steel', dark: 'black_steel', bolt: 'fasteners', rubber: 'membrane_rubber', gel: 'adhesive_gel', led: 'led_purple', pulse: 'pulse_purple', dormant: 'led_dormant' };
+for (const [k, v] of Object.entries(CM_NAMES)) CM[k].name = v;
+const LED_ON = { led: 1.4, pulse: 2.8 };
+const mesh = (geo, mat, name, { cast = true, receive = true } = {}) => { const m = new THREE.Mesh(geo, mat); m.name = name; m.castShadow = cast; m.receiveShadow = receive; return m; };
+const node = (name, parent) => { const g = new THREE.Group(); g.name = name; if (parent) parent.add(g); return g; };
+const hexScrew = (r, pos, normal, spin = 0.3) => placeScrew(screwHead(r, { style: 'hex', h: r * 0.55, seg: 18 }), pos, normal, spin);
+const rect = (x0, x1, y0, y1, r) => roundedShape([[x0, y0, r], [x1, y0, r], [x1, y1, r], [x0, y1, r]]);
+// plates: in the XY plane (thick along Z) and the XZ plane (thick along Y)
+// cs: segments per rounded corner (keep it low on small parts)
+const plateXY = (shape, z0, z1, b, cs = 8) => slab(shape, z1 - z0, { bevel: b, segs: 1, zc: (z0 + z1) / 2, curveSegments: cs });
+const plateXZ = (x0, x1, z0, z1, r, y0, y1, b, cs = 8) => slab(rect(x0, x1, -z1, -z0, r), y1 - y0, { bevel: b, segs: 1, zc: (y0 + y1) / 2, curveSegments: cs }).rotateX(-Math.PI / 2);
+const slabXZ = (shape, y0, y1, b, segs = 1, cs = 10) => slab(shape, y1 - y0, { bevel: b, segs, zc: (y0 + y1) / 2, curveSegments: cs }).rotateX(-Math.PI / 2);
+// lathe about Y: pts = [[r, y], ...], anticlockwise in (r, y) so the faces point out
+const latheY = (pts, seg = 64) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
+// mirror a geometry across x = 0 or z = 0 (keeps the faces facing out)
+function mirror(g, ax) {
+  g = clean(g).clone(); g.scale(ax === 'x' ? -1 : 1, 1, ax === 'z' ? -1 : 1);
+  for (const k of ['position', 'normal']) { const a = g.attributes[k].array; for (let i = 0; i < a.length; i += 9) for (let j = 0; j < 3; j++) { const t = a[i + 3 + j]; a[i + 3 + j] = a[i + 6 + j]; a[i + 6 + j] = t; } g.attributes[k].needsUpdate = true; }
+  return g;
+}
+const merge = (list) => mergeGeometries(list.map(clean));
+
+/* ------------------------------------------------------------------ the tag */
+
+// Stuck pose (body at 0): gel squashed to GEL_SQ, the housing's underside on top of it.
+// Free pose (in flight, in the pack): gel at GEL_H, so the body rides GEL_H - GEL_SQ higher; prongs pulled up; ring light sunk.
+const TG = { R: 0.0158, GEL_H: 0.0016, GEL_SQ: 0.0009, BULGE: 1.03, PRONG_UP: 0.0019, LED_DROP: 0.0008, PULSE_UP: 0.0019, HINGE_Y: 0.0055, HINGE_Z: 0.0115, MEM_Y: 0.0044 };
+const STUCK_H = 0.0031 + TG.MEM_Y + 0.00045;   // top of the nub when stuck
+
+function tagGeos({ seg = 48, flutes = 26, lite = false } = {}) {
+  const G = {};
+  // housing: a shallow cup with a stepped rim; grooves for the ring light and the pulse ring
+  let housing = latheY([[0, 0.0009], [0.0145, 0.0009], [0.0158, 0.0021], [0.0158, 0.0043], [0.0151, 0.005], [0.0125, 0.005], [0.0124, 0.0049], [0.0124, 0.004],
+    [0.0117, 0.004], [0.0117, 0.0044], [0.0075, 0.0044], [0.0075, 0.0028], [0.0066, 0.0028], [0.0066, 0.0044], [0, 0.0044]], seg);
+  if (flutes) {   // grip flutes round the side
+    const cut = []; for (let k = 0; k < flutes; k++) cut.push(box(-0.0005, 0.0005, 0.0025, 0.0039, -0.00055, 0.00055).translate(0.0159, 0, 0).rotateY((k + 0.5) / flutes * Math.PI * 2));
+    housing = subtract(housing, ...cut);
+  }
+  G.housing = creased(housing, 30);
+  if (!lite) G.screws = merge([30, 150, 270].map(a => hexScrew(0.0009, V3(Math.cos(deg(a)) * 0.0138, 0.005, Math.sin(deg(a)) * 0.0138), V3(0, 1, 0), a)));
+  // adhesive gel ring under the rim (free height; the stick clip squashes it)
+  G.gel = creased(latheY([[0.01, 0.0003], [0.0103, 0], [0.0151, 0], [0.0154, 0.0003], [0.0154, 0.0013], [0.0151, 0.0016], [0.0103, 0.0016], [0.01, 0.0013], [0.01, 0.0003]], seg), 40);
+  // ring light (light pipe in the rim groove) and the pulse ring (in the groove round the membrane)
+  G.ledRing = creased(latheY([[0.0118, 0.004], [0.0123, 0.004], [0.0123, 0.0047], [0.01215, 0.0049], [0.01195, 0.0049], [0.0118, 0.0047], [0.0118, 0.004]], seg), 40);
+  G.pulseRing = creased(latheY([[0.00675, 0.0029], [0.0074, 0.0029], [0.0074, 0.0038], [0.00725, 0.004], [0.0069, 0.004], [0.00675, 0.0038], [0.00675, 0.0029]], seg), 40);
+  // sensing membrane: a low dome with three shallow ribs, a steel nub on top
+  const dome = [[0, 0], [0.0065, 0], [0.0065, 0.0008], [0.0062, 0.0013]];
+  const n = lite ? 6 : 12;
+  for (let i = 1; i <= n; i++) { const r = 0.0062 * (1 - i / n), h = 0.0013 + 0.0018 * (1 - (r / 0.0062) ** 2); let rib = 0; for (const c of [0.005, 0.0037, 0.0024]) rib += Math.exp(-(((r - c) / 0.00035) ** 2)); dome.push([r, h + (lite ? 0 : 0.0001 * rib)]); }
+  G.membrane = creased(latheY(dome, Math.round(seg * 0.85)), 50);
+  G.nub = new THREE.SphereGeometry(0.0011, lite ? 8 : 16, lite ? 3 : 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.45, 1).translate(0, 0.0031 - 0.00005, 0);
+  // cap: a ring split into two halves along X, each hinged at its outer top edge (they flip open in tamper)
+  const ring = latheY([[0.0076, 0.0044], [0.0079, 0.0044], [0.0079, 0.0052], [0.0109, 0.0052], [0.0109, 0.0044], [0.0115, 0.0044], [0.0115, 0.0055], [0.011, 0.0061],
+    [0.01, 0.0065], [0.0086, 0.0065], [0.0079, 0.0062], [0.0076, 0.0057], [0.0076, 0.0044]], seg);
+  G.capA = creased(subtract(ring, box(-0.02, 0.02, 0.003, 0.008, -0.02, 0.00012)), 32).translate(0, -TG.HINGE_Y, -TG.HINGE_Z);
+  G.capB = creased(subtract(ring, box(-0.02, 0.02, 0.003, 0.008, -0.00012, 0.02)), 32).translate(0, -TG.HINGE_Y, TG.HINGE_Z);
+  if (lite) return G;
+  // underside: piezo contact disc in the middle and three prongs that seat into the surface
+  G.piezo = creased(latheY([[0, 0], [0.0062, 0], [0.0068, 0.0004], [0.0068, 0.0012], [0, 0.0012]], 48), 40);
+  G.prongs = merge([90, 210, 330].map(a => new THREE.CylinderGeometry(0.00042, 0, 0.0026, 10).translate(Math.cos(deg(a)) * 0.0088, 0.0003, Math.sin(deg(a)) * 0.0088)));
+  // inside, under the cap: a pickup coil and six chips (seen once the cap is off)
+  const chips = []; for (let k = 0; k < 6; k++) { const w = k % 2 ? 0.0016 : 0.0022; chips.push(box(-0.0005, 0.0005, 0.0044, 0.00495, -w / 2, w / 2).translate(0.0099, 0, 0).rotateY(k / 6 * Math.PI * 2 + 0.3)); }
+  G.chips = merge(chips);
+  G.coil = new THREE.TorusGeometry(0.0085, 0.00024, 5, 36).rotateX(Math.PI / 2).translate(0, 0.00466, 0);
+  return G;
+}
+
+function buildTag(G, { led = CM.led, pulse = CM.pulse, name = 'tracker_tag' } = {}) {
+  const root = node(name);
+  const gel = node('gel', root); gel.add(mesh(G.gel, CM.gel, 'gel_ring'));
+  const body = node('body', root);
+  body.add(mesh(G.housing, CM.alloy, 'housing'));
+  if (G.screws) body.add(mesh(G.screws, CM.bolt, 'screws'));
+  if (G.piezo) { body.add(mesh(G.piezo, CM.steel, 'piezo_disc')); body.add(mesh(G.chips, CM.dark, 'internals_chips')); body.add(mesh(G.coil, CM.steel, 'internals_coil')); }
+  const prongs = node('prongs', body); if (G.prongs) prongs.add(mesh(G.prongs, CM.steel, 'prong_pins'));
+  const ledRing = node('led_ring', body); ledRing.add(mesh(G.ledRing, led, 'led_ring_light', { cast: false }));
+  const pulseRing = node('pulse_ring', body); pulseRing.add(mesh(G.pulseRing, pulse, 'pulse_ring_light', { cast: false }));
+  const membrane = node('membrane', body); membrane.position.y = TG.MEM_Y;
+  membrane.add(mesh(G.membrane, CM.rubber, 'membrane_dome')); membrane.add(mesh(G.nub, CM.steel, 'membrane_nub'));
+  const capA = node('cap_a', body); capA.position.set(0, TG.HINGE_Y, TG.HINGE_Z); capA.add(mesh(G.capA, CM.shell, 'cap_a_shell'));
+  const capB = node('cap_b', body); capB.position.set(0, TG.HINGE_Y, -TG.HINGE_Z); capB.add(mesh(G.capB, CM.shell, 'cap_b_shell'));
+  return { root, gel, body, prongs, ledRing, pulseRing, membrane, capA, capB };
+}
+
+// one pose of every moving part. squash 0 = free, 1 = pressed on; prong / led 0 = in, 1 = out; pulse 0..1 lifts the pulse ring;
+// flex scales the membrane's height; capA / capB are the halves' opening angles (deg); cave crushes the membrane; jx / jz shake the body
+const TP = (o = {}) => ({ squash: 1, prong: 1, led: 1, pulse: 0, flex: 1, capA: 0, capB: 0, pop: 0, cave: 0, jx: 0, jz: 0, ...o });
+const FREE = () => TP({ squash: 0, prong: 0, led: 0 });
+function poseTag(K, p) {
+  const sy = lerp(1, TG.GEL_SQ / TG.GEL_H, p.squash), sx = lerp(1, TG.BULGE, Math.min(1, p.squash));
+  K.gel.scale.set(sx, sy, sx);
+  K.body.position.y = TG.GEL_H * sy - TG.GEL_SQ;   // the housing rides on top of the gel
+  K.body.rotation.set(p.jx, 0, p.jz);
+  K.prongs.position.y = TG.PRONG_UP * (1 - p.prong);
+  K.ledRing.position.y = -TG.LED_DROP * (1 - p.led);
+  K.pulseRing.position.y = TG.PULSE_UP * p.pulse;
+  K.membrane.scale.set(1, p.flex * lerp(1, 0.3, p.cave), 1); K.membrane.rotation.set(0, 0, 0.16 * p.cave); K.membrane.position.y = TG.MEM_Y - 0.0002 * p.cave;
+  K.capA.position.y = TG.HINGE_Y + p.pop; K.capA.rotation.set(deg(p.capA), deg(p.capA * 0.12), 0);
+  K.capB.position.y = TG.HINGE_Y + p.pop * 0.7; K.capB.rotation.set(-deg(p.capB), deg(-p.capB * 0.25), deg(p.capB * 0.15));
+}
+
+// the tag's clips, as functions of time
+const TT = { stick: 0.25, pulse: 0.35, tamper: 0.5 };
+function stickP(t) { return TP({ squash: springK(clamp01(t / 0.16), 5, 9), prong: seg(t, 0.05, 0.13), led: seg(t, 0.13, 0.24), flex: 1 - 0.12 * Math.sin(Math.PI * clamp01(t / 0.1)) }); }
+function pulseP(t) {
+  const flex = t < 0.04 ? lerp(1, 0.84, seg(t, 0, 0.04)) : lerp(0.84, 1, springK(clamp01((t - 0.04) / 0.31), 5, 14));
+  return TP({ flex, pulse: t < 0.05 ? seg(t, 0, 0.05) : 1 - seg(t, 0.12, 0.35) });
+}
+function tamperP(t) {
+  const k = springK(clamp01(t / 0.32), 4, 8);
+  return TP({ led: 1 - seg(t, 0, 0.06), capA: 52 * k, capB: 31 * k, pop: 0.0014 * Math.sin(Math.PI * clamp01(t / 0.14)) + 0.0002 * seg(t, 0.1, 0.3), cave: seg(t, 0.01, 0.08),
+    jx: 0.1 * Math.exp(-t / 0.06) * Math.sin(t * 75), jz: 0.07 * Math.exp(-t / 0.07) * Math.sin(t * 60) });
+}
+
+/* ------------------------------------------------------------------ the pack */
+
+// A palm-sized dispenser: the tags stack in a bore, a spring and follower push them up, a thumb slide on top pushes
+// the top one (tag_1) out of the front slot. With n tags left the game shows tag_1..tag_n and moves the follower.
+const PK = { E: 0.0235, H: 0.075, BORE: 0.0168, BASE: 0.006, TOPY: 0.055, PITCH: 0.0092, FOLLOW_T: 0.003, SPRING_H0: 0.03, TRAVEL: 0.024, POP: 0.002, GATE_DROP: 0.0125, DECK: 0.0646 };
+const followY = (n) => PK.TOPY - Math.max(n - 1, 0) * PK.PITCH;
+
+function packGeos(TGL) {
+  const G = {}, E = PK.E, bb = 0.0012, i = E - 0.9 * bb;
+  const outline = roundedShape([[-i, -i, 0.0035], [i, -i, 0.0035], [i, i, 0.011], [-i, i, 0.011]]);   // flat front (shape -y is +Z), rounder back
+  let shell = slabXZ(outline, 0.004, PK.DECK, bb, 2);
+  shell = subtractEach(shell,
+    new THREE.CylinderGeometry(PK.BORE, PK.BORE, 0.07, 64).translate(0, PK.BASE + 0.035, 0),
+    box(-PK.BORE, PK.BORE, 0.0546, 0.07, 0, 0.04),          // exit slot at tag_1's height
+    box(0, 0.04, 0.012, 0.0605, -0.0045, 0.0045),           // window on the +X side: shows the stack
+  );
+  G.shell = creased(shell, 30);
+  let deck = slabXZ(outline, PK.DECK, PK.H, bb, 2);
+  deck = subtractEach(deck, box(-0.0092, 0.0092, PK.H - 0.0015, 0.09, -0.0215, 0.0215), box(-0.0026, 0.0026, 0.06, 0.09, -0.0195, 0.0085));
+  G.deck = creased(deck, 30);
+  const i2 = 0.0245 - 0.9 * 0.001;
+  G.foot = creased(slabXZ(roundedShape([[-i2, -i2, 0.004], [i2, -i2, 0.004], [i2, i2, 0.012], [-i2, i2, 0.012]]), 0, 0.0045, 0.001), 30);
+  // grip ribs on the -X side, gate rails on the front, pip bezels on the +X side
+  const ribs = []; for (let k = 0; k < 6; k++) { const y = 0.016 + k * 0.0072; ribs.push(plateXZ(-0.0246, -0.0232, -0.012, 0.012, 0.0005, y, y + 0.0024, 0.0003, 2)); }
+  G.ribs = creased(merge(ribs), 30);
+  const rail = plateXY(rect(0.0186, 0.0198, 0.038, 0.0668, 0.0004), E - 0.0002, E + 0.0022, 0.0003, 2);
+  G.rails = creased(merge([rail, mirror(rail, 'x')]), 30);
+  const bez = []; for (let k = 0; k < 5; k++) bez.push(new THREE.TorusGeometry(0.00145, 0.00035, 5, 16).rotateY(Math.PI / 2).translate(E, 0.018 + k * 0.0085, 0.011));
+  G.bezels = merge(bez);
+  G.pip = new THREE.SphereGeometry(0.0011, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).rotateZ(-Math.PI / 2).scale(0.5, 1, 1);
+  // belt clip on the back
+  G.clip = creased(merge([plateXY(rect(-0.011, 0.011, 0.02, 0.066, 0.003), -E - 0.005, -E - 0.003, 0.0005, 4), plateXY(rect(-0.011, 0.011, 0.058, 0.068, 0.002), -E - 0.0035, -E + 0.0005, 0.0005, 3)]), 30);
+  const sc = [];
+  for (const x of [-0.0165, 0.0165]) for (const z of [-0.0165, 0.0165]) sc.push(hexScrew(0.0015, V3(x, PK.H, z), V3(0, 1, 0), x * 300 + z * 170));
+  for (const y of [0.0095, 0.0598]) sc.push(hexScrew(0.0013, V3(-E, y, 0), V3(-1, 0, 0), y * 200));
+  for (const x of [-0.006, 0.006]) sc.push(hexScrew(0.0011, V3(x, 0.0632, -E - 0.005), V3(0, 0, -1), x * 400));
+  G.screws = merge(sc);
+  // follower plate (origin at its top) and the spring under it (natural height SPRING_H0; the game scales it in Y)
+  G.follower = creased(latheY([[0, -PK.FOLLOW_T], [0.0158, -PK.FOLLOW_T], [0.0162, -0.0026], [0.0162, -0.0004], [0.0158, 0], [0.006, 0], [0.0055, 0.0006], [0, 0.0006]], 48), 35);
+  const hp = []; for (let k = 0; k <= 160; k++) { const u = k / 160, a = u * 4 * Math.PI * 2; hp.push(V3(Math.cos(a) * 0.0135, 0.0008 + u * (PK.SPRING_H0 - 0.0016), Math.sin(a) * 0.0135)); }
+  G.spring = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hp), 128, 0.0007, 5, false);
+  // thumb slide (origin on the deck top) with its fin reaching down behind tag_1, and the front gate
+  const ib = 0.0082 - 0.9 * 0.0006;
+  G.slide = creased(merge([slabXZ(roundedShape([[-ib, 0.0035 - 0.0005, 0.002], [ib, 0.0035 - 0.0005, 0.002], [ib, 0.0175 - 0.0005, 0.002], [-ib, 0.0175 - 0.0005, 0.002]]), -0.0015, 0.0038, 0.0006, 1, 4)]), 30);
+  const gr = []; for (let k = 0; k < 4; k++) { const z = -0.0158 + k * 0.0035; gr.push(plateXZ(-0.0068, 0.0068, z - 0.0006, z + 0.0006, 0.0003, 0.0036, 0.0048, 0.0002, 2)); }
+  G.slideGrip = creased(merge(gr), 30);
+  G.fin = box(-0.0018, 0.0018, PK.TOPY + 0.0008 - PK.H, -0.001, -0.0188, -0.0163);
+  G.gate = creased(plateXY(rect(-0.018, 0.018, 0.0538, 0.0652, 0.0015), E + 0.0002, E + 0.0017, 0.0004, 4), 30);
+  // the stacked tags: each one merged into a mesh per material, in the free pose, ring light dark
+  const K = buildTag(TGL, { led: CM.dormant, pulse: CM.dormant }); poseTag(K, FREE()); K.root.updateMatrixWorld(true);
+  const byMat = new Map(); K.root.traverse(o => { if (!o.isMesh) return; if (!byMat.has(o.material)) byMat.set(o.material, []); byMat.get(o.material).push(clean(o.geometry).clone().applyMatrix4(o.matrixWorld)); });
+  G.tag = [...byMat].map(([mat, list]) => ({ mat, geo: mergeGeometries(list) }));
+  return G;
+}
+
+function buildPack(G) {
+  const root = node('tracker_tags_pack');
+  const body = node('pack_body', root);
+  body.add(mesh(G.shell, CM.alloy, 'shell'));
+  body.add(mesh(G.deck, CM.shell, 'deck'));
+  body.add(mesh(G.foot, CM.dark, 'foot'));
+  body.add(mesh(G.ribs, CM.shell, 'grip_ribs'));
+  body.add(mesh(G.rails, CM.alloy, 'gate_rails'));
+  body.add(mesh(G.bezels, CM.dark, 'pip_bezels', { cast: false }));
+  body.add(mesh(G.clip, CM.steel, 'belt_clip'));
+  body.add(mesh(G.screws, CM.bolt, 'screws'));
+  const follower = node('follower', root); follower.add(mesh(G.follower, CM.dark, 'follower_plate'));
+  const spring = node('spring', root); spring.position.y = PK.BASE; spring.add(mesh(G.spring, CM.steel, 'spring_coil', { cast: false }));
+  const slide = node('slide', root);
+  slide.add(mesh(G.slide, CM.dark, 'slide_block')); slide.add(mesh(G.slideGrip, CM.rubber, 'slide_grip')); slide.add(mesh(G.fin, CM.steel, 'slide_fin'));
+  const gate = node('gate', root); gate.add(mesh(G.gate, CM.alloy, 'gate_plate'));
+  const tags = [], pips = [];
+  for (let k = 1; k <= 5; k++) {
+    const t = node('tag_' + k, root); t.position.y = PK.TOPY - (k - 1) * PK.PITCH; t.rotation.y = k * 1.1;
+    G.tag.forEach(({ mat, geo }) => t.add(mesh(geo, mat, `tag_${k}_${mat.name}`, { cast: false })));
+    tags.push(t);
+    const p = node('pip_' + k, root); p.position.set(PK.E, 0.018 + (k - 1) * 0.0085, 0.011); p.add(mesh(G.pip, CM.led, `pip_${k}_light`, { cast: false }));
+    pips.push(p);
+  }
+  const fx = node('fx_eject', root); fx.position.set(0, PK.TOPY, PK.TRAVEL + PK.POP);
+  fx.userData = { note: 'where tag_1 sits when eject ends: spawn the free tag here and hide tag_1' };
+  return { root, body, follower, spring, slide, gate, tags, pips, fx };
+}
+
+const PP = (o = {}) => ({ slide: 0, tag1: 0, gate: 1, ...o });
+function posePack(Q, p) {
+  Q.slide.position.set(0, PK.H, PK.TRAVEL * p.slide);
+  Q.tags[0].position.set(0, PK.TOPY, p.tag1);
+  Q.gate.position.set(0, -PK.GATE_DROP * p.gate, 0);
+}
+// n tags left: show tag_1..tag_n and pip_1..pip_n, the follower sits under tag_n
+function setPackCount(Q, n) {
+  Q.tags.forEach((t, i) => { t.visible = i < n; }); Q.pips.forEach((p, i) => { p.visible = i < n; });
+  const fy = followY(n); Q.follower.position.y = fy; Q.spring.scale.y = (fy - PK.FOLLOW_T - PK.BASE) / PK.SPRING_H0;
+}
+const TPK = { equip: 0.4, eject: 0.35 };
+function equipP(t) { return PP({ gate: seg(t, 0.05, 0.28), slide: -0.1 * Math.sin(Math.PI * clamp01((t - 0.22) / 0.18)) }); }
+function ejectP(t) { return PP({ slide: t < 0.17 ? seg(t, 0, 0.16) : 1 - seg(t, 0.17, 0.33), tag1: PK.TRAVEL * seg(t, 0, 0.16) + PK.POP * seg(t, 0.14, 0.22) }); }
+
+function sampleClip(name, len, list, fn) {
+  const fps = 30, n = Math.round(len * fps), data = list.map(() => ({})), times = [];
+  for (let i = 0; i <= n; i++) { const t = Math.min(len, i / fps); times.push(t); fn(t); list.forEach(([o, props], j) => { o.updateMatrix(); for (const p of props) (data[j][p] = data[j][p] || []).push(...o[p].toArray()); }); }
+  const tracks = []; list.forEach(([o, props], j) => { for (const p of props) tracks.push(new (p === 'quaternion' ? THREE.QuaternionKeyframeTrack : THREE.VectorKeyframeTrack)(`${o.name}.${p}`, times, data[j][p])); });
+  return new THREE.AnimationClip(name, len, tracks);
+}
+
+/* ------------------------------------------------------------------ gameplay numbers (TrackerTags.cs uses the same) */
+
+const RANGE = 3;                                            // m: a full-strength step is felt this far away
+const GAIT = { crouch: 0.15, walk: 0.6, sprint: 1.0 };      // step strength
+const SOFT = 0.4;                                           // soft floor multiplier
+const BREACH = { strength: 1, reach: 2 };                   // full strength out to double range
+const FUZZ = 1.2;                                           // m: each reading is the event moved up to this far
+const BANDS = [3, 6];                                       // m from Nox: near < 3, mid < 6, far beyond
+const ARC = [8, 40];                                        // HUD arc half-width limits, degrees
+const RIPPLE_T = 0.75;                                      // s for a ring to reach its full radius
+
+/* ------------------------------------------------------------------ scene: a room seen from the defender's side */
+
+/*@@SCENE@@*/
+scene.fog.near = 12; scene.fog.far = 26;
+camera.near = 0.01; camera.fov = 40; camera.updateProjectionMatrix();
+const wallTex = concreteTexture(2, 2, '#5f5e5a'); wallTex.repeat.set(3, 1.2);
+const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.92, metalness: 0, color: '#c8c6c0' });
+const floorTex = concreteTexture(1, 1, '#3d3c3a'); floorTex.repeat.set(7, 9);
+const floorMat = new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.62, metalness: 0.05, color: '#a8a6a2' });
+const SURF = [];   // things a tag can stick to
+const solid = (geo, mat, x, y, z, kind) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; scene.add(m); if (kind) { m.userData.kind = kind; SURF.push(m); } return m; };
+const WALL_H = 2.6, DOOR = [0.9, 1.9, 2.1];   // doorway x0, x1, height
+solid(new THREE.BoxGeometry(8.2, 0.3, 10.8), floorMat, 0.6, -0.15, 2.2, 'floor');
+solid(new THREE.BoxGeometry(DOOR[0] + 3.4, WALL_H, 0.2), wallMat, (-3.4 + DOOR[0]) / 2, WALL_H / 2, -0.1, 'wall');
+solid(new THREE.BoxGeometry(4.7 - DOOR[1], WALL_H, 0.2), wallMat, (DOOR[1] + 4.7) / 2, WALL_H / 2, -0.1, 'wall');
+solid(new THREE.BoxGeometry(DOOR[1] - DOOR[0], WALL_H - DOOR[2], 0.2), wallMat, (DOOR[0] + DOOR[1]) / 2, (WALL_H + DOOR[2]) / 2, -0.1, 'wall');
+solid(new THREE.BoxGeometry(0.2, WALL_H, 9.6), wallMat, -3.3, WALL_H / 2, 2.0, 'wall');
+solid(new THREE.BoxGeometry(8.1, WALL_H, 0.2), wallMat, 0.65, WALL_H / 2, -2.7, 'wall');
+const trimMat = new THREE.MeshStandardMaterial({ color: '#2b2d34', roughness: 0.5, metalness: 0.55 });
+for (const x of [DOOR[0] - 0.025, DOOR[1] + 0.025]) solid(new THREE.BoxGeometry(0.05, DOOR[2] + 0.05, 0.26), trimMat, x, (DOOR[2] + 0.05) / 2, -0.1);
+solid(new THREE.BoxGeometry(DOOR[1] - DOOR[0] + 0.1, 0.05, 0.26), trimMat, (DOOR[0] + DOOR[1]) / 2, DOOR[2] + 0.025, -0.1);
+// the door, swung open into the room (92 degrees about its hinge on the right jamb)
+const doorMat = new THREE.MeshStandardMaterial({ color: '#767b87', roughness: 0.55, metalness: 0.2 });
+const doorHinge = new THREE.Group(); doorHinge.position.set(DOOR[1] - 0.005, 0, 0.0); doorHinge.rotation.y = deg(92); scene.add(doorHinge);
+const leafW = DOOR[1] - DOOR[0] - 0.02;
+{ const leaf = new THREE.Mesh(slab(rect(-leafW, 0, 0.012, DOOR[2] - 0.012, 0.006), 0.045, { bevel: 0.004, segs: 2, zc: -0.0225 }), doorMat); leaf.castShadow = leaf.receiveShadow = true; leaf.userData.kind = 'door'; doorHinge.add(leaf); SURF.push(leaf);
+  for (const z of [0.003, -0.048]) { const inset = new THREE.Mesh(box(-leafW + 0.12, -0.12, 0.25, 0.95, -0.002, 0.002), trimMat); inset.position.z = z; doorHinge.add(inset); const inset2 = inset.clone(); inset2.position.y = 1.0; doorHinge.add(inset2); }
+  const lever = new THREE.Mesh(merge([box(-leafW + 0.05, -leafW + 0.09, 0.98, 1.06, 0.002, 0.03), box(-leafW + 0.05, -leafW + 0.2, 1.0, 1.035, 0.025, 0.045)]), trimMat); lever.castShadow = true; doorHinge.add(lever);
+  const lever2 = new THREE.Mesh(mirror(lever.geometry, 'z').translate(0, 0, -0.045), trimMat); doorHinge.add(lever2); }
+// floor hatch: a steel frame and a ribbed lid, flush with the floor
+const hatchMat = new THREE.MeshStandardMaterial({ color: '#3a3d44', roughness: 0.45, metalness: 0.7 });
+const HATCH = V3(-1.75, 0, 2.3), LID_TOP = 0.012;
+{ const frame = subtract(plateXZ(-0.46, 0.46, -0.46, 0.46, 0.02, -0.01, 0.008, 0.003), box(-0.39, 0.39, -0.1, 0.1, -0.39, 0.39));
+  solid(frame, trimMat, HATCH.x, 0, HATCH.z, 'hatch');
+  solid(plateXZ(-0.38, 0.38, -0.38, 0.38, 0.015, -0.01, LID_TOP, 0.003), hatchMat, HATCH.x, 0, HATCH.z, 'hatch');
+  const ribs = []; for (const z of [-0.26, 0.26]) ribs.push(plateXZ(-0.32, 0.32, z - 0.025, z + 0.025, 0.01, LID_TOP - 0.002, LID_TOP + 0.007, 0.002));
+  ribs.push(subtract(new THREE.TorusGeometry(0.05, 0.008, 8, 32).rotateX(Math.PI / 2), box(-0.1, 0.1, -0.1, 0, -0.1, 0.1)).translate(0.24, LID_TOP + 0.001, 0));
+  solid(merge(ribs), hatchMat, HATCH.x, 0, HATCH.z, 'hatch'); }
+// soft floor: a heavy rubber-backed mat
+const RUG = { x0: -1.65, x1: 0.55, z0: 3.7, z1: 5.1, h: 0.012 };
+{ const c = canvas(512, 512), x = c.getContext('2d'); x.fillStyle = '#3a3542'; x.fillRect(0, 0, 512, 512); let s = 99; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  for (let i = 0; i < 512; i += 4) { x.fillStyle = `rgba(0,0,0,${0.08 + rnd() * 0.06})`; x.fillRect(0, i, 512, 2); x.fillStyle = `rgba(255,255,255,${0.02 + rnd() * 0.03})`; x.fillRect(i, 0, 2, 512); }
+  for (let i = 0; i < 9000; i++) { const v = rnd() < 0.5 ? 0 : 255; x.fillStyle = `rgba(${v},${v},${v},${0.04 + rnd() * 0.05})`; x.fillRect(rnd() * 512, rnd() * 512, 2, 2); }
+  x.strokeStyle = 'rgba(0,0,0,0.35)'; x.lineWidth = 10; x.strokeRect(14, 14, 484, 484);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1, 1); t.anisotropy = 8;
+  const g = plateXZ(RUG.x0, RUG.x1, RUG.z0, RUG.z1, 0.05, 0, RUG.h, 0.004);
+  const p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) - RUG.x0) / (RUG.x1 - RUG.x0), (p.getZ(i) - RUG.z0) / (RUG.z1 - RUG.z0));
+  solid(g, new THREE.MeshStandardMaterial({ map: t, roughness: 1, metalness: 0, color: '#d8d4e0' }), 0, 0, 0, 'rug'); }
+const onRug = (x, z) => x > RUG.x0 && x < RUG.x1 && z > RUG.z0 && z < RUG.z1;
+// Nox's spot and a crate with the pack on it
+const NOX = V3(1.3, 0, 5.9);
+{ const g = merge([new THREE.RingGeometry(0.2, 0.235, 48), new THREE.ShapeGeometry(roundedShape([[0, 0.17, 0], [0.09, 0.02, 0.01], [0, 0.06, 0], [-0.09, 0.02, 0.01]]))]).rotateX(-Math.PI / 2);
+  const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: '#8a4dff', transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+  m.position.set(NOX.x, 0.003, NOX.z); scene.add(m); }
+const crateMat = new THREE.MeshStandardMaterial({ color: '#3a3d45', roughness: 0.6, metalness: 0.3 });
+const CRATE = V3(2.45, 0, 5.25);
+solid(new THREE.BoxGeometry(0.5, 0.5, 0.5), crateMat, CRATE.x, 0.25, CRATE.z, 'crate');
+const spot = new THREE.SpotLight('#fff0dc', 230, 0, 0.95, 0.75, 2); spot.position.set(1.0, 6.2, 6.4); spot.target.position.set(-0.4, 0, 2.2);
+spot.castShadow = true; spot.shadow.mapSize.set(2048, 2048); spot.shadow.bias = -0.0002; spot.shadow.normalBias = 0.02; scene.add(spot, spot.target);
+scene.add(new THREE.HemisphereLight('#9aa0b8', '#1a1918', 0.35));
+const fill = new THREE.DirectionalLight('#aebcff', 0.6); fill.position.set(4, 3, 6); scene.add(fill);
+const fill2 = new THREE.DirectionalLight('#aebcff', 0.25); fill2.position.set(-3, 2.5, 4); scene.add(fill2);
+const near = new THREE.SpotLight('#e8ecff', 14, 0, 0.5, 0.9, 2); near.position.set(3.6, 2.4, 8.2); near.target.position.set(2.2, 0.4, 5.0); scene.add(near, near.target);
+const hall = new THREE.PointLight('#9aa6ff', 4, 7, 2); hall.position.set(1.4, 2.2, -1.6); scene.add(hall);
+const flash = new THREE.PointLight('#ffd9a8', 0, 9, 2); flash.position.set(-1.6, 1.1, 0.35); scene.add(flash);
+
+/* ------------------------------------------------------------------ the attacker: a mannequin that walks a loop through the door */
+
+const PATH = new THREE.CatmullRomCurve3([[3.4, -1.25], [2.2, -1.22], [1.35, -0.85], [1.28, 0.35], [0.85, 1.45], [-0.45, 1.95], [-1.95, 2.85], [-1.6, 4.05],
+  [-0.45, 4.5], [0.75, 3.75], [1.45, 2.45], [1.5, 1.05], [1.5, -0.3], [1.95, -1.6], [3.4, -1.7]].map(([x, z]) => V3(x, 0, z)), true, 'centripetal');
+const PATH_LEN = PATH.getLength();
+const GAITS = { crouch: { v: 0.9, step: 0.5, hip: 0.6, lean: 0.38, bob: 0.008, lift: 0.07 }, walk: { v: 1.45, step: 0.72, hip: 0.88, lean: 0.06, bob: 0.016, lift: 0.1 }, sprint: { v: 3.6, step: 1.12, hip: 0.86, lean: 0.24, bob: 0.03, lift: 0.17 } };
+const L1 = 0.45, L2 = 0.45;
+function buildDummy() {
+  const mat = new THREE.MeshStandardMaterial({ color: '#5b5f6b', roughness: 0.72, metalness: 0.08 });
+  const dark = new THREE.MeshStandardMaterial({ color: '#25272d', roughness: 0.5, metalness: 0.5 });
+  const visor = new THREE.MeshStandardMaterial({ color: '#0d0e12', roughness: 0.15, metalness: 0.6 });
+  const root = new THREE.Group(), pelvis = new THREE.Group(); root.add(pelvis);
+  const add = (p, g, m) => { const o = new THREE.Mesh(g, m); o.castShadow = o.receiveShadow = true; p.add(o); return o; };
+  add(pelvis, new THREE.CapsuleGeometry(0.15, 0.12, 4, 14).rotateZ(Math.PI / 2), mat).position.y = 0.02;
+  add(pelvis, new THREE.CapsuleGeometry(0.17, 0.34, 6, 16), mat).position.y = 0.36;
+  add(pelvis, new THREE.BoxGeometry(0.34, 0.3, 0.12), dark).position.set(0, 0.42, 0.13);   // plate carrier
+  add(pelvis, new THREE.SphereGeometry(0.12, 20, 14), mat).position.y = 0.78;
+  add(pelvis, new THREE.BoxGeometry(0.17, 0.06, 0.06), visor).position.set(0, 0.8, 0.1);
+  const gun = add(pelvis, merge([box(-0.025, 0.025, -0.05, 0.05, -0.12, 0.4), box(-0.02, 0.02, -0.15, -0.04, 0.0, 0.06), box(-0.015, 0.015, -0.11, -0.05, 0.16, 0.22)]), dark); gun.position.set(0.06, 0.42, 0.26);
+  const limb = (r, l) => add(root, new THREE.CapsuleGeometry(r, l, 4, 12), mat);
+  const boot = creased(slab(roundedShape([[-0.085, 0, 0.02], [0.175, 0, 0.025], [0.17, 0.05, 0.03], [0.04, 0.08, 0.03], [-0.085, 0.09, 0.025]]), 0.1, { bevel: 0.012, segs: 2, curveSegments: 6 }).rotateY(-Math.PI / 2), 40);
+  const legs = [-1, 1].map(s => ({ s, thigh: limb(0.075, L1 - 0.02), shin: limb(0.06, L2 - 0.02), foot: add(root, boot, dark), phase: 0 }));
+  const arms = [-1, 1].map(s => ({ s, upper: limb(0.055, 0.26), fore: limb(0.048, 0.24) }));
+  return { root, pelvis, legs, arms, meshes: [] };
+}
+const DUM = buildDummy(); scene.add(DUM.root);
+DUM.root.traverse(o => { if (o.isMesh) DUM.meshes.push(o); });
+const Y = V3(0, 1, 0);
+function placeLimb(m, a, b) { const d = b.clone().sub(a); m.position.copy(a).add(b).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(Y, d.normalize()); }
+// two-bone reach from hip to ankle, the knee bending toward bend
+function ik(h, a, l1, l2, bend) {
+  const d = a.clone().sub(h), len = THREE.MathUtils.clamp(d.length(), 0.05, l1 + l2 - 1e-4), u = d.normalize();
+  const c = THREE.MathUtils.clamp((l1 * l1 + len * len - l2 * l2) / (2 * l1 * len), -1, 1), s = Math.sqrt(1 - c * c);
+  const f = bend.clone().sub(u.clone().multiplyScalar(bend.dot(u))).normalize();
+  return h.clone().add(u.clone().multiplyScalar(l1 * c)).add(f.multiplyScalar(l1 * s));
+}
+const att = { s: 0.4, phase: 0, gait: 'walk', cur: { ...GAITS.walk }, moving: true };
+function attackerFrame() {
+  const u = ((att.s % PATH_LEN) + PATH_LEN) % PATH_LEN / PATH_LEN, p = PATH.getPointAt(u), tg = PATH.getTangentAt(u);
+  return { p, yaw: Math.atan2(tg.x, tg.z) };
+}
+// pose the mannequin; returns the world points where a heel just struck
+function poseAttacker(prevPhase) {
+  const g = att.cur, { p, yaw } = attackerFrame(), strikes = [];
+  DUM.root.position.copy(p); DUM.root.rotation.y = yaw; DUM.root.updateMatrixWorld(true);
+  const hipY = g.hip + g.bob * Math.cos(att.phase * 4 * Math.PI);
+  DUM.pelvis.position.set(0, hipY, 0); DUM.pelvis.rotation.x = g.lean; DUM.pelvis.updateMatrixWorld(true);
+  const L = 1.2 * g.step, fwd = V3(0, 0, 1);
+  for (const leg of DUM.legs) {
+    const off = leg.s > 0 ? 0 : 0.5, ph = ((att.phase + off) % 1 + 1) % 1, ph0 = ((prevPhase + off) % 1 + 1) % 1;
+    let rel, lift = 0;
+    if (ph < 0.6) rel = L / 2 - (ph / 0.6) * L; else { const k = (ph - 0.6) / 0.4; rel = -L / 2 + ease(k) * L; lift = g.lift * Math.sin(Math.PI * k); }
+    const hip = V3(leg.s * 0.1, hipY - 0.04, 0.02 * Math.sin(g.lean)), ankle = V3(leg.s * 0.11, 0.075 + lift, rel);
+    const knee = ik(hip, ankle, L1, L2, fwd.clone().add(V3(leg.s * 0.08, 0, 0)));
+    placeLimb(leg.thigh, hip, knee); placeLimb(leg.shin, knee, ankle);
+    leg.foot.position.set(ankle.x, lift, ankle.z - 0.03); leg.foot.rotation.x = lift > 0 ? -0.5 * lift / g.lift * (ph < 0.8 ? 1 : -0.6) : 0;
+    if (att.moving && ph0 > 0.8 && ph < 0.2) strikes.push(DUM.root.localToWorld(V3(ankle.x, 0, L / 2)));
+  }
+  // arms hold the rifle
+  for (const arm of DUM.arms) {
+    const sh = DUM.pelvis.localToWorld(V3(arm.s * 0.2, 0.56, 0.02)), hand = DUM.pelvis.localToWorld(V3(0.06 + arm.s * 0.03, 0.4, arm.s > 0 ? 0.42 : 0.24));
+    DUM.root.worldToLocal(sh); DUM.root.worldToLocal(hand);
+    const el = ik(sh, hand, 0.29, 0.27, V3(arm.s * 0.6, -1, 0));
+    placeLimb(arm.upper, sh, el); placeLimb(arm.fore, el, hand);
+  }
+  return strikes;
+}
+function stepAttacker(dt) {
+  const target = GAITS[att.gait], k = 1 - Math.exp(-dt * 6);
+  for (const key of Object.keys(target)) att.cur[key] = lerp(att.cur[key], target[key], k);
+  const prev = att.phase;
+  if (att.moving) { att.s += att.cur.v * dt; att.phase += att.cur.v * dt / (2 * att.cur.step); }
+  for (const pt of poseAttacker(prev)) footstep(pt);
+}
+
+/* ------------------------------------------------------------------ ripples: rings that run out through the floor and walls */
+
+const rippleGeo = new THREE.PlaneGeometry(2, 2);
+const rippleShader = {
+  vertexShader: `varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `varying vec2 vP; uniform float uR, uA, uMax, uW; uniform vec3 uCol;
+    void main() {
+      float d = length(vP) * uMax, w = uW + 0.025 * uR;
+      float ring = exp(-pow((d - uR) / w, 2.0)) + 0.4 * exp(-pow((d - uR * 0.7) / (w * 0.8), 2.0));
+      float a = (ring + 0.05 * smoothstep(uR, 0.0, d)) * uA * (1.0 - smoothstep(uMax * 0.92, uMax, d));
+      gl_FragColor = vec4(uCol, a);
+    }`,
+};
+const ripples = [];
+function ripple(pos, quat, rMax, alpha, life = RIPPLE_T, width = 0.018) {
+  let r = ripples.find(q => !q.mesh.visible);
+  if (!r) {
+    const mat = new THREE.ShaderMaterial({ ...rippleShader, uniforms: { uR: { value: 0 }, uA: { value: 0 }, uMax: { value: 1 }, uW: { value: 0.018 }, uCol: { value: new THREE.Color('#8a4dff') } },
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+    r = { mesh: new THREE.Mesh(rippleGeo, mat) }; r.mesh.renderOrder = 2; r.mesh.frustumCulled = false; scene.add(r.mesh); ripples.push(r);
+  }
+  r.mesh.position.copy(pos); r.mesh.quaternion.copy(quat); r.mesh.scale.setScalar(Math.max(rMax, 0.01)); r.mesh.visible = true;
+  const u = r.mesh.material.uniforms; u.uMax.value = Math.max(rMax, 0.01); u.uW.value = width;
+  Object.assign(r, { t: 0, life, rMax, alpha });
+}
+const FLAT = new THREE.Quaternion().setFromAxisAngle(V3(1, 0, 0), -Math.PI / 2);
+function updateRipples(dt) {
+  for (const r of ripples) {
+    if (!r.mesh.visible) continue;
+    r.t += dt; const k = r.t / r.life;
+    if (k >= 1.25) { r.mesh.visible = false; continue; }
+    const u = r.mesh.material.uniforms; u.uR.value = r.rMax * (1 - Math.pow(1 - Math.min(1, k), 2)); u.uA.value = r.alpha * (1 - clamp01((k - 0.35) / 0.9));
+  }
+}
+
+/* ------------------------------------------------------------------ tags in the room */
+
+const GF = tagGeos(), GL = tagGeos({ seg: 28, flutes: 0, lite: true });
+const UP = V3(0, 1, 0);
+const tags = [];
+for (let i = 0; i < 5; i++) {
+  const led = CM.led.clone(), pulse = CM.pulse.clone();
+  const K = buildTag(GF, { led, pulse, name: 'tag_' + (i + 1) }); K.root.visible = false; scene.add(K.root);
+  const pick = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshBasicMaterial({ visible: false })); pick.userData.tag = i; K.root.add(pick);
+  const pin = document.createElement('div'); pin.className = 'pin'; pin.textContent = String(i + 1); pin.hidden = true; $('pins').appendChild(pin);
+  tags.push({ id: i + 1, K, led, pulse, pick, pin, state: 'pack', t: 0, pulseT: -1, flashT: 9, wait: 0, from: V3(), to: V3(), normal: V3(0, 1, 0), quat: new THREE.Quaternion(), q0: new THREE.Quaternion(), placedAt: 0, fly: 0.3 });
+}
+function $(id) { return document.getElementById(id); }
+// default spots: the open door, the floor inside the doorway, the hatch lid, the side wall, the floor by the mat
+const SPOTS = [
+  { p: V3(DOOR[1] - 0.004 + 0.0, 1.02, 0.56), n: V3(1, 0, 0) },
+  { p: V3(0.95, 0, 0.92), n: V3(0, 1, 0) },
+  { p: V3(HATCH.x - 0.04, LID_TOP, HATCH.z + 0.06), n: V3(0, 1, 0) },
+  { p: V3(-3.2, 0.42, 3.35), n: V3(1, 0, 0) },
+  { p: V3(0.82, 0, 4.3), n: V3(0, 1, 0) },
+];
+// the door leaf's face is not exactly at the jamb: find it
+{ const rc = new THREE.Raycaster(V3(DOOR[1] + 0.5, 1.02, 0.56), V3(-1, 0, 0)); doorHinge.updateMatrixWorld(true); const h = rc.intersectObjects(SURF)[0]; if (h) { SPOTS[0].p.copy(h.point); SPOTS[0].n.copy(h.face.normal).transformDirection(h.object.matrixWorld); } }
+
+const SOUND_AT = new THREE.Vector3();
+function tagWorld(tg) { return tg.K.root.position; }
+function setLed(tg, k, extra = 0) { tg.led.emissiveIntensity = LED_ON.led * k + extra; tg.pulse.emissiveIntensity = LED_ON.pulse * k + extra * 0.5; }
+function stuck(tg) { return tg.state === 'stuck' || tg.state === 'sticking'; }
+
+/* ------------------------------------------------------------------ the pack on the crate */
+
+const GP = packGeos(GL);
+const PACK = buildPack(GP);
+PACK.root.position.set(CRATE.x - 0.02, 0.5, CRATE.z + 0.02); PACK.root.rotation.y = -0.5; scene.add(PACK.root);
+const pk = { count: 5, ejectT: -1, equipT: -1 };
+setPackCount(PACK, 5); posePack(PACK, PP());
+// a spare tag for close-ups (debug only)
+const BENCH = buildTag(GF, { name: 'bench_tag' }); BENCH.root.visible = false; BENCH.root.position.set(CRATE.x + 0.1, 0.5, CRATE.z + 0.12); scene.add(BENCH.root);
+
+/* ------------------------------------------------------------------ vibration: steps and breaches */
+
+let eventId = 0;
+const pending = [];   // tag pulses waiting for the ring to reach them, and timed alerts
+const readings = [];  // what Nox's HUD shows
+function vibration(point, strength, { damping = 1, reach = 1, wall = null } = {}) {
+  const radius = RANGE * strength * damping * reach, id = ++eventId;
+  const felt = Math.min(1, strength * damping);
+  if (wall) { ripple(point.clone().add(wall.n.clone().multiplyScalar(0.004)), wall.q, radius, 0.9, RIPPLE_T * 1.4); ripple(V3(point.x, 0.004, point.z + 0.004), FLAT, radius, 0.9, RIPPLE_T * 1.4); }
+  else ripple(V3(point.x, point.y + 0.004, point.z), FLAT, radius, 0.25 + 0.5 * felt);
+  for (const tg of tags) {
+    if (!stuck(tg)) continue;
+    const d = tagWorld(tg).distanceTo(point);
+    if (d > radius) continue;
+    pending.push({ t: RIPPLE_T * (wall ? 1.4 : 1) * (1 - Math.sqrt(1 - d / radius)), kind: 'pulse', tg, felt: felt * (1 - d / radius), id, point: point.clone() });
+  }
+  return radius;
+}
+function footstep(pt) {
+  const soft = onRug(pt.x, pt.z);
+  const pos = V3(pt.x, soft ? RUG.h : 0, pt.z);
+  vibration(pos, GAIT[att.gait], { damping: soft ? SOFT : 1 });
+  play('footstep', { crouch: 0.12, walk: 0.32, sprint: 0.5 }[att.gait] * (soft ? 0.45 : 1), pos);
+}
+function fuzzed(point, id, tagId) {
+  const r = mulberry32(id * 7919 + tagId * 104729), a = r() * Math.PI * 2, d = FUZZ * Math.sqrt(r());
+  return V3(point.x + Math.cos(a) * d, point.y, point.z + Math.sin(a) * d);
+}
+function hudReading(pos, { tamper = false, felt = 1, tag = 0 } = {}) {
+  const dx = pos.x - NOX.x, dz = pos.z - NOX.z, dist = Math.max(0.3, Math.hypot(dx, dz));
+  const half = tamper ? deg(5) : THREE.MathUtils.clamp(Math.atan(FUZZ / dist), deg(ARC[0]), deg(ARC[1]));
+  readings.push({ bearing: Math.atan2(dx, -dz), half, band: dist < BANDS[0] ? 0 : dist < BANDS[1] ? 1 : 2, felt, tamper, tag, age: 0, life: tamper ? 4 : 2.6 });
+  if (readings.length > 48) readings.shift();
+}
+let lastPingId = 0, lastPingT = -9, hudText = '', hudTextT = 9;
+function runPending(dt) {
+  for (let i = pending.length - 1; i >= 0; i--) {
+    const e = pending[i]; e.t -= dt; if (e.t > 0) continue;
+    pending.splice(i, 1);
+    if (e.kind === 'pulse') {
+      const tg = e.tg; if (!stuck(tg)) continue;
+      tg.pulseT = 0; tg.flashT = 0; tg.flashK = 0.4 + 0.6 * clamp01(e.felt * 1.6);
+      ripple(tagWorld(tg).clone().add(tg.normal.clone().multiplyScalar(0.002)), tg.quat.clone().multiply(FLAT), 0.1, 0.55, 0.45, 0.004);
+      play('pulse_tick', 0.22, tagWorld(tg));
+      hudReading(fuzzed(e.point, e.id, tg.id), { felt: e.felt, tag: tg.id });
+      if (e.id !== lastPingId && now - lastPingT > 0.12) { lastPingId = e.id; lastPingT = now; play('hud_ping', 0.4); }
+      const r = readings[readings.length - 1];
+      hudText = `Movement · ${['near', 'mid', 'far'][r.band]}`; hudTextT = 0;
+    } else if (e.kind === 'alert') {
+      hudReading(tagWorld(e.tg), { tamper: true, tag: e.tg.id }); play('tamper_alert', 0.6);
+      $('hud-alert').textContent = `Tamper · tag ${e.tg.id}`; $('hud-alert').hidden = false; alertT = 0;
+    } else if (e.kind === 'blast') breachBlast();
+  }
+}
+let alertT = 9;
+
+/* ------------------------------------------------------------------ placing and shooting tags */
+
+const pickRand = mulberry32(5);
+function placeTag(point, normal, { instant = false } = {}) {
+  let tg = null, fromPack = false;
+  if (pk.count > 0) { tg = tags.find(t => t.state === 'pack'); fromPack = true; }
+  else {
+    const live = tags.filter(t => stuck(t)).sort((a, b) => a.placedAt - b.placedAt);
+    if (!live.length) { toast('No tags left. Re-tag to refill the pack.'); return null; }
+    tg = live[0];
+  }
+  if (!tg) return null;
+  const q = new THREE.Quaternion().setFromUnitVectors(UP, normal.clone().normalize()).multiply(new THREE.Quaternion().setFromAxisAngle(UP, pickRand() * Math.PI * 2));
+  tg.quat.copy(q); tg.normal.copy(normal).normalize(); tg.to.copy(point); tg.placedAt = now;
+  if (instant) { tg.state = 'stuck'; tg.t = 0; tg.K.root.position.copy(point); tg.K.root.quaternion.copy(q); tg.K.root.visible = true; if (fromPack) { pk.count--; setPackCount(PACK, pk.count); } return tg; }
+  if (fromPack) { pk.count--; pk.ejectT = 0; play('eject', 0.5, PACK.root.position); tg.wait = TPK.eject; }
+  else tg.wait = 0.05;
+  PACK.root.updateMatrixWorld(true); PACK.fx.getWorldPosition(tg.from);
+  if (!fromPack) tg.from.set(NOX.x + 0.25, 1.3, NOX.z - 0.2);
+  tg.state = 'flying'; tg.t = 0; tg.fly = 0.14 + tg.from.distanceTo(point) / 13;
+  tg.q0.setFromEuler(new THREE.Euler(pickRand() * 6, pickRand() * 6, pickRand() * 6));
+  return tg;
+}
+function shootTag(tg) {
+  if (!stuck(tg)) return;
+  tg.state = 'dead'; tg.t = 0; tg.pulseT = -1;
+  play('tamper', 0.8, tagWorld(tg));
+  sparks(tagWorld(tg), tg.normal);
+  pending.push({ t: 0.25, kind: 'alert', tg });
+}
+function updateTags(dt) {
+  for (const tg of tags) {
+    const K = tg.K;
+    if (tg.state === 'pack') { K.root.visible = false; tg.pin.hidden = true; continue; }
+    K.root.visible = true; tg.t += dt;
+    if (tg.state === 'flying') {
+      if (tg.wait > 0) { tg.wait -= dt; tg.t = 0; K.root.visible = false; continue; }
+      const k = clamp01(tg.t / tg.fly), arc = Math.min(0.5, tg.from.distanceTo(tg.to) * 0.12);
+      K.root.position.lerpVectors(tg.from, tg.to, k).y += arc * 4 * k * (1 - k);
+      K.root.quaternion.slerpQuaternions(tg.q0, tg.quat, ease(k));
+      poseTag(K, FREE()); setLed(tg, 0);
+      if (k >= 1) { tg.state = 'sticking'; tg.t = 0; K.root.position.copy(tg.to); K.root.quaternion.copy(tg.quat); play('stick', 0.6, tg.to); }
+    } else if (tg.state === 'sticking') {
+      const p = stickP(Math.min(tg.t, TT.stick)); poseTag(K, p); setLed(tg, p.led);
+      if (tg.t >= TT.stick) { tg.state = 'stuck'; tg.t = 0; }
+    } else if (tg.state === 'stuck') {
+      if (tg.pulseT >= 0) { tg.pulseT += dt; if (tg.pulseT >= TT.pulse) tg.pulseT = -1; }
+      poseTag(K, tg.pulseT >= 0 ? pulseP(tg.pulseT) : TP());
+      tg.flashT += dt; setLed(tg, 1, 4 * (tg.flashK || 0) * Math.exp(-tg.flashT / 0.12));
+    } else if (tg.state === 'dead') {
+      const p = tamperP(Math.min(tg.t, TT.tamper)); poseTag(K, p); setLed(tg, p.led);
+    }
+    tg.pin.hidden = false; tg.pin.classList.toggle('dead', tg.state === 'dead'); tg.pin.classList.toggle('flash', tg.state === 'stuck' && tg.flashT < 0.25);
+  }
+  // the pack: eject, then the stack moves up
+  if (pk.ejectT >= 0) {
+    pk.ejectT += dt; posePack(PACK, ejectP(Math.min(pk.ejectT, TPK.eject)));
+    if (pk.ejectT >= TPK.eject) { pk.ejectT = -1; posePack(PACK, PP()); setPackCount(PACK, pk.count); }
+  } else if (pk.equipT >= 0) {
+    pk.equipT += dt; posePack(PACK, equipP(Math.min(pk.equipT, TPK.equip))); if (pk.equipT >= TPK.equip) pk.equipT = -1;
+  }
+}
+// sparks when a tag is shot
+const sparkGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(3 * 24), 3));
+const sparkPts = new THREE.Points(sparkGeo, new THREE.PointsMaterial({ color: '#ffcf8a', size: 0.02, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })); sparkPts.visible = false; sparkPts.frustumCulled = false; scene.add(sparkPts);
+const sp = { t: 9, o: V3(), v: [] };
+function sparks(at, n) { sp.t = 0; sp.o.copy(at).add(n.clone().multiplyScalar(0.01)); sp.v = []; for (let i = 0; i < 24; i++) sp.v.push(n.clone().multiplyScalar(0.8 + pickRand() * 1.6).add(V3(pickRand() - 0.5, pickRand() - 0.5, pickRand() - 0.5).multiplyScalar(2.2))); }
+function updateSparks(dt) {
+  sp.t += dt; sparkPts.visible = sp.t < 0.4; if (!sparkPts.visible) return;
+  const a = sparkGeo.attributes.position;
+  sp.v.forEach((v, i) => a.setXYZ(i, sp.o.x + v.x * sp.t, sp.o.y + v.y * sp.t - 4.9 * sp.t * sp.t, sp.o.z + v.z * sp.t)); a.needsUpdate = true;
+  sparkPts.material.opacity = 1 - sp.t / 0.4;
+}
+
+/* ------------------------------------------------------------------ breach: a charge on the corridor side of the far wall */
+
+const BREACH_AT = V3(-1.6, 1.1, 0);
+const WALL_Q = new THREE.Quaternion();   // the ring on the wall faces +Z
+const softDot = (() => { const c = canvas(64, 64), x = c.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+// dust: a points cloud (the AO pass skips points), and cracks showing through on the room side
+const DUST_N = 18, dustGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(DUST_N * 3), 3));
+const dustPts = new THREE.Points(dustGeo, new THREE.PointsMaterial({ map: softDot, color: '#9a968e', size: 0.5, transparent: true, depthWrite: false, opacity: 0 })); dustPts.visible = false; dustPts.frustumCulled = false; scene.add(dustPts);
+const dustV = [];
+const crackTex = (() => {
+  const c = canvas(512, 512), x = c.getContext('2d'), r = mulberry32(17);
+  const g = x.createRadialGradient(256, 256, 10, 256, 256, 250); g.addColorStop(0, 'rgba(20,18,16,0.75)'); g.addColorStop(0.45, 'rgba(30,28,25,0.35)'); g.addColorStop(1, 'rgba(30,28,25,0)'); x.fillStyle = g; x.fillRect(0, 0, 512, 512);
+  x.strokeStyle = 'rgba(10,9,8,0.85)'; x.lineCap = 'round';
+  for (let k = 0; k < 14; k++) { let a = k / 14 * Math.PI * 2 + r() * 0.3, px = 256, py = 256, w = 4; x.beginPath(); x.moveTo(px, py); for (let i = 0; i < 9; i++) { a += (r() - 0.5) * 0.7; px += Math.cos(a) * (14 + r() * 18); py += Math.sin(a) * (14 + r() * 18); x.lineWidth = w; x.lineTo(px, py); w *= 0.8; } x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const crack = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), new THREE.MeshStandardMaterial({ map: crackTex, transparent: true, opacity: 0, depthWrite: false, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+crack.position.set(BREACH_AT.x, BREACH_AT.y, 0.002); crack.visible = false; scene.add(crack);
+let breachT = 9, shake = 0;
+function breach() { if (breachT < 1.5) return; play('breach', 0.9); pending.push({ t: 0, kind: 'blast' }); }
+function breachBlast() {
+  breachT = 0; shake = 1; crack.visible = dustPts.visible = true;
+  vibration(BREACH_AT, BREACH.strength, { reach: BREACH.reach, wall: { n: V3(0, 0, 1), q: WALL_Q } });
+  const a = dustGeo.attributes.position; dustV.length = 0;
+  for (let i = 0; i < DUST_N; i++) { a.setXYZ(i, BREACH_AT.x + (pickRand() - 0.5) * 0.7, 0.3 + pickRand() * 1.6, 0.08); dustV.push(V3((pickRand() - 0.5) * 0.9, (pickRand() - 0.4) * 0.5, 0.3 + pickRand() * 0.9)); }
+  a.needsUpdate = true;
+}
+function updateBreach(dt) {
+  breachT += dt; shake = Math.max(0, shake - dt * 2.2);
+  flash.intensity = breachT < 0.4 ? 60 * Math.exp(-breachT / 0.07) : 0;
+  crack.material.opacity = clamp01(breachT / 0.05) * (1 - clamp01((breachT - 6) / 2)); if (breachT > 8) crack.visible = false;
+  if (!dustPts.visible) return;
+  const a = dustGeo.attributes.position;
+  dustV.forEach((v, i) => { a.setXYZ(i, a.getX(i) + v.x * dt, a.getY(i) + v.y * dt, a.getZ(i) + v.z * dt); v.multiplyScalar(Math.exp(-dt * 1.4)); }); a.needsUpdate = true;
+  dustPts.material.size = 0.35 + breachT * 0.7; dustPts.material.opacity = 0.4 * clamp01(1 - breachT / 3.2) * clamp01(breachT / 0.08);
+  if (breachT > 3.2) dustPts.visible = false;
+}
+
+/* ------------------------------------------------------------------ Nox's HUD */
+
+const hudEl = $('hud'), hudC = $('hudc'), hx = hudC.getContext('2d');
+function drawHud() {
+  const r = hudEl.getBoundingClientRect(); if (r.width < 2) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1), W = r.width, H = r.height;
+  if (hudC.width !== Math.round(W * dpr) || hudC.height !== Math.round(H * dpr)) { hudC.width = Math.round(W * dpr); hudC.height = Math.round(H * dpr); }
+  hx.setTransform(dpr, 0, 0, dpr, 0, 0); hx.clearRect(0, 0, W, H);
+  const cx = W / 2, cy = H * 0.5, R = Math.min(W, H) * 0.36;
+  // band rings and ticks (forward is up)
+  hx.lineWidth = 1;
+  for (let b = 1; b <= 3; b++) { hx.beginPath(); hx.arc(cx, cy, R * b / 3, 0, Math.PI * 2); hx.strokeStyle = `rgba(232,232,240,${b === 3 ? 0.28 : 0.12})`; hx.stroke(); }
+  for (let k = 0; k < 24; k++) { const a = k / 24 * Math.PI * 2 - Math.PI / 2, l = k % 6 === 0 ? 8 : 4; hx.beginPath(); hx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); hx.lineTo(cx + Math.cos(a) * (R + l), cy + Math.sin(a) * (R + l)); hx.strokeStyle = 'rgba(232,232,240,0.35)'; hx.stroke(); }
+  hx.beginPath(); hx.moveTo(cx, cy - R - 12); hx.lineTo(cx - 5, cy - R - 20); hx.lineTo(cx + 5, cy - R - 20); hx.closePath(); hx.fillStyle = 'rgba(232,232,240,0.7)'; hx.fill();
+  hx.font = '500 9px "Chivo Mono", ui-monospace, monospace'; hx.fillStyle = 'rgba(232,232,240,0.38)'; hx.textAlign = 'left';
+  ['near', 'mid', 'far'].forEach((s, b) => hx.fillText(s, cx + 3, cy + R * (b + 0.62) / 3));
+  // fuzzy arcs: a few overlapping strokes, narrower and brighter toward the middle
+  hx.lineCap = 'butt';
+  for (const rd of readings) {
+    const a = 1 - rd.age / rd.life; if (a <= 0) continue;
+    const r0 = R * rd.band / 3, r1 = R * (rd.band + 1) / 3, mid = (r0 + r1) / 2 + (rd.band === 0 ? R * 0.03 : 0), ang = rd.bearing - Math.PI / 2;
+    const fade = a * a * (rd.tamper ? 1 : 0.35 + 0.65 * clamp01(rd.felt * 1.8));
+    hx.shadowBlur = 10; hx.shadowColor = rd.tamper ? '#ff4d4d' : '#8a4dff';
+    for (let i = 0; i < 4; i++) {
+      const f = 1 - i * 0.24; hx.beginPath(); hx.arc(cx, cy, mid, ang - rd.half * f, ang + rd.half * f);
+      hx.lineWidth = (r1 - r0) * (0.45 + 0.4 * f) * (rd.band === 0 ? 0.8 : 1);
+      hx.strokeStyle = rd.tamper ? `rgba(255,80,80,${0.3 * fade})` : `rgba(160,110,255,${0.16 * fade})`; hx.stroke();
+    }
+    hx.shadowBlur = 0;
+  }
+  // Nox in the middle
+  hx.beginPath(); hx.moveTo(cx, cy - 8); hx.lineTo(cx + 6, cy + 6); hx.lineTo(cx, cy + 3); hx.lineTo(cx - 6, cy + 6); hx.closePath(); hx.fillStyle = '#e8e8f0'; hx.fill();
+  // tag status row and the last event
+  const y = H - 16; hx.textAlign = 'left';
+  tags.forEach((tg, i) => {
+    const x = 14 + i * 15; hx.beginPath(); hx.arc(x, y, 4.2, 0, Math.PI * 2);
+    if (tg.state === 'dead') { hx.strokeStyle = '#ff5a5a'; hx.lineWidth = 1.5; hx.stroke(); hx.beginPath(); hx.moveTo(x - 3, y - 3); hx.lineTo(x + 3, y + 3); hx.moveTo(x + 3, y - 3); hx.lineTo(x - 3, y + 3); hx.stroke(); }
+    else if (stuck(tg)) { hx.fillStyle = tg.flashT < 0.25 ? '#c9a8ff' : '#8a4dff'; hx.fill(); }
+    else { hx.strokeStyle = 'rgba(232,232,240,0.45)'; hx.lineWidth = 1; hx.stroke(); }
+  });
+  hx.font = '500 10px "Chivo Mono", ui-monospace, monospace'; hx.textAlign = 'right';
+  if (hudTextT < 2.5) { hx.fillStyle = `rgba(232,232,240,${0.8 * (1 - hudTextT / 2.5)})`; hx.fillText(hudText, W - 10, y + 3.5); }
+}
+
+/* ------------------------------------------------------------------ labels over the tags */
+
+const notes = [{ p: V3((RUG.x0 + RUG.x1) / 2, 0.02, (RUG.z0 + RUG.z1) / 2), text: 'Soft floor ×0.4' }, { p: V3(NOX.x, 0.02, NOX.z), text: 'Nox' }];
+for (const n of notes) { n.el = document.createElement('div'); n.el.className = 'pin note'; n.el.textContent = n.text; $('pins').appendChild(n.el); }
+let pinsOn = true;
+function updatePins() {
+  const r = renderer.domElement.getBoundingClientRect(), v = V3();
+  const put = (el, p) => { v.copy(p).project(camera); const off = v.z > 1 || v.x < -1.1 || v.x > 1.1 || v.y < -1.1 || v.y > 1.1; el.style.visibility = off || !pinsOn ? 'hidden' : 'visible'; el.style.transform = `translate(${(v.x + 1) / 2 * r.width}px, ${(1 - v.y) / 2 * r.height}px)` + (el.classList.contains('note') ? ' translateX(-50%)' : ''); };
+  for (const tg of tags) if (!tg.pin.hidden) put(tg.pin, tagWorld(tg));
+  for (const n of notes) put(n.el, n.p);
+}
+
+/* ------------------------------------------------------------------ sound */
+
+/*@@SOUNDDATA@@*/
+let actx = null, soundOn = true;
+const sfx = {};
+function audioInit() { if (actx) return; const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; actx = new AC(); for (const [k, uri] of Object.entries(SOUND_DATA)) { const bin = atob(uri.split(',')[1]), buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i); actx.decodeAudioData(buf.buffer).then(b => { sfx[k] = b; }).catch(() => { }); } }
+function unlockAudio() { audioInit(); if (actx && actx.state !== 'running') actx.resume().catch(() => { }); }
+// play a sample; with a position it is quieter the further it is from the camera
+function play(name, gain = 0.85, at = null) {
+  if (!soundOn || !actx || actx.state !== 'running' || !sfx[name]) return;
+  if (at) gain *= Math.min(1, 3 / Math.max(0.5, camera.position.distanceTo(at)));
+  const src = actx.createBufferSource(), g = actx.createGain(); src.buffer = sfx[name]; g.gain.value = gain; src.connect(g).connect(actx.destination); src.start();
+}
+
+/* ------------------------------------------------------------------ UI */
+
+let now = 0, view = 'room', camTween = null, tagView = 0, shootMode = false;
+function viewFor(name) {
+  const asp = camera.aspect, kk = asp < 1.1 ? 1.4 / Math.max(asp, 0.45) : 1;
+  if (name === 'room') { const tg = V3(0.3, 0.3, 2.3); return { pos: V3(0.2, 5.8, 9.8).sub(tg).multiplyScalar(kk).add(tg), target: tg }; }
+  if (name === 'pack') { PACK.root.updateMatrixWorld(true); const c = PACK.root.localToWorld(V3(0, 0.04, 0)); return { pos: PACK.root.localToWorld(V3(0.11 * kk, 0.1, 0.17 * kk)), target: c }; }
+  const live = tags.filter(t => t.state !== 'pack'); const tg = live.length ? live[tagView % live.length] : null;
+  if (!tg) return viewFor('room');
+  const n = tg.normal, side = Math.abs(n.y) > 0.9 ? V3(1, 0, 0) : n.clone().cross(V3(0, 1, 0)).normalize(), up = Math.abs(n.y) > 0.9 ? V3(0, 0, 1) : V3(0, 1, 0);
+  const pos = tg.to.clone().add(n.clone().multiplyScalar(0.075 * kk)).add(side.multiplyScalar(0.06 * kk)).add(up.multiplyScalar(0.05 * kk));
+  return { pos, target: tg.to.clone().add(n.clone().multiplyScalar(0.003)) };
+}
+function goView(name, instant = false) {
+  if (name === 'tag' && view === 'tag') tagView++;
+  view = name; const v = viewFor(name); camTween = null;
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
+  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 };
+}
+controls.minDistance = 0.04;
+function setGait(g) { att.gait = g; document.querySelectorAll('[data-gait]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.gait === g))); $('gait').textContent = { crouch: 'Crouching', walk: 'Walking', sprint: 'Sprinting' }[g]; }
+function setShoot(on) { shootMode = on; $('shoot').setAttribute('aria-pressed', String(on)); document.body.classList.toggle('shooting', on); }
+let toastT = 9;
+function toast(s) { $('toast').textContent = s; $('toast').hidden = false; toastT = 0; }
+function retag() {
+  for (const tg of tags) { tg.state = 'pack'; tg.pulseT = -1; tg.K.root.visible = false; poseTag(tg.K, FREE()); }
+  pending.length = 0; readings.length = 0; pk.count = 5; pk.ejectT = -1; setPackCount(PACK, 5); posePack(PACK, PP());
+  intro = { t: -0.3, next: 0 };
+}
+let intro = { t: 0, next: 0 };
+function runIntro(dt) {
+  if (!intro) return; intro.t += dt;
+  while (intro && intro.t >= intro.next * 0.5) { const s = SPOTS[intro.next]; placeTag(s.p, s.n); intro.next++; if (intro.next >= SPOTS.length) intro = null; }
+}
+// click (not drag) on the room: stick a tag where it hits, or shoot the tag under the pointer
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6 || performance.now() - down.t > 600) { down = null; return; }
+  down = null;
+  const r = renderer.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1); ray.setFromCamera(ndc, camera);
+  if (e.shiftKey || shootMode) {
+    const hit = ray.intersectObjects(tags.filter(t => stuck(t)).map(t => t.pick))[0];
+    if (hit) shootTag(tags[hit.object.userData.tag]); else if (shootMode) toast('Missed: aim at a tag');
+    return;
+  }
+  doorHinge.updateMatrixWorld(true);
+  const hit = ray.intersectObjects([...SURF, ...DUM.meshes])[0];
+  if (!hit) return;
+  if (DUM.meshes.includes(hit.object)) { toast('Tags stick to surfaces, never to people'); return; }
+  const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+  intro = null;
+  placeTag(hit.point, n);
+});
+$('breach').addEventListener('click', breach);
+$('shoot').addEventListener('click', () => setShoot(!shootMode));
+$('retag').addEventListener('click', retag);
+document.querySelectorAll('[data-gait]').forEach(b => b.addEventListener('click', () => setGait(b.dataset.gait)));
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => goView(b.dataset.view)));
+$('sound').addEventListener('click', () => { soundOn = !soundOn; $('sound').setAttribute('aria-pressed', String(soundOn)); if (soundOn) unlockAudio(); });
+window.addEventListener('pointerdown', unlockAudio, { capture: true });
+controls.addEventListener('start', () => { camTween = null; });
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  const k = e.key.toLowerCase(); unlockAudio();
+  if (k === '1') setGait('crouch'); if (k === '2') setGait('walk'); if (k === '3') setGait('sprint');
+  if (k === 'b') breach(); if (k === 'x') setShoot(!shootMode); if (k === 'r') retag();
+});
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+window.addEventListener('resize', resize);
+
+/* ------------------------------------------------------------------ export */
+
+function toBase64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function exportScenes() {
+  CM.led.emissiveIntensity = LED_ON.led; CM.pulse.emissiveIntensity = LED_ON.pulse;
+  const K = buildTag(GF), PO = 'position', Q = 'quaternion', S = 'scale';
+  const tagClips = [
+    sampleClip('stick', TT.stick, [[K.gel, [S]], [K.body, [PO]], [K.prongs, [PO]], [K.ledRing, [PO]], [K.membrane, [S]]], (t) => poseTag(K, stickP(t))),
+    sampleClip('pulse', TT.pulse, [[K.membrane, [S]], [K.pulseRing, [PO]]], (t) => poseTag(K, pulseP(t))),
+    sampleClip('tamper', TT.tamper, [[K.body, [PO, Q]], [K.ledRing, [PO]], [K.membrane, [PO, Q, S]], [K.capA, [PO, Q]], [K.capB, [PO, Q]]], (t) => poseTag(K, tamperP(t))),
+  ];
+  poseTag(K, TP()); K.root.updateMatrixWorld(true);
+  K.root.userData = {
+    units: 'metres', up: '+Y (the surface normal)', origin: 'centre of the back, on the surface it sticks to', diameter_m: 2 * TG.R, height_stuck_m: +STUCK_H.toFixed(4), height_free_m: +(STUCK_H + TG.GEL_H - TG.GEL_SQ).toFixed(4),
+    rest_pose: 'stuck: gel squashed, prongs 1 mm into the surface (to y -0.001), ring light up. stick at 0 s is the free pose (in flight, in the pack).',
+    lights: 'led_purple is the faint ring light, pulse_purple the pulse ring: switch both off when the tag is dead or not stuck',
+    range_m: RANGE, source: 'gadgets/tracker-tags/viewer.html',
+    clips: { stick: 'lands or is pressed on: the gel squashes, three prongs seat into the surface, the ring light rises', pulse: 'felt a step: the membrane ticks down and back, the pulse ring pops up and sinks', tamper: 'shot: the cap splits and both halves flip open, the membrane caves in, the ring light sinks. Holds its last pose.' },
+  };
+  const Pq = buildPack(GP);
+  const packClips = [
+    sampleClip('equip', TPK.equip, [[Pq.gate, [PO]], [Pq.slide, [PO]]], (t) => posePack(Pq, equipP(t))),
+    sampleClip('eject', TPK.eject, [[Pq.slide, [PO]], [Pq.tags[0], [PO]]], (t) => posePack(Pq, ejectP(t))),
+  ];
+  posePack(Pq, PP()); setPackCount(Pq, 5); Pq.root.updateMatrixWorld(true);
+  Pq.root.userData = {
+    units: 'metres', up: '+Y (up the stack)', forward: '+Z (the exit slot)', origin: 'under the middle of the base', size_m: [0.049, PK.H + 0.0038, 0.0525],
+    stack: { top_y: PK.TOPY, pitch: PK.PITCH, count: 5 },
+    count_rule: 'n tags left: show tag_1..tag_n and pip_1..pip_n; follower.y = top_y - max(n - 1, 0) * pitch; spring scale y = (follower.y - 0.009) / 0.03',
+    eject_rule: 'eject pushes tag_1 out to fx_eject. Then hide it (the hand has it), sample eject at 0 s and apply the count rule for n - 1.',
+    rest_pose: 'equipped: gate open, slide back, five tags', source: 'gadgets/tracker-tags/viewer.html',
+    clips: { equip: 'the gate slides down to open the exit slot, the thumb slide clicks back. Play backwards to close.', eject: `the thumb slide pushes tag_1 ${PK.TRAVEL + PK.POP} m forward out of the slot and springs back; tag_1 stays out` },
+  };
+  return [{ file: 'tracker-tag.glb', root: K.root, animations: tagClips }, { file: 'tracker-tags-pack.glb', root: Pq.root, animations: packClips }];
+}
+async function exportGLB() {
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const exporter = new GLTFExporter(), out = [], was = looping; setLoop(false);
+  try { for (const s of exportScenes()) { const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations }); out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) }); } }
+  finally { if (was) setLoop(true); }
+  return out;
+}
+// jump straight to a state: tags stuck at their spots (or given ones), attacker at path distance s
+function stage0({ s = 0.4, gait = 'walk', live = [1, 1, 1, 1, 1] } = {}) {
+  intro = null; for (const tg of tags) { tg.state = 'pack'; tg.K.root.visible = false; tg.pulseT = -1; tg.flashT = 9; } pk.count = 5; setPackCount(PACK, 5); posePack(PACK, PP());
+  pending.length = 0; readings.length = 0; ripples.forEach(r => { r.mesh.visible = false; });
+  SPOTS.forEach((sp, i) => { if (live[i]) placeTag(sp.p, sp.n, { instant: true }); });
+  setGait(gait); att.cur = { ...GAITS[gait] }; att.s = s; att.phase = 0; poseAttacker(0);
+}
+function simulate(seconds, dt = 1 / 30) { for (let t = 0; t < seconds - 1e-6; t += dt) tick(dt); }
+function preview() {
+  setLoop(false);
+  document.querySelectorAll('.plate, .bar, .hint, .toast').forEach(e => { e.hidden = true; });
+  pinsOn = false;
+  // the doorway tag in front, mid-pulse, with the attacker stepping through the door 1.2 m behind it
+  stage0({ s: 1.35, gait: 'walk' }); simulate(1.0333);
+  const T = tagWorld(tags[1]), d = T.clone().sub(DUM.root.position).setY(0).normalize();
+  camera.position.set(T.x + d.x * 0.18, 0.09, T.z + d.z * 0.18); controls.target.set(T.x - d.x * 0.25, 0.02, T.z - d.z * 0.25);
+  renderOnce();
+}
+window.__model = { id: 'tracker-tags', exportScenes, exportGLB, preview };
+
+/* ------------------------------------------------------------------ go */
+
+goView('room', true);
+$('loading').hidden = true;
+const clock = new THREE.Clock();
+let looping = false;
+function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
+function tick(dt) {
+  now += dt;
+  runIntro(dt);
+  stepAttacker(dt);
+  runPending(dt);
+  updateTags(dt);
+  updateRipples(dt);
+  updateBreach(dt);
+  updateSparks(dt);
+  for (const rd of readings) rd.age += dt;
+  hudTextT += dt; alertT += dt; toastT += dt;
+  if (alertT > 3 && !$('hud-alert').hidden) $('hud-alert').hidden = true;
+  if (toastT > 2.6 && !$('toast').hidden) $('toast').hidden = true;
+  $('count').textContent = String(pk.count); $('live').textContent = String(tags.filter(stuck).length);
+  if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+}
+let shakeOff = V3();
+function renderOnce() {
+  controls.update();
+  // AO radius follows the view distance (a 3 cm tag up close, a room far away)
+  const dist = camera.position.distanceTo(controls.target), rad = THREE.MathUtils.clamp(dist * 0.03, 0.004, 0.14);
+  if (Math.abs(rad - (ao.__r || 0)) > rad * 0.15) { ao.updateGtaoMaterial({ radius: rad }); ao.__r = rad; }
+  shakeOff.set((Math.random() - 0.5) * 0.04 * shake * shake, (Math.random() - 0.5) * 0.03 * shake * shake, 0); camera.position.add(shakeOff);
+  composer.render(); camera.position.sub(shakeOff);
+  drawHud(); updatePins();
+}
+function loop() { const dt = Math.min(clock.getDelta(), 1 / 30); tick(dt); renderOnce(); }
+intro = { t: -0.6, next: 0 };
+setLoop(true);
+window.__model.ready = true;
+window.__model.debug = {
+  tick, simulate, stage0, stop: () => setLoop(false), renderOnce,
+  // set(what, ...): 'bench' clip t (the spare tag on the crate in a clip pose), 'pack' clip t count, 'tag' i clip t (a placed tag)
+  set: (what, a, b, c) => {
+    if (what === 'bench') { BENCH.root.visible = true; poseTag(BENCH, a === 'free' ? FREE() : a === 'stuck' ? TP() : { stick: stickP, pulse: pulseP, tamper: tamperP }[a](b)); }
+    if (what === 'pack') { pk.ejectT = pk.equipT = -1; setPackCount(PACK, c ?? 5); posePack(PACK, a === 'rest' ? PP() : { equip: equipP, eject: ejectP }[a](b)); }
+    if (what === 'tag') { const tg = tags[a]; tg.state = 'stuck'; poseTag(tg.K, { stick: stickP, pulse: pulseP, tamper: tamperP, stuck: () => TP() }[b](c)); }
+  },
+  ui: (on) => { pinsOn = on; hudEl.style.display = on ? '' : 'none'; },
+  tags, PACK, BENCH, att, dummy: DUM, ao, bloom, setGait, breach, shootTag, placeTag, goView, readings, camera, controls, scene, renderer, setSway: () => { }, setSpin: () => { }, pivot: { rotation: {} },
+};
+</script>

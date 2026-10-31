@@ -1,0 +1,846 @@
+/*@@HEAD@@*/
+<div id="stage" aria-label="Interactive 3D model of the Nullfield emitter, a thrown puck that stands up and raises a 4 metre bubble that sensors cannot see into"></div>
+<div id="feed" class="feed" aria-label="Sensor feed: the bubble shows as a flat, noise-free patch"><canvas id="scan"></canvas><div class="feed-tag"><span id="feed-dot"></span><span id="feed-name">Security cam</span></div><div class="feed-foot" id="feed-foot">Scan: 1 contact</div></div>
+<div id="tags" aria-hidden="true"><div class="tag" id="tag-nick">N1CK <i>hidden</i></div><div class="tag" id="tag-mate">Teammate <i>seen</i></div></div>
+
+<header class="plate">
+  <div class="eyebrow">Counter-recon gadget · N1CK</div>
+  <h1>Null<span>field</span></h1>
+  <dl class="specs">
+    <dt>Field</dt><dd>4 m bubble: sensors read nothing inside, eyes still see</dd>
+    <dt>Battery</dt><dd>25 s of field, recharges while off</dd>
+    <dt>Tell</dt><dd>A flat, noise-free hole in feeds</dd>
+  </dl>
+  <div class="gauge"><span class="glabel">Battery</span><div class="cells" id="cells" role="meter" aria-label="Battery" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"></div><span id="pct">100%</span></div>
+  <div class="state" aria-live="polite"><span class="chip">Status <b id="status">In hand</b></span></div>
+</header>
+
+<div class="hint">T throw · F field · X shoot · C feed · drag to orbit</div>
+<div id="loading">Charging the emitter…</div>
+
+<nav class="bar" aria-label="Model controls">
+  <div class="controls">
+    <button id="throw" class="primary" type="button" title="Throw the emitter, or pick it up (T)">Throw <kbd>T</kbd></button>
+    <button type="button" id="field" aria-pressed="false" title="Switch the field on or off (F)">Field <kbd>F</kbd></button>
+    <button type="button" id="shoot" title="Shoot the emitter's core (X)">Shoot emitter <kbd>X</kbd></button>
+    <div class="group" role="group" aria-label="Feed">
+      <button type="button" data-feed="camera">Camera</button>
+      <button type="button" data-feed="drone">Drone</button>
+    </div>
+    <div class="group" role="group" aria-label="View">
+      <button type="button" data-view="room">Room</button>
+      <button type="button" data-view="close">Close</button>
+    </div>
+    <button type="button" id="sound" aria-pressed="true" title="Sounds">Sound</button>
+  </div>
+</nav>
+
+<style>
+  .feed { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 64px); width: min(36vw, 420px); aspect-ratio: 16 / 10;
+    border: 1px solid rgba(167, 123, 255, 0.55); border-radius: 10px; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); }
+  #scan { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .feed-tag { position: absolute; left: 10px; top: 8px; display: flex; gap: 6px; align-items: center; font: 500 11px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: #e8e8f0; text-shadow: 0 1px 2px #000; }
+  .feed-foot { position: absolute; left: 10px; bottom: 7px; font: 500 10.5px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: #ffb59a; text-shadow: 0 1px 2px #000; }
+  #feed-dot { width: 7px; height: 7px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 6px #ff4d4d; }
+  .gauge { display: flex; align-items: center; gap: 8px; margin-top: 8px; font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .glabel { color: var(--muted); font-size: 10.5px; letter-spacing: 0.08em; }
+  .cells { display: flex; gap: 3px; }
+  .cells i { width: 9px; height: 12px; border-radius: 2px; background: var(--line); }
+  .cells i.on { background: var(--accent); box-shadow: 0 0 6px rgba(143, 99, 255, 0.6); }
+  .cells.low i.on { background: #ff8a4d; box-shadow: 0 0 6px rgba(255, 138, 77, 0.6); }
+  #pct { min-width: 4ch; }
+  #tags { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .tag { position: absolute; left: 0; top: 0; font: 500 11px var(--font-mono); letter-spacing: 0.04em; color: #e8e8f0; background: rgba(13, 14, 20, 0.78);
+    border: 1px solid rgba(232, 232, 240, 0.16); border-radius: 6px; padding: 3px 7px; white-space: nowrap; transform: translate(-50%, -100%); }
+  .tag i { font-style: normal; color: #b79bff; margin-left: 4px; }
+  .tag.seen i { color: #ffb59a; }
+  @media (max-width: 640px) { .feed { width: 52vw; top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); } }
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+    "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.7/src/index.js",
+    "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
+
+// Metres, +Y up, +Z is the emitter's front (leg 0). Origin on the ground under the middle of the emitter.
+// A puck on three fold-out legs. A two-stage mast rises out of its middle with the core in a windowed lantern
+// on top; two rings spin around the mast in opposite directions while the field is up.
+
+/*@@HELPERS@@*/
+
+/*@@SCREWS@@*/
+
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const seg = (t, a, b) => ease(clamp01((t - a) / (b - a)));
+const springK = (u, k = 5, w = 7) => u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.exp(-k * u) * Math.cos(w * u);
+const deg = THREE.MathUtils.degToRad;
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+/*@@SURFACE@@*/
+
+const CM = {
+  alloy: surface({ color: '#2a2c33', metalness: 0.7, roughness: 0.4 }, { grain: 260, colorVar: 0.035, roughVar: 0.05 }),
+  shell: surface({ color: '#1d1e24', metalness: 0.15, roughness: 0.55 }, { grain: 200, colorVar: 0.04, roughVar: 0.06 }),
+  steel: surface({ color: '#34363d', metalness: 0.85, roughness: 0.33 }, { grain: 320, colorVar: 0.03, roughVar: 0.04 }),
+  dark: surface({ color: '#111216', metalness: 0.45, roughness: 0.62 }, { grain: 300, colorVar: 0.03, roughVar: 0.05 }),
+  bolt: surface({ color: '#45474f', metalness: 0.85, roughness: 0.32 }, { grain: 400, colorVar: 0.03, roughVar: 0.04 }),
+  rubber: surface({ color: '#121214', metalness: 0, roughness: 0.88 }, { grain: 600, colorVar: 0.03, roughVar: 0.05 }),
+  led: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2.6, roughness: 0.35, metalness: 0 }),
+  core: new THREE.MeshPhysicalMaterial({ color: '#2a1260', emissive: '#8a4dff', emissiveIntensity: 3.2, roughness: 0.15, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05 }),
+  gauge: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2.2, roughness: 0.3, metalness: 0 }),
+  cell: new THREE.MeshStandardMaterial({ color: '#070709', metalness: 0.1, roughness: 0.55 }),
+  bubble: new THREE.MeshStandardMaterial({ color: '#8a4dff', emissive: '#8a4dff', emissiveIntensity: 0.25, roughness: 0.2, metalness: 0, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide }),
+};
+const CM_NAMES = { alloy: 'frame_alloy', shell: 'shell_composite', steel: 'joint_steel', dark: 'black_steel', bolt: 'fasteners', rubber: 'foot_rubber', led: 'led_purple', core: 'core_glow', gauge: 'gauge_led', cell: 'gauge_cell', bubble: 'nullfield_bubble' };
+for (const [k, v] of Object.entries(CM_NAMES)) CM[k].name = v;
+const GLOW = { led: 2.6, core: 3.2, gauge: 1.1 };   // emissive intensities as exported
+const mesh = (geo, mat, name, { cast = true, receive = true } = {}) => { const m = new THREE.Mesh(geo, mat); m.name = name; m.castShadow = cast; m.receiveShadow = receive; return m; };
+const node = (name, parent) => { const g = new THREE.Group(); g.name = name; if (parent) parent.add(g); return g; };
+const hexScrew = (r, pos, normal, spin = 0.3) => placeScrew(screwHead(r, { style: 'hex', h: r * 0.55, seg: 18 }), pos, normal, spin);
+function cylX(r, x0, x1, seg = 24) { return new THREE.CylinderGeometry(r, r, x1 - x0, seg).rotateZ(-Math.PI / 2).translate((x0 + x1) / 2, 0, 0); }
+const merge = (list) => mergeGeometries(list.map(clean));
+const lathe = (pts, seg = 64) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), seg);
+// top view: an annular sector between radii r0 and r1, from azimuth a0 to a1 (degrees from +Z toward +X)
+function sector(r0, r1, a0, a1, n = 16) {
+  const pts = [];
+  for (let i = 0; i <= n; i++) { const a = deg(a0 + (a1 - a0) * i / n); pts.push(new THREE.Vector2(r1 * Math.sin(a), -r1 * Math.cos(a))); }
+  for (let i = n; i >= 0; i--) { const a = deg(a0 + (a1 - a0) * i / n); pts.push(new THREE.Vector2(r0 * Math.sin(a), -r0 * Math.cos(a))); }
+  return new THREE.Shape(pts);
+}
+// extrude a top-view shape up the Y axis, from y0 to y1
+const slabY = (shape, y0, y1, b = 0, segs = 1) => slab(shape, y1 - y0, { bevel: b, segs, zc: (y0 + y1) / 2, curveSegments: 16 }).rotateX(-Math.PI / 2);
+// a thin LED arc around the Y axis at radius r and height y, from azimuth a0 to a1
+function ledArc(r, tube, y, a0, a1) { const arc = a1 - a0; return new THREE.TorusGeometry(r, tube, 6, Math.max(8, Math.round(arc / 3)), deg(arc)).rotateX(Math.PI / 2).rotateY(deg(a1 - 90)).translate(0, y, 0); }
+const az = (r, a, y = 0) => V3(r * Math.sin(deg(a)), y, r * Math.cos(deg(a)));
+const rect = (x0, x1, y0, y1, r) => roundedShape([[x0, y0, r], [x1, y0, r], [x1, y1, r], [x0, y1, r]]);
+
+/* ------------------------------------------------------------------ the emitter */
+
+const PR = 0.064, PH = 0.04;                    // puck radius, puck height (the top face)
+const CB_R = 0.0325, CB_Y = 0.034;              // counterbore in the top face; the lower ring lies in it when folded
+const WELL_R = 0.0182, FLOOR_Y = 0.002;         // mast well
+const LEG_R = 0.0605, LEG_Y = 0.004;            // leg hinges: radius and height on the body
+const LEG_L = 0.032, PAD = 0.004, PAD_Z = 0.0012;   // leg length (hinge to foot roller), roller radius, roller offset
+const LEGS = [0, 120, 240];                     // leg azimuths, degrees from +Z toward +X
+const PHI_STAND = 145;                          // leg swing: 0 folded (pointing up along the wall), 145 standing (55 deg below horizontal)
+const A_Y0 = CB_Y, A_UP = 0.032;                // mast stage A: folded height on the body, rise
+const B_Y0 = -0.0135, B_UP = 0.0255;            // mast stage B (inside A): folded height in A, rise
+const CORE_B = 0.0085;                          // core centre in stage B
+const FIELD_R = 4;                              // bubble radius, m
+const GAUGE_N = 12;
+const BATT = { field: 25, recharge: 50, delay: 2, min: 0.2 };   // s of field when full, s from empty to full while off, s before it recharges, charge needed to switch on
+// how far the body's bottom is off the ground for a leg swing (0 while the feet are still above the belly)
+const legLift = (phi) => Math.max(0, -(LEG_Y + LEG_L * Math.cos(deg(phi)) - PAD_Z * Math.sin(deg(phi)) - PAD));
+const LIFT = legLift(PHI_STAND);
+const CORE_STAND = LIFT + A_Y0 + A_UP + B_Y0 + B_UP + CORE_B;   // core centre above the ground when standing with the mast up
+
+function legGeos() {
+  // built at azimuth 0 in body space, then moved so the hinge is the origin (leg extends up +Y, outer face +Z)
+  const loc = (g) => g.translate(0, -LEG_Y, -LEG_R);
+  return {
+    plate: mergeGeometries([clean(loc(slabY(sector(0.0596, PR - 0.0006, -8, 8, 10), LEG_Y + 0.0012, LEG_Y + LEG_L, 0.0006, 2))), clean(slab(rect(-0.0018, 0.0018, 0.0036, 0.0262, 0.0012), 0.0024, { bevel: 0.0004, segs: 1, zc: -0.0012 }))]),
+    knuckle: cylX(0.0031, -0.0086, 0.0086, 20),
+    foot: cylX(PAD, -0.0074, 0.0074, 24).translate(0, LEG_L, PAD_Z),
+    screw: hexScrew(0.0021, V3(0, 0.0105, 0.0034), V3(0, 0, 1), 0.4),
+    led: box(-0.0042, 0.0042, 0.0218, 0.023, 0.0033, 0.0041),
+  };
+}
+
+function buildEmitter() {
+  const root = node('nullfield_emitter');
+  root.userData = {
+    units: 'metres', up: '+Y', forward: '+Z (leg 0)', origin: 'on the ground under the middle of the emitter',
+    puck_radius_m: PR, puck_height_m: PH, leg_azimuths_deg: LEGS, leg_swing_standing_deg: PHI_STAND, body_lift_standing_m: +LIFT.toFixed(4),
+    mast_rise_m: [A_UP, B_UP], core_height_standing_m: +CORE_STAND.toFixed(4),
+    field_radius_m: FIELD_R, battery_field_s: BATT.field, battery_recharge_s: BATT.recharge, battery_recharge_delay_s: BATT.delay, battery_min_to_switch_on: BATT.min,
+    gauge: `${GAUGE_N} segments gauge_00..gauge_${GAUGE_N - 1}, anticlockwise seen from above starting at +Z; segment i is lit while charge > i/${GAUGE_N}; scale an unlit one to 0`,
+    fx_bubble: 'unit sphere at the field centre; its scale is the bubble radius in metres (the clips grow it to 4); rest scale 0.0001',
+    notes: 'rest pose: standing, mast up, rings at 0, bubble hidden. glTF leg rotation = Ry(azimuth) * Rx(swing).',
+    source: 'gadgets/nullfield/viewer.html',
+  };
+  const body = node('body', root);
+
+  // shell: one turned part with three leg slots and three vent groups cut out
+  let shell = lathe([[0, 0], [0.055, 0], [0.0612, 0.003], [PR, 0.0075], [PR, 0.0345], [0.0615, 0.0388], [0.0575, PH], [0.0462, PH], [0.0462, 0.0385],
+    [0.0348, 0.0385], [0.0348, PH], [CB_R, PH], [CB_R, CB_Y], [WELL_R, CB_Y], [WELL_R, FLOOR_Y], [0, FLOOR_Y]], 96);
+  const cuts = [];
+  for (const a of LEGS) cuts.push(slabY(sector(0.0546, 0.075, a - 9.5, a + 9.5, 8), -0.01, PH + 0.01));
+  for (const a of [60, 180, 300]) for (const o of [-7.5, -2.5, 2.5, 7.5]) cuts.push(box(-0.0008, 0.0008, 0.011, 0.025, 0.0614, 0.07).rotateY(deg(a + o)));
+  shell = subtract(shell, ...cuts);
+  body.add(mesh(creased(shell, 30), CM.shell, 'shell'));
+  // light strips around the wall between the legs
+  body.add(mesh(merge(LEGS.map(a => ledArc(PR + 0.0002, 0.0007, 0.03, a + 13, a + 107))), CM.led, 'wall_leds', { cast: false }));
+  // battery gauge: dark cells in the top channel, one lit segment node on each
+  const cells = [], gauge = [];
+  for (let i = 0; i < GAUGE_N; i++) {
+    const a = (i + 0.5) * 360 / GAUGE_N, c = az(0.0405, a, 0.0394);
+    cells.push(slabY(sector(0.0352, 0.0458, a - 12.5, a + 12.5, 6), 0.0385, 0.0391));
+    const g = node('gauge_' + String(i).padStart(2, '0'), body); g.position.copy(c);
+    g.add(mesh(slabY(sector(0.0358, 0.0452, a - 11, a + 11, 6), 0.0391, 0.0397, 0.0002).translate(-c.x, -c.y, -c.z), CM.gauge, g.name + '_led', { cast: false }));
+    gauge.push(g);
+  }
+  body.add(mesh(merge(cells), CM.cell, 'gauge_cells'));
+  body.add(mesh(merge([60, 180, 300].map(a => hexScrew(0.0026, az(0.0518, a, PH), V3(0, 1, 0), a))), CM.bolt, 'top_screws'));
+
+  // legs: hinged at the bottom of the wall, folded up into the slots; they swing out and down to stand it up
+  const LG = legGeos(), legs = [];
+  LEGS.forEach((a, i) => {
+    const l = node('leg_' + i, body); l.position.copy(az(LEG_R, a, LEG_Y));
+    l.add(mesh(creased(LG.plate, 30), CM.alloy, `leg_${i}_plate`));
+    l.add(mesh(LG.knuckle.clone(), CM.steel, `leg_${i}_knuckle`));
+    l.add(mesh(LG.foot.clone(), CM.rubber, `leg_${i}_foot`));
+    l.add(mesh(LG.screw.clone(), CM.bolt, `leg_${i}_screw`));
+    l.add(mesh(LG.led.clone(), CM.led, `leg_${i}_led`, { cast: false }));
+    legs.push(l);
+  });
+
+  // mast stage A: a sleeve with a bearing collar; the lower ring turns on the collar
+  const A = node('stage_a', body); A.position.y = A_Y0;
+  A.add(mesh(creased(lathe([[0.0152, -0.03], [0.0172, -0.03], [0.0172, 0], [0.0152, 0], [0.0152, -0.03]], 48), 40), CM.steel, 'stage_a_tube'));
+  A.add(mesh(creased(lathe([[0.0152, 0], [0.0192, 0], [0.0196, 0.0007], [0.0196, 0.0023], [0.0192, 0.003], [0.0152, 0.003], [0.0152, 0]], 48), 40), CM.steel, 'stage_a_collar'));
+  A.add(mesh(new THREE.TorusGeometry(0.01725, 0.0005, 6, 48).rotateX(Math.PI / 2).translate(0, -0.004, 0), CM.led, 'stage_a_led', { cast: false }));
+  const RL = node('ring_lower', A); RL.position.y = 0.003;
+  {
+    const s = new THREE.Shape(); s.absarc(0, 0, 0.031, 0, Math.PI * 2, false);
+    const hole = new THREE.Path(); hole.absarc(0, 0, 0.0198, 0, Math.PI * 2, true); s.holes.push(hole);
+    for (let k = 0; k < 6; k++) s.holes.push(sector(0.0229, 0.0277, 30 + k * 60 - 17, 30 + k * 60 + 17, 8));
+    RL.add(mesh(creased(slabY(s, 0, 0.003, 0.0005, 2), 30), CM.alloy, 'ring_lower_flange'));
+    RL.add(mesh(merge([0, 60, 120, 180, 240, 300].map(a => box(-0.0011, 0.0011, 0.0029, 0.0035, 0.0283, 0.0297).rotateY(deg(a)))), CM.led, 'ring_lower_leds', { cast: false }));
+  }
+
+  // mast stage B: slides out of A; a lantern with three windows round the core, a cap on top
+  const B = node('stage_b', A); B.position.y = B_Y0;
+  let tube = lathe([[0.0122, -0.018], [0.0142, -0.018], [0.0142, 0.02], [0.0122, 0.02], [0.0122, -0.018]], 48);
+  tube = subtract(tube, ...[60, 180, 300].map(a => slabY(sector(0.009, 0.02, a - 38, a + 38, 10), 0.0, 0.0165)));
+  B.add(mesh(creased(tube, 30), CM.dark, 'stage_b_tube'));
+  B.add(mesh(creased(lathe([[0.0138, 0.02], [0.0158, 0.02], [0.0158, 0.023], [0.0138, 0.023], [0.0138, 0.02]], 48), 40), CM.steel, 'stage_b_collar'));
+  B.add(mesh(creased(lathe([[0, 0.023], [0.0156, 0.023], [0.0156, 0.0238], [0.014, 0.0262], [0.0105, 0.0285], [0.0055, 0.0298], [0, 0.0302]], 48), 34), CM.alloy, 'stage_b_cap'));
+  B.add(mesh(merge([0, 120, 240].map(a => hexScrew(0.0016, az(0.0092, a, 0.0288), V3(0.33 * Math.sin(deg(a)), 0.94, 0.33 * Math.cos(deg(a))), a))), CM.bolt, 'stage_b_screws'));
+  B.add(mesh(merge([new THREE.CylinderGeometry(0.0122, 0.0122, 0.001, 40).translate(0, -0.0065, 0), new THREE.CylinderGeometry(0.0018, 0.0018, 0.0052, 12).translate(0, -0.0036, 0),
+    new THREE.CylinderGeometry(0.0018, 0.0018, 0.0048, 12).translate(0, 0.0207, 0)]), CM.steel, 'stage_b_pins'));
+  B.add(mesh(merge([new THREE.TorusGeometry(0.0095, 0.0006, 6, 40).rotateX(Math.PI / 2).translate(0, -0.0059, 0), new THREE.SphereGeometry(0.0016, 12, 8).translate(0, 0.0304, 0)]), CM.led, 'stage_b_leds', { cast: false }));
+  const core = node('core', B); core.position.y = CORE_B;
+  { const g = lathe([[0, -0.0105], [0.0092, -0.0028], [0.0092, 0.0028], [0, 0.0105]], 6).toNonIndexed(); g.computeVertexNormals(); core.add(mesh(clean(g), CM.core, 'core_crystal', { cast: false })); }
+  const fxCore = node('fx_core', B); fxCore.position.y = CORE_B;
+  fxCore.userData = { note: 'the core: hit effects, aim point' };
+  // the upper ring turns on B's collar
+  const RU = node('ring_upper', B); RU.position.y = 0.0215;
+  RU.add(mesh(new THREE.TorusGeometry(0.0232, 0.0019, 10, 72).rotateX(Math.PI / 2), CM.steel, 'ring_upper_hoop'));
+  RU.add(mesh(merge([creased(lathe([[0.016, -0.0015], [0.0172, -0.0015], [0.0172, 0.0015], [0.016, 0.0015], [0.016, -0.0015]], 40), 40),
+    ...[30, 150, 270].map(a => box(-0.0012, 0.0012, -0.0008, 0.0008, 0.0168, 0.0218).rotateY(deg(a)))]), CM.alloy, 'ring_upper_spokes'));
+  RU.add(mesh(merge([0, 60, 120, 180, 240, 300].map(a => box(-0.001, 0.001, 0.0014, 0.0022, 0.0225, 0.0239).rotateY(deg(a)))), CM.led, 'ring_upper_leds', { cast: false }));
+
+  // the field: a unit sphere at the core, scaled to the bubble radius
+  const fx = node('fx_bubble', root); fx.position.y = CORE_STAND;
+  fx.userData = { note: 'unit sphere; scale = bubble radius in metres. Centre of the field.' };
+  fx.add(mesh(new THREE.SphereGeometry(1, 32, 16), CM.bubble, 'fx_bubble_sphere', { cast: false, receive: false }));
+  fx.scale.setScalar(1e-4);
+  return { root, body, legs, A, B, RL, RU, core, fx, fxCore, gauge };
+}
+
+// one pose of every moving part: leg swings (deg), mast stages 0-1, ring and core angles (rad), bubble radius (m)
+const P = (o = {}) => ({ phi: [PHI_STAND, PHI_STAND, PHI_STAND], a: 1, b: 1, rl: 0, ru: 0, core: 0, bub: 0, ...o });
+const FOLDED = () => P({ phi: [0, 0, 0], a: 0, b: 0 });
+function pose(E, p) {
+  // the body rests on whichever feet reach the ground: fit its height and tilt to the three leg lifts
+  const h = p.phi.map(legLift), rho = LEG_R + LEG_L * 0.6;
+  let gx = 0, gz = 0; LEGS.forEach((a, i) => { gx += h[i] * Math.sin(deg(a)); gz += h[i] * Math.cos(deg(a)); });
+  gx *= 2 / (3 * rho); gz *= 2 / (3 * rho);
+  E.body.position.set(0, (h[0] + h[1] + h[2]) / 3, 0);
+  E.body.rotation.set(-Math.asin(gz), 0, Math.asin(gx));
+  E.legs.forEach((l, i) => l.quaternion.setFromEuler(new THREE.Euler(deg(p.phi[i]), deg(LEGS[i]), 0, 'YXZ')));
+  E.A.position.y = A_Y0 + A_UP * p.a; E.B.position.y = B_Y0 + B_UP * p.b;
+  E.RL.rotation.set(0, p.rl, 0); E.RU.rotation.set(0, p.ru, 0); E.core.rotation.set(0, p.core, 0);
+  E.fx.scale.setScalar(Math.max(1e-4, p.bub));
+}
+
+// the clips, as functions of time
+const T = { deploy: 1.6, idle: 3, power_on: 1.0, power_off: 0.8, shutdown: 1.2 };
+const ON_AT = 0.6;                         // deploy: legs until here, then the power_on motion
+const GROW = [0.45, 0.95], COLLAPSE = 0.25, KILL_COLLAPSE = 0.12;   // bubble: grows over 0.45-0.95 s of power_on; collapses in 0.25 s (off) or 0.12 s (killed)
+const SPIN = { lower: 2 * Math.PI / 3, upper: -4 * Math.PI / 3, core: 2 * Math.PI / 3 };   // idle, rad/s: 1, -2 and 1 turns per 3 s
+const KILL_MAST = 2.5;                     // killed with the mast up: power_off plays at this speed alongside shutdown
+function powerOnP(t) {
+  const g = clamp01((t - GROW[0]) / (GROW[1] - GROW[0]));
+  return P({ a: seg(t, 0, 0.38), b: springK(clamp01((t - 0.22) / 0.5), 5, 9), bub: FIELD_R * (1 - Math.pow(1 - g, 3)) });
+}
+function deployP(t) {
+  const phi = LEGS.map((_, i) => PHI_STAND * springK(clamp01((t - 0.05 - i * 0.04) / 0.42), 5, 8));
+  return t < ON_AT ? P({ phi, a: 0, b: 0 }) : { ...powerOnP(t - ON_AT), phi };
+}
+function idleP(t) { return P({ rl: SPIN.lower * t, ru: SPIN.upper * t, core: SPIN.core * t, bub: FIELD_R }); }
+function powerOffP(t) { const c = clamp01(t / COLLAPSE); return P({ a: 1 - seg(t, 0.3, 0.75), b: 1 - seg(t, 0.1, 0.48), bub: FIELD_R * (1 - c * c) }); }
+// a drop under gravity from t0 to t1, then one small bounce
+function drop(t, t0, t1, amp = 0.1) {
+  const u = (t - t0) / (t1 - t0);
+  if (u <= 0) return 0; if (u < 1) return u * u;
+  return 1 - amp * Math.sin(Math.PI * clamp01((t - t1) / 0.2));
+}
+const SAG = [104, 128, 121];               // shutdown: where each leg gives way to
+function shutdownP(t) {
+  const c = clamp01(t / KILL_COLLAPSE);
+  return P({ phi: SAG.map((s, i) => PHI_STAND + (s - PHI_STAND) * drop(t, 0.28 + i * 0.06, 0.62 + i * 0.06, 0.12)), bub: FIELD_R * (1 - c) * (1 - c) });
+}
+
+function sampleClip(name, len, list, fn) {
+  const fps = 30, n = Math.round(len * fps), data = list.map(() => ({})), times = [];
+  for (let i = 0; i <= n; i++) { const t = Math.min(len, i / fps); times.push(t); fn(t); list.forEach(([o, props], j) => { o.updateMatrix(); for (const p of props) (data[j][p] = data[j][p] || []).push(...o[p].toArray()); }); }
+  const tracks = []; list.forEach(([o, props], j) => { for (const p of props) tracks.push(new (p === 'quaternion' ? THREE.QuaternionKeyframeTrack : THREE.VectorKeyframeTrack)(`${o.name}.${p}`, times, data[j][p])); });
+  return new THREE.AnimationClip(name, len, tracks);
+}
+
+/* ------------------------------------------------------------------ scene: a room with two sensors watching it */
+
+/*@@SCENE@@*/
+controls.maxDistance = 24; controls.minDistance = 0.15;
+scene.fog.near = 16; scene.fog.far = 40;
+const wallTex = concreteTexture(2, 2, '#5f5e5a'); wallTex.repeat.set(6, 1.6);
+const wallMat = new THREE.MeshStandardMaterial({ map: wallTex, roughness: 0.92, metalness: 0, color: '#c8c6c0' });
+const backWall = new THREE.Mesh(new THREE.BoxGeometry(24, 3.6, 0.2), wallMat); backWall.position.set(1, 1.8, -8.1); scene.add(backWall);
+const sideWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.6, 18), wallMat); sideWall.position.set(-10.1, 1.8, 1); scene.add(sideWall);
+const floorTex = concreteTexture(1, 1, '#3d3c3a'); floorTex.repeat.set(15, 11);
+const floor = new THREE.Mesh(new THREE.BoxGeometry(30, 0.3, 22), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.62, metalness: 0.05, color: '#a8a6a2' }));
+floor.position.set(0, -0.15, 2); scene.add(floor);
+for (const o of [backWall, sideWall, floor]) o.receiveShadow = o.castShadow = true;
+const crateMat = new THREE.MeshStandardMaterial({ color: '#3a3d45', roughness: 0.6, metalness: 0.3 });
+for (const [x, z, s, r] of [[-2.4, -1.9, 0.75, 0.2], [-1.6, -2.5, 0.45, -0.3], [3.1, -2.5, 0.6, 0.1], [-6.6, -2.2, 0.6, 0.4], [5.8, -4.8, 0.55, -0.2], [2.4, 5.6, 0.5, 0.5], [-3.4, 6.2, 0.45, -0.4], [-8.4, -6.6, 0.8, 0.1]]) {
+  const c = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), crateMat); c.position.set(x, s / 2, z); c.rotation.y = r; c.castShadow = c.receiveShadow = true; scene.add(c);
+}
+const spot = new THREE.SpotLight('#fff0dc', 3.2, 0, 0.85, 0.75, 0); spot.position.set(3, 12, 10); spot.target.position.set(0, 0, 0.5);
+spot.castShadow = true; spot.shadow.mapSize.set(2048, 2048); spot.shadow.bias = -0.0002; spot.shadow.normalBias = 0.02; scene.add(spot, spot.target);
+scene.add(new THREE.HemisphereLight('#9aa0b8', '#1a1918', 0.45));
+const fill = new THREE.DirectionalLight('#aebcff', 0.55); fill.position.set(-4, 4, 8); scene.add(fill);
+
+function makeDummy(color) {
+  const g = new THREE.Group(), m = new THREE.MeshStandardMaterial({ color, roughness: 0.7 });
+  const b = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 1.0, 6, 16), m); b.position.y = 0.75;
+  const h = new THREE.Mesh(new THREE.SphereGeometry(0.13, 20, 14), m); h.position.y = 1.55;
+  const v = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.05, 0.08), new THREE.MeshStandardMaterial({ color: '#15161b', roughness: 0.3, metalness: 0.5 })); v.position.set(0, 1.57, 0.1);
+  g.add(b, h, v); g.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+  return g;
+}
+const nick = makeDummy('#4a3a5a'); scene.add(nick);          // N1CK: a carrier, always hidden from sensors
+const mate = makeDummy('#3d4a5c'); mate.position.set(-6.2, 0, 3.6); mate.rotation.y = 2.3; scene.add(mate);
+const WALK = { a: V3(-1.2, 0, 0.9), b: V3(6.4, 0, 2.6), v: 1.5, pause: 1.3 };
+
+// the two sensors: a security camera on the back wall and a scout drone on the floor (simple stand-ins)
+const FEEDS = {
+  camera: { name: 'Security cam', pos: V3(-9.0, 3.1, -7.77), look: V3(0.6, 0.3, 2.6), fov: 52, mode: 0, patch: [0.36, 0.37, 0.39] },
+  drone: { name: 'Drone cam', pos: V3(8.6, 0.095, 7.4), look: V3(0.2, 1.0, 0.2), fov: 56, mode: 1, patch: [0.33, 0.31, 0.39] },
+};
+const propMat = { body: new THREE.MeshStandardMaterial({ color: '#24262c', roughness: 0.45, metalness: 0.6 }), dark: new THREE.MeshStandardMaterial({ color: '#0d0e12', roughness: 0.3, metalness: 0.4 }),
+  led: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2 }), rec: new THREE.MeshStandardMaterial({ color: '#2a0505', emissive: '#ff3030', emissiveIntensity: 2 }) };
+const secCam = new THREE.Group(); {
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.22), propMat.body); arm.position.set(0, 0, 0.11);
+  const head = new THREE.Group(); head.position.set(0, -0.06, 0.24);
+  const hous = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.1, 0.24), propMat.body);
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.03, 24).rotateX(Math.PI / 2), propMat.dark); lens.position.z = 0.13;
+  const rec = new THREE.Mesh(new THREE.SphereGeometry(0.006, 10, 8), propMat.rec); rec.position.set(0.04, 0.035, 0.12);
+  head.add(hous, lens, rec); secCam.add(arm, head);
+  secCam.position.set(-9.0, 3.16, -8.0); secCam.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  head.lookAt(FEEDS.camera.look); scene.add(secCam);
+}
+const droneProp = new THREE.Group(); {
+  const hull = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.28), propMat.body); hull.position.y = 0.09;
+  const brow = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.004, 0.006), propMat.led); brow.position.set(0, 0.122, 0.141);
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.01, 20).rotateX(Math.PI / 2), propMat.dark); lens.position.set(0, 0.095, 0.143);
+  droneProp.add(hull, brow, lens);
+  for (const [x, z] of [[0.1, 0.1], [-0.1, 0.1], [0.1, -0.1], [-0.1, -0.1]]) { const w = new THREE.Mesh(new THREE.CylinderGeometry(0.043, 0.043, 0.03, 24).rotateZ(Math.PI / 2), propMat.dark); w.position.set(x, 0.043, z); droneProp.add(w); }
+  droneProp.position.set(FEEDS.drone.pos.x, 0, FEEDS.drone.pos.z);
+  droneProp.rotation.y = Math.atan2(FEEDS.drone.look.x - FEEDS.drone.pos.x, FEEDS.drone.look.z - FEEDS.drone.pos.z);
+  droneProp.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; }); scene.add(droneProp);
+}
+
+// the emitter, and where it lands
+const E = buildEmitter(); scene.add(E.root);
+E.root.traverse(o => { if (o.isMesh && o.geometry.attributes.position.count < 60) o.castShadow = false; });
+E.fx.children[0].visible = false;          // the viewer draws its own bubble
+const LAND = V3(0, 0, 0), THROW_FROM = V3(2.6, 1.4, 5.6);
+const coreLight = new THREE.PointLight('#8a4dff', 0, 0.9, 2); scene.add(coreLight);
+
+// the bubble as eyes see it: a thin refracting skin with a violet rim, and a faint line where it meets the floor
+const bubbleU = { uTime: { value: 0 }, uFade: { value: 1 } };
+const NOISE3 = /* glsl */`
+float nh(vec3 p){ p = fract(p*0.3183099 + 0.1); p *= 17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+float nn(vec3 x){ vec3 i = floor(x), f = fract(x); f = f*f*(3.0-2.0*f);
+  return mix(mix(mix(nh(i),nh(i+vec3(1,0,0)),f.x), mix(nh(i+vec3(0,1,0)),nh(i+vec3(1,1,0)),f.x), f.y),
+             mix(mix(nh(i+vec3(0,0,1)),nh(i+vec3(1,0,1)),f.x), mix(nh(i+vec3(0,1,1)),nh(i+vec3(1,1,1)),f.x), f.y), f.z); }
+`;
+const bubbleMat = new THREE.MeshPhysicalMaterial({ color: '#f7f4ff', metalness: 0, roughness: 0.04, transmission: 1, thickness: 0.22, ior: 1.15, specularIntensity: 0.05, envMapIntensity: 0.0, depthWrite: false });
+bubbleMat.onBeforeCompile = (s) => {
+  Object.assign(s.uniforms, bubbleU);
+  s.vertexShader = 'varying vec3 vNfW;\n' + s.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vNfW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+  s.fragmentShader = 'uniform float uTime, uFade;\nvarying vec3 vNfW;\n' + NOISE3 + s.fragmentShader
+    .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+      vec3 q = vNfW * 1.7 + vec3(0.0, uTime * 0.35, uTime * 0.2);
+      normal = normalize(normal + 0.22 * uFade * (vec3(nn(q), nn(q + 7.3), nn(q + 13.1)) - 0.5));`)
+    .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      float fr = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition)));
+      float band = smoothstep(0.86, 1.0, sin((vNfW.y * 2.2 - uTime * 0.9) * 3.1416)) * 0.25;
+      float flick = 0.75 + 0.5 * nn(vNfW * 3.0 + uTime * 0.8);
+      totalEmissiveRadiance += vec3(0.42, 0.24, 1.0) * uFade * (0.004 + (pow(fr, 5.0) * 0.32 + band * pow(fr, 1.5) * 0.22) * flick);`);
+};
+bubbleMat.customProgramCacheKey = () => 'nullfield-bubble-v1';
+const bubbleBackMat = new THREE.ShaderMaterial({
+  uniforms: bubbleU, side: THREE.BackSide, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: 'varying vec3 vN, vV, vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal); vV = cameraPosition - w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+  fragmentShader: 'uniform float uTime, uFade; varying vec3 vN, vV, vW;' + NOISE3 + `
+    void main(){ float fr = 1.0 - abs(dot(normalize(vN), normalize(vV)));
+      float flick = 0.7 + 0.6 * nn(vW * 2.5 - uTime * 0.7);
+      float band = smoothstep(0.9, 1.0, sin((vW.y * 2.2 - uTime * 0.9) * 3.1416)) * 0.02;
+      float sh = smoothstep(0.55, 0.95, nn(vW * 1.1 + vec3(0.0, uTime * 0.35, uTime * 0.2))) * 0.03;
+      gl_FragColor = vec4(vec3(0.42, 0.24, 1.0) * uFade * (0.004 + pow(fr, 4.0) * 0.1 + band + sh) * flick, 1.0); }`,
+});
+const bubble = new THREE.Group(); scene.add(bubble);
+const bubbleFront = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), bubbleMat), bubbleBack = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), bubbleBackMat);
+bubble.add(bubbleFront, bubbleBack);
+const floorRing = new THREE.Mesh(new THREE.RingGeometry(0.985, 1, 160).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#8a4dff', transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending }));
+floorRing.position.y = 0.004; scene.add(floorRing);
+const NOT_AO = [bubbleFront, bubbleBack, floorRing];   // see-through effects stay out of the AO pass
+{ const ov = ao._overrideVisibility.bind(ao); ao._overrideVisibility = () => { ov(); for (const o of NOT_AO) if (o.visible) { o.visible = false; ao._visibilityCache.push(o); } }; }
+
+// sparks when the emitter is shot
+const SPARK_N = 48;
+const sparks = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ size: 0.012, color: '#e9dcff', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  map: (() => { const c = canvas(32, 32), x = c.getContext('2d'), g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, '#fff'); g.addColorStop(0.4, 'rgba(200,170,255,0.8)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(c); })() }));
+sparks.geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(SPARK_N * 3), 3)); sparks.frustumCulled = false; sparks.visible = false; scene.add(sparks);
+const sparkV = Array.from({ length: SPARK_N }, () => V3(0, 0, 0)); let sparkT = -1;
+function fireSparks(at) {
+  const p = sparks.geometry.attributes.position;
+  for (let i = 0; i < SPARK_N; i++) { p.setXYZ(i, at.x, at.y, at.z); sparkV[i].set(Math.random() - 0.5, Math.random() * 0.9, Math.random() - 0.5).normalize().multiplyScalar(0.6 + Math.random() * 1.6); }
+  p.needsUpdate = true; sparkT = 0; sparks.visible = true;
+}
+function stepSparks(dt) {
+  if (sparkT < 0) return; sparkT += dt;
+  const p = sparks.geometry.attributes.position;
+  for (let i = 0; i < SPARK_N; i++) { sparkV[i].y -= 9.8 * dt; let y = p.getY(i) + sparkV[i].y * dt; if (y < 0.002) { y = 0.002; sparkV[i].y *= -0.3; sparkV[i].x *= 0.6; sparkV[i].z *= 0.6; } p.setXYZ(i, p.getX(i) + sparkV[i].x * dt, y, p.getZ(i) + sparkV[i].z * dt); }
+  p.needsUpdate = true; sparks.material.opacity = clamp01(1 - sparkT / 0.9);
+  if (sparkT > 0.9) { sparkT = -1; sparks.visible = false; }
+}
+
+/* ------------------------------------------------------------------ the emitter's life: thrown, stands, field on and off, shot */
+
+const $ = (id) => document.getElementById(id);
+// phase: hand, flying, deploying, ready, folding, dead. field: switched on. spin: ring speed 0-1. bub: current bubble radius.
+const em = { phase: 'hand', t: 0, field: false, fieldT: 9, landOn: true, charge: 1, offT: 9, spin: 0, spinT: 0, low: false, autoOn: false,
+  from: null, blendT: 1, dead: null, bub: 0, pose: FOLDED(), yaw: 0.35, flash: 0, flashText: '' };
+let now = 0, manual = false;
+function currentPose() {
+  switch (em.phase) {
+    case 'hand': case 'flying': return FOLDED();
+    case 'deploying': return deployP(em.landOn ? em.t : Math.min(em.t, ON_AT));
+    case 'ready': return em.field ? powerOnP(Math.min(em.fieldT, T.power_on)) : powerOffP(Math.min(em.fieldT, T.power_off));
+    case 'folding': return deployP(Math.max(0, em.t));
+    case 'dead': {
+      const s = shutdownP(Math.min(em.t, T.shutdown)), m = powerOffP(Math.min(em.t * KILL_MAST, T.power_off));
+      return { ...s, a: em.dead.a * m.a, b: em.dead.b * m.b, bub: s.bub * em.dead.bub / FIELD_R };
+    }
+  }
+}
+// cross-fade from the pose it had when something interrupted it (as Animation.CrossFade does)
+function snapshot() { em.from = { ...em.pose, phi: em.pose.phi.slice() }; em.blendT = 0; }
+function blended(p) {
+  if (!em.from || em.blendT >= 0.2) return p;
+  const k = ease(em.blendT / 0.2), f = em.from;
+  return { ...p, phi: p.phi.map((v, i) => lerp(f.phi[i], v, k)), a: lerp(f.a, p.a, k), b: lerp(f.b, p.b, k), bub: lerp(f.bub, p.bub, k) };
+}
+function flash(text) { em.flash = 1.6; em.flashText = text; }
+function setField(on, why = 'user') {
+  if (why === 'user') { manual = true; em.autoOn = false; }
+  if (em.phase !== 'ready' || on === em.field) return;
+  if (on && em.charge < BATT.min) { SFX.low(); flash('Battery low'); return; }
+  snapshot(); em.field = on; em.fieldT = 0;
+  if (on) SFX.on(); else { SFX.off(); if (why === 'empty') { SFX.low(); em.autoOn = !manual; flash('Battery empty'); } }
+}
+function throwOrPick() {
+  autoStart = -1;
+  if (em.phase === 'hand') { em.phase = 'flying'; em.t = 0; em.field = false; SFX.throwS(); }
+  else if (em.phase === 'ready') { snapshot(); if (em.field) SFX.off(); em.t = em.field ? T.deploy : ON_AT; em.field = false; em.phase = 'folding'; }
+  else if (em.phase === 'dead') { em.phase = 'hand'; em.charge = 1; em.offT = 9; em.low = false; }   // a fresh emitter for the next throw
+}
+function shoot() {
+  manual = true; autoStart = -1;
+  if (em.phase !== 'ready' && em.phase !== 'deploying') return;
+  snapshot(); em.dead = { a: em.pose.a, b: em.pose.b, bub: em.pose.bub };
+  em.phase = 'dead'; em.t = 0; em.field = false;
+  E.root.updateMatrixWorld(true); fireSparks(E.fxCore.getWorldPosition(V3(0, 0, 0))); SFX.shot();
+}
+function step(dt) {
+  now += dt; em.t += dt; em.fieldT += dt; em.blendT += dt; em.flash -= dt;
+  if (em.phase === 'flying') {
+    const k = clamp01(em.t / 0.75);
+    if (k >= 1) { em.phase = 'deploying'; em.t = 0; em.landOn = em.charge >= BATT.min; SFX.land(); SFX.deploy(); }
+  } else if (em.phase === 'deploying') {
+    if (em.landOn && !em.field && em.t >= ON_AT) { em.field = true; em.fieldT = em.t - ON_AT; SFX.on(); }
+    const end = em.landOn ? T.deploy : ON_AT;
+    if (em.t >= end) { em.phase = 'ready'; em.fieldT = em.landOn ? T.power_on : T.power_off; em.t = 0; }
+  } else if (em.phase === 'folding') {
+    em.t -= 3 * dt;   // deploy, backwards at double speed (em.t also gained dt above)
+    if (em.t <= 0) { em.phase = 'hand'; em.t = 0; }
+  }
+  // battery: drains while the field is on, recharges after a pause while it is off
+  const on = em.field && (em.phase === 'ready' || em.phase === 'deploying');
+  if (on) {
+    em.offT = 0; em.charge -= dt / BATT.field;
+    if (em.charge <= 0) { em.charge = 0; setField(false, 'empty'); }
+    else if (em.charge < BATT.min && !em.low) { em.low = true; SFX.low(); }
+  } else if (em.phase !== 'dead') { em.offT += dt; if (em.offT > BATT.delay) em.charge = Math.min(1, em.charge + dt / BATT.recharge); }
+  if (em.charge > BATT.min + 0.1) em.low = false;
+  if (em.autoOn && em.phase === 'ready' && !em.field && em.charge >= 1) setField(true, 'auto');
+  // rings: idle runs at em.spin speed, which ramps up and down over a second (a quarter second when killed)
+  const want = on ? 1 : 0;
+  em.spin = em.spin < want ? Math.min(want, em.spin + dt) : Math.max(want, em.spin - dt * (em.phase === 'dead' ? 4 : 1));
+  em.spinT = (em.spinT + dt * em.spin) % T.idle;
+  // pose
+  const p = blended(currentPose()), r = idleP(em.spinT);
+  p.rl = r.rl; p.ru = r.ru; p.core = r.core; em.pose = p; em.bub = em.phase === 'hand' || em.phase === 'flying' ? 0 : p.bub;
+  pose(E, p);
+  E.root.visible = em.phase !== 'hand';
+  if (em.phase === 'flying') {
+    const k = clamp01(em.t / 0.75); E.root.position.copy(THROW_FROM.clone().lerp(LAND, k)); E.root.position.y = THROW_FROM.y * (1 - k) + Math.sin(Math.PI * k) * 0.6;
+    E.root.rotation.set((1 - k) * 9, em.yaw + (1 - k) * 4, (1 - k) * 3);
+  } else { E.root.position.copy(LAND); E.root.rotation.set(0, em.yaw, 0); }
+  stepSparks(dt);
+}
+
+// N1CK walks into the bubble and out again; the teammate waits outside
+function walkerAt(time) {
+  const L = WALK.a.distanceTo(WALK.b), tw = L / WALK.v, cyc = 2 * (tw + WALK.pause), u = time % cyc;
+  let k, dir, moving = true;
+  if (u < tw) { k = ease(u / tw); dir = 1; }
+  else if (u < tw + WALK.pause) { k = 1; dir = 1; moving = false; }
+  else if (u < 2 * tw + WALK.pause) { k = 1 - ease((u - tw - WALK.pause) / tw); dir = -1; }
+  else { k = 0; dir = -1; moving = false; }
+  const pos = WALK.a.clone().lerp(WALK.b, k), d = WALK.b.clone().sub(WALK.a).multiplyScalar(dir);
+  let yaw = Math.atan2(d.x, d.z);
+  if (!moving) { const q = (u < 2 * tw + WALK.pause ? u - tw : u - 2 * tw - WALK.pause) / WALK.pause; yaw += Math.PI * ease(clamp01(q)); }
+  return { pos, yaw, bob: moving ? Math.abs(Math.sin(time * 2 * Math.PI * 0.9)) * 0.025 : 0 };
+}
+let walkT = 3.2, walkHold = null;
+function stepWalker(dt) {
+  walkT += dt;
+  const w = walkHold || walkerAt(walkT);
+  nick.position.set(w.pos.x, w.bob || 0, w.pos.z); nick.rotation.y = w.yaw;
+  mate.rotation.y = 2.3 + 0.25 * Math.sin(now * 0.4);
+}
+
+// what any sensor believes: N1CK carries the field on him; anyone else only inside a bubble
+const bubbleCentre = () => V3(LAND.x, CORE_STAND, LAND.z);
+const inBubble = (p) => em.bub > 0.01 && p.distanceTo(bubbleCentre()) < em.bub;
+const isHidden = (who) => who === nick || inBubble(who.position);
+
+/* ------------------------------------------------------------------ feed: what the camera or drone sends back */
+
+let feedMode = 'camera';
+const feedEl = $('feed'), scanCv = $('scan');
+const feedCam = new THREE.PerspectiveCamera(58, 16 / 10, 0.05, 40);
+let feedRT = null;
+// N1CK in the sensor's render: alpha 0 marks "nothing here"
+const holeMat = new THREE.ShaderMaterial({ vertexShader: 'void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: 'void main(){ gl_FragColor = vec4(0.0); }' });
+const postMat = new THREE.ShaderMaterial({
+  uniforms: { tColor: { value: null }, tDepth: { value: null }, projInv: { value: new THREE.Matrix4() }, camWorld: { value: new THREE.Matrix4() }, camPos: { value: V3(0, 0, 0) },
+    sph: { value: new THREE.Vector4() }, uTime: { value: 0 }, uMode: { value: 0 }, patchCol: { value: new THREE.Vector3() } },
+  depthTest: false, depthWrite: false, toneMapped: false,
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+  fragmentShader: /* glsl */`
+    uniform sampler2D tColor, tDepth; uniform mat4 projInv, camWorld; uniform vec3 camPos, patchCol; uniform vec4 sph; uniform float uTime, uMode;
+    varying vec2 vUv;
+    float h12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
+    vec3 rrt(vec3 v){ vec3 a = v * (v + 0.0245786) - 0.000090537; vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081; return a / b; }
+    vec3 aces(vec3 c){
+      const mat3 i = mat3(vec3(0.59719, 0.07600, 0.02840), vec3(0.35458, 0.90834, 0.13383), vec3(0.04823, 0.01566, 0.83777));
+      const mat3 o = mat3(vec3(1.60475, -0.10208, -0.00327), vec3(-0.53108, 1.10813, -0.07276), vec3(-0.07367, -0.00605, 1.07602));
+      return clamp(o * rrt(i * (c / 0.6)), 0.0, 1.0); }
+    vec3 srgb(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
+    void main(){
+      vec4 col = texture2D(tColor, vUv);
+      float d = texture2D(tDepth, vUv).x;
+      vec4 v = projInv * vec4(vUv * 2.0 - 1.0, d * 2.0 - 1.0, 1.0); v /= v.w;
+      vec3 wp = (camWorld * v).xyz, rd = normalize(wp - camPos);
+      float dist = d > 0.99999 ? 1e6 : length(wp - camPos);
+      // the field: any ray that enters the bubble before it hits something reads as nothing
+      bool hole = col.a < 0.5;
+      if (sph.w > 0.0) { vec3 oc = camPos - sph.xyz; float b = dot(oc, rd), c = dot(oc, oc) - sph.w * sph.w, h = b * b - c;
+        if (h > 0.0) { h = sqrt(h); if (-b + h > 0.0 && -b - h < dist) hole = true; } }
+      if (hole) { gl_FragColor = vec4(patchCol, 1.0); return; }   // the tell: perfectly flat, no grain, no scanlines
+      vec3 c = srgb(aces(col.rgb * 1.0));
+      float l = dot(c, vec3(0.299, 0.587, 0.114));
+      c = uMode < 0.5 ? mix(vec3(l), c, 0.5) * vec3(0.93, 1.0, 1.03) : vec3(l) * vec3(0.88, 0.82, 1.1);
+      c = (c - 0.45) * 1.15 + 0.47;
+      vec2 px = gl_FragCoord.xy;
+      c += (h12(px + fract(uTime * 7.31) * 517.0) - 0.5) * (uMode < 0.5 ? 0.13 : 0.18);
+      c += (h12(vec2(floor(px.y / 2.0), floor(uTime * 24.0))) - 0.5) * 0.05;     // line jitter
+      c *= 0.84 + 0.16 * step(1.5, mod(px.y, 3.0));                            // scanlines
+      float roll = fract(vUv.y * 0.7 - uTime * 0.13); c += 0.06 * smoothstep(0.0, 0.03, roll) * (1.0 - smoothstep(0.03, 0.1, roll));
+      vec2 q = vUv - 0.5; c *= 1.0 - dot(q, q) * 1.1;
+      gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+    }`,
+});
+const postScene = new THREE.Scene(), postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
+function placeFeedCam() {
+  const F = FEEDS[feedMode];
+  feedCam.position.copy(F.pos); feedCam.lookAt(F.look); feedCam.fov = F.fov; feedCam.updateMatrixWorld(true);
+}
+function renderFeed() {
+  const r = feedEl.getBoundingClientRect(), cr = renderer.domElement.getBoundingClientRect();
+  if (r.width < 2) return;
+  const dpr = renderer.getPixelRatio(), w = Math.max(2, Math.round(r.width * dpr)), h = Math.max(2, Math.round(r.height * dpr));
+  if (!feedRT || feedRT.width !== w || feedRT.height !== h) {
+    if (feedRT) feedRT.dispose();
+    feedRT = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthTexture: new THREE.DepthTexture(w, h, THREE.FloatType) });
+  }
+  const F = FEEDS[feedMode];
+  placeFeedCam(); feedCam.aspect = r.width / r.height; feedCam.updateProjectionMatrix();
+  // the sensor's own render: no bubble skin, its own body hidden, N1CK written as "nothing"
+  const hide = [bubble, floorRing, feedMode === 'camera' ? secCam : droneProp], was = hide.map(o => o.visible);
+  hide.forEach(o => { o.visible = false; });
+  const nickMeshes = []; nick.traverse(o => { if (o.isMesh) { nickMeshes.push([o, o.material, o.castShadow]); o.material = holeMat; o.castShadow = false; } });
+  renderer.setRenderTarget(feedRT); renderer.render(scene, feedCam); renderer.setRenderTarget(null);
+  hide.forEach((o, i) => { o.visible = was[i]; }); nickMeshes.forEach(([o, m, c]) => { o.material = m; o.castShadow = c; });
+  // post: grain, scanlines and the clean patch
+  const u = postMat.uniforms, c = bubbleCentre();
+  u.tColor.value = feedRT.texture; u.tDepth.value = feedRT.depthTexture; u.projInv.value.copy(feedCam.projectionMatrixInverse); u.camWorld.value.copy(feedCam.matrixWorld);
+  u.camPos.value.copy(feedCam.position); u.sph.value.set(c.x, c.y, c.z, em.bub > 0.01 ? em.bub : 0); u.uTime.value = now; u.uMode.value = F.mode; u.patchCol.value.set(...F.patch);
+  const x = r.left - cr.left, y = cr.bottom - r.bottom;
+  renderer.setScissorTest(true); renderer.setScissor(x, y, r.width, r.height); renderer.setViewport(x, y, r.width, r.height);
+  renderer.render(postScene, postCam);
+  renderer.setScissorTest(false); renderer.setViewport(0, 0, cr.width, cr.height);
+  drawScan(r, dpr);
+  $('feed-name').textContent = F.name;
+  $('feed-dot').style.opacity = Math.sin(now * 5) > 0 ? 1 : 0.25;
+}
+// scanner overlay: a sweep every 3 s marks every person the sensor can see; hidden ones are never marked
+const SCAN = { every: 3, sweep: 0.9, life: 2.2 }, marks = new Map();
+let lastSweep = -1;
+function drawScan(r, dpr) {
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (scanCv.width !== w || scanCv.height !== h) { scanCv.width = w; scanCv.height = h; }
+  const x = scanCv.getContext('2d'); x.clearRect(0, 0, w, h);
+  const ph = now % SCAN.every, sw = ph < SCAN.sweep ? ph / SCAN.sweep : -1;
+  if (sw >= 0) {
+    const sx = sw * w, g = x.createLinearGradient(sx - 60 * dpr, 0, sx, 0);
+    g.addColorStop(0, 'rgba(255,140,90,0)'); g.addColorStop(1, 'rgba(255,140,90,0.22)');
+    x.fillStyle = g; x.fillRect(sx - 60 * dpr, 0, 60 * dpr, h);
+    x.fillStyle = 'rgba(255,170,130,0.75)'; x.fillRect(sx - dpr, 0, 2 * dpr, h);
+  }
+  let contacts = 0;
+  for (const who of [nick, mate]) {
+    const top = who.position.clone().add(V3(0, 1.8, 0)).project(feedCam), bot = who.position.clone().project(feedCam);
+    if (top.z > 1 || bot.z > 1) continue;
+    const px = (top.x + 1) / 2 * w, y0 = (1 - top.y) / 2 * h, y1 = (1 - bot.y) / 2 * h;
+    if (px < 0 || px > w) continue;
+    if (!isHidden(who) && sw >= 0 && lastSweep >= 0 && lastSweep * w <= px && px < sw * w) marks.set(who, now);
+    const seen = marks.get(who);
+    if (seen === undefined || now - seen > SCAN.life || isHidden(who)) continue;
+    contacts++;
+    const k = 1 - (now - seen) / SCAN.life, bw = (y1 - y0) * 0.24, c = Math.min(bw, (y1 - y0)) * 0.35;
+    x.strokeStyle = `rgba(255,128,80,${0.95 * k})`; x.lineWidth = 2 * dpr; x.beginPath();
+    for (const [sx, sy, dx, dy] of [[px - bw, y0, 1, 1], [px + bw, y0, -1, 1], [px - bw, y1, 1, -1], [px + bw, y1, -1, -1]]) { x.moveTo(sx, sy + dy * c); x.lineTo(sx, sy); x.lineTo(sx + dx * c, sy); }
+    x.stroke();
+  }
+  lastSweep = sw;
+  const t = contacts ? `Scan: ${contacts} contact${contacts > 1 ? 's' : ''}` : 'Scan: no contacts';
+  if ($('feed-foot').textContent !== t) $('feed-foot').textContent = t;
+}
+
+/* ------------------------------------------------------------------ sound */
+
+/*@@SOUNDDATA@@*/
+let actx = null, soundOn = true, hum = null;
+const sfx = {};
+function audioInit() { if (actx) return; const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; actx = new AC(); for (const [k, uri] of Object.entries(SOUND_DATA)) { const bin = atob(uri.split(',')[1]), buf = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i); actx.decodeAudioData(buf.buffer).then(b => { sfx[k] = b; }).catch(() => { }); } }
+function unlockAudio() { audioInit(); if (actx && actx.state !== 'running') actx.resume().catch(() => { }); }
+function play(name, gain = 0.85) { if (!soundOn || !actx || actx.state !== 'running' || !sfx[name]) return; const src = actx.createBufferSource(), g = actx.createGain(); src.buffer = sfx[name]; g.gain.value = gain; src.connect(g).connect(actx.destination); src.start(); }
+// field hum: one looping sample, faded and pitched with the bubble's size
+function humTick() {
+  if (!actx || actx.state !== 'running' || !sfx.field_loop) return;
+  if (!hum) { const src = actx.createBufferSource(), g = actx.createGain(); src.buffer = sfx.field_loop; src.loop = true; g.gain.value = 0; src.connect(g).connect(actx.destination); src.start(); hum = { src, g }; }
+  const k = clamp01(em.bub / FIELD_R), t = actx.currentTime;
+  hum.src.playbackRate.setTargetAtTime(0.85 + 0.15 * k, t, 0.08);
+  hum.g.gain.setTargetAtTime(soundOn ? 0.35 * k : 0, t, 0.08);
+}
+const SFX = {
+  throwS: () => play('throw', 0.6), land: () => play('land', 0.8), deploy: () => play('deploy', 0.8), on: () => play('field_on'), off: () => play('field_off'),
+  low: () => play('low_battery', 0.6), shot: () => play('shot', 0.9),
+};
+
+/* ------------------------------------------------------------------ UI */
+
+let view = 'room', camTween = null;
+function viewFor(name) {
+  const asp = camera.aspect, kk = asp < 1.1 ? 1.35 / Math.max(asp, 0.45) : 1;
+  if (name === 'room') { const t = V3(0, 0.8, 0.6); return { pos: V3(10.5, 7.0, 14.0).sub(t).multiplyScalar(kk).add(t), target: t }; }
+  const t = LAND.clone().add(V3(0, 0.07, 0));
+  return { pos: t.clone().add(V3(0.36, 0.2, 0.46).multiplyScalar(kk)), target: t };
+}
+function goView(name, instant = false) {
+  view = name; const v = viewFor(name); camTween = null;
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
+  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 };
+}
+function setFeed(mode) { feedMode = mode; marks.clear(); document.querySelectorAll('[data-feed]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.feed === mode))); }
+$('throw').addEventListener('click', throwOrPick);
+$('field').addEventListener('click', () => setField(!em.field));
+$('shoot').addEventListener('click', shoot);
+document.querySelectorAll('[data-feed]').forEach(b => b.addEventListener('click', () => setFeed(b.dataset.feed)));
+document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => goView(b.dataset.view)));
+$('sound').addEventListener('click', () => { soundOn = !soundOn; $('sound').setAttribute('aria-pressed', String(soundOn)); if (soundOn) unlockAudio(); });
+window.addEventListener('pointerdown', unlockAudio, { capture: true });
+controls.addEventListener('start', () => { camTween = null; });
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  const k = e.key.toLowerCase(); unlockAudio();
+  if (k === 't') throwOrPick(); else if (k === 'f') setField(!em.field); else if (k === 'x') shoot();
+  else if (k === 'c') setFeed(feedMode === 'camera' ? 'drone' : 'camera');
+});
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+window.addEventListener('resize', resize);
+const cellsEl = $('cells'); for (let i = 0; i < GAUGE_N; i++) cellsEl.appendChild(document.createElement('i'));
+function statusText() {
+  if (em.flash > 0) return em.flashText;
+  switch (em.phase) {
+    case 'hand': return 'In hand'; case 'flying': return 'Thrown'; case 'folding': return 'Folding'; case 'dead': return 'Destroyed';
+    case 'deploying': return em.t < ON_AT || !em.landOn ? 'Standing up' : 'Field rising';
+  }
+  if (em.field) return em.fieldT < GROW[1] ? 'Field rising' : 'Field up';
+  return em.charge < BATT.min ? 'Recharging' : 'Field off';
+}
+function updateHud() {
+  const st = statusText(); if ($('status').textContent !== st) $('status').textContent = st;
+  const lab = em.phase === 'hand' ? 'Throw ' : 'Pick up ';
+  if ($('throw').firstChild.textContent !== lab) $('throw').firstChild.textContent = lab;
+  $('throw').disabled = em.phase === 'flying' || em.phase === 'deploying' || em.phase === 'folding';
+  $('field').setAttribute('aria-pressed', String(em.field)); $('field').disabled = em.phase !== 'ready';
+  $('shoot').disabled = em.phase !== 'ready' && em.phase !== 'deploying';
+  const lit = litSegments(), blink = em.field && em.charge < BATT.min && Math.sin(now * 8) < 0;
+  [...cellsEl.children].forEach((c, i) => c.classList.toggle('on', i < lit && !(blink && i === lit - 1)));
+  cellsEl.classList.toggle('low', em.charge < BATT.min); cellsEl.setAttribute('aria-valuenow', String(Math.round(em.charge * 100)));
+  const pct = Math.round(em.charge * 100) + '%'; if ($('pct').textContent !== pct) $('pct').textContent = pct;
+  // name tags over the two people
+  for (const [el, who] of [[$('tag-nick'), nick], [$('tag-mate'), mate]]) {
+    const p = who.position.clone().add(V3(0, 1.95, 0)).project(camera), hid = isHidden(who);
+    el.style.display = p.z < 1 ? '' : 'none';
+    el.style.left = ((p.x + 1) / 2 * stage.clientWidth) + 'px'; el.style.top = ((1 - p.y) / 2 * stage.clientHeight) + 'px';
+    el.classList.toggle('seen', !hid); el.lastChild.textContent = hid ? 'hidden' : 'seen';
+  }
+}
+const litSegments = () => em.phase === 'dead' ? 0 : Math.ceil(em.charge * GAUGE_N - 1e-6);
+// lights, gauge and bubble follow the state
+function updateLooks() {
+  const k = clamp01(em.bub / FIELD_R), dead = em.phase === 'dead';
+  CM.led.emissiveIntensity = dead ? GLOW.led * clamp01(1 - em.t / 0.5) : GLOW.led;
+  CM.core.emissiveIntensity = dead ? GLOW.core * 1.6 * clamp01(1 - em.t / 0.35) : 0.5 + (GLOW.core - 0.5) * k * (0.88 + 0.12 * Math.sin(now * 2 * Math.PI));
+  CM.gauge.emissiveIntensity = GLOW.gauge;
+  const lit = litSegments(), blink = em.field && em.charge < BATT.min && Math.sin(now * 8) < 0;
+  E.gauge.forEach((g, i) => g.scale.setScalar(i < lit && !(blink && i === lit - 1) ? 1 : 1e-4));
+  coreLight.intensity = dead ? 0 : 0.02 + 0.12 * k; E.root.updateMatrixWorld(true); E.fxCore.getWorldPosition(coreLight.position);
+  const c = bubbleCentre(), r = Math.max(1e-3, em.bub);
+  bubble.visible = floorRing.visible = em.bub > 0.01; bubble.position.copy(c); bubble.scale.setScalar(r);
+  const fr = Math.sqrt(Math.max(0, r * r - c.y * c.y)); floorRing.position.set(c.x, 0.004, c.z); floorRing.scale.setScalar(Math.max(1e-3, fr));
+  floorRing.material.opacity = 0.5 * clamp01(em.bub / 0.6);
+  bubbleU.uTime.value = now; bubbleU.uFade.value = clamp01(em.bub / 1.2);
+}
+
+/* ------------------------------------------------------------------ export */
+
+function toBase64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function exportScenes() {
+  CM.led.emissiveIntensity = GLOW.led; CM.core.emissiveIntensity = GLOW.core; CM.gauge.emissiveIntensity = GLOW.gauge;
+  const X = buildEmitter(), Q = 'quaternion', PO = 'position';
+  const legs = X.legs.map(l => [l, [Q]]), body = [X.body, [PO, Q]], mast = [[X.A, [PO]], [X.B, [PO]]], bub = [X.fx, ['scale']];
+  const clips = [
+    sampleClip('deploy', T.deploy, [body, ...legs, ...mast, bub], (t) => pose(X, deployP(t))),
+    sampleClip('idle', T.idle, [[X.RL, [Q]], [X.RU, [Q]], [X.core, [Q]]], (t) => pose(X, idleP(t))),
+    sampleClip('power_on', T.power_on, [...mast, bub], (t) => pose(X, powerOnP(t))),
+    sampleClip('power_off', T.power_off, [...mast, bub], (t) => pose(X, powerOffP(t))),
+    sampleClip('shutdown', T.shutdown, [body, ...legs, bub], (t) => pose(X, shutdownP(t))),
+  ];
+  pose(X, P()); X.root.updateMatrixWorld(true);
+  X.root.userData.clips = {
+    deploy: `lands folded on its belly: legs swing out and stand it up (by ${ON_AT} s), then the mast rises and the bubble grows to 4 m (the power_on motion from ${ON_AT} s)`,
+    idle: 'loop: lower ring 1 turn anticlockwise, upper ring 2 turns clockwise and the core 1 turn (seen from above) per 3 s; play it at a speed ramped 0-1 to spin up and down',
+    power_on: `standing with the mast down: mast rises, bubble grows over ${GROW[0]}-${GROW[1]} s`,
+    power_off: `switched off or battery empty: bubble collapses in ${COLLAPSE} s, mast sinks; legs stay out`,
+    shutdown: `shot: bubble collapses in ${KILL_COLLAPSE} s, the legs give way and it sags; keys only body, legs and bubble, so play power_off at ${KILL_MAST}x with it if the mast was up`,
+  };
+  return [{ file: 'nullfield-emitter.glb', root: X.root, animations: clips }];
+}
+async function exportGLB() {
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const exporter = new GLTFExporter(), out = [], was = looping; setLoop(false);
+  try { for (const s of exportScenes()) { const buf = await exporter.parseAsync(s.root, { binary: true, animations: s.animations }); out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) }); } }
+  finally { if (was) setLoop(true); }
+  return out;
+}
+// put the scene in a state for screenshots: emitter standing (clip pose at time t), N1CK at a spot
+function set(clip, t = 0, opts = {}) {
+  autoStart = -1;
+  const fn = { folded: FOLDED, standing: () => P({ a: 0, b: 0 }), deploy: deployP, idle: idleP, power_on: powerOnP, power_off: powerOffP, shutdown: shutdownP, up: () => idleP(0) }[clip];
+  const p = fn(t); if (clip === 'idle' || clip === 'up') p.bub = FIELD_R;
+  em.phase = clip === 'shutdown' ? 'dead' : 'ready'; em.dead = { a: 1, b: 1, bub: FIELD_R }; em.t = t; em.from = null;
+  em.field = p.bub > 0.01; em.pose = p; em.bub = opts.bub ?? p.bub; if (opts.charge !== undefined) em.charge = opts.charge;
+  if (clip === 'shutdown') { const s = currentPose(); Object.assign(p, s); em.bub = s.bub; }
+  pose(E, p); E.root.visible = true; E.root.position.copy(LAND); E.root.rotation.set(0, em.yaw, 0);
+  if (opts.nick) walkHold = { pos: V3(opts.nick[0], 0, opts.nick[1]), yaw: opts.nick[2] ?? -1.4, bob: 0 };
+  if (opts.feed) setFeed(opts.feed);
+  stepWalker(0); updateLooks(); updateHud();
+  for (const who of [nick, mate]) if (!isHidden(who)) marks.set(who, now - 0.3);
+}
+function preview() {
+  setLoop(false);
+  document.querySelectorAll('.plate, .bar, .hint, #tags').forEach(e => { e.hidden = true; });
+  now = 1.3; set('idle', 0.9, { nick: [-1.5, 0.7, 0.8], charge: 0.72, feed: 'camera' });
+  camera.position.set(6.9, 2.5, 7.6); controls.target.set(-0.4, 1.15, -0.4); controls.update();
+  composer.render(); renderFeed();
+}
+window.__model = { id: 'nullfield', exportScenes, exportGLB, preview };
+
+/* ------------------------------------------------------------------ go */
+
+goView('room', true); setFeed('camera');
+$('loading').hidden = true;
+let autoStart = 0.8;
+const clock = new THREE.Clock();
+let looping = false;
+function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
+function tick(dt) {
+  if (autoStart > 0) { autoStart -= dt; if (autoStart <= 0) throwOrPick(); }
+  step(dt); stepWalker(dt); updateLooks(); updateHud();
+  if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+  humTick();
+}
+function loop() { const dt = Math.min(clock.getDelta(), 1 / 30); tick(dt); controls.update(); composer.render(dt); renderFeed(); }
+setLoop(true);
+window.__model.ready = true;
+window.__model.debug = {
+  tick, stop: () => setLoop(false), renderOnce: () => { controls.update(); composer.render(); renderFeed(); },
+  // set(clip, t, { nick: [x, z, yaw], charge, feed, bub }): pose the emitter at a clip time ('folded', 'standing', 'up' too)
+  set, setFeed, goView, walk: (x, z, yaw = -1.4) => { walkHold = { pos: V3(x, 0, z), yaw, bob: 0 }; stepWalker(0); }, em, E, nick, mate,
+  camera, controls, scene, renderer, setSway: () => { }, setSpin: () => { }, pivot: { rotation: {} },
+  hidden: () => ({ nick: isHidden(nick), mate: isHidden(mate) }),
+};
+</script>

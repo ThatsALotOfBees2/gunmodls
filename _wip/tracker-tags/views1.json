@@ -1,0 +1,9 @@
+[{"name":"room","pos":[1.9,6.0,10.0],"target":[-0.45,0.2,2.5],"setup":"m.stage0({s: 3.4}); m.simulate(1.2)"},
+ {"name":"bench_stuck","pos":[2.6,0.545,5.43],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','stuck')"},
+ {"name":"bench_top","pos":[2.555,0.585,5.38],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','stuck')"},
+ {"name":"bench_free_side","pos":[2.62,0.512,5.42],"target":[2.55,0.504,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','free')"},
+ {"name":"bench_tamper","pos":[2.6,0.55,5.43],"target":[2.55,0.505,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','tamper',0.5)"},
+ {"name":"bench_pulse","pos":[2.6,0.545,5.43],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','pulse',0.07)"},
+ {"name":"pack","pos":[2.5,0.62,5.55],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.set('pack','rest',0,5)"},
+ {"name":"pack_eject","pos":[2.5,0.62,5.55],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.set('pack','eject',0.17,5)"}
+]

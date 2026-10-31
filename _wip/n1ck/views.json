@@ -1,0 +1,10 @@
+[
+ {"name":"front","pos":[0,1.0,4.6],"target":[0,0.95,0],"setup":"m.showRef(true); m.set('idle',0.5)"},
+ {"name":"side","pos":[4.6,1.0,0],"target":[0,0.95,0]},
+ {"name":"back","pos":[0,1.2,-4.2],"target":[0,0.95,0],"setup":"m.showRef(false)"},
+ {"name":"q34","pos":[1.6,1.35,3.4],"target":[0,0.98,0]},
+ {"name":"tpose","pos":[0,1.0,4.9],"target":[0,0.95,0],"setup":"m.showRef(true); m.rest()"},
+ {"name":"face","pos":[0.25,1.77,0.75],"target":[0,1.73,0.03],"setup":"m.showRef(false); m.set('idle',0.5)"},
+ {"name":"hands","pos":[0.95,1.05,0.95],"target":[0.3,0.88,0.06]},
+ {"name":"backfield","pos":[-0.9,1.45,-1.6],"target":[0,1.3,-0.1],"setup":"m.field(true)"}
+]

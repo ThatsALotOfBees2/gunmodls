@@ -1,0 +1,6 @@
+[{"name":"g_walk","pos":[0,0,0],"target":[0,0,0],"setup":"m.stage0({s: 6.0, gait: 'walk'}); m.simulate(0.4); const p = m.dummy.root.position, y = m.dummy.root.rotation.y, sg = -Math.sin(y) >= 0 ? 1 : -1; v.pos = [p.x + sg * Math.cos(y) * 3.0, 1.0, p.z - sg * Math.sin(y) * 3.0]; v.target = [p.x, 0.75, p.z];"},
+ {"name":"g_crouch","pos":[0,0,0],"target":[0,0,0],"setup":"m.stage0({s: 6.0, gait: 'crouch'}); m.simulate(0.4); const p = m.dummy.root.position, y = m.dummy.root.rotation.y, sg = -Math.sin(y) >= 0 ? 1 : -1; v.pos = [p.x + sg * Math.cos(y) * 3.0, 1.0, p.z - sg * Math.sin(y) * 3.0]; v.target = [p.x, 0.75, p.z];"},
+ {"name":"g_sprint","pos":[0,0,0],"target":[0,0,0],"setup":"m.stage0({s: 6.0, gait: 'sprint'}); m.simulate(0.25); const p = m.dummy.root.position, y = m.dummy.root.rotation.y, sg = -Math.sin(y) >= 0 ? 1 : -1; v.pos = [p.x + sg * Math.cos(y) * 3.0, 1.0, p.z - sg * Math.sin(y) * 3.0]; v.target = [p.x, 0.75, p.z];"},
+ {"name":"breach","pos":[0.2,2.4,5.6],"target":[-1.4,0.9,0.6],"setup":"m.stage0({s: 0.2}); m.att.moving = false; m.breach(); m.simulate(0.35)"},
+ {"name":"doortag","pos":[1.99,1.07,0.63],"target":[1.885,1.02,0.56],"fov":30,"setup":"m.stage0({s: 0.2}); m.simulate(0.2); m.ui(false)"},
+ {"name":"pack","pos":[2.5,0.62,5.55],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.set('pack','rest',0,5)"}]
