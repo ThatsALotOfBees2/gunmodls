@@ -62,7 +62,10 @@ and a model id without spaces (`m590a1`).
 ## Unity
 
 Every model has a `unity/` folder with game-ready copies of its `.glb` files, made by
-`node tools/unity-export.js` (rerun it after re-exporting a model):
+`node tools/unity-export.js <model.glb> [...]`, for example
+`node tools/unity-export.js gadgets/scout-drone/scout-drone.glb` (the Wall Fortification adds
+`--sealed --drop terminal`). It writes into the `unity/` folder next to each source file; rerun it after
+re-exporting a model. The copies have:
 
 - meshes merged per moving part, one sub-mesh per material, welded and indexed;
 - UV0 on every mesh: box projection in metres (1 UV unit = 1 m), for tiling detail or wear textures
@@ -82,7 +85,9 @@ To use them:
 3. Copy the `unity/` .glb files you want into your project. In each one's import settings, set
    Animation to Legacy (or Mecanim) if you need the clips.
 4. Select them (or their folder) and run Tools > Gunmodls > Build Prefabs From Selection. Each prefab
-   gets a LODGroup and BoxColliders.
+   gets a LODGroup and BoxColliders. Running it again overwrites the prefab, so components you added to
+   it (such as `ScoutDrone`) and the fields you set on them are lost: use Copy Component before
+   rebuilding and Paste Component As New after.
 
 The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
 to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
@@ -127,6 +132,10 @@ node tools/export-glb.js shotguns/m590a1/viewer.html
 ```
 
 ```bash
+node tools/unity-export.js shotguns/m590a1/m590a1.glb shotguns/m590a1/shell-12ga.glb
+```
+
+```bash
 node tools/render-preview.js shotguns/m590a1/viewer.html
 ```
 
@@ -134,7 +143,8 @@ node tools/render-preview.js shotguns/m590a1/viewer.html
 node tools/check-glb.js shotguns/m590a1/m590a1.glb
 ```
 
-`export-glb.js` writes the `.glb` files next to the viewer, `render-preview.js` writes `preview.png`,
+`export-glb.js` writes the `.glb` files next to the viewer, `unity-export.js` writes their game-ready
+copies into `unity/` (see Unity above), `render-preview.js` writes `preview.png`,
 and `check-glb.js` loads a `.glb` with three.js's GLTFLoader and prints its size, parts, materials
 and animations (add `--render out.png` to see it on its own).
 

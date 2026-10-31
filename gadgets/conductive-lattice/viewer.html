@@ -909,6 +909,7 @@ function areaAt(key, p) {
     node: V3(p.x, p.y, S.nodeZ), seed: Math.floor(Math.abs(p.x * 1000) + Math.abs(p.y * 7000)) % 997 + 3 };
 }
 const SPRAY_V = 0.9, T_PLACE = 0.35, T_SPRAY0 = 0.45, T_CURE = 0.7;   // spray front speed (m/s), phases (s)
+const PRESS = 0.01;   // the node lands this far off the wall and seats itself over T_PLACE (clip time 0 = contact)
 const PULSE_ON = 1.0, PULSE_OFF = 2.0, PULSE = PULSE_ON + PULSE_OFF;
 
 // PCB-style traces: random walks out of the spray ring in 45-degree steps, branching, with pads at joints
@@ -1059,7 +1060,7 @@ function buildGadget(key, viewer, at) {
 }
 // deploy: the node lands, the spray head spins while the front runs out, then the metal cures
 function poseDeploy(G, t) {
-  G.nodeObj.position.copy(G.S.node).add(V3(0, 0, 0.12 * (1 - seg(t, 0, T_PLACE))));
+  G.nodeObj.position.copy(G.S.node).add(V3(0, 0, PRESS * (1 - seg(t, 0, T_PLACE))));
   const sprayEnd = G.T_DEPLOY - T_CURE;
   G.head.rotation.z = seg(t, T_SPRAY0 - 0.05, sprayEnd) * Math.PI * 6;
   if (G.chunks) for (const c of G.chunks) { const on = t >= c.t ? 1 : 1e-4; c.node.scale.set(on, on, on); }
@@ -1235,7 +1236,7 @@ function apply(dt) {
   if (tau < 0) { G.root.visible = false; zapLight.intensity = 0; arcMesh.visible = false; status('Ready'); return; }
   G.root.visible = true;
   if (tau < T_THROW) {   // in flight from the thrower to the landing point, tumbling
-    const k = tau / T_THROW, from = camera.position.clone().add(V3(0.25, -0.35, 0)), to = G.S.node.clone().setZ(G.S.node.z + 0.12);
+    const k = tau / T_THROW, from = camera.position.clone().add(V3(0.25, -0.35, 0)), to = G.S.node.clone().setZ(G.S.node.z + PRESS);
     G.nodeObj.position.copy(from.lerp(to, k)).add(V3(0, Math.sin(Math.PI * k) * 0.25, 0)); G.nodeObj.rotation.set((1 - k) * 8, (1 - k) * 5, 0);
     metalReveal.userData.u.uGrow.value = -1; glowMat.uniforms.uGrow.value = -1; arcMesh.visible = false; zapLight.intensity = 0; status('Thrown');
     return;
