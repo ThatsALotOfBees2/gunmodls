@@ -8,8 +8,8 @@ the exact spot. Cheap and passive: many tags, short range (about 3 m for a runni
 Each tag shows a faint purple ring light that attackers can spot and shoot; shooting one sends Nox a tamper alert.
 Dark alloy and composite, purple lights, hex screws, no markings.
 
-The tag is 32 mm across and 8 mm tall stuck (8.3k triangles). The pack is a palm-sized dispenser, 49 × 80 × 55 mm,
-holding the five tags in a sprung stack (19.7k triangles).
+The tag is 32 mm across and 8 mm tall stuck (5.8k triangles). The pack is a palm-sized dispenser, 49 × 80 × 55 mm,
+holding the five tags in a sprung stack (19.2k triangles).
 
 ## Files
 

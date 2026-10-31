@@ -102,7 +102,11 @@ public class Nullfield : MonoBehaviour
     Transform bubble, core, stageA;
     readonly Transform[] gauge = new Transform[GaugeCount];
     readonly List<Glow> leds = new List<Glow>(), coreGlow = new List<Glow>();
+    readonly List<Material> owned = new List<Material>();   // material instances made for the lights
     AudioSource oneShot, hum;
+    string mastClip;                             // the clip last played on layer 1 (deploy, power_on, power_off)
+    AnimationState rewind;                       // killed while the mast was rising: that clip runs back to rewindTo
+    float rewindTo;
     float stateT, fieldT, offT = 99f, growth, growthFrom, spin, foldT, maxHealth, mastFoldedY, lastLed = -1f, lastCore = -1f;
     bool landOn, lowWarned, ownCollider;
     RigidbodyInterpolation interpolation;
@@ -130,12 +134,22 @@ public class Nullfield : MonoBehaviour
             }
         }
         BubbleRenderers = bubble != null ? bubble.GetComponentsInChildren<Renderer>(true) : new Renderer[0];
+        // glTF has no shadow flags: keep the see-through bubble from shadowing everything inside it
+        foreach (var r in BubbleRenderers) { r.shadowCastingMode = ShadowCastingMode.Off; r.receiveShadows = false; }
+        // own copies of the light materials only, on the renderers that use them
         foreach (var r in GetComponentsInChildren<Renderer>(true))
+        {
+            var glows = false;
+            foreach (var m in r.sharedMaterials)
+                if (m != null && (m.name.StartsWith("led_purple") || m.name.StartsWith("core_glow"))) { glows = true; break; }
+            if (!glows) continue;
             foreach (var m in r.materials)
             {
+                owned.Add(m);
                 if (m.name.StartsWith("led_purple")) leds.Add(GlowOf(m));
                 else if (m.name.StartsWith("core_glow")) coreGlow.Add(GlowOf(m));
             }
+        }
         rb = GetComponent<Rigidbody>();
         if (rb == null) { rb = gameObject.AddComponent<Rigidbody>(); rb.mass = 0.7f; rb.interpolation = RigidbodyInterpolation.Interpolate; }
         interpolation = rb.interpolation;
@@ -173,6 +187,7 @@ public class Nullfield : MonoBehaviour
 
     void OnEnable() { if (!all.Contains(this)) all.Add(this); }
     void OnDisable() { all.Remove(this); }
+    void OnDestroy() { foreach (var m in owned) if (m != null) Destroy(m); }
 
     // ---------------------------------------------------------------- commands
 
@@ -214,8 +229,8 @@ public class Nullfield : MonoBehaviour
     public void Fold()
     {
         if (Current != State.Ready) return;
-        // from the top of deploy if the mast is (still) up, else from where the legs finished
-        var start = MastUp() ? Length("deploy") : DeployOn;
+        // from the top of deploy if the field is on, else from where the legs finished (as the viewer does)
+        var start = FieldOn ? Length("deploy") : DeployOn;
         if (FieldOn) SwitchOff(false);
         Current = State.Folding;
         foldT = start / 2f;
@@ -238,22 +253,43 @@ public class Nullfield : MonoBehaviour
     public void Kill()
     {
         if (Current == State.Dead || Current == State.InHand) return;
-        var was = Current;
-        var mast = MastUp();
+        var was = Current; var wasT = stateT; var wasOn = FieldOn;
         growthFrom = growth; FieldOn = false; fieldT = 0f;
         Current = State.Dead; stateT = 0f;
-        if (was == State.Ready || was == State.Deploying)
+        if (was == State.Ready || (was == State.Deploying && wasT >= DeployOn))
         {
             // shutdown (layer 2) fades in over whatever layer 1 holds; it keys the body, legs and bubble
             var s = anim["shutdown"];
             if (s != null) { s.speed = 1f; s.time = 0f; anim.CrossFade("shutdown", 0.15f, PlayMode.StopSameLayer); }
-            if (mast) PlayClip("power_off", KillMast, 0f, 0.1f);
-            else foreach (AnimationState o in anim) if (o.layer == 1 && o.enabled) o.speed = 0f;   // hold the pose: the mast stays down
+            DropMast();
         }
-        else anim.Stop("deploy");   // thrown or folding: it stays as it is and goes dark
+        else HoldLayer1();   // thrown, folding, or the legs still unfolding: it stops as it is and goes dark
         hum.Stop();
         Play(shotSound);
+        if (wasOn) onFieldOff.Invoke();
         onKilled.Invoke();
+    }
+
+    // killed standing: the mast goes down from where it is, KillMast times as fast as the clip that moves it
+    void DropMast()
+    {
+        var s = mastClip != null ? anim[mastClip] : null;
+        var playing = s != null && s.enabled;
+        if (playing && mastClip == "power_off") { s.speed = KillMast; return; }   // already going down
+        if (!MastUp()) { HoldLayer1(); return; }                                   // down: it stays down
+        if (playing && s.speed > 0f && s.time < s.length)
+        {
+            // still rising (power_on, or deploy after DeployOn): run that clip back to the mast-down pose
+            s.speed = -KillMast; rewind = s; rewindTo = mastClip == "deploy" ? DeployOn : 0f;
+            return;
+        }
+        PlayClip("power_off", KillMast, 0f, 0.1f);                                 // fully up
+    }
+
+    // freeze whatever layer 1 is playing (a clip at speed 0 still holds its pose under a cross-fade)
+    void HoldLayer1()
+    {
+        foreach (AnimationState o in anim) if (o.layer == 1 && o.enabled) o.speed = 0f;
     }
 
     // ---------------------------------------------------------------- running
@@ -288,6 +324,11 @@ public class Nullfield : MonoBehaviour
     {
         var dt = Time.deltaTime;
         stateT += dt; fieldT += dt;
+        if (rewind != null && (!rewind.enabled || rewind.time <= rewindTo))
+        {
+            if (rewind.enabled) { rewind.time = rewindTo; rewind.speed = 0f; }   // mast down: stop there
+            rewind = null;
+        }
         if (Current == State.Deploying)
         {
             if (landOn && !FieldOn && stateT >= DeployOn)
@@ -385,7 +426,7 @@ public class Nullfield : MonoBehaviour
     {
         stateT = 0f; fieldT = 99f; growth = growthFrom = spin = 0f;
         FieldOn = false; health = maxHealth;
-        anim.Stop();
+        anim.Stop(); rewind = null; mastClip = null;
         StartIdle();
         SamplePose("deploy", 0f);   // folded: legs up, mast down, bubble hidden (also undoes the shutdown sag)
         lastLed = lastCore = -1f;
@@ -403,6 +444,7 @@ public class Nullfield : MonoBehaviour
     {
         var s = anim[clip]; if (s == null) return;
         s.speed = speed;
+        if (s.layer == 1) { mastClip = clip; rewind = null; }
         // cross-fade only from another clip playing on the same layer; with nothing to fade from, start at full weight
         var from = false;
         foreach (AnimationState o in anim)
@@ -486,11 +528,12 @@ public class NullfieldCarrier : MonoBehaviour
 //   - a camera inside a powered bubble sees only the patch: the sphere is drawn over everything;
 //   - carriers (and hidden objects in alsoCheck) are drawn in the patch colour, or not at all;
 //   - the bubble's own see-through skin is not drawn.
-// Other cameras are not affected. It adds no noise: if your feed adds grain in post, the patch gets it too.
+// Other cameras are not affected. It adds no noise. The patch writes patchColor's alpha (0 by default) so the shader
+// that adds grain to the feed can skip pixels with alpha under 0.5; colour equality does not survive an 8-bit target.
 [RequireComponent(typeof(Camera))]
 public class NullfieldFeed : MonoBehaviour
 {
-    public Color patchColor = new Color(0.36f, 0.37f, 0.39f);
+    public Color patchColor = new Color(0.36f, 0.37f, 0.39f, 0f);   // alpha 0 marks the patch in the feed's alpha channel (see the guide)
     public Material patchMaterial;               // optional: any opaque, unlit, double-sided material; made from Hidden/Internal-Colored if empty
     public bool carriersAsPatch = true;          // true: N1CK shows as a flat silhouette (as in the viewer); false: he is not drawn
     public List<GameObject> alsoCheck = new List<GameObject>();   // drawn whole as patch while Nullfield.IsHidden() says so (players, gadgets)
@@ -552,11 +595,12 @@ public class NullfieldFeed : MonoBehaviour
     void Hide()
     {
         Restore();
+        var m = PatchMaterial();
+        if (!enabled) return;   // no patch shader: PatchMaterial switched this off, so touch nothing
         var fields = Nullfield.All;
         for (var i = 0; i < fields.Count; i++)
             foreach (var r in fields[i].BubbleRenderers)
                 if (r != null && r.enabled) { r.enabled = false; turnedOff.Add(r); }
-        var m = PatchMaterial();
         seen.Clear();
         var carriers = NullfieldCarrier.All;
         for (var i = 0; i < carriers.Count; i++) Patch(carriers[i].gameObject, m);

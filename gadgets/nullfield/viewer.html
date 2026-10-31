@@ -529,6 +529,7 @@ function buildEmitter() {
   for (const a of LEGS) cuts.push(slabY(sector(0.0546, 0.075, a - 9.5, a + 9.5, 8), -0.01, PH + 0.01));
   for (const a of [60, 180, 300]) for (const o of [-7.5, -2.5, 2.5, 7.5]) cuts.push(box(-0.0008, 0.0008, 0.011, 0.025, 0.0614, 0.07).rotateY(deg(a + o)));
   shell = subtract(shell, ...cuts);
+  { const sp = shell.attributes.position; for (let i = 0; i < sp.count; i++) if (sp.getY(i) < 0) sp.setY(i, 0); }   // the cut leaves a stray vertex 0.2 mm under the belly
   body.add(mesh(creased(shell, 30), CM.shell, 'shell'));
   // light strips around the wall between the legs
   body.add(mesh(merge(LEGS.map(a => ledArc(PR + 0.0002, 0.0007, 0.03, a + 13, a + 107))), CM.led, 'wall_leds', { cast: false }));
@@ -603,13 +604,49 @@ function buildEmitter() {
 // one pose of every moving part: leg swings (deg), mast stages 0-1, ring and core angles (rad), bubble radius (m)
 const P = (o = {}) => ({ phi: [PHI_STAND, PHI_STAND, PHI_STAND], a: 1, b: 1, rl: 0, ru: 0, core: 0, bub: 0, ...o });
 const FOLDED = () => P({ phi: [0, 0, 0], a: 0, b: 0 });
+// what the body can rest on, in body space: the belly's rim (smaller where the leg slots cut it), the bottom of
+// each hinge knuckle, and both ends of each foot roller
+const ROLLER_HALF = 0.0074, KNUCKLE = { r: 0.0031, half: 0.0086 };
+const RIM = Array.from({ length: 36 }, (_, k) => {
+  const a = k * 10, r = LEGS.some(l => Math.abs(((a - l + 540) % 360) - 180) < 9.5) ? 0.0546 : 0.055;
+  return V3(r * Math.sin(deg(a)), 0, r * Math.cos(deg(a)));
+});
+const _rq = new THREE.Quaternion(), _rv = new THREE.Vector3();
 function pose(E, p) {
-  // the body rests on whichever feet reach the ground: fit its height and tilt to the three leg lifts
-  const h = p.phi.map(legLift), rho = LEG_R + LEG_L * 0.6;
-  let gx = 0, gz = 0; LEGS.forEach((a, i) => { gx += h[i] * Math.sin(deg(a)); gz += h[i] * Math.cos(deg(a)); });
-  gx *= 2 / (3 * rho); gz *= 2 / (3 * rho);
-  E.body.position.set(0, (h[0] + h[1] + h[2]) / 3, 0);
-  E.body.rotation.set(-Math.asin(gz), 0, Math.asin(gx));
+  // the body rests on whatever reaches the ground. Each support point has a depth below the belly; the body's
+  // height and tilt are those of the top of their convex hull over its centre (one foot down: it tips on the
+  // rim; all three: it stands on the feet). Then an exact pass makes the lowest point touch y 0.
+  const pts = RIM.map(v => ({ v, u: null, r: 0 }));
+  p.phi.forEach((f, i) => {
+    const a = deg(LEGS[i]), s = Math.sin(a), c = Math.cos(a), u = V3(c, 0, -s);   // u: the roller and knuckle axis
+    const yy = LEG_L * Math.cos(deg(f)) - PAD_Z * Math.sin(deg(f)), rr = LEG_R + LEG_L * Math.sin(deg(f)) + PAD_Z * Math.cos(deg(f));
+    for (const k of [-1, 1]) {
+      pts.push({ v: V3(rr * s, LEG_Y + yy, rr * c).addScaledVector(u, k * ROLLER_HALF), u, r: PAD });
+      pts.push({ v: V3(LEG_R * s, LEG_Y, LEG_R * c).addScaledVector(u, k * KNUCKLE.half), u, r: KNUCKLE.r });
+    }
+  });
+  const q = pts.map(o => [o.v.x, o.v.z, o.r - o.v.y]), n = q.length, nRim = RIM.length;
+  let best = 0, A = 0, B = 0;   // the rim alone: flat on the belly
+  for (let i = nRim; i < n; i++) for (let j = 0; j < n; j++) {
+    if (j === i || (j >= nRim && j < i)) continue;
+    for (let k = j + 1; k < n; k++) {
+      if (k === i || (k >= nRim && k < i)) continue;
+      const [x1, z1, d1] = q[i], [x2, z2, d2] = q[j], [x3, z3, d3] = q[k];
+      const det = (x2 - x1) * (z3 - z1) - (x3 - x1) * (z2 - z1);
+      if (Math.abs(det) < 1e-10) continue;
+      const l2 = (-x1 * (z3 - z1) + (x3 - x1) * z1) / det, l3 = (-(x2 - x1) * z1 + x1 * (z2 - z1)) / det, l1 = 1 - l2 - l3;
+      if (l1 < -1e-9 || l2 < -1e-9 || l3 < -1e-9) continue;
+      const h = l1 * d1 + l2 * d2 + l3 * d3;
+      if (h > best + 1e-9) { best = h; A = ((d2 - d1) * (z3 - z1) - (d3 - d1) * (z2 - z1)) / det; B = ((x2 - x1) * (d3 - d1) - (x3 - x1) * (d2 - d1)) / det; }
+    }
+  }
+  E.body.rotation.set(-Math.atan(B), 0, Math.atan(A)); _rq.setFromEuler(E.body.rotation);
+  let lo = Infinity;
+  for (const o of pts) {
+    const y = _rv.copy(o.v).applyQuaternion(_rq).y;
+    lo = Math.min(lo, o.u ? y - o.r * Math.sqrt(Math.max(0, 1 - Math.pow(_rv.copy(o.u).applyQuaternion(_rq).y, 2))) : y);
+  }
+  E.body.position.set(0, -lo, 0);
   E.legs.forEach((l, i) => l.quaternion.setFromEuler(new THREE.Euler(deg(p.phi[i]), deg(LEGS[i]), 0, 'YXZ')));
   E.A.position.y = A_Y0 + A_UP * p.a; E.B.position.y = B_Y0 + B_UP * p.b;
   E.RL.rotation.set(0, p.rl, 0); E.RU.rotation.set(0, p.ru, 0); E.core.rotation.set(0, p.core, 0);
@@ -868,6 +905,7 @@ function currentPose() {
     case 'ready': return em.field ? powerOnP(Math.min(em.fieldT, T.power_on)) : powerOffP(Math.min(em.fieldT, T.power_off));
     case 'folding': return deployP(Math.max(0, em.t));
     case 'dead': {
+      if (em.dead.frozen) return { ...em.dead.frozen, phi: em.dead.frozen.phi.slice() };
       const s = shutdownP(Math.min(em.t, T.shutdown)), m = powerOffP(Math.min(em.t * KILL_MAST, T.power_off));
       return { ...s, a: em.dead.a * m.a, b: em.dead.b * m.b, bub: s.bub * em.dead.bub / FIELD_R };
     }
@@ -897,7 +935,9 @@ function throwOrPick() {
 function shoot() {
   manual = true; autoStart = -1;
   if (em.phase !== 'ready' && em.phase !== 'deploying') return;
-  snapshot(); em.dead = { a: em.pose.a, b: em.pose.b, bub: em.pose.bub };
+  // shot while the legs are still unfolding: it stops as it is and goes dark (no shutdown)
+  const frozen = em.phase === 'deploying' && em.t < ON_AT ? { ...em.pose, phi: em.pose.phi.slice() } : null;
+  snapshot(); em.dead = { a: em.pose.a, b: em.pose.b, bub: em.pose.bub, frozen };
   em.phase = 'dead'; em.t = 0; em.field = false;
   E.root.updateMatrixWorld(true); fireSparks(E.fxCore.getWorldPosition(V3(0, 0, 0))); SFX.shot();
 }

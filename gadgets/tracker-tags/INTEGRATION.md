@@ -80,8 +80,9 @@ cap_b position and rotation. `equip` gate and slide position. `eject` slide and 
 
 **glTFast import.** glTFast creates every clip with `WrapMode.Loop` and its Animation component plays the first
 clip (`stick`, `equip`) on its own. TrackerTag and TrackerTagsPack switch auto-play off in Awake and never call
-`Play`: they sample the clips themselves each frame (`AnimationState.time` + `Animation.Sample()`), so wrap modes do
-not matter. If you play clips yourself, set the wrap modes first (`stick`, `tamper` ClampForever; `pulse`,
+`Play`: they sample the clips themselves each frame (`AnimationState.time` + `Animation.Sample()`), and set every
+clip to ClampForever in Awake: with glTFast's Loop, sampling at exactly a clip's length returns its first frame. If
+you play clips yourself, set the wrap modes first (`stick`, `tamper` ClampForever; `pulse`,
 `eject` Once) and note that `stick`, `pulse` and `tamper` all key the membrane.
 
 **Lights.** glTF cannot animate a light's brightness. The `pulse` clip moves the pulse ring instead, and the game
@@ -216,7 +217,7 @@ thrown flight ignores Nox's own colliders (anything under the TrackerTags object
 | `Place(point, normal, surface)` | Pressed on: ejects one from the pack and sticks it `placeDelay` (0.35 s) later. Returns the TrackerTag or null. |
 | `Throw(from, velocity)` | Ejects one and throws it from `from`. Returns the TrackerTag or null. |
 | `Pickup(tag)` | A live tag of Nox's goes back into the pack. |
-| `ResetAll()` | Destroys all of Nox's tags (live or dead), clears the readings, fills the pack. |
+| `ResetAll()` | Destroys all of Nox's tags (live or dead), clears the readings, drops tamper alerts still waiting, fills the pack. |
 | `Left`, `Placed`, `Recent`, `Pack` | Tags still in the pack; tags out (dead ones until removed); readings still on screen; the TrackerTagsPack. |
 | `onReading`, `onTamper`, `onPlaced` | A tag felt something; a tag was destroyed (after `alertDelay`); a tag finished sticking. |
 | `static ReportVibration(point, strength, source[, reach, seed])` | Every stuck tag within `range × strength × damping × reach` pulses after its delay. `seed` ≥ 0 sets the event id (send it to clients); -1 counts up. Returns how many tags felt it. |

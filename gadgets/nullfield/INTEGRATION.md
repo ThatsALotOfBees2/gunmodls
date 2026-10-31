@@ -27,12 +27,13 @@ Y and Z flip sign. Spin directions written as "seen from above" are the same in 
 Node names (`body` and `fx_bubble` are the root's children; the rest sit under `body`):
 
 - `nullfield_emitter`: the root. Its extras hold the dimensions, the battery numbers and the clip notes.
-- `body`: the puck (12.8 cm across, 4 cm thick). Its height is set by the legs: 0 folded (on its belly),
-  0.0269 standing. `shutdown` also tilts it.
+- `body`: the puck (12.8 cm across, 4 cm thick). Its height and tilt are set by the legs: 0 folded (on its
+  belly), 0.0269 standing; `deploy` and `shutdown` tilt it.
 - `leg_0`, `leg_1`, `leg_2`: hinged at the bottom of the wall, 0.0605 from the middle at y 0.004 on the body,
   at azimuths 0°, 120° and 240° (from +Z toward glTF +X; anticlockwise seen from above). Rotation =
   Ry(azimuth) · Rx(swing): swing 0 is folded (lying up the wall in its slot), 145° is standing (the foot rollers
-  on the ground, 55° below horizontal). In Unity the azimuths read 0°, -120°, -240°.
+  on the ground, 55° below horizontal). In Unity the leg rotation is Ry(-azimuth) · Rx(swing); the Inspector
+  shows the standing legs as (35, 180, 180), (35, 60, 180) and (35, 300, 180).
 - `stage_a`: the outer mast sleeve. y 0.034 down, 0.066 up (rises 0.032).
 - `ring_lower`: child of `stage_a` (y 0.003), turns about Y in `idle`.
 - `stage_b`: the inner mast with the lantern, child of `stage_a`. y -0.0135 down, 0.012 up (rises 0.0255).
@@ -47,6 +48,8 @@ Node names (`body` and `fx_bubble` are the root's children; the rest sit under `
   32 × 16, 960 triangles, material `nullfield_bubble`: violet, 12 % opacity, blend); its scale is the bubble
   radius in metres. Rest scale 0.0001. It is a stand-in: the viewer draws its own shimmering skin instead, and
   a game will want its own shader too. In `unity/nullfield-emitter.glb` the sphere is `fx_bubble_mesh`.
+  glTF has no shadow flags, so Nullfield turns shadow casting and receiving off on `fx_bubble`'s renderers in
+  Awake.
 
 Materials: `shell_composite`, `frame_alloy`, `joint_steel`, `black_steel`, `fasteners`, `foot_rubber`,
 `gauge_cell` (dark), `led_purple` (emissive strength 2.6), `gauge_led` (1.1), `core_glow` (3.2),
@@ -60,14 +63,19 @@ All clips are sampled at 30 fps from pose functions in `viewer.html`. None has r
 
 | Clip | Starts | Ends |
 | --- | --- | --- |
-| `deploy` (1.6 s) | Folded: legs 0°, body y 0, mast down, bubble 0.0001. | Standing, mast up, bubble 4. Leg i springs out from 0.05 + 0.04·i s over 0.42 s (all at 145° by 0.55 s); the body rises once a leg passes about 92°. From 0.6 s it is `power_on`: stage_a 0.6 to 0.98 s, stage_b springs up from 0.82 s (settled by 1.32 s), bubble 1.05 to 1.55 s. |
+| `deploy` (1.6 s) | Folded: legs 0°, body y 0, mast down, bubble 0.0001. | Standing, mast up, bubble 4. Leg i springs out from 0.05 + 0.04·i s over 0.42 s (all at 145° by 0.55 s); once a leg passes about 88° its foot reaches the ground and the body tips up on the belly's rim, then rises onto the three feet. From 0.6 s it is `power_on`: stage_a 0.6 to 0.98 s, stage_b springs up from 0.82 s (settled by 1.32 s), bubble 1.05 to 1.55 s. |
 | `idle` (3 s loop) | Rings and core at 0. | Loops: `ring_lower` +120°/s, `ring_upper` -240°/s, `core` +120°/s about Y (glTF; anticlockwise, clockwise, anticlockwise seen from above). |
 | `power_on` (1.0 s) | Standing, mast down, bubble 0.0001. | Mast up, bubble 4. stage_a eases up over 0 to 0.38 s, stage_b springs from 0.22 s (overshoots, settled by 0.72 s), bubble grows 0.45 to 0.95 s (fast, then slowing: 1 - (1 - u)³). Body and legs held standing. |
 | `power_off` (0.8 s) | Standing, mast up, bubble 4. | Mast down, bubble 0.0001. Bubble 4 · (1 - c²) over 0 to 0.25 s; stage_b down 0.1 to 0.48 s, stage_a down 0.3 to 0.75 s. Body and legs held standing. |
-| `shutdown` (1.2 s) | Standing, bubble 4. | Legs 104°, 128°, 121°, body y 0.0157, tilted about 4.9° about X and 1.3° about Z (glTF; -1.3° in Unity), bubble 0.0001 (4 · (1 - c)² over 0.12 s). Leg i gives way from 0.28 + 0.06·i s, hits its stop at 0.62 + 0.06·i s and bounces once (0.2 s). It does not key the mast. |
+| `shutdown` (1.2 s) | Standing, bubble 4. | Legs 104°, 128°, 121°, body y 0.0162, tilted about 4.5° about X and 1.2° about Z (glTF; -1.2° in Unity), bubble 0.0001 (4 · (1 - c)² over 0.12 s). Leg i gives way from 0.28 + 0.06·i s, hits its stop at 0.62 + 0.06·i s and bounces once (0.2 s). It does not key the mast. |
 
-To kill it with the mast up, play `shutdown` and `power_off` at 2.5× together (as the viewer and Nullfield.cs
-do). Folded is `deploy` at 0 s; standing with the mast down is `deploy` at 0.6 s (or `power_on` at 0 s).
+To kill it with the mast up, play `shutdown` and `power_off` at 2.5× together. With the mast part way, the
+viewer scales `power_off`'s drop by the mast's height at the shot. Nullfield.cs cannot scale a clip, so it
+speeds a playing `power_off` up to 2.5×, runs a mast that is still rising (`power_on`, or `deploy` after 0.6 s)
+back down at 2.5× (`deploy` stops at 0.6 s; `shutdown` covers the legs), and plays `power_off` at 2.5× from 0 s
+only when the mast is fully up. Shot before 0.6 s of `deploy` (the legs still unfolding), it plays no
+`shutdown`: it stops in the pose it has and goes dark. Folded is `deploy` at 0 s; standing with the mast down
+is `deploy` at 0.6 s (or `power_on` at 0 s).
 
 **glTFast import.** glTFast creates every clip with `WrapMode.Loop` and its Animation component plays the
 first clip (`deploy`) on its own. Nullfield switches auto-play off in Awake and puts the clips on layers:
@@ -85,8 +93,8 @@ yourself, set `wrapMode` first.
 | Field on | (`deploy` from 0.6 s, or `power_on`) | `field_on` | The field counts as on (the battery drains) from here; the bubble hides from the moment it starts growing. Start `idle` and ramp its speed to 1 over 1 s. |
 | Field up | `idle` | `field_loop` | Hum volume and pitch follow the bubble's size. At 20 % charge: `low_battery` once, and the last lit segment blinks. |
 | Field off | `power_off` | `field_off` | Switched off, or the battery ran out (then `low_battery` too). `idle` ramps down over 1 s. |
-| Picked up | `deploy` backwards at 2× | `field_off` if it was on | From 1.6 s if the mast is up (the viewer: if the field is on), else from 0.6 s; then in hand. |
-| Shot | `shutdown` (+ `power_off` at 2.5×) | `shot` | Bubble gone in 0.12 s, lights out over 0.5 s (the core flashes and dies in 0.35 s), rings stop in 0.25 s, gauge dark. It stays dead. |
+| Picked up | `deploy` backwards at 2× | `field_off` if it was on | From 1.6 s if the field is on, else from 0.6 s; then in hand. |
+| Shot | `shutdown` (+ `power_off` at 2.5×) | `shot` | Bubble gone in 0.12 s, lights out over 0.5 s (the core flashes and dies in 0.35 s), rings stop in 0.25 s, gauge dark. It stays dead. Shot while the legs are still unfolding (before 0.6 s of `deploy`), it stops where it is and goes dark, with no `shutdown`. |
 
 ## The field
 
@@ -152,8 +160,8 @@ what to add in Unity (without changing the existing scripts' behaviour otherwise
 Put it on any Camera that renders a sensor feed. While that camera renders, and only for it:
 
 - each powered bubble is drawn as an opaque, unlit, flat sphere in `patchColor` (default 0.36, 0.37, 0.39: the
-  viewer's camera patch). From outside, every ray into the bubble hits that sphere first, so whatever is inside
-  and whatever is behind it becomes the patch, as in the viewer.
+  viewer's camera patch; alpha 0, see Limits). From outside, every ray into the bubble hits that sphere first,
+  so whatever is inside and whatever is behind it becomes the patch, as in the viewer.
 - A camera inside a powered bubble (a drone that drove in) sees only the patch: the sphere is drawn last and
   through everything.
 - `NullfieldCarrier` objects (N1CK) are drawn with the patch material: a flat silhouette, and no shadow in that
@@ -165,9 +173,19 @@ Put it on any Camera that renders a sensor feed. While that camera renders, and 
 Limits:
 
 - **It adds no noise.** The patch is only flat if the rest of the feed is noisy and the patch is not. Add grain
-  and scanlines where you show the RenderTexture (a shader on the RawImage), skip pixels equal to
-  `patchColor`, and keep post-processing off on the feed camera so the colour stays exact. Without this the
-  tell is lost.
+  and scanlines where you show the RenderTexture (a shader on the RawImage), and find the patch by its alpha,
+  not its colour. The patch writes `patchColor.a`, 0 by default (the default material draws with Blend One
+  Zero); opaque Standard and URP Lit materials (forward rendering) and the skybox write 1. So add noise only
+  where `tex.a >= 0.5`, and output alpha 1. The viewer works the same way: N1CK is drawn with alpha 0
+  (`holeMat`) and `postMat` treats `col.a < 0.5` as the patch (and ray-tests the bubble, which Unity draws as a
+  sphere instead). A colour equality test never matches: an 8-bit RenderTexture stores 0.36 as 92/255, and
+  sRGB conversion, bilinear sampling and MSAA move it further. For the alpha to survive, give the feed's
+  RenderTexture an alpha channel (ARGB32), turn HDR and post-processing off on the feed camera (URP's 32-bit
+  HDR target has no alpha), and give a solid-colour clear alpha 1 (Unity's default background alpha is near
+  0). If your pipeline loses alpha anyway, compare colours with a tolerance instead
+  (`all(abs(c.rgb - _PatchColor.rgb) < 2.0 / 255.0)`, MSAA off on the feed). Showing the RenderTexture
+  without such a shader? Set `patchColor`'s alpha to 1, or the RawImage is see-through at the patch. Without
+  the noise the tell is lost.
 - The default material comes from `Hidden/Internal-Colored` (built-in pipeline and URP). On HDRP, or to write
   a stencil for your noise pass, assign `patchMaterial`: opaque, unlit, double-sided. A camera inside a bubble
   draws a copy at the Overlay queue with `_ZTest` set to Always; without a `_ZTest` property in your shader,
@@ -222,8 +240,9 @@ Limits:
 
 - Run the state on the server: throw and landing point, `PowerOn` / `PowerOff`, `Kill`, the charge. Send
   events (thrown, landed at, field on, field off, killed, folded) and let each client's Nullfield play them; the
-  timers are the same everywhere, so `Growth`, `CurrentRadius` and `IsHidden` agree to within a frame. Send the
-  charge now and then and apply it with `SetCharge`.
+  timers are the same everywhere, so `Growth`, `CurrentRadius` and `IsHidden` agree to within the network
+  delay; send the server time with each event and advance `stateT` and `fieldT` (private in Nullfield.cs) by
+  the delay if you need them closer. Send the charge now and then and apply it with `SetCharge`.
 - Decide sensor results on the server: scans, tracker tag readings, pings. `IsHidden` needs the emitters and
   the carrier components to exist there.
 - `NullfieldFeed` is only drawing. A client that sees N1CK with its eyes has his position anyway, so the feed
@@ -256,19 +275,19 @@ Limits:
 | `Throw(velocity)` | Folded, physics on, random spin. State `Thrown`; lands into `Deploying`, then `Ready`. |
 | `PowerOn()` | Only while `Ready`. Returns false (and plays `low_battery`) under `minChargeToStart`. |
 | `PowerOff()`, `Toggle()` | Field off (`power_off`), or the other way round. |
-| `Fold()` | Only while `Ready`. Switches the field off, plays `deploy` backwards at 2×, then `Hold()`. State `Folding`. |
-| `Damage(amount)`, `Kill()` | Ignored in hand or dead. From `Ready` or `Deploying`: `shutdown` (and `power_off` at 2.5× if the mast is up; else the mast stays where it is). Thrown or folding: it just goes dark as it is. State `Dead`. |
+| `Fold()` | Only while `Ready`. Switches the field off, plays `deploy` backwards at 2× (from 1.6 s if the field was on, else from 0.6 s), then `Hold()`. State `Folding`. |
+| `Damage(amount)`, `Kill()` | Ignored in hand or dead. From `Ready`, or `Deploying` from 0.6 s on: `shutdown`, and the mast goes down at 2.5× from where it is (see Clips); a mast that is down stays down. Thrown, folding, or `Deploying` before 0.6 s: it stops as it is and goes dark. State `Dead`. Raises `onFieldOff` if the field was on, then `onKilled`. |
 | `SetCharge(0..1)` | Sets the battery; 0 with the field on switches it off as if empty. |
 | `Current` | `InHand`, `Thrown`, `Deploying`, `Ready`, `Folding` or `Dead`. |
 | `FieldOn`, `Charge`, `Growth`, `CurrentRadius`, `Powered` | Switched on; 0..1; bubble size 0..1; radius × growth in m; growth > 0.001 and not in hand or thrown. |
 | `Centre`, `Core`, `CoreCollider`, `BubbleRenderers` | `fx_bubble`'s world position; the `core` node; the ball on it (if Nullfield made the colliders); `fx_bubble`'s renderers. |
-| `onLanded`, `onDeployed`, `onFieldOn`, `onFieldOff`, `onBatteryEmpty`, `onKilled`, `onFolded` | Events. |
+| `onLanded`, `onDeployed`, `onFieldOn`, `onFieldOff`, `onBatteryEmpty`, `onKilled`, `onFolded` | Events. `onFieldOff` comes from `PowerOff`, an empty battery, `Fold` and `Kill` alike. |
 | `Nullfield.IsHidden(Vector3)` | True inside any powered bubble. |
 | `Nullfield.IsHidden(GameObject)` | True if it or a parent has an enabled `NullfieldCarrier`, or its position is inside a powered bubble. |
 | `Nullfield.All`, `NullfieldCarrier.All` | Every enabled emitter and carrier. |
 
 Fields: `radius` 4, `powerOnLanding` true, `fieldSeconds` 25, `rechargeSeconds` 50, `rechargeDelay` 2,
-`minChargeToStart` 0.2, `health` 1, and the eight sounds. NullfieldFeed: `patchColor`, `patchMaterial`,
+`minChargeToStart` 0.2, `health` 1, and the eight sounds. NullfieldFeed: `patchColor` (alpha 0), `patchMaterial`,
 `carriersAsPatch` true, `alsoCheck`, `patchLayer` 0.
 
 Nullfield also drives the looks: the bubble's scale and renderers (after the Animation update, so the clips'
@@ -294,14 +313,16 @@ The file embeds base64 sounds on one very long line: search it by name rather th
   (mast), `FIELD_R`, `GAUGE_N`, `BATT`; `legLift()`, `LIFT` and `CORE_STAND` are worked out from them.
   `buildEmitter()` builds the nodes (`legGeos()` the legs).
 - Poses: `P()`, `FOLDED` and `pose(E, p)`. A pose is `{ phi[3] (leg swings, degrees), a, b (mast stages 0-1),
-  rl, ru, core (radians), bub (bubble radius, m) }`. `pose()` fits the body's height and tilt to the three
-  legs.
+  rl, ru, core (radians), bub (bubble radius, m) }`. `pose()` rests the body on its lowest supports
+  (`RIM`: the belly's rim; the hinge knuckles, `KNUCKLE`; both ends of each foot roller, `ROLLER_HALF`): the
+  top of their convex hull over the centre gives its height and tilt, then the lowest point is set on y 0.
 - Clips: `T` (lengths), `ON_AT`, `GROW`, `COLLAPSE`, `KILL_COLLAPSE`, `SPIN`, `KILL_MAST`, `SAG`, then
   `powerOnP`, `deployP`, `idleP`, `powerOffP`, `drop` and `shutdownP`. `exportScenes()` samples each with
   `sampleClip` (30 fps), lists the nodes each clip keys, and writes the `extras.clips` text.
 - The viewer's emitter: `em`, `step()` (flight, deploy, folding, battery, ring speed), `setField()`,
-  `throwOrPick()`, `shoot()`, `currentPose()` and `blended()` (0.2 s blends when something interrupts a clip);
-  lights, gauge and bubble in `updateLooks()`.
+  `throwOrPick()`, `shoot()` (shot before `ON_AT` of deploying, it keeps the pose in `em.dead.frozen`),
+  `currentPose()` and `blended()` (0.2 s blends when something interrupts a clip); lights, gauge and bubble in
+  `updateLooks()`.
 - The rule: `bubbleCentre()`, `inBubble()`, `isHidden()`. The walkers: `makeDummy()`, `WALK`, `walkerAt()`.
 - The feed: `FEEDS` (sensor positions, fields of view, patch colours), `renderFeed()` (N1CK drawn with
   `holeMat`, alpha 0) and `postMat` (tone mapping, grain, scanlines, the patch: any ray that enters the bubble
@@ -329,7 +350,7 @@ are copied by hand; change them in both files (and in this guide) together.
 | `GaugeCount` 12 | `GAUGE_N` |
 | ring ramp 1 s (0.25 s when dead), hum 0.35 and 0.85 + 0.15, LED and core fades, gauge blink | `step()`, `humTick()`, `updateLooks()` |
 | boxes 0.15 × 0.075 × 0.15 at y 0.048 and 0.132 × 0.052 × 0.132 at y 0.026, core ball 0.016 | the emitter's outline (see the README) |
-| NullfieldFeed `patchColor` 0.36, 0.37, 0.39 | `FEEDS.camera.patch` |
+| NullfieldFeed `patchColor` 0.36, 0.37, 0.39 (alpha 0, the mask) | `FEEDS.camera.patch` (the viewer's mask is `holeMat`'s alpha 0) |
 
 ### Rebuilding
 

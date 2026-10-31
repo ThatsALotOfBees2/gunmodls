@@ -132,6 +132,7 @@ public class TrackerTags : MonoBehaviour
     // a new round: every tag of Nox's gone, the pack full
     public void ResetAll()
     {
+        StopAllCoroutines();   // tamper alerts still waiting belong to the old round
         foreach (var t in placed.ToArray()) if (t != null) Destroy(t.gameObject);
         placed.Clear(); recent.Clear();
         if (Pack != null) Pack.SetCount(capacity); else left = capacity;
@@ -297,7 +298,7 @@ public class TrackerTags : MonoBehaviour
 }
 
 // One tag. TrackerTags adds it to each tag it spawns; a tag placed in the level starts stuck where it is.
-// Its glTF rest pose is stuck. Clips are sampled by this script (no wrap modes to worry about):
+// Its glTF rest pose is stuck. Clips are sampled by this script, all set to ClampForever in Awake:
 // stick 0.25 s (at 0 s it is the free pose), pulse 0.35 s, tamper 0.5 s (holds its last pose).
 [RequireComponent(typeof(Animation))]
 public class TrackerTag : MonoBehaviour
@@ -343,6 +344,8 @@ public class TrackerTag : MonoBehaviour
         anim = GetComponent<Animation>();
         // glTFast imports every clip as a loop and plays the first one (stick) on its own: this script samples them instead
         anim.playAutomatically = false; anim.Stop();
+        // with Loop, sampling at exactly a clip's length gives its first frame: clamp every clip
+        foreach (AnimationState s in anim) s.wrapMode = WrapMode.ClampForever;
         renderers = GetComponentsInChildren<Renderer>(true);
         colliders = GetComponentsInChildren<Collider>(true);
         if (colliders.Length == 0)
@@ -633,6 +636,7 @@ public class TrackerTagsPack : MonoBehaviour
     {
         anim = GetComponent<Animation>();
         anim.playAutomatically = false; anim.Stop();   // glTFast would play equip on its own
+        foreach (AnimationState s in anim) s.wrapMode = WrapMode.ClampForever;   // sampling at the length must give the end pose
         foreach (var t in GetComponentsInChildren<Transform>(true))
         {
             if (t.name == "follower") follower = t;

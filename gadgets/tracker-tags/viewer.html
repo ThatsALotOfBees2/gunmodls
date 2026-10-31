@@ -466,7 +466,7 @@ for (const [k, v] of Object.entries(CM_NAMES)) CM[k].name = v;
 const LED_ON = { led: 1.4, pulse: 2.8 };
 const mesh = (geo, mat, name, { cast = true, receive = true } = {}) => { const m = new THREE.Mesh(geo, mat); m.name = name; m.castShadow = cast; m.receiveShadow = receive; return m; };
 const node = (name, parent) => { const g = new THREE.Group(); g.name = name; if (parent) parent.add(g); return g; };
-const hexScrew = (r, pos, normal, spin = 0.3) => placeScrew(screwHead(r, { style: 'hex', h: r * 0.55, seg: 18 }), pos, normal, spin);
+const hexScrew = (r, pos, normal, spin = 0.3) => placeScrew(screwHead(r, { style: 'hex', h: r * 0.55, seg: 12 }), pos, normal, spin);
 const rect = (x0, x1, y0, y1, r) => roundedShape([[x0, y0, r], [x1, y0, r], [x1, y1, r], [x0, y1, r]]);
 // plates: in the XY plane (thick along Z) and the XZ plane (thick along Y)
 // cs: segments per rounded corner (keep it low on small parts)
@@ -508,7 +508,7 @@ function tagGeos({ seg = 48, flutes = 26, lite = false } = {}) {
   G.pulseRing = creased(latheY([[0.00675, 0.0029], [0.0074, 0.0029], [0.0074, 0.0038], [0.00725, 0.004], [0.0069, 0.004], [0.00675, 0.0038], [0.00675, 0.0029]], seg), 40);
   // sensing membrane: a low dome with three shallow ribs, a steel nub on top
   const dome = [[0, 0], [0.0065, 0], [0.0065, 0.0008], [0.0062, 0.0013]];
-  const n = lite ? 4 : 12;
+  const n = lite ? 4 : 8;
   for (let i = 1; i <= n; i++) { const r = 0.0062 * (1 - i / n), h = 0.0013 + 0.0018 * (1 - (r / 0.0062) ** 2); let rib = 0; for (const c of [0.005, 0.0037, 0.0024]) rib += Math.exp(-(((r - c) / 0.00035) ** 2)); dome.push([r, h + (lite ? 0 : 0.0001 * rib)]); }
   G.membrane = creased(latheY(dome, Math.round(seg * 0.85)), 50);
   G.nub = new THREE.SphereGeometry(0.0011, lite ? 8 : 16, lite ? 3 : 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.45, 1).translate(0, 0.0031 - 0.00005, 0);
@@ -524,7 +524,7 @@ function tagGeos({ seg = 48, flutes = 26, lite = false } = {}) {
   // inside, under the cap: a pickup coil and six chips (seen once the cap is off)
   const chips = []; for (let k = 0; k < 6; k++) { const w = k % 2 ? 0.0016 : 0.0022; chips.push(box(-0.0005, 0.0005, 0.0044, 0.00495, -w / 2, w / 2).translate(0.0099, 0, 0).rotateY(k / 6 * Math.PI * 2 + 0.3)); }
   G.chips = merge(chips);
-  G.coil = new THREE.TorusGeometry(0.0085, 0.00024, 5, 36).rotateX(Math.PI / 2).translate(0, 0.00466, 0);
+  G.coil = new THREE.TorusGeometry(0.0085, 0.00024, 4, 24).rotateX(Math.PI / 2).translate(0, 0.00466, 0);
   return G;
 }
 
@@ -899,9 +899,11 @@ function stepAttacker(dt) {
 
 const rippleGeo = new THREE.PlaneGeometry(2, 2);
 const rippleShader = {
-  vertexShader: `varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: `varying vec2 vP; uniform float uR, uA, uMax, uW; uniform vec3 uCol;
+  vertexShader: `varying vec2 vP; varying vec3 vW; void main() { vP = position.xy; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
+  fragmentShader: `varying vec2 vP; varying vec3 vW; uniform float uR, uA, uMax, uW; uniform vec3 uCol, uBoxMin, uBoxMax, uHoleMin, uHoleMax;
     void main() {
+      if (any(lessThan(vW, uBoxMin)) || any(greaterThan(vW, uBoxMax))) discard;   // only inside the room and corridor
+      if (all(greaterThan(vW, uHoleMin)) && all(lessThan(vW, uHoleMax))) discard;  // not across the open doorway
       float d = length(vP) * uMax, w = uW + 0.025 * uR;
       float ring = exp(-pow((d - uR) / w, 2.0)) + 0.4 * exp(-pow((d - uR * 0.7) / (w * 0.8), 2.0));
       float a = (ring + 0.05 * smoothstep(uR, 0.0, d)) * uA * (1.0 - smoothstep(uMax * 0.92, uMax, d));
@@ -909,10 +911,14 @@ const rippleShader = {
     }`,
 };
 const ripples = [];
+// the room and the corridor, inside the walls: rings stop at the walls, the wall tops and the floor's edge
+const ROOM_MIN = V3(-3.2, -0.05, -2.6), ROOM_MAX = V3(4.7, WALL_H, 7.6);
+// the doorway's opening in the wall (above the floor): a ring on the wall stops at the jambs
+const DOORWAY_MIN = V3(DOOR[0] + 0.03, 0.02, -0.21), DOORWAY_MAX = V3(DOOR[1] - 0.03, DOOR[2] - 0.03, 0.02);
 function ripple(pos, quat, rMax, alpha, life = RIPPLE_T, width = 0.018) {
   let r = ripples.find(q => !q.mesh.visible);
   if (!r) {
-    const mat = new THREE.ShaderMaterial({ ...rippleShader, uniforms: { uR: { value: 0 }, uA: { value: 0 }, uMax: { value: 1 }, uW: { value: 0.018 }, uCol: { value: new THREE.Color('#8a4dff') } },
+    const mat = new THREE.ShaderMaterial({ ...rippleShader, uniforms: { uR: { value: 0 }, uA: { value: 0 }, uMax: { value: 1 }, uW: { value: 0.018 }, uCol: { value: new THREE.Color('#8a4dff') }, uBoxMin: { value: ROOM_MIN }, uBoxMax: { value: ROOM_MAX }, uHoleMin: { value: DOORWAY_MIN }, uHoleMax: { value: DOORWAY_MAX } },
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
     r = { mesh: new THREE.Mesh(rippleGeo, mat) }; r.mesh.renderOrder = 2; r.mesh.frustumCulled = false; scene.add(r.mesh); ripples.push(r);
   }
@@ -932,7 +938,7 @@ function updateRipples(dt) {
 
 /* ------------------------------------------------------------------ tags in the room */
 
-const GF = tagGeos(), GL = tagGeos({ seg: 20, flutes: 0, lite: true });   // GL: the stacked tags in the pack (mostly hidden in the bore)
+const GF = tagGeos({ seg: 32 }), GL = tagGeos({ seg: 20, flutes: 0, lite: true });   // GL: the stacked tags in the pack (mostly hidden in the bore)
 const UP = V3(0, 1, 0);
 const tags = [];
 for (let i = 0; i < 5; i++) {
@@ -1223,11 +1229,14 @@ function viewFor(name) {
 function goView(name, instant = false) {
   if (name === 'tag' && view === 'tag') tagView++;
   view = name; const v = viewFor(name); camTween = null;
+  if (name !== 'room') { controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; }   // all the way round (the belt clip)
   document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
-  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
+  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); if (name === 'room') roomClamp(); controls.update(); return; }
   camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 };
 }
 controls.minDistance = 0.04;
+// the room view keeps the scene base's azimuth limits (restored once the camera is back inside them, so it does not jump)
+function roomClamp() { controls.minAzimuthAngle = -1.35; controls.maxAzimuthAngle = 1.35; }
 function setGait(g) { att.gait = g; document.querySelectorAll('[data-gait]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.gait === g))); $('gait').textContent = { crouch: 'Crouching', walk: 'Walking', sprint: 'Sprinting' }[g]; }
 function setShoot(on) { shootMode = on; $('shoot').setAttribute('aria-pressed', String(on)); document.body.classList.toggle('shooting', on); }
 let toastT = 9;
@@ -1235,6 +1244,7 @@ function toast(s) { $('toast').textContent = s; $('toast').hidden = false; toast
 function retag() {
   for (const tg of tags) { tg.state = 'pack'; tg.pulseT = -1; tg.K.root.visible = false; poseTag(tg.K, FREE()); }
   pending.length = 0; readings.length = 0; pk.count = 5; pk.ejectT = -1; setPackCount(PACK, 5); posePack(PACK, PP());
+  $('hud-alert').hidden = true; alertT = 9; hudTextT = 9;
   intro = { t: -0.3, next: 0 };
 }
 let intro = { t: 0, next: 0 };
@@ -1329,6 +1339,7 @@ async function exportGLB() {
 function stage0({ s = 0.4, gait = 'walk', live = [1, 1, 1, 1, 1] } = {}) {
   intro = null; for (const tg of tags) { tg.state = 'pack'; tg.K.root.visible = false; tg.pulseT = -1; tg.flashT = 9; } pk.count = 5; setPackCount(PACK, 5); posePack(PACK, PP());
   pending.length = 0; readings.length = 0; ripples.forEach(r => { r.mesh.visible = false; });
+  $('hud-alert').hidden = true; alertT = 9; hudTextT = 9;
   SPOTS.forEach((sp, i) => { if (live[i]) placeTag(sp.p, sp.n, { instant: true }); });
   setGait(gait); att.cur = { ...GAITS[gait] }; att.s = s; att.phase = 0; poseAttacker(0);
 }
@@ -1372,6 +1383,8 @@ function tick(dt) {
   if (toastT > 2.6 && !$('toast').hidden) $('toast').hidden = true;
   $('count').textContent = String(pk.count); $('live').textContent = String(tags.filter(stuck).length);
   if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+  // back in the room: clamp again once the camera is inside the limits (at the end of the tween, or after a drag cut it short)
+  if (view === 'room' && !camTween && controls.minAzimuthAngle === -Infinity && Math.abs(controls.getAzimuthalAngle()) <= 1.35) roomClamp();
 }
 let shakeOff = V3();
 function renderOnce() {
