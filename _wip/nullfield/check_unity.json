@@ -1,0 +1,988 @@
+
+gadgets/nullfield/unity/nullfield-emitter.glb  2639 KB
+{
+  "root": [
+    "nullfield_emitter"
+  ],
+  "extras": {
+    "name": "nullfield_emitter",
+    "units": "metres",
+    "up": "+Y",
+    "forward": "+Z (leg 0)",
+    "origin": "on the ground under the middle of the emitter",
+    "puck_radius_m": 0.064,
+    "puck_height_m": 0.04,
+    "leg_azimuths_deg": [
+      0,
+      120,
+      240
+    ],
+    "leg_swing_standing_deg": 145,
+    "body_lift_standing_m": 0.0269,
+    "mast_rise_m": [
+      0.032,
+      0.0255
+    ],
+    "core_height_standing_m": 0.1134,
+    "field_radius_m": 4,
+    "battery_field_s": 25,
+    "battery_recharge_s": 50,
+    "battery_recharge_delay_s": 2,
+    "battery_min_to_switch_on": 0.2,
+    "gauge": "12 segments gauge_00..gauge_11, anticlockwise seen from above starting at +Z; segment i is lit while charge > i/12; scale an unlit one to 0",
+    "fx_bubble": "unit sphere at the field centre; its scale is the bubble radius in metres (the clips grow it to 4); rest scale 0.0001",
+    "notes": "rest pose: standing, mast up, rings at 0, bubble hidden. glTF leg rotation = Ry(azimuth) * Rx(swing).",
+    "source": "gadgets/nullfield/viewer.html",
+    "clips": {
+      "deploy": "lands folded on its belly: legs swing out and stand it up (by 0.6 s), then the mast rises and the bubble grows to 4 m (the power_on motion from 0.6 s)",
+      "idle": "loop: lower ring 1 turn anticlockwise, upper ring 2 turns clockwise and the core 1 turn (seen from above) per 3 s; play it at a speed ramped 0-1 to spin up and down",
+      "power_on": "standing with the mast down: mast rises, bubble grows over 0.45-0.95 s (legs and body held standing)",
+      "power_off": "switched off or battery empty: bubble collapses in 0.25 s, mast sinks (legs and body held standing)",
+      "shutdown": "shot: bubble collapses in 0.12 s, the legs give way and it sags; keys only body, legs and bubble, so play power_off at 2.5x with it if the mast was up"
+    }
+  },
+  "size_m": [
+    0.1544,
+    0.1385,
+    0.1486
+  ],
+  "min_m": [
+    -0.0772,
+    -0.0016,
+    -0.0649
+  ],
+  "max_m": [
+    0.0772,
+    0.1369,
+    0.0837
+  ],
+  "triangles": 49477,
+  "meshes": 141,
+  "materials": [
+    "gauge_led",
+    "frame_alloy",
+    "joint_steel",
+    "foot_rubber",
+    "fasteners",
+    "led_purple",
+    "collider",
+    "core_glow",
+    "black_steel",
+    "shell_composite",
+    "gauge_cell",
+    "nullfield_bubble"
+  ],
+  "parts": [
+    {
+      "name": "gauge_00_LOD0",
+      "parent": "gauge_00",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_00_LOD1",
+      "parent": "gauge_00",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_00_LOD2",
+      "parent": "gauge_00",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_01_LOD0",
+      "parent": "gauge_01",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_01_LOD1",
+      "parent": "gauge_01",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_01_LOD2",
+      "parent": "gauge_01",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_02_LOD0",
+      "parent": "gauge_02",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_02_LOD1",
+      "parent": "gauge_02",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_02_LOD2",
+      "parent": "gauge_02",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_03_LOD0",
+      "parent": "gauge_03",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_03_LOD1",
+      "parent": "gauge_03",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_03_LOD2",
+      "parent": "gauge_03",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_04_LOD0",
+      "parent": "gauge_04",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_04_LOD1",
+      "parent": "gauge_04",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_04_LOD2",
+      "parent": "gauge_04",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_05_LOD0",
+      "parent": "gauge_05",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_05_LOD1",
+      "parent": "gauge_05",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_05_LOD2",
+      "parent": "gauge_05",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_06_LOD0",
+      "parent": "gauge_06",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_06_LOD1",
+      "parent": "gauge_06",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_06_LOD2",
+      "parent": "gauge_06",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_07_LOD0",
+      "parent": "gauge_07",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_07_LOD1",
+      "parent": "gauge_07",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_07_LOD2",
+      "parent": "gauge_07",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_08_LOD0",
+      "parent": "gauge_08",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_08_LOD1",
+      "parent": "gauge_08",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_08_LOD2",
+      "parent": "gauge_08",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_09_LOD0",
+      "parent": "gauge_09",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_09_LOD1",
+      "parent": "gauge_09",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_09_LOD2",
+      "parent": "gauge_09",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_10_LOD0",
+      "parent": "gauge_10",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_10_LOD1",
+      "parent": "gauge_10",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_10_LOD2",
+      "parent": "gauge_10",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_11_LOD0",
+      "parent": "gauge_11",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_11_LOD1",
+      "parent": "gauge_11",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "gauge_11_LOD2",
+      "parent": "gauge_11",
+      "material": "gauge_led",
+      "triangles": 108
+    },
+    {
+      "name": "mesh_36",
+      "parent": "leg_0_LOD0",
+      "material": "frame_alloy",
+      "triangles": 1056
+    },
+    {
+      "name": "mesh_36_1",
+      "parent": "leg_0_LOD0",
+      "material": "joint_steel",
+      "triangles": 80
+    },
+    {
+      "name": "mesh_36_2",
+      "parent": "leg_0_LOD0",
+      "material": "foot_rubber",
+      "triangles": 96
+    },
+    {
+      "name": "mesh_36_3",
+      "parent": "leg_0_LOD0",
+      "material": "fasteners",
+      "triangles": 204
+    },
+    {
+      "name": "mesh_36_4",
+      "parent": "leg_0_LOD0",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_37",
+      "parent": "leg_0_LOD1",
+      "material": "frame_alloy",
+      "triangles": 842
+    },
+    {
+      "name": "mesh_37_1",
+      "parent": "leg_0_LOD1",
+      "material": "joint_steel",
+      "triangles": 74
+    },
+    {
+      "name": "mesh_37_2",
+      "parent": "leg_0_LOD1",
+      "material": "foot_rubber",
+      "triangles": 46
+    },
+    {
+      "name": "mesh_37_3",
+      "parent": "leg_0_LOD1",
+      "material": "fasteners",
+      "triangles": 158
+    },
+    {
+      "name": "mesh_37_4",
+      "parent": "leg_0_LOD1",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_38",
+      "parent": "leg_0_LOD2",
+      "material": "frame_alloy",
+      "triangles": 836
+    },
+    {
+      "name": "mesh_38_1",
+      "parent": "leg_0_LOD2",
+      "material": "joint_steel",
+      "triangles": 40
+    },
+    {
+      "name": "mesh_38_2",
+      "parent": "leg_0_LOD2",
+      "material": "foot_rubber",
+      "triangles": 42
+    },
+    {
+      "name": "mesh_38_3",
+      "parent": "leg_0_LOD2",
+      "material": "fasteners",
+      "triangles": 160
+    },
+    {
+      "name": "mesh_38_4",
+      "parent": "leg_0_LOD2",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "leg_0_COL",
+      "parent": "leg_0",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_40",
+      "parent": "leg_1_LOD0",
+      "material": "frame_alloy",
+      "triangles": 1056
+    },
+    {
+      "name": "mesh_40_1",
+      "parent": "leg_1_LOD0",
+      "material": "joint_steel",
+      "triangles": 80
+    },
+    {
+      "name": "mesh_40_2",
+      "parent": "leg_1_LOD0",
+      "material": "foot_rubber",
+      "triangles": 96
+    },
+    {
+      "name": "mesh_40_3",
+      "parent": "leg_1_LOD0",
+      "material": "fasteners",
+      "triangles": 204
+    },
+    {
+      "name": "mesh_40_4",
+      "parent": "leg_1_LOD0",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_41",
+      "parent": "leg_1_LOD1",
+      "material": "frame_alloy",
+      "triangles": 842
+    },
+    {
+      "name": "mesh_41_1",
+      "parent": "leg_1_LOD1",
+      "material": "joint_steel",
+      "triangles": 74
+    },
+    {
+      "name": "mesh_41_2",
+      "parent": "leg_1_LOD1",
+      "material": "foot_rubber",
+      "triangles": 46
+    },
+    {
+      "name": "mesh_41_3",
+      "parent": "leg_1_LOD1",
+      "material": "fasteners",
+      "triangles": 158
+    },
+    {
+      "name": "mesh_41_4",
+      "parent": "leg_1_LOD1",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_42",
+      "parent": "leg_1_LOD2",
+      "material": "frame_alloy",
+      "triangles": 836
+    },
+    {
+      "name": "mesh_42_1",
+      "parent": "leg_1_LOD2",
+      "material": "joint_steel",
+      "triangles": 40
+    },
+    {
+      "name": "mesh_42_2",
+      "parent": "leg_1_LOD2",
+      "material": "foot_rubber",
+      "triangles": 42
+    },
+    {
+      "name": "mesh_42_3",
+      "parent": "leg_1_LOD2",
+      "material": "fasteners",
+      "triangles": 160
+    },
+    {
+      "name": "mesh_42_4",
+      "parent": "leg_1_LOD2",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "leg_1_COL",
+      "parent": "leg_1",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_44",
+      "parent": "leg_2_LOD0",
+      "material": "frame_alloy",
+      "triangles": 1056
+    },
+    {
+      "name": "mesh_44_1",
+      "parent": "leg_2_LOD0",
+      "material": "joint_steel",
+      "triangles": 80
+    },
+    {
+      "name": "mesh_44_2",
+      "parent": "leg_2_LOD0",
+      "material": "foot_rubber",
+      "triangles": 96
+    },
+    {
+      "name": "mesh_44_3",
+      "parent": "leg_2_LOD0",
+      "material": "fasteners",
+      "triangles": 204
+    },
+    {
+      "name": "mesh_44_4",
+      "parent": "leg_2_LOD0",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_45",
+      "parent": "leg_2_LOD1",
+      "material": "frame_alloy",
+      "triangles": 842
+    },
+    {
+      "name": "mesh_45_1",
+      "parent": "leg_2_LOD1",
+      "material": "joint_steel",
+      "triangles": 74
+    },
+    {
+      "name": "mesh_45_2",
+      "parent": "leg_2_LOD1",
+      "material": "foot_rubber",
+      "triangles": 46
+    },
+    {
+      "name": "mesh_45_3",
+      "parent": "leg_2_LOD1",
+      "material": "fasteners",
+      "triangles": 158
+    },
+    {
+      "name": "mesh_45_4",
+      "parent": "leg_2_LOD1",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_46",
+      "parent": "leg_2_LOD2",
+      "material": "frame_alloy",
+      "triangles": 836
+    },
+    {
+      "name": "mesh_46_1",
+      "parent": "leg_2_LOD2",
+      "material": "joint_steel",
+      "triangles": 40
+    },
+    {
+      "name": "mesh_46_2",
+      "parent": "leg_2_LOD2",
+      "material": "foot_rubber",
+      "triangles": 42
+    },
+    {
+      "name": "mesh_46_3",
+      "parent": "leg_2_LOD2",
+      "material": "fasteners",
+      "triangles": 160
+    },
+    {
+      "name": "mesh_46_4",
+      "parent": "leg_2_LOD2",
+      "material": "led_purple",
+      "triangles": 12
+    },
+    {
+      "name": "leg_2_COL",
+      "parent": "leg_2",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_48",
+      "parent": "ring_lower_LOD0",
+      "material": "frame_alloy",
+      "triangles": 2088
+    },
+    {
+      "name": "mesh_48_1",
+      "parent": "ring_lower_LOD0",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "mesh_49",
+      "parent": "ring_lower_LOD1",
+      "material": "frame_alloy",
+      "triangles": 1474
+    },
+    {
+      "name": "mesh_49_1",
+      "parent": "ring_lower_LOD1",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "mesh_50",
+      "parent": "ring_lower_LOD2",
+      "material": "frame_alloy",
+      "triangles": 1366
+    },
+    {
+      "name": "mesh_50_1",
+      "parent": "ring_lower_LOD2",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "ring_lower_COL",
+      "parent": "ring_lower",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "core_LOD0",
+      "parent": "core",
+      "material": "core_glow",
+      "triangles": 36
+    },
+    {
+      "name": "core_LOD1",
+      "parent": "core",
+      "material": "core_glow",
+      "triangles": 36
+    },
+    {
+      "name": "core_LOD2",
+      "parent": "core",
+      "material": "core_glow",
+      "triangles": 36
+    },
+    {
+      "name": "mesh_55",
+      "parent": "ring_upper_LOD0",
+      "material": "joint_steel",
+      "triangles": 1440
+    },
+    {
+      "name": "mesh_55_1",
+      "parent": "ring_upper_LOD0",
+      "material": "frame_alloy",
+      "triangles": 356
+    },
+    {
+      "name": "mesh_55_2",
+      "parent": "ring_upper_LOD0",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "mesh_56",
+      "parent": "ring_upper_LOD1",
+      "material": "joint_steel",
+      "triangles": 660
+    },
+    {
+      "name": "mesh_56_1",
+      "parent": "ring_upper_LOD1",
+      "material": "frame_alloy",
+      "triangles": 340
+    },
+    {
+      "name": "mesh_56_2",
+      "parent": "ring_upper_LOD1",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "mesh_57",
+      "parent": "ring_upper_LOD2",
+      "material": "joint_steel",
+      "triangles": 358
+    },
+    {
+      "name": "mesh_57_1",
+      "parent": "ring_upper_LOD2",
+      "material": "frame_alloy",
+      "triangles": 308
+    },
+    {
+      "name": "mesh_57_2",
+      "parent": "ring_upper_LOD2",
+      "material": "led_purple",
+      "triangles": 72
+    },
+    {
+      "name": "ring_upper_COL",
+      "parent": "ring_upper",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_59",
+      "parent": "stage_b_LOD0",
+      "material": "black_steel",
+      "triangles": 1253
+    },
+    {
+      "name": "mesh_59_1",
+      "parent": "stage_b_LOD0",
+      "material": "joint_steel",
+      "triangles": 640
+    },
+    {
+      "name": "mesh_59_2",
+      "parent": "stage_b_LOD0",
+      "material": "frame_alloy",
+      "triangles": 576
+    },
+    {
+      "name": "mesh_59_3",
+      "parent": "stage_b_LOD0",
+      "material": "fasteners",
+      "triangles": 612
+    },
+    {
+      "name": "mesh_59_4",
+      "parent": "stage_b_LOD0",
+      "material": "led_purple",
+      "triangles": 648
+    },
+    {
+      "name": "mesh_60",
+      "parent": "stage_b_LOD1",
+      "material": "black_steel",
+      "triangles": 919
+    },
+    {
+      "name": "mesh_60_1",
+      "parent": "stage_b_LOD1",
+      "material": "joint_steel",
+      "triangles": 536
+    },
+    {
+      "name": "mesh_60_2",
+      "parent": "stage_b_LOD1",
+      "material": "frame_alloy",
+      "triangles": 478
+    },
+    {
+      "name": "mesh_60_3",
+      "parent": "stage_b_LOD1",
+      "material": "fasteners",
+      "triangles": 471
+    },
+    {
+      "name": "mesh_60_4",
+      "parent": "stage_b_LOD1",
+      "material": "led_purple",
+      "triangles": 290
+    },
+    {
+      "name": "mesh_61",
+      "parent": "stage_b_LOD2",
+      "material": "black_steel",
+      "triangles": 883
+    },
+    {
+      "name": "mesh_61_1",
+      "parent": "stage_b_LOD2",
+      "material": "joint_steel",
+      "triangles": 460
+    },
+    {
+      "name": "mesh_61_2",
+      "parent": "stage_b_LOD2",
+      "material": "frame_alloy",
+      "triangles": 477
+    },
+    {
+      "name": "mesh_61_3",
+      "parent": "stage_b_LOD2",
+      "material": "fasteners",
+      "triangles": 469
+    },
+    {
+      "name": "mesh_61_4",
+      "parent": "stage_b_LOD2",
+      "material": "led_purple",
+      "triangles": 226
+    },
+    {
+      "name": "stage_b_COL",
+      "parent": "stage_b",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_63",
+      "parent": "stage_a_LOD0",
+      "material": "joint_steel",
+      "triangles": 960
+    },
+    {
+      "name": "mesh_63_1",
+      "parent": "stage_a_LOD0",
+      "material": "led_purple",
+      "triangles": 576
+    },
+    {
+      "name": "mesh_64",
+      "parent": "stage_a_LOD1",
+      "material": "joint_steel",
+      "triangles": 944
+    },
+    {
+      "name": "mesh_64_1",
+      "parent": "stage_a_LOD1",
+      "material": "led_purple",
+      "triangles": 576
+    },
+    {
+      "name": "mesh_65",
+      "parent": "stage_a_LOD2",
+      "material": "joint_steel",
+      "triangles": 912
+    },
+    {
+      "name": "mesh_65_1",
+      "parent": "stage_a_LOD2",
+      "material": "led_purple",
+      "triangles": 275
+    },
+    {
+      "name": "stage_a_COL",
+      "parent": "stage_a",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "mesh_67",
+      "parent": "body_LOD0",
+      "material": "shell_composite",
+      "triangles": 3326
+    },
+    {
+      "name": "mesh_67_1",
+      "parent": "body_LOD0",
+      "material": "led_purple",
+      "triangles": 1116
+    },
+    {
+      "name": "mesh_67_2",
+      "parent": "body_LOD0",
+      "material": "gauge_cell",
+      "triangles": 624
+    },
+    {
+      "name": "mesh_67_3",
+      "parent": "body_LOD0",
+      "material": "fasteners",
+      "triangles": 612
+    },
+    {
+      "name": "mesh_68",
+      "parent": "body_LOD1",
+      "material": "shell_composite",
+      "triangles": 1579
+    },
+    {
+      "name": "mesh_68_1",
+      "parent": "body_LOD1",
+      "material": "led_purple",
+      "triangles": 502
+    },
+    {
+      "name": "mesh_68_2",
+      "parent": "body_LOD1",
+      "material": "gauge_cell",
+      "triangles": 624
+    },
+    {
+      "name": "mesh_68_3",
+      "parent": "body_LOD1",
+      "material": "fasteners",
+      "triangles": 474
+    },
+    {
+      "name": "mesh_69",
+      "parent": "body_LOD2",
+      "material": "shell_composite",
+      "triangles": 1198
+    },
+    {
+      "name": "mesh_69_1",
+      "parent": "body_LOD2",
+      "material": "led_purple",
+      "triangles": 259
+    },
+    {
+      "name": "mesh_69_2",
+      "parent": "body_LOD2",
+      "material": "gauge_cell",
+      "triangles": 624
+    },
+    {
+      "name": "mesh_69_3",
+      "parent": "body_LOD2",
+      "material": "fasteners",
+      "triangles": 474
+    },
+    {
+      "name": "body_COL",
+      "parent": "body",
+      "material": "collider",
+      "triangles": 12
+    },
+    {
+      "name": "fx_bubble_mesh",
+      "parent": "fx_bubble",
+      "material": "nullfield_bubble",
+      "triangles": 960
+    }
+  ],
+  "animations": [
+    {
+      "name": "deploy",
+      "seconds": 1.6,
+      "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
+        "stage_a.position",
+        "stage_b.position",
+        "fx_bubble.scale"
+      ]
+    },
+    {
+      "name": "idle",
+      "seconds": 3,
+      "tracks": [
+        "ring_lower.quaternion",
+        "ring_upper.quaternion",
+        "core.quaternion"
+      ]
+    },
+    {
+      "name": "power_on",
+      "seconds": 1,
+      "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
+        "stage_a.position",
+        "stage_b.position",
+        "fx_bubble.scale"
+      ]
+    },
+    {
+      "name": "power_off",
+      "seconds": 0.8,
+      "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
+        "stage_a.position",
+        "stage_b.position",
+        "fx_bubble.scale"
+      ]
+    },
+    {
+      "name": "shutdown",
+      "seconds": 1.2,
+      "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
+        "fx_bubble.scale"
+      ]
+    }
+  ]
+}

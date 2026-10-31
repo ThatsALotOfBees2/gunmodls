@@ -1,0 +1,7 @@
+[{"name":"r_room","pos":[0.2,5.8,9.8],"target":[0.3,0.3,2.3],"setup":"m.ui(true); m.camera.fov = 40; m.camera.updateProjectionMatrix(); m.stage0({s: 3.2, gait: 'walk'}); m.simulate(1.3)"},
+ {"name":"r_bench34","pos":[2.52,0.56,5.47],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','stuck')"},
+ {"name":"r_tamper","pos":[2.52,0.56,5.47],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','tamper',0.5)"},
+ {"name":"r_pulse","pos":[2.52,0.56,5.47],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','pulse',0.05)"},
+ {"name":"r_packeject","pos":[2.6,0.66,5.45],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.BENCH.root.visible=false; m.set('pack','eject',0.16,5)"},
+ {"name":"r_packback","pos":[2.3,0.62,5.05],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.BENCH.root.visible=false; m.set('pack','rest',0,3)"}
+]

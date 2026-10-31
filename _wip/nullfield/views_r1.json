@@ -1,0 +1,4 @@
+[{"name":"r1_room","pos":[10.5,7.0,14.0],"target":[0,0.8,0.6],"setup":"m.set('idle',0.5,{nick:[5.6,2.4,-1.6]})"},
+ {"name":"r1_room_inside","pos":[10.5,7.0,14.0],"target":[0,0.8,0.6],"setup":"m.set('idle',0.5,{nick:[1.5,1.4,-1.6],feed:'drone'})"},
+ {"name":"r1_close","pos":[0.36,0.27,0.46],"target":[0,0.07,0],"setup":"m.set('idle',0.3,{nick:[5.6,2.4]})"},
+ {"name":"r1_edge","pos":[6.5,1.6,5.0],"target":[0,0.6,0],"setup":"m.set('idle',0.5,{nick:[3.0,1.6,-1.6]})"}]

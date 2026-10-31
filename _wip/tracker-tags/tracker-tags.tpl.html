@@ -168,7 +168,7 @@ function tagGeos({ seg = 48, flutes = 26, lite = false } = {}) {
   G.pulseRing = creased(latheY([[0.00675, 0.0029], [0.0074, 0.0029], [0.0074, 0.0038], [0.00725, 0.004], [0.0069, 0.004], [0.00675, 0.0038], [0.00675, 0.0029]], seg), 40);
   // sensing membrane: a low dome with three shallow ribs, a steel nub on top
   const dome = [[0, 0], [0.0065, 0], [0.0065, 0.0008], [0.0062, 0.0013]];
-  const n = lite ? 6 : 12;
+  const n = lite ? 4 : 12;
   for (let i = 1; i <= n; i++) { const r = 0.0062 * (1 - i / n), h = 0.0013 + 0.0018 * (1 - (r / 0.0062) ** 2); let rib = 0; for (const c of [0.005, 0.0037, 0.0024]) rib += Math.exp(-(((r - c) / 0.00035) ** 2)); dome.push([r, h + (lite ? 0 : 0.0001 * rib)]); }
   G.membrane = creased(latheY(dome, Math.round(seg * 0.85)), 50);
   G.nub = new THREE.SphereGeometry(0.0011, lite ? 8 : 16, lite ? 3 : 6, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.45, 1).translate(0, 0.0031 - 0.00005, 0);
@@ -262,7 +262,7 @@ function packGeos(TGL) {
   G.ribs = creased(merge(ribs), 30);
   const rail = plateXY(rect(0.0186, 0.0198, 0.038, 0.0668, 0.0004), E - 0.0002, E + 0.0022, 0.0003, 2);
   G.rails = creased(merge([rail, mirror(rail, 'x')]), 30);
-  const bez = []; for (let k = 0; k < 5; k++) bez.push(new THREE.TorusGeometry(0.00145, 0.00035, 5, 16).rotateY(Math.PI / 2).translate(E, 0.018 + k * 0.0085, 0.011));
+  const bez = []; for (let k = 0; k < 5; k++) bez.push(new THREE.TorusGeometry(0.00145, 0.00035, 4, 14).rotateY(Math.PI / 2).translate(E, 0.018 + k * 0.0085, 0.011));
   G.bezels = merge(bez);
   G.pip = new THREE.SphereGeometry(0.0011, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).rotateZ(-Math.PI / 2).scale(0.5, 1, 1);
   // belt clip on the back
@@ -530,7 +530,7 @@ function updateRipples(dt) {
 
 /* ------------------------------------------------------------------ tags in the room */
 
-const GF = tagGeos(), GL = tagGeos({ seg: 28, flutes: 0, lite: true });
+const GF = tagGeos(), GL = tagGeos({ seg: 20, flutes: 0, lite: true });   // GL: the stacked tags in the pack (mostly hidden in the bore)
 const UP = V3(0, 1, 0);
 const tags = [];
 for (let i = 0; i < 5; i++) {
@@ -891,10 +891,11 @@ function exportScenes() {
   ];
   poseTag(K, TP()); K.root.updateMatrixWorld(true);
   K.root.userData = {
-    units: 'metres', up: '+Y (the surface normal)', origin: 'centre of the back, on the surface it sticks to', diameter_m: 2 * TG.R, height_stuck_m: +STUCK_H.toFixed(4), height_free_m: +(STUCK_H + TG.GEL_H - TG.GEL_SQ).toFixed(4),
+    units: 'metres', up: '+Y (the surface normal)', forward: '+Z (any heading works: the tag is round; the cap splits along X)', origin: 'centre of the back, on the surface it sticks to', diameter_m: 2 * TG.R, height_stuck_m: +STUCK_H.toFixed(4), height_free_m: +(STUCK_H + TG.GEL_H - TG.GEL_SQ).toFixed(4),
     rest_pose: 'stuck: gel squashed, prongs 1 mm into the surface (to y -0.001), ring light up. stick at 0 s is the free pose (in flight, in the pack).',
     lights: 'led_purple is the faint ring light, pulse_purple the pulse ring: switch both off when the tag is dead or not stuck',
     range_m: RANGE, source: 'gadgets/tracker-tags/viewer.html',
+    notes: 'senses vibration through the surface it is stuck to (steps, vaults, breaches), not heat or sight. Surfaces only, never people. The pick-up radius is game logic, not part of the model.',
     clips: { stick: 'lands or is pressed on: the gel squashes, three prongs seat into the surface, the ring light rises', pulse: 'felt a step: the membrane ticks down and back, the pulse ring pops up and sinks', tamper: 'shot: the cap splits and both halves flip open, the membrane caves in, the ring light sinks. Holds its last pose.' },
   };
   const Pq = buildPack(GP);
@@ -903,13 +904,15 @@ function exportScenes() {
     sampleClip('eject', TPK.eject, [[Pq.slide, [PO]], [Pq.tags[0], [PO]]], (t) => posePack(Pq, ejectP(t))),
   ];
   posePack(Pq, PP()); setPackCount(Pq, 5); Pq.root.updateMatrixWorld(true);
+  const pb = new THREE.Box3().setFromObject(Pq.root), psz = pb.getSize(V3()).toArray().map(v => +v.toFixed(4));
   Pq.root.userData = {
-    units: 'metres', up: '+Y (up the stack)', forward: '+Z (the exit slot)', origin: 'under the middle of the base', size_m: [0.049, PK.H + 0.0038, 0.0525],
+    units: 'metres', up: '+Y (up the stack)', forward: '+Z (the exit slot)', origin: 'under the middle of the base', size_m: psz,
     stack: { top_y: PK.TOPY, pitch: PK.PITCH, count: 5 },
     count_rule: 'n tags left: show tag_1..tag_n and pip_1..pip_n; follower.y = top_y - max(n - 1, 0) * pitch; spring scale y = (follower.y - 0.009) / 0.03',
     eject_rule: 'eject pushes tag_1 out to fx_eject. Then hide it (the hand has it), sample eject at 0 s and apply the count rule for n - 1.',
     rest_pose: 'equipped: gate open, slide back, five tags', source: 'gadgets/tracker-tags/viewer.html',
-    clips: { equip: 'the gate slides down to open the exit slot, the thumb slide clicks back. Play backwards to close.', eject: `the thumb slide pushes tag_1 ${PK.TRAVEL + PK.POP} m forward out of the slot and springs back; tag_1 stays out` },
+    notes: 'palm-sized dispenser Nox carries on the belt clip. tag_1 is the top of the stack and the next one out; the stacked tags are dormant copies of tracker-tag.glb in its free pose.',
+    clips: { equip: 'the gate slides down to open the exit slot, the thumb slide clicks back. Play backwards to close.', eject: `the thumb slide pushes tag_1 ${+(PK.TRAVEL + PK.POP).toFixed(4)} m forward out of the slot and springs back; tag_1 stays out` },
   };
   return [{ file: 'tracker-tag.glb', root: K.root, animations: tagClips }, { file: 'tracker-tags-pack.glb', root: Pq.root, animations: packClips }];
 }

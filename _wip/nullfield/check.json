@@ -1,5 +1,5 @@
 
-gadgets/nullfield/nullfield-emitter.glb  1326 KB
+gadgets/nullfield/nullfield-emitter.glb  1336 KB
 {
   "root": [
     "nullfield_emitter"
@@ -36,8 +36,8 @@ gadgets/nullfield/nullfield-emitter.glb  1326 KB
     "clips": {
       "deploy": "lands folded on its belly: legs swing out and stand it up (by 0.6 s), then the mast rises and the bubble grows to 4 m (the power_on motion from 0.6 s)",
       "idle": "loop: lower ring 1 turn anticlockwise, upper ring 2 turns clockwise and the core 1 turn (seen from above) per 3 s; play it at a speed ramped 0-1 to spin up and down",
-      "power_on": "standing with the mast down: mast rises, bubble grows over 0.45-0.95 s",
-      "power_off": "switched off or battery empty: bubble collapses in 0.25 s, mast sinks; legs stay out",
+      "power_on": "standing with the mast down: mast rises, bubble grows over 0.45-0.95 s (legs and body held standing)",
+      "power_off": "switched off or battery empty: bubble collapses in 0.25 s, mast sinks (legs and body held standing)",
       "shutdown": "shot: bubble collapses in 0.12 s, the legs give way and it sags; keys only body, legs and bubble, so play power_off at 2.5x with it if the mast was up"
     }
   },
@@ -383,6 +383,11 @@ gadgets/nullfield/nullfield-emitter.glb  1326 KB
       "name": "power_on",
       "seconds": 1,
       "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
         "stage_a.position",
         "stage_b.position",
         "fx_bubble.scale"
@@ -392,6 +397,11 @@ gadgets/nullfield/nullfield-emitter.glb  1326 KB
       "name": "power_off",
       "seconds": 0.8,
       "tracks": [
+        "body.position",
+        "body.quaternion",
+        "leg_0.quaternion",
+        "leg_1.quaternion",
+        "leg_2.quaternion",
         "stage_a.position",
         "stage_b.position",
         "fx_bubble.scale"

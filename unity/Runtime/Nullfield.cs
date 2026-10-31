@@ -7,12 +7,14 @@
 //   Hold()              in the hand: folded, kinematic, colliders off, field off (the battery recharges)
 //   Throw(velocity)     it tumbles; when it lands on a floor it plays 'deploy', stands up and switches the field on
 //   PowerOn(), PowerOff(), Toggle()   the field; it needs 20 % charge to come on and drops by itself when empty
-//   Fold()              picked up: plays 'deploy' backwards at double speed, then Hold()
+//   Fold()              picked up while standing: plays 'deploy' backwards at double speed, then Hold()
 //   Damage(amount), Kill()   shot: the bubble collapses, the mast drops, the legs give way, the lights go out
+//   SetCharge(0..1)     set the battery (for example a full one at the start of a round)
 // Also in this file:
 //   Nullfield.IsHidden(point), Nullfield.IsHidden(gameObject)   the rule every sensor uses
 //   NullfieldCarrier   on N1CK: he is always hidden from digital sensors
-//   NullfieldFeed      on a feed camera: draws the flat patch over the bubble and over carriers
+//   NullfieldFeed      on a feed camera: draws the flat patch over the bubble and over carriers; a camera inside a
+//                      bubble sees only the patch
 // Unity adds a MonoBehaviour from the Inspector only when its file has the class's name. Add NullfieldCarrier and
 // NullfieldFeed with AddComponent, or move each class into its own file (NullfieldCarrier.cs, NullfieldFeed.cs).
 using System.Collections.Generic;
@@ -220,6 +222,12 @@ public class Nullfield : MonoBehaviour
         PlayClip("deploy", -2f, start, 0.15f);
     }
 
+    public void SetCharge(float charge)
+    {
+        Charge = Mathf.Clamp01(charge);
+        if (Charge <= 0f && FieldOn) SwitchOff(true);
+    }
+
     public void Damage(float amount)
     {
         if (Current == State.Dead || Current == State.InHand) return;
@@ -230,11 +238,19 @@ public class Nullfield : MonoBehaviour
     public void Kill()
     {
         if (Current == State.Dead || Current == State.InHand) return;
+        var was = Current;
         var mast = MastUp();
         growthFrom = growth; FieldOn = false; fieldT = 0f;
         Current = State.Dead; stateT = 0f;
-        if (anim["shutdown"] != null) { anim["shutdown"].speed = 1f; anim.CrossFade("shutdown", 0.15f, PlayMode.StopSameLayer); }
-        if (mast) PlayClip("power_off", KillMast, 0f, 0.1f);
+        if (was == State.Ready || was == State.Deploying)
+        {
+            // shutdown (layer 2) fades in over whatever layer 1 holds; it keys the body, legs and bubble
+            var s = anim["shutdown"];
+            if (s != null) { s.speed = 1f; s.time = 0f; anim.CrossFade("shutdown", 0.15f, PlayMode.StopSameLayer); }
+            if (mast) PlayClip("power_off", KillMast, 0f, 0.1f);
+            else foreach (AnimationState o in anim) if (o.layer == 1 && o.enabled) o.speed = 0f;   // hold the pose: the mast stays down
+        }
+        else anim.Stop("deploy");   // thrown or folding: it stays as it is and goes dark
         hum.Stop();
         Play(shotSound);
         onKilled.Invoke();
@@ -387,7 +403,11 @@ public class Nullfield : MonoBehaviour
     {
         var s = anim[clip]; if (s == null) return;
         s.speed = speed;
-        if (fade > 0f) anim.CrossFade(clip, fade, PlayMode.StopSameLayer); else anim.Play(clip, PlayMode.StopSameLayer);
+        // cross-fade only from another clip playing on the same layer; with nothing to fade from, start at full weight
+        var from = false;
+        foreach (AnimationState o in anim)
+            if (o != s && o.layer == s.layer && o.enabled && o.weight > 0f) { from = true; break; }
+        if (fade > 0f && from) anim.CrossFade(clip, fade, PlayMode.StopSameLayer); else anim.Play(clip, PlayMode.StopSameLayer);
         s.time = time;
     }
 
@@ -463,6 +483,7 @@ public class NullfieldCarrier : MonoBehaviour
 // Put on a feed camera (a drone's, a security camera's). While that camera renders:
 //   - every powered bubble is drawn as an opaque, unlit, flat sphere: whatever the camera would see inside or
 //     behind it becomes one clean patch (the tell);
+//   - a camera inside a powered bubble sees only the patch: the sphere is drawn over everything;
 //   - carriers (and hidden objects in alsoCheck) are drawn in the patch colour, or not at all;
 //   - the bubble's own see-through skin is not drawn.
 // Other cameras are not affected. It adds no noise: if your feed adds grain in post, the patch gets it too.
@@ -476,7 +497,7 @@ public class NullfieldFeed : MonoBehaviour
     public int patchLayer = 0;                   // layer the patch spheres are drawn on; it must be in the camera's culling mask
 
     Camera cam;
-    Material mat;
+    Material mat, insideMat, insideFrom;
     static Mesh sphere;
     readonly List<Renderer> swapped = new List<Renderer>(), turnedOff = new List<Renderer>(), found = new List<Renderer>();
     readonly List<Material[]> saved = new List<Material[]>();
@@ -501,16 +522,25 @@ public class NullfieldFeed : MonoBehaviour
         Restore();
     }
 
+    void OnDestroy()
+    {
+        if (mat != null) Destroy(mat);
+        if (insideMat != null) Destroy(insideMat);
+    }
+
     void LateUpdate()
     {
         if (cam == null || !cam.enabled) return;
-        var m = PatchMaterial(); if (m == null) return;
         var fields = Nullfield.All;
         for (var i = 0; i < fields.Count; i++)
         {
             var f = fields[i];
             if (!f.Powered) continue;
-            Graphics.DrawMesh(Sphere(), Matrix4x4.TRS(f.Centre, Quaternion.identity, Vector3.one * f.CurrentRadius), m, patchLayer, cam, 0, null, false, false);
+            var r = f.CurrentRadius;
+            var inside = (cam.transform.position - f.Centre).sqrMagnitude < r * r;
+            var m = inside ? InsideMaterial() : PatchMaterial();
+            if (m == null) continue;
+            Graphics.DrawMesh(Sphere(), Matrix4x4.TRS(f.Centre, Quaternion.identity, Vector3.one * r), m, patchLayer, cam, 0, null, false, false);
         }
     }
 
@@ -576,15 +606,32 @@ public class NullfieldFeed : MonoBehaviour
             var sh = Shader.Find("Hidden/Internal-Colored");
             if (sh == null) { Debug.LogWarning("NullfieldFeed: Hidden/Internal-Colored not found, assign patchMaterial"); enabled = false; return null; }
             mat = new Material(sh) { hideFlags = HideFlags.HideAndDontSave, name = "nullfield_patch" };
-            mat.SetInt("_SrcBlend", (int)BlendMode.One);
-            mat.SetInt("_DstBlend", (int)BlendMode.Zero);
-            mat.SetInt("_Cull", (int)CullMode.Off);
-            mat.SetInt("_ZWrite", 1);
-            mat.SetInt("_ZTest", (int)CompareFunction.LessEqual);
+            mat.SetFloat("_SrcBlend", (float)BlendMode.One);
+            mat.SetFloat("_DstBlend", (float)BlendMode.Zero);
+            mat.SetFloat("_Cull", (float)CullMode.Off);
+            mat.SetFloat("_ZWrite", 1f);
+            mat.SetFloat("_ZTest", (float)CompareFunction.LessEqual);
             mat.renderQueue = (int)RenderQueue.Geometry;
         }
         mat.color = patchColor;
         return mat;
+    }
+
+    // the same look, drawn last and through everything (for a camera inside a bubble). A patchMaterial of your own
+    // needs a _ZTest property for this; without one, things between the camera and the bubble wall still show.
+    Material InsideMaterial()
+    {
+        var p = PatchMaterial(); if (p == null) return null;
+        if (insideMat == null || insideFrom != p)
+        {
+            if (insideMat != null) Destroy(insideMat);
+            insideMat = new Material(p) { hideFlags = HideFlags.HideAndDontSave, name = "nullfield_patch_inside" };
+            insideFrom = p;
+            if (insideMat.HasProperty("_ZTest")) insideMat.SetFloat("_ZTest", (float)CompareFunction.Always);
+            insideMat.renderQueue = (int)RenderQueue.Overlay;
+        }
+        if (p == mat) insideMat.color = patchColor;
+        return insideMat;
     }
 
     // a unit sphere with faces both ways, so it also works from inside a bubble and with any culling

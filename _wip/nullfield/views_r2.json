@@ -1,0 +1,4 @@
+[{"name":"r2_room","pos":[10.5,7.0,14.0],"target":[0,0.8,0.6],"setup":"m.set('idle',0.5,{nick:[1.5,1.4,-1.6],feed:'camera'})"},
+ {"name":"r2_top","pos":[0.02,0.42,0.06],"target":[0,0.05,0],"setup":"m.set('idle',0.3,{charge:0.55,nick:[5.6,2.4]})"},
+ {"name":"r2_shut","pos":[0.36,0.22,0.46],"target":[0,0.05,0],"setup":"m.set('shutdown',1.2,{nick:[5.6,2.4]})"},
+ {"name":"r2_folded","pos":[0.3,0.2,0.4],"target":[0,0.03,0],"setup":"m.set('folded',0,{nick:[5.6,2.4],bub:0})"}]

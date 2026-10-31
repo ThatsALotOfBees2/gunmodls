@@ -110,7 +110,7 @@ const CM = {
   led: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2.6, roughness: 0.35, metalness: 0 }),
   core: new THREE.MeshPhysicalMaterial({ color: '#2a1260', emissive: '#8a4dff', emissiveIntensity: 3.2, roughness: 0.15, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05 }),
   gauge: new THREE.MeshStandardMaterial({ color: '#1a0b33', emissive: '#8a4dff', emissiveIntensity: 2.2, roughness: 0.3, metalness: 0 }),
-  cell: new THREE.MeshStandardMaterial({ color: '#070709', metalness: 0.1, roughness: 0.55 }),
+  cell: new THREE.MeshStandardMaterial({ color: '#070709', metalness: 0, roughness: 0.82 }),
   bubble: new THREE.MeshStandardMaterial({ color: '#8a4dff', emissive: '#8a4dff', emissiveIntensity: 0.25, roughness: 0.2, metalness: 0, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide }),
 };
 const CM_NAMES = { alloy: 'frame_alloy', shell: 'shell_composite', steel: 'joint_steel', dark: 'black_steel', bolt: 'fasteners', rubber: 'foot_rubber', led: 'led_purple', core: 'core_glow', gauge: 'gauge_led', cell: 'gauge_cell', bubble: 'nullfield_bubble' };
@@ -324,6 +324,18 @@ const floorTex = concreteTexture(1, 1, '#3d3c3a'); floorTex.repeat.set(15, 11);
 const floor = new THREE.Mesh(new THREE.BoxGeometry(30, 0.3, 22), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.62, metalness: 0.05, color: '#a8a6a2' }));
 floor.position.set(0, -0.15, 2); scene.add(floor);
 for (const o of [backWall, sideWall, floor]) o.receiveShadow = o.castShadow = true;
+// the near walls and the ceiling: drawn only in the sensor feeds, so the room view stays open
+const feedOnly = [];
+{ // the main lights barely reach these faces, so they carry a little glow of their own
+  const nearMat = wallMat.clone(); nearMat.emissiveMap = wallTex; nearMat.emissive.set('#ffffff'); nearMat.emissiveIntensity = 0.9;
+  const ceilTex = concreteTexture(4, 3, '#4a4946'); ceilTex.repeat.set(3, 2.3);
+  const ceilMat = new THREE.MeshStandardMaterial({ map: ceilTex, roughness: 0.95, metalness: 0, emissiveMap: ceilTex, emissive: '#ffffff', emissiveIntensity: 0.8 });
+  const lamp = new THREE.MeshBasicMaterial({ color: '#e4e2d8' });
+  const add = (geo, mat, x, y, z) => { const o = new THREE.Mesh(geo, mat); o.position.set(x, y, z); o.receiveShadow = true; o.visible = false; scene.add(o); feedOnly.push(o); };
+  add(new THREE.BoxGeometry(24, 3.6, 0.2), nearMat, 1, 1.8, 10.1);
+  add(new THREE.BoxGeometry(0.2, 3.6, 18.4), nearMat, 12.1, 1.8, 1);
+  add(new THREE.BoxGeometry(24, 0.2, 18.4), ceilMat, 1, 3.7, 1);
+  for (const x of [-5, 1, 7]) for (const z of [-4, 1, 6]) add(new THREE.BoxGeometry(1.6, 0.03, 0.4), lamp, x, 3.59, z); }
 const crateMat = new THREE.MeshStandardMaterial({ color: '#3a3d45', roughness: 0.6, metalness: 0.3 });
 for (const [x, z, s, r] of [[-2.4, -1.9, 0.75, 0.2], [-1.6, -2.5, 0.45, -0.3], [3.1, -2.5, 0.6, 0.1], [-6.6, -2.2, 0.6, 0.4], [5.8, -4.8, 0.55, -0.2], [2.4, 5.6, 0.5, 0.5], [-3.4, 6.2, 0.45, -0.4], [-8.4, -6.6, 0.8, 0.1]]) {
   const c = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), crateMat); c.position.set(x, s / 2, z); c.rotation.y = r; c.castShadow = c.receiveShadow = true; scene.add(c);
@@ -587,7 +599,7 @@ const postMat = new THREE.ShaderMaterial({
       if (hole) { gl_FragColor = vec4(patchCol, 1.0); return; }   // the tell: perfectly flat, no grain, no scanlines
       vec3 c = srgb(aces(col.rgb * 1.0));
       float l = dot(c, vec3(0.299, 0.587, 0.114));
-      c = uMode < 0.5 ? mix(vec3(l), c, 0.5) * vec3(0.93, 1.0, 1.03) : vec3(l) * vec3(0.88, 0.82, 1.1);
+      c = uMode < 0.5 ? mix(vec3(l), c, 0.5) * vec3(0.93, 1.0, 1.03) : vec3(pow(l, 0.75)) * vec3(0.88, 0.82, 1.1);
       c = (c - 0.45) * 1.15 + 0.47;
       vec2 px = gl_FragCoord.xy;
       c += (h12(px + fract(uTime * 7.31) * 517.0) - 0.5) * (uMode < 0.5 ? 0.13 : 0.18);
@@ -616,10 +628,10 @@ function renderFeed() {
   placeFeedCam(); feedCam.aspect = r.width / r.height; feedCam.updateProjectionMatrix();
   // the sensor's own render: no bubble skin, its own body hidden, N1CK written as "nothing"
   const hide = [bubble, floorRing, feedMode === 'camera' ? secCam : droneProp], was = hide.map(o => o.visible);
-  hide.forEach(o => { o.visible = false; });
+  hide.forEach(o => { o.visible = false; }); feedOnly.forEach(o => { o.visible = true; });
   const nickMeshes = []; nick.traverse(o => { if (o.isMesh) { nickMeshes.push([o, o.material, o.castShadow]); o.material = holeMat; o.castShadow = false; } });
   renderer.setRenderTarget(feedRT); renderer.render(scene, feedCam); renderer.setRenderTarget(null);
-  hide.forEach((o, i) => { o.visible = was[i]; }); nickMeshes.forEach(([o, m, c]) => { o.material = m; o.castShadow = c; });
+  hide.forEach((o, i) => { o.visible = was[i]; }); feedOnly.forEach(o => { o.visible = false; }); nickMeshes.forEach(([o, m, c]) => { o.material = m; o.castShadow = c; });
   // post: grain, scanlines and the clean patch
   const u = postMat.uniforms, c = bubbleCentre();
   u.tColor.value = feedRT.texture; u.tDepth.value = feedRT.depthTexture; u.projInv.value.copy(feedCam.projectionMatrixInverse); u.camWorld.value.copy(feedCam.matrixWorld);
@@ -775,16 +787,16 @@ function exportScenes() {
   const clips = [
     sampleClip('deploy', T.deploy, [body, ...legs, ...mast, bub], (t) => pose(X, deployP(t))),
     sampleClip('idle', T.idle, [[X.RL, [Q]], [X.RU, [Q]], [X.core, [Q]]], (t) => pose(X, idleP(t))),
-    sampleClip('power_on', T.power_on, [...mast, bub], (t) => pose(X, powerOnP(t))),
-    sampleClip('power_off', T.power_off, [...mast, bub], (t) => pose(X, powerOffP(t))),
+    sampleClip('power_on', T.power_on, [body, ...legs, ...mast, bub], (t) => pose(X, powerOnP(t))),
+    sampleClip('power_off', T.power_off, [body, ...legs, ...mast, bub], (t) => pose(X, powerOffP(t))),
     sampleClip('shutdown', T.shutdown, [body, ...legs, bub], (t) => pose(X, shutdownP(t))),
   ];
   pose(X, P()); X.root.updateMatrixWorld(true);
   X.root.userData.clips = {
     deploy: `lands folded on its belly: legs swing out and stand it up (by ${ON_AT} s), then the mast rises and the bubble grows to 4 m (the power_on motion from ${ON_AT} s)`,
     idle: 'loop: lower ring 1 turn anticlockwise, upper ring 2 turns clockwise and the core 1 turn (seen from above) per 3 s; play it at a speed ramped 0-1 to spin up and down',
-    power_on: `standing with the mast down: mast rises, bubble grows over ${GROW[0]}-${GROW[1]} s`,
-    power_off: `switched off or battery empty: bubble collapses in ${COLLAPSE} s, mast sinks; legs stay out`,
+    power_on: `standing with the mast down: mast rises, bubble grows over ${GROW[0]}-${GROW[1]} s (legs and body held standing)`,
+    power_off: `switched off or battery empty: bubble collapses in ${COLLAPSE} s, mast sinks (legs and body held standing)`,
     shutdown: `shot: bubble collapses in ${KILL_COLLAPSE} s, the legs give way and it sags; keys only body, legs and bubble, so play power_off at ${KILL_MAST}x with it if the mast was up`,
   };
   return [{ file: 'nullfield-emitter.glb', root: X.root, animations: clips }];

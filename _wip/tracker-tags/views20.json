@@ -1,0 +1,2 @@
+[{"name":"s_packeject","pos":[2.56,0.6,5.4],"target":[2.45,0.55,5.27],"fov":30,"setup":"m.ui(false); m.BENCH.root.visible=false; m.set('pack','eject',0.35,5)"},
+ {"name":"s_packwin","pos":[2.53,0.57,5.18],"target":[2.43,0.535,5.27],"fov":30,"setup":"m.ui(false); m.BENCH.root.visible=false; m.set('pack','rest',0,4)"}]
