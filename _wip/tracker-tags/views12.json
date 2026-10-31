@@ -1,0 +1,9 @@
+[{"name":"v_room","pos":[0.2,5.8,9.8],"target":[0.3,0.3,2.3],"setup":"m.ui(true); m.stage0({s: 3.4}); m.simulate(1.2)"},
+ {"name":"v_stuck","pos":[2.6,0.545,5.43],"target":[2.55,0.503,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','stuck')"},
+ {"name":"v_free","pos":[2.62,0.512,5.42],"target":[2.55,0.504,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','free')"},
+ {"name":"v_tamper","pos":[2.6,0.55,5.43],"target":[2.55,0.505,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','tamper',0.5)"},
+ {"name":"v_under","pos":[2.6,0.47,5.43],"target":[2.55,0.505,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','free'); m.BENCH.root.rotation.x = Math.PI; m.BENCH.root.position.y = 0.53"},
+ {"name":"v_pack","pos":[2.52,0.6,5.5],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.BENCH.root.visible = false; m.BENCH.root.rotation.x = 0; m.BENCH.root.position.y = 0.5; m.set('pack','rest',0,5)"},
+ {"name":"v_eject","pos":[2.52,0.6,5.5],"target":[2.43,0.54,5.27],"fov":30,"setup":"m.ui(false); m.set('pack','eject',0.2,5)"},
+ {"name":"v_breach","pos":[0.2,2.4,5.6],"target":[-1.4,0.9,0.6],"setup":"m.ui(true); m.set('pack','rest',0,5); m.stage0({s: 0.2}); m.att.moving = false; m.breach(); m.simulate(0.35)"}
+]

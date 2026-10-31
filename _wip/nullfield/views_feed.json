@@ -1,0 +1,2 @@
+[{"name":"feed_big","pos":[0.455,0.295,0.498],"target":[-0.04,0.075,-0.02],"setup":"document.getElementById('tags').hidden=true; const f=document.getElementById('feed'); f.style.width='1500px'; f.style.right='40px'; m.set('idle',0.9,{nick:[-2.0,-3.0,0.6],charge:0.72,feed:'camera'})"},
+ {"name":"feed_big_drone","pos":[0.455,0.295,0.498],"target":[-0.04,0.075,-0.02],"setup":"document.getElementById('tags').hidden=true; const f=document.getElementById('feed'); f.style.width='1500px'; f.style.right='40px'; m.set('idle',0.9,{nick:[2.6,-1.6,0.6],charge:0.72,feed:'drone'})"}]

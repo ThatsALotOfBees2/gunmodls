@@ -932,10 +932,15 @@ function preview() {
   setLoop(false);
   document.querySelectorAll('.plate, .bar, .hint, .toast').forEach(e => { e.hidden = true; });
   pinsOn = false;
-  // the doorway tag in front, mid-pulse, with the attacker stepping through the door 1.2 m behind it
-  stage0({ s: 1.35, gait: 'walk' }); simulate(1.0333);
+  // the doorway tag up close, just after it felt a step, the attacker's boot 0.8 m behind it
+  stage0({ s: 2.4, gait: 'walk' }); simulate(0.6);
   const T = tagWorld(tags[1]), d = T.clone().sub(DUM.root.position).setY(0).normalize();
-  camera.position.set(T.x + d.x * 0.18, 0.09, T.z + d.z * 0.18); controls.target.set(T.x - d.x * 0.25, 0.02, T.z - d.z * 0.25);
+  camera.fov = 36; camera.updateProjectionMatrix();
+  camera.position.set(T.x + d.x * 0.15, 0.055, T.z + d.z * 0.15);
+  // aim a little above the tag so it sits below the middle of the frame
+  const dir = T.clone().sub(camera.position).normalize(), right = dir.clone().cross(UP).normalize();
+  dir.applyAxisAngle(right, Math.atan(0.35 * Math.tan(deg(18))));
+  controls.target.copy(camera.position).add(dir);
   renderOnce();
 }
 window.__model = { id: 'tracker-tags', exportScenes, exportGLB, preview };

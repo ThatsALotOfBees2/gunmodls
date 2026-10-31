@@ -1,0 +1,2 @@
+[{"name":"x_under","pos":[2.585,0.69,5.42],"target":[2.55,0.636,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','free'); m.BENCH.root.rotation.x = Math.PI; m.BENCH.root.position.y = 0.64"},
+ {"name":"x_under_stuck","pos":[2.585,0.69,5.42],"target":[2.55,0.636,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','stuck'); m.BENCH.root.rotation.x = Math.PI; m.BENCH.root.position.y = 0.64"}]

@@ -1,0 +1,7 @@
+[{"name":"w_under","pos":[2.6,0.58,5.43],"target":[2.55,0.62,5.37],"fov":30,"setup":"m.ui(false); m.set('bench','free'); m.BENCH.root.rotation.x = Math.PI; m.BENCH.root.position.y = 0.64"},
+ {"name":"w_door","pos":[1.99,1.07,0.63],"target":[1.885,1.02,0.56],"fov":30,"setup":"m.BENCH.root.visible = false; m.stage0({s: 0.2}); m.simulate(0.2); m.ui(false)"},
+ {"name":"w_hatch","pos":[-1.72,0.1,2.45],"target":[-1.79,0.015,2.36],"fov":30,"setup":"m.stage0({s: 0.2}); m.simulate(0.2); m.ui(false)"},
+ {"name":"w_wall","pos":[-2.95,0.55,3.5],"target":[-3.2,0.42,3.35],"fov":30,"setup":"m.stage0({s: 0.2}); m.simulate(0.2); m.ui(false)"},
+ {"name":"w_preview","pos":[0,0,0],"target":[0,0,0],"setup":"window.__model.preview(); v.pos = m.camera.position.toArray(); v.target = m.controls.target.toArray();"},
+ {"name":"w_shoot","pos":[0.2,5.8,9.8],"target":[0.3,0.3,2.3],"setup":"m.ui(true); m.camera.fov = 40; m.camera.updateProjectionMatrix(); m.stage0({s: 0.2}); m.att.moving = false; m.shootTag(m.tags[2]); m.simulate(0.7)"}
+]
