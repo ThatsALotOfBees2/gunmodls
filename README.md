@@ -10,7 +10,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 | [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
 | [Recon Tablet](gadgets/recon-tablet/) | Gadgets | `recon-tablet.glb` (left-hand scanner), sounds, Unity ability script |
-| [Conductive Lattice](gadgets/conductive-lattice/) | Gadgets | `conductive-lattice-{soft,reinforced}.glb` (wall electrification), sounds, trace paths |
+| [Conductive Lattice](gadgets/conductive-lattice/) | Gadgets | `conductive-lattice-node.glb` (thrown wall electrification; circuit grown at runtime), sounds |
 | [Cameras](gadgets/cameras/) | Gadgets | `security-camera.glb`, `sticky-camera.glb`, sounds |
 
 Open `index.html` to browse every model in one page: pick one at the top, or press F2 for the next

@@ -119,20 +119,20 @@
   <div class="eyebrow">Wall electrification gadget</div>
   <h1>Conductive <span>Lattice</span></h1>
   <dl class="specs">
-    <dt>Node</dt><dd>Hex capacitor puck, 12 cm, sticks to the wall</dd>
-    <dt>Spray</dt><dd>Liquid metal, cures into a circuit in about 3 s</dd>
+    <dt>Node</dt><dd>Hex capacitor puck, 12 cm, thrown; sticks where it lands</dd>
+    <dt>Spray</dt><dd>Liquid metal up to 1 m out, cures in about 3 s</dd>
     <dt>Pulse</dt><dd>1 s live, 2 s off</dd>
     <dt>Surface</dt><dd id="s-surf">Soft wall</dd>
   </dl>
   <div class="state" aria-live="polite"><span class="chip">Status <b id="status">Ready</b></span></div>
 </header>
 
-<div class="hint">Drag to orbit · Scroll to zoom<br>Right-drag to pan</div>
+<div class="hint">Click the wall to throw a node there<br>Drag to orbit · Scroll to zoom</div>
 <div id="loading">Mixing the liquid metal…</div>
 
 <nav class="bar" aria-label="Model controls">
   <div class="controls">
-    <button id="go" class="primary" type="button" title="Place and spray, or clear the wall (D or Space)">Deploy <kbd>D</kbd></button>
+    <button id="go" class="primary" type="button" title="Throw a node, or clear the wall (D or Space); or click the wall">Throw <kbd>D</kbd></button>
     <button type="button" id="power" aria-pressed="true" title="Pulsing on or off (E)">Pulsing</button>
     <div class="group" role="group" aria-label="Surface">
       <button type="button" data-surf="soft" aria-pressed="true" title="Drywall (1)">Soft wall</button>
@@ -894,11 +894,20 @@ for (const [k, v] of Object.entries(LM_NAMES)) LM[k].name = v;
 
 /* ------------------------------------------------------------------ surfaces */
 
-// soft wall: 2.0 m of drywall; reinforced: the standard Wall Fortification (1.5 m), lattice on its panel faces
+// Where a node can land and how far its circuit can spread. Soft wall: anywhere on the drywall; reinforced: on the
+// panel faces of the standard Wall Fortification. The circuit spreads from the landing point up to REACH metres,
+// stopping at the edges of the surface.
+const REACH = 1.0;
 const SURF = {
-  soft: { label: 'Soft wall', x0: -0.95, x1: 0.95, y0: 0.06, y1: 2.15, z: 0.0018, node: V3(0, 0.95, 0), seed: 11 },
-  reinforced: { label: 'Over the Wall Fortification (standard, 1.5 m)', x0: -0.655, x1: 0.655, y0: 0.09, y1: 1.91, z: 0.1565, node: V3(0, 0.62, 0.1545), seed: 23 },
+  soft: { label: 'Soft wall', x0: -2.6, x1: 2.6, y0: 0.06, y1: 2.5, z: 0.0018, nodeZ: 0, node: V3(0, 0.95, 0) },
+  reinforced: { label: 'Over the Wall Fortification (standard, 1.5 m)', x0: -0.655, x1: 0.655, y0: 0.09, y1: 1.91, z: 0.1565, nodeZ: 0.1545, node: V3(0, 0.62, 0.1545) },
 };
+// the area a node at p electrifies: the surface, cut down to REACH around the landing point
+function areaAt(key, p) {
+  const S = SURF[key];
+  return { ...S, x0: Math.max(S.x0, p.x - REACH), x1: Math.min(S.x1, p.x + REACH), y0: Math.max(S.y0, p.y - REACH), y1: Math.min(S.y1, p.y + REACH),
+    node: V3(p.x, p.y, S.nodeZ), seed: Math.floor(Math.abs(p.x * 1000) + Math.abs(p.y * 7000)) % 997 + 3 };
+}
 const SPRAY_V = 0.9, T_PLACE = 0.35, T_SPRAY0 = 0.45, T_CURE = 0.7;   // spray front speed (m/s), phases (s)
 const PULSE_ON = 1.0, PULSE_OFF = 2.0, PULSE = PULSE_ON + PULSE_OFF;
 
@@ -1019,8 +1028,8 @@ function revealMat(base) {
 }
 const metalReveal = revealMat(LM.metal);
 
-function buildGadget(key, viewer) {
-  const S = SURF[key], root = node(`conductive_lattice_${key}`);
+function buildGadget(key, viewer, at) {
+  const S = areaAt(key, at || SURF[key].node), root = node(`conductive_lattice_${key}`);
   root.userData = { units: 'metres', up: '+Y', surface: key === 'soft' ? 'flat wall, surface z = 0' : 'the panel faces of a standard (1.5 m) Wall Fortification placed at the same origin', facing: '+Z (the defender side, where the node sits)', origin: 'bottom centre of the covered area, on the wall surface', source: 'gadgets/conductive-lattice/viewer.html' };
   const L = makeLattice(S);
   const { n, head } = buildNode(root); n.position.copy(S.node);
@@ -1208,12 +1217,13 @@ function arcGeometry(G, t) {
 
 /* ------------------------------------------------------------------ state */
 
-let surfKey = 'soft', gadget = null, tau = -1, powered = true, swayOn = true, swayT = 0, liveT = 0;
+let surfKey = 'soft', gadget = null, tau = -1, powered = true, swayOn = true, swayT = 0, liveT = 0, target = null;
+const T_THROW = 0.42;
 const $ = (id) => document.getElementById(id);
 function setSurface(key) {
   surfKey = key;
   if (gadget) scene.remove(gadget.root);
-  gadget = buildGadget(key, true); scene.add(gadget.root);
+  gadget = buildGadget(key, true, target && target.key === key ? target.p : null); scene.add(gadget.root);
   softWall.visible = key === 'soft'; hardWall.visible = wf.root.visible = key === 'reinforced';
   $('s-surf').textContent = SURF[key].label;
   document.querySelectorAll('[data-surf]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.surf === key)));
@@ -1224,12 +1234,19 @@ function apply(dt) {
   const G = gadget;
   if (tau < 0) { G.root.visible = false; zapLight.intensity = 0; arcMesh.visible = false; status('Ready'); return; }
   G.root.visible = true;
-  if (tau < G.T_DEPLOY) {
-    const st = poseDeploy(G, tau);
+  if (tau < T_THROW) {   // in flight from the thrower to the landing point, tumbling
+    const k = tau / T_THROW, from = camera.position.clone().add(V3(0.25, -0.35, 0)), to = G.S.node.clone().setZ(G.S.node.z + 0.12);
+    G.nodeObj.position.copy(from.lerp(to, k)).add(V3(0, Math.sin(Math.PI * k) * 0.25, 0)); G.nodeObj.rotation.set((1 - k) * 8, (1 - k) * 5, 0);
+    metalReveal.userData.u.uGrow.value = -1; glowMat.uniforms.uGrow.value = -1; arcMesh.visible = false; zapLight.intensity = 0; status('Thrown');
+    return;
+  }
+  G.nodeObj.rotation.set(0, 0, 0);
+  if (tau - T_THROW < G.T_DEPLOY) {
+    const st = poseDeploy(G, tau - T_THROW);
     metalReveal.userData.u.uGrow.value = st.grow; glowMat.uniforms.uGrow.value = st.grow;
     glowMat.uniforms.uOn.value = 0; arcMesh.visible = false; zapLight.intensity = 0;
     LM.coil.emissiveIntensity = 0.4 + 2.5 * st.cure;
-    status(tau < T_PLACE ? 'Placing' : st.cure > 0 ? 'Curing' : 'Spraying');
+    status(tau - T_THROW < T_PLACE ? 'Sticking' : st.cure > 0 ? 'Curing' : 'Spraying');
     return;
   }
   G.nodeObj.position.copy(G.S.node); metalReveal.userData.u.uGrow.value = 99; glowMat.uniforms.uGrow.value = 99;
@@ -1243,7 +1260,7 @@ function apply(dt) {
   zapLight.intensity = on ? 0.7 + 0.5 * Math.random() : 0; zapLight.position.set(0, (G.S.y0 + G.S.y1) / 2, G.S.z + 0.9);
   status(!powered ? 'Off' : on ? 'Live' : 'Charging');
 }
-function status(s) { if ($('status').textContent !== s) $('status').textContent = s; const lab = tau < 0 ? 'Deploy ' : 'Clear '; if ($('go').firstChild.textContent !== lab) $('go').firstChild.textContent = lab; }
+function status(s) { if ($('status').textContent !== s) $('status').textContent = s; const lab = tau < 0 ? 'Throw ' : 'Clear '; if ($('go').firstChild.textContent !== lab) $('go').firstChild.textContent = lab; }
 
 /* ------------------------------------------------------------------ sound */
 
@@ -1264,10 +1281,29 @@ function viewFor(name) {
 }
 let camTween = null;
 function goView(name, instant = false) { const v = viewFor(name); swayT = 0; camTween = null; if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; } camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 }; }
-function go() { autoStart = -1; if (tau < 0) { tau = 0; liveT = 0; lastOn = false; SFX.deploy(); } else { tau = -1; SFX.clear(); apply(0); } }
+function throwAt(key, p) {
+  autoStart = -1; target = { key, p: p.clone() };
+  setSurface(key); tau = 0; liveT = 0; lastOn = false; SFX.deploy();
+}
+const DEMO_SPOTS = { soft: [V3(-0.6, 1.35, 0), V3(0.7, 0.6, 0), V3(0.1, 1.7, 0)], reinforced: [V3(-0.3, 1.2, 0), V3(0.35, 0.45, 0)] };
+let demoK = 0;
+function go() { autoStart = -1; if (tau < 0) { const L = DEMO_SPOTS[surfKey]; throwAt(surfKey, L[demoK++ % L.length]); } else { tau = -1; SFX.clear(); apply(0); } }
+// click (without dragging) anywhere on the wall to throw a node there
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(); let downAt = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5 || e.button !== 0) return;
+  const r = renderer.domElement.getBoundingClientRect(); ndc.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const S = SURF[surfKey], plane = new THREE.Plane(V3(0, 0, 1), -S.nodeZ), hit = V3();
+  if (!ray.ray.intersectPlane(plane, hit)) return;
+  if (hit.x < S.x0 + 0.06 || hit.x > S.x1 - 0.06 || hit.y < S.y0 + 0.06 || hit.y > S.y1 - 0.06) { toast(surfKey === 'reinforced' ? 'Throw it onto the reinforcement panels' : 'Throw it onto the wall'); return; }
+  throwAt(surfKey, hit);
+});
+function toast(msg) { const el = $('status'); el.textContent = msg; }
 $('go').addEventListener('click', go);
 $('power').addEventListener('click', () => { powered = !powered; $('power').setAttribute('aria-pressed', String(powered)); $('power').textContent = powered ? 'Pulsing' : 'Off'; });
-document.querySelectorAll('[data-surf]').forEach(b => b.addEventListener('click', () => { autoStart = -1; setSurface(b.dataset.surf); }));
+document.querySelectorAll('[data-surf]').forEach(b => b.addEventListener('click', () => { autoStart = -1; target = null; setSurface(b.dataset.surf); }));
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => goView(b.dataset.view)));
 $('sound').addEventListener('click', () => { soundOn = !soundOn; $('sound').setAttribute('aria-pressed', String(soundOn)); if (soundOn) unlockAudio(); });
 $('sway').addEventListener('click', () => { swayOn = !swayOn; $('sway').setAttribute('aria-pressed', String(swayOn)); });
@@ -1277,7 +1313,7 @@ window.addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key.toLowerCase(); if (k === ' ' || k === 'd') e.preventDefault(); if (e.repeat) return; unlockAudio();
   if (k === 'd' || k === ' ') go(); if (k === 'e') $('power').click(); if (k === 's') $('sound').click();
-  if (k === '1') setSurface('soft'); if (k === '2') setSurface('reinforced');
+  if (k === '1') { target = null; setSurface('soft'); } if (k === '2') { target = null; setSurface('reinforced'); }
 });
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 window.addEventListener('resize', resize);
@@ -1285,17 +1321,17 @@ window.addEventListener('resize', resize);
 /* ------------------------------------------------------------------ export */
 
 function toBase64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+// The .glb is the node only: the circuit is grown at runtime from wherever the node lands (see INTEGRATION.md).
+const T_NODE = T_SPRAY0 + REACH * 1.6 / SPRAY_V + T_CURE;
 function exportScenes() {
   LM.led.emissiveIntensity = 2.6; LM.coil.emissiveIntensity = 2.2;
-  return ['soft', 'reinforced'].map((key) => {
-    const G = buildGadget(key, false);
-    const deploy = sampleClip(G, 'deploy', G.T_DEPLOY, (t) => poseDeploy(G, t));
-    const pulse = sampleClip(G, 'pulse', PULSE, (t) => posePulse(G, t));
-    posePulse(G, 0); G.root.updateMatrixWorld(true);   // rest pose: sprayed and live
-    // the trace polylines, for engine-side arcs and hit tests
-    G.root.userData.paths = { units: 'metres', z: G.S.z, segments: G.L.segs.length, spray_m_per_s: SPRAY_V, deploy_s: +G.T_DEPLOY.toFixed(3), pulse_on_s: PULSE_ON, pulse_off_s: PULSE_OFF };
-    return { file: `conductive-lattice-${key}.glb`, root: G.root, animations: [deploy, pulse], paths: G.L.segs.map(s => [+s.a.x.toFixed(4), +s.a.y.toFixed(4), +s.b.x.toFixed(4), +s.b.y.toFixed(4), +s.d1.toFixed(3)]) };
-  });
+  const root = node('conductive_lattice');
+  root.userData = { units: 'metres', up: '+Y', facing: '+Z (out of the surface it sticks to)', origin: 'centre of the node base, on the surface', reach_m: REACH, spray_m_per_s: SPRAY_V, pulse_on_s: PULSE_ON, pulse_off_s: PULSE_OFF, source: 'gadgets/conductive-lattice/viewer.html' };
+  const { n, head } = buildNode(root);
+  const G = { nodeObj: n, head, S: { node: V3(0, 0, 0) }, T_DEPLOY: T_NODE };
+  const deploy = sampleClip(G, 'deploy', T_NODE, (t) => poseDeploy(G, t));
+  poseDeploy(G, T_NODE); root.updateMatrixWorld(true);
+  return [{ file: 'conductive-lattice-node.glb', root, animations: [deploy] }];
 }
 async function exportGLB() {
   const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
@@ -1305,15 +1341,14 @@ async function exportGLB() {
   finally { if (was) setLoop(true); }
   return out;
 }
-function paths() { return Object.fromEntries(exportScenes().map(s => [s.file.replace('.glb', ''), { z: SURF[s.file.includes('soft') ? 'soft' : 'reinforced'].z, node: SURF[s.file.includes('soft') ? 'soft' : 'reinforced'].node.toArray(), deploy_s: s.root.userData.paths.deploy_s, segments_x0y0x1y1d: s.paths }])); }
 function preview() {
   setLoop(false);
   document.querySelectorAll('.plate, .bar, .hint').forEach(e => { e.hidden = true; });
-  setSurface('reinforced'); tau = gadget.T_DEPLOY + 0.1; liveT = 0.3; powered = true; apply(0.0001);
+  target = { key: 'reinforced', p: V3(-0.25, 1.15, 0) }; setSurface('reinforced'); tau = T_THROW + gadget.T_DEPLOY + 0.1; liveT = 0.3; powered = true; apply(0.0001);
   swayOn = false; camera.position.set(1.3, 1.25, 2.3); controls.target.set(0, 1.0, 0.1); controls.update();
   composer.render();
 }
-window.__model = { id: 'conductive-lattice', exportScenes, exportGLB, preview, paths };
+window.__model = { id: 'conductive-lattice', exportScenes, exportGLB, preview };
 
 /* ------------------------------------------------------------------ go */
 
@@ -1326,7 +1361,7 @@ const clock = new THREE.Clock();
 let looping = false;
 function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
 function tick(dt) {
-  if (autoStart > 0) { autoStart -= dt; if (autoStart <= 0) { tau = 0; liveT = 0; SFX.deploy(); } }
+  if (autoStart > 0) { autoStart -= dt; if (autoStart <= 0) { const L = DEMO_SPOTS[surfKey]; throwAt(surfKey, L[demoK++ % L.length]); autoStart = -1; } }
   if (tau >= 0) tau += dt;
   apply(dt);
   if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
@@ -1337,7 +1372,7 @@ setLoop(true);
 window.__model.ready = true;
 window.__model.debug = {
   tick, stop: () => setLoop(false), renderOnce: () => { controls.update(); composer.render(); },
-  set: (key, t, live) => { if (key !== surfKey) setSurface(key); tau = t; liveT = live ?? 0; apply(0); }, get gadget() { return gadget; },
+  set: (key, t, live, x, y) => { if (x !== undefined) target = { key, p: V3(x, y, 0) }; if (key !== surfKey || x !== undefined) setSurface(key); tau = t; liveT = live ?? 0; apply(0); }, get gadget() { return gadget; },
   goView, camera, controls, scene, renderer, setSway: (v) => { swayOn = v; }, setSpin: (v) => { swayOn = v; }, pivot: { rotation: {} },
 };
 </script>
