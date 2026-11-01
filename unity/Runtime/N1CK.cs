@@ -1,6 +1,6 @@
-// Drives N1CK, the forged-iron operator: his screen face, the alarm tint, the Nullfield emitters, the power-cell glow
-// and his animation clips. Put it on the root of the n1ck prefab (unity/n1ck.glb or n1ck.glb imported with glTFast,
-// Animation: Legacy). It finds the Animation component on itself or a child.
+// Drives N1CK, the operator in angular painted armour and tactical gear: his screen face, the alarm tint, the Nullfield
+// emitters, the power-cell glow and his animation clips. Put it on the root of the n1ck prefab (unity/n1ck.glb or
+// n1ck.glb imported with glTFast, Animation: Legacy). It finds the Animation component on itself or a child.
 //   Play(clip, fade)      crossfades to a clip (idle, walk, talk_gesture, wave, laugh, sad, worried, alert,
 //                         nullfield_activate); one-shots crossfade back to idle when they end
 //   SetFace(name)         holds an expression (neutral, happy, worried, laughing, sad, alert, talk, focus, off) or an
@@ -8,7 +8,9 @@
 //   Blink()               one blink now (also automatic while an expression is held)
 //   Alarm(on)             the screen tints toward dark red
 //   Nullfield(on)         the two emitter discs on his back flare
-//   cellGlow              power-cell brightness (1 = as exported); it breathes slowly
+//   cellGlow              power-cell brightness (1 = as exported); it breathes slowly. energy_core also lights the
+//                         thin strip deep in the bottom gap of the shut chest door and the capacitor caps behind it,
+//                         so they breathe with the cell
 // Faces come from a 4 x 4 atlas on the screen_face material (stored upright, same as textures/face-atlas.png). The
 // screen UVs cover cell 0 (top-left); a face is shown by moving the texture offset by whole cells, relative to the
 // scale and offset glTFast imported.

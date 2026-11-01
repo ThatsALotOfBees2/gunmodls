@@ -15,7 +15,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Scout Drone](gadgets/scout-drone/) | Gadgets | `scout-drone.glb` (thrown four-wheel recon drone: deploy, drive, turn, hop, shutdown), sounds, Unity driver |
 | [Tracker Tags](gadgets/tracker-tags/) | Gadgets | `tracker-tag.glb`, `tracker-tags-pack.glb` (Nox: vibration-sensing tags and their dispenser), sounds, Unity script |
 | [Nullfield](gadgets/nullfield/) | Gadgets | `nullfield-emitter.glb` (N1CK: thrown emitter, 4 m sensor-blind bubble), sounds, Unity script and feed helper |
-| [N1CK](operators/n1ck/) | Operators | `n1ck.glb` (forged-iron robot operator: Humanoid rig, LED face screen with an expression atlas, 9 clips), Unity skinned LOD copy, textures, Unity script and Avatar builder |
+| [N1CK](operators/n1ck/) | Operators | `n1ck.glb` (sleek painted-armour robot operator with tactical gear: Humanoid rig, LED face screen with an expression atlas, 9 clips), Unity skinned LOD copy, textures, Unity script and Avatar builder |
 
 Open `index.html` to browse every model in one page: pick one at the top, or press F2 for the next
 (Shift+F2 for the previous). Each model runs in its own viewer with its animations and sounds.
