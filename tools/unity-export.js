@@ -14,7 +14,9 @@
 // Opt-in per model, from the root node's extras `unity` (characters made of rigid parts):
 //   { skinned: true, lod: { keep: [..], error: [..], drop: { 1: [material names], 2: [..] },
 //                           flags: [[], [..], ['Prune']] (meshopt flags per LOD), normalWeight (default 0.6),
-//                           protect: [{ material?, node? (regex), keep?, error?, prune? }] },
+//                           protect: [{ material?, node? (regex), keep?, error?, prune? }],
+//                           dropFlipped: true (LOD1+: drop triangles the simplifier turned against their vertex
+//                           normals, and degenerate ones) },
 //     colliders: { skip: 'regex on node names', merge: { node: 'regex of descendants to include in its box' } } }
 //   merges every part into one skinned mesh per LOD (each vertex 100% on its own node, which becomes a joint),
 //   so a LOD is one renderer with one sub-mesh per material; LODs can drop small materials; protect rules
@@ -139,6 +141,22 @@ function subGeo(g, gr) {
   return out;
 }
 
+// drop the triangles of an indexed geometry whose winding disagrees with their vertex normals, and degenerate ones
+function dropFlipped(g) {
+  const P = g.attributes.position.array, N = g.attributes.normal && g.attributes.normal.array, I = g.index.array, out = [];
+  if (!N) return g;
+  for (let t = 0; t < I.length; t += 3) {
+    const a = I[t] * 3, b = I[t + 1] * 3, c = I[t + 2] * 3;
+    const ux = P[b] - P[a], uy = P[b + 1] - P[a + 1], uz = P[b + 2] - P[a + 2], vx = P[c] - P[a], vy = P[c + 1] - P[a + 1], vz = P[c + 2] - P[a + 2];
+    const fx = uy * vz - uz * vy, fy = uz * vx - ux * vz, fz = ux * vy - uy * vx;
+    if (Math.hypot(fx, fy, fz) < 1e-12) continue;
+    if (fx * (N[a] + N[b] + N[c]) + fy * (N[a + 1] + N[b + 1] + N[c + 1]) + fz * (N[a + 2] + N[b + 2] + N[c + 2]) < 0) continue;
+    out.push(I[t], I[t + 1], I[t + 2]);
+  }
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(out), 1));
+  return g;
+}
+
 // rigid-part character -> one skinned mesh per LOD (see the header)
 async function skinnedCopy(gltf, root, cfg) {
   root.updateMatrixWorld(true);
@@ -169,6 +187,7 @@ async function skinnedCopy(gltf, root, cfg) {
         if (!gr || !gr.count) continue;
         // joints as bytes (up to 256 parts) and weights as normalized bytes: a quarter of the size of floats
         const sub = subGeo(src, gr).applyMatrix4(toRoot), n = sub.attributes.position.count, big = joints.length > 255;
+        if (L.dropFlipped && l > 0) { dropFlipped(sub); if (!sub.index.count) continue; }
         const si = big ? new Uint16Array(n * 4) : new Uint8Array(n * 4), sw = new Uint8Array(n * 4);
         for (let i = 0; i < n; i++) { si[i * 4] = j; sw[i * 4] = 255; }
         sub.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); sub.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4, true));
