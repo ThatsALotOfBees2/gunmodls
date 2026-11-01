@@ -15,6 +15,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Scout Drone](gadgets/scout-drone/) | Gadgets | `scout-drone.glb` (thrown four-wheel recon drone: deploy, drive, turn, hop, shutdown), sounds, Unity driver |
 | [Tracker Tags](gadgets/tracker-tags/) | Gadgets | `tracker-tag.glb`, `tracker-tags-pack.glb` (Nox: vibration-sensing tags and their dispenser), sounds, Unity script |
 | [Nullfield](gadgets/nullfield/) | Gadgets | `nullfield-emitter.glb` (N1CK: thrown emitter, 4 m sensor-blind bubble), sounds, Unity script and feed helper |
+| [N1CK](operators/n1ck/) | Operators | `n1ck.glb` (forged-iron robot operator: Humanoid rig, LED face screen with an expression atlas, 9 clips), Unity skinned LOD copy, textures, Unity script and Avatar builder |
 
 Open `index.html` to browse every model in one page: pick one at the top, or press F2 for the next
 (Shift+F2 for the previous). Each model runs in its own viewer with its animations and sounds.
@@ -38,6 +39,8 @@ Open `index.html` to browse every model in one page: pick one at the top, or pre
 ![Tracker Tags](gadgets/tracker-tags/preview.png)
 
 ![Nullfield](gadgets/nullfield/preview.png)
+
+![N1CK](operators/n1ck/preview.png)
 
 ## Layout
 
@@ -98,7 +101,7 @@ To use them:
 The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
 to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
 (see `gadgets/recon-tablet/INTEGRATION.md`). The lattice runs on `unity/Runtime/ConductiveLattice.cs` and the cameras on
-`unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`). Nox's tags run on `unity/Runtime/TrackerTags.cs` and N1CK's bubble on `unity/Runtime/Nullfield.cs`, which the tags need (sensors ask `Nullfield.IsHidden` before reporting anything).
+`unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`). Nox's tags run on `unity/Runtime/TrackerTags.cs` and N1CK's bubble on `unity/Runtime/Nullfield.cs`, which the tags need (sensors ask `Nullfield.IsHidden` before reporting anything). N1CK himself runs on `unity/Runtime/N1CK.cs`, with `unity/Editor/N1CKAvatarBuilder.cs` for a Humanoid Avatar (see `operators/n1ck/INTEGRATION.md`).
 
 glTFast converts glTF's right-handed axes to Unity's by negating X, so any x coordinate quoted in these
 docs (glTF space) has its sign flipped in a prefab's local space.
