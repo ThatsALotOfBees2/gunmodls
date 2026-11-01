@@ -11,6 +11,17 @@
 //   - the animation clips, unchanged.
 // With --sealed it also writes <name>-sealed.glb: the rest pose baked into one static mesh (minus any
 // node named in --drop), for swapping in once an animation has finished.
+// Opt-in per model, from the root node's extras `unity` (characters made of rigid parts):
+//   { skinned: true, lod: { keep: [..], error: [..], drop: { 1: [material names], 2: [..] },
+//                           flags: [[], [..], ['Prune']] (meshopt flags per LOD), normalWeight (default 0.6),
+//                           protect: [{ material?, node? (regex), keep?, error?, prune? }] },
+//     colliders: { skip: 'regex on node names', merge: { node: 'regex of descendants to include in its box' } } }
+//   merges every part into one skinned mesh per LOD (each vertex 100% on its own node, which becomes a joint),
+//   so a LOD is one renderer with one sub-mesh per material; LODs can drop small materials; protect rules
+//   simplify matching groups gently on LOD1+ (keep at least `keep`, their own error, no pruning unless prune is
+//   set), so a key part never vanishes at range; colliders as above. The skin's first joint is the common
+//   ancestor of all joints (the skeleton root, e.g. the hips).
+// Texture transforms (KHR_texture_transform) and the scene name of the source file are kept.
 //
 //   node tools/unity-export.js gadgets/wall-fortification/*.glb --sealed --drop terminal
 //   node tools/unity-export.js rifles/ak47/ak47.glb
@@ -81,14 +92,14 @@ function merge(entries) {
 }
 
 // a copy of geo whose groups are simplified to roughly keep of their triangles, unused vertices dropped
-function simplify(geo, keep, err, flags = []) {
+function simplify(geo, keep, err, flags = [], nw = 0.6) {
   if (keep >= 1) return geo;
   const pos = geo.attributes.position.array, nrm = geo.attributes.normal.array, idx = geo.index.array, out = [], groups = [];
   for (const gr of geo.groups) {
     const src = new Uint32Array(idx.subarray(gr.start, gr.start + gr.count));
     let target = Math.max(3, Math.floor(gr.count * keep / 3) * 3);
     // normals weigh in, so collapses do not drag a hard edge across a flat face (shading streaks)
-    const [res] = gr.count >= 60 ? MS.simplifyWithAttributes(src, pos, 3, nrm, 3, [0.6, 0.6, 0.6], null, target, err, flags) : [src];
+    const [res] = gr.count >= 60 ? MS.simplifyWithAttributes(src, pos, 3, nrm, 3, [nw, nw, nw], null, target, err, flags) : [src];
     groups.push({ start: out.length, count: res.length, materialIndex: gr.materialIndex });
     for (const i of res) out.push(i);
   }
@@ -114,6 +125,80 @@ function addLods(parent, base, geo, mats, stats) {
   return scale;
 }
 
+// the triangles of one group, as an indexed geometry with only the vertices they use
+function subGeo(g, gr) {
+  const idx = g.index.array.subarray(gr.start, gr.start + gr.count), remap = new Map(), keep = [], ni = new Uint32Array(idx.length);
+  for (let i = 0; i < idx.length; i++) { let v = remap.get(idx[i]); if (v === undefined) { v = keep.length; remap.set(idx[i], v); keep.push(idx[i]); } ni[i] = v; }
+  const out = new THREE.BufferGeometry();
+  for (const [k, a] of Object.entries(g.attributes)) {
+    const arr = new Float32Array(keep.length * a.itemSize);
+    keep.forEach((v, j) => { for (let c = 0; c < a.itemSize; c++) arr[j * a.itemSize + c] = a.array[v * a.itemSize + c]; });
+    out.setAttribute(k, new THREE.BufferAttribute(arr, a.itemSize));
+  }
+  out.setIndex(new THREE.BufferAttribute(ni, 1));
+  return out;
+}
+
+// rigid-part character -> one skinned mesh per LOD (see the header)
+async function skinnedCopy(gltf, root, cfg) {
+  root.updateMatrixWorld(true);
+  const L = cfg.lod || {}, KEEP = L.keep || LOD_KEEP, ERR = L.error || LOD_ERROR, DROP = L.drop || {}, FLAGS = L.flags || LOD_FLAGS, NW = L.normalWeight ?? 0.6;
+  const C = cfg.colliders || {}, skip = C.skip ? new RegExp(C.skip) : null, mergeRe = Object.fromEntries(Object.entries(C.merge || {}).map(([k, v]) => [k, new RegExp(v)]));
+  const rootInv = root.matrixWorld.clone().invert(), byNode = new Map();
+  root.traverse((o) => { if (o.isMesh) { if (!byNode.has(o.parent)) byNode.set(o.parent, []); byNode.get(o.parent).push(o); } });
+  const joints = [...byNode.keys()], levels = KEEP.map(() => []), nodeGeo = new Map(), stats = KEEP.map(() => 0);
+  // the skeleton root (the lowest common ancestor of the joints) goes first: GLTFExporter writes joints[0] as
+  // skins[].skeleton, and glTFast uses that as SkinnedMeshRenderer.rootBone
+  const up = (n) => { const a = []; for (let p = n; p; p = p.parent) a.push(p); return a; };
+  const lca = up(joints[0]).find((p) => joints.every((j) => up(j).includes(p)));
+  if (joints.indexOf(lca) > 0) { joints.splice(joints.indexOf(lca), 1); joints.unshift(lca); }
+  const PROT = (L.protect || []).map((p) => ({ node: p.node ? new RegExp(p.node) : null, mat: p.material || null, keep: p.keep || 0, error: p.error, prune: !!p.prune }));
+  joints.forEach((node, j) => {
+    const meshes = byNode.get(node), entries = meshes.map((m) => ({ geo: prep(m, m.matrix), mat: m.material }));
+    meshes.forEach((m) => node.remove(m));
+    const { geo, mats } = merge(entries), toRoot = rootInv.clone().multiply(node.matrixWorld);
+    nodeGeo.set(node, geo);
+    for (let l = 0; l < KEEP.length; l++) {
+      const g = simplify(geo, KEEP[l], ERR[l], FLAGS[l] || [], NW), drop = DROP[l] || [];
+      for (const g0 of g.groups) {
+        const mat = mats[g0.materialIndex]; if (drop.includes(mat.name)) continue;
+        // a protected group is simplified on its own terms (same scale: the whole part), then taken from that result
+        let src = g, gr = g0;
+        const rule = l > 0 && PROT.find((p) => (!p.node || p.node.test(node.name)) && (!p.mat || p.mat === mat.name));
+        if (rule) { src = simplify(geo, Math.max(KEEP[l], rule.keep), rule.error ?? ERR[l], rule.prune ? (FLAGS[l] || []) : [], NW); gr = src.groups.find((x) => x.materialIndex === g0.materialIndex); }
+        if (!gr || !gr.count) continue;
+        // joints as bytes (up to 256 parts) and weights as normalized bytes: a quarter of the size of floats
+        const sub = subGeo(src, gr).applyMatrix4(toRoot), n = sub.attributes.position.count, big = joints.length > 255;
+        const si = big ? new Uint16Array(n * 4) : new Uint8Array(n * 4), sw = new Uint8Array(n * 4);
+        for (let i = 0; i < n; i++) { si[i * 4] = j; sw[i * 4] = 255; }
+        sub.setAttribute('skinIndex', new THREE.BufferAttribute(si, 4)); sub.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4, true));
+        levels[l].push({ geo: sub, mat }); stats[l] += sub.index.count / 3;
+      }
+    }
+  });
+  // colliders: one box per part node, minus the skipped ones; a node can take in its descendants (a hand its fingers)
+  let cols = 0;
+  for (const node of joints) {
+    if (skip && skip.test(node.name)) continue;
+    let geo = nodeGeo.get(node);
+    if (mergeRe[node.name]) {
+      const inv = node.matrixWorld.clone().invert(), list = [geo];
+      for (const other of joints) if (mergeRe[node.name].test(other.name)) list.push(nodeGeo.get(other).clone().applyMatrix4(inv.clone().multiply(other.matrixWorld)));
+      geo = mergeGeometries(list.map((g) => { const c = new THREE.BufferGeometry(); c.setAttribute('position', g.attributes.position); return c; }), false);
+    }
+    cols += addCollider(node, node.name, geo);
+  }
+  const skeleton = new THREE.Skeleton(joints, joints.map((n) => rootInv.clone().multiply(n.matrixWorld).invert())), draws = [];
+  for (let l = 0; l < KEEP.length; l++) {
+    const byMat = new Map(); for (const e of levels[l]) { if (!byMat.has(e.mat)) byMat.set(e.mat, []); byMat.get(e.mat).push(e.geo); }
+    const mats = [...byMat.keys()], g = mergeGeometries(mats.map((m) => mergeGeometries(byMat.get(m), false)), true);
+    const mesh = new THREE.SkinnedMesh(g, mats); mesh.name = 'body_LOD' + l; mesh.frustumCulled = false;
+    root.add(mesh); mesh.bind(skeleton, new THREE.Matrix4()); draws.push(mats.length);
+  }
+  const buf = await new GLTFExporter().parseAsync(root, { binary: true, animations: gltf.animations });
+  return { suffix: '', b64: toB64(buf), info: { skinned: true, joints: joints.length, triangles_per_lod: stats.map(Math.round), draws_per_lod: draws, colliders: cols, clips: gltf.animations.map((a) => a.name) } };
+}
+
 function addCollider(parent, base, geo, min = 0.03) {
   geo.computeBoundingBox();
   const bb = geo.boundingBox, size = bb.getSize(new THREE.Vector3());
@@ -128,9 +213,10 @@ window.convert = async (b64, opts) => {
   await MS.ready;
   const gltf = await load(b64), root = gltf.scene.children[0];
   root.updateMatrixWorld(true);
-  const out = [];
+  const out = [], cfg = root.userData && root.userData.unity;
+  if (cfg && cfg.skinned) out.push(await skinnedCopy(gltf, root, cfg));
   // animated / game file: merge per parent node
-  {
+  else {
     const byParent = new Map();
     root.traverse((o) => { if (o.isMesh) { if (!byParent.has(o.parent)) byParent.set(o.parent, []); byParent.get(o.parent).push(o); } });
     const stats = [0, 0, 0]; let cols = 0, nodes = 0;
@@ -165,6 +251,31 @@ window.convert = async (b64, opts) => {
 window.ready = true;
 </script></body></html>`;
 
+// the JSON chunk of a .glb, and a copy of a .glb with its JSON rewritten
+function glbJson(buf) { const jl = buf.readUInt32LE(12); return JSON.parse(buf.subarray(20, 20 + jl).toString('utf8')); }
+function glbWithJson(buf, json) {
+  const jl = buf.readUInt32LE(12); let js = Buffer.from(JSON.stringify(json), 'utf8');
+  if (js.length % 4) js = Buffer.concat([js, Buffer.alloc(4 - js.length % 4, 0x20)]);
+  const head = Buffer.alloc(20); buf.copy(head, 0, 0, 12); head.writeUInt32LE(js.length, 12); head.writeUInt32LE(0x4E4F534A, 16);
+  const out = Buffer.concat([head, js, buf.subarray(20 + jl)]); out.writeUInt32LE(out.length, 8);
+  return out;
+}
+// three's loader turns an identity KHR_texture_transform into a plain texture and its exporter drops it; put back
+// the source's texture transforms (by material name and slot) and its scene name
+function carryOver(src, outBuf) {
+  const s = glbJson(src), o = glbJson(outBuf), slots = ['baseColorTexture', 'emissiveTexture', 'normalTexture', 'occlusionTexture', 'metallicRoughnessTexture'];
+  const tex = (m, k) => k in (m.pbrMetallicRoughness || {}) ? m.pbrMetallicRoughness[k] : m[k];
+  let changed = false;
+  for (const sm of s.materials || []) for (const k of slots) {
+    const st = tex(sm, k); if (!st || !st.extensions || !st.extensions.KHR_texture_transform) continue;
+    for (const om of o.materials || []) { if (om.name !== sm.name) continue; const ot = tex(om, k); if (!ot) continue;
+      ot.extensions = Object.assign(ot.extensions || {}, { KHR_texture_transform: st.extensions.KHR_texture_transform }); changed = true; }
+  }
+  if (changed) o.extensionsUsed = [...new Set([...(o.extensionsUsed || []), 'KHR_texture_transform'])];
+  if (s.scenes && s.scenes[0] && s.scenes[0].name && o.scenes && o.scenes[0] && s.scenes[0].name !== 'AuxScene') { o.scenes[0].name = s.scenes[0].name; changed = true; }
+  return changed ? glbWithJson(outBuf, o) : outBuf;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const sealed = args.includes('--sealed');
@@ -187,12 +298,13 @@ async function main() {
     await page.setContent(PAGE);
     await page.waitForFunction(() => window.ready, null, { timeout: 60000 });
     for (const file of files) {
-      const res = await page.evaluate(([b, o]) => window.convert(b, o), [fs.readFileSync(file).toString('base64'), { sealed, drop }]);
+      const src = fs.readFileSync(file);
+      const res = await page.evaluate(([b, o]) => window.convert(b, o), [src.toString('base64'), { sealed, drop }]);
       const dir = path.join(path.dirname(file), 'unity');
       fs.mkdirSync(dir, { recursive: true });
       for (const r of res) {
         const out = path.join(dir, path.basename(file, '.glb') + r.suffix + '.glb');
-        fs.writeFileSync(out, Buffer.from(r.b64, 'base64'));
+        fs.writeFileSync(out, carryOver(src, Buffer.from(r.b64, 'base64')));
         console.log(`wrote ${out} (${Math.round(fs.statSync(out).size / 1024)} KB) ${JSON.stringify(r.info)}`);
       }
     }
