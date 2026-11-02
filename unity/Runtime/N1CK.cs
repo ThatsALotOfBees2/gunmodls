@@ -1,4 +1,4 @@
-// Drives N1CK, the operator in angular painted armour and tactical gear: his screen face, the alarm tint, the Nullfield
+// Drives N1CK, the operator in angular painted armour and tactical gear: his display face, the alarm tint, the Nullfield
 // emitters, the power-cell glow and his animation clips. Put it on the root of the n1ck prefab (unity/n1ck.glb or
 // n1ck.glb imported with glTFast, Animation: Legacy). It finds the Animation component on itself or a child.
 //   Play(clip, fade)      crossfades to a clip (idle, walk, talk_gesture, wave, laugh, sad, worried, alert,
@@ -6,16 +6,17 @@
 //   SetFace(name)         holds an expression (neutral, happy, worried, laughing, sad, alert, talk, focus, off) or an
 //                         atlas cell name (happy_blink, laughing_b, ...); SetFace(null) hands the face back to the clips
 //   Blink()               one blink now (also automatic while an expression is held)
-//   Alarm(on)             the screen tints toward dark red
+//   Alarm(on)             the face display tints toward dark red
 //   Nullfield(on)         the two emitter discs on his back flare
 //   cellGlow              power-cell brightness (1 = as exported); it breathes slowly. energy_core also lights the
 //                         thin strip deep in the bottom gap of the shut chest door and the capacitor caps behind it,
 //                         so they breathe with the cell
-// Faces come from a 4 x 4 atlas on the screen_face material (stored upright, same as textures/face-atlas.png). The
-// screen UVs cover cell 0 (top-left); a face is shown by moving the texture offset by whole cells, relative to the
-// scale and offset glTFast imported.
+// Faces are glyphs (chevrons, bars, dots) from a 4 x 4 atlas of 288 x 192 px cells on the screen_face material (stored
+// upright, same as textures/face-atlas.png). The display UVs cover cell 0 (top-left); a face is shown by moving the
+// texture offset by whole cells (a quarter of the atlas each way), relative to the scale and offset glTFast imported.
 // Each clip carries a face timeline (below; the same data is in the .glb extras and in face_ctrl.position.x).
-// walk is in place: move the root forward at WalkSpeed (1.3 m/s) while it plays.
+// walk is in place: move the root forward at WalkSpeed (1.3 m/s) while it plays. Its face has no blink of its own (the
+// loop is 1.1 s), so call Blink() now and then during long walks.
 // Give the same object a NullfieldCarrier (from Nullfield.cs) so Nullfield sensors ignore him: add it in code with
 // gameObject.AddComponent<NullfieldCarrier>() (the Inspector only lists a MonoBehaviour whose file has its name).
 using System.Collections.Generic;

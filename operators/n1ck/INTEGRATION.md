@@ -29,19 +29,28 @@ slim.
 - **Paint.** Clean matte paint in two tones, grouped by value so he reads at range from the front and the back.
   Dark slate `#3c3f44` covers most plates. Warm light grey `#8a8781` is on the pec plates (with the outside of the
   chest door), the upper thigh front plates, the forearm top plates, the shin front plates, the two scapula plates on
-  his back and the head housing (with its rear panel), so the light head frames the dark screen and the chest links
+  his back and the head shell (crown, sides and rear), so the light shell frames the black face display and the chest links
   to the shins through the thighs. Wear is light: a few clusters of 3–8 mm chips on exposed edges and plate corners
   through a thin primer ring to dull grey metal, faint scuffs, and a little grime in panel lines. Polished chrome is only
   on the piston rods.
 - **Tactical gear.** A duty belt, a chest harness and a drop-leg rig (see Gear).
-- **Head.** A light rounded-rectangle housing (0.18 × 0.232 × 0.198, corner radius 0.044), bevelled at the brow,
-  chin and back, with a panel seam all round. On it sit a light crown plate, light side panels and a light raised
-  rear panel, with a small louvred vent low on the back below it (the back of the head is light, so it never reads
-  as a second face). A dark faceted chin plate sits on the chin bevel under the bezel. The dark bezel stands 3 mm
-  proud and has no chips; the LED screen sits 12 mm behind it, inside
-  a metal trim ring, behind a thin bowed glass pane. His left ear is a louvred speaker; his right ear is a perforated
-  microphone dome with a stub antenna. The neck is about 0.10 m wide: two wide 12-sided rings and a small one, a
-  purple hairline in the ring gap, braided cables and two small pistons, under a 0.10 m head-base disc.
+- **Head.** A sleek, rounded helmet-like form (about 0.18 wide, 0.23 tall and 0.2 deep) that narrows toward the
+  jaw. The whole front is one continuous curved display (`screen`): glossy black glass from the brow down over the
+  jaw, wrapping about 78° round each side, with no bezel, frame or trim. It sits 0.3 mm proud of the shell in a 1 mm
+  seam, so from the front it reaches the head's outline, and a thin clear-coated cover glass (`screen_glass`) follows
+  it 0.6 mm further out. A slim painted shell holds it from behind, in the body's paint, chamfers and grooves:
+  - a light crown (`head_crown`) that hugs the display's top corners, with two grooves;
+  - light side plates (`head_side_l/r`) with one diagonal groove each;
+  - a light rear (`head_rear`) with a raised panel, a groove and two screws (`head_rear_plate`, `head_rear_screws`),
+    so the back of the head is light and never reads as a second face;
+  - a dark chin bar (`head_chin`) under the display, with one jaw-line groove, sweeping up behind the display's lower
+    side edges into a round boss at each ear.
+  A dark core (`head_core`) shows in every panel gap. The ear hubs sit on the chin bar's bosses: a louvred speaker on
+  his left (`ear_l`, `ear_l_cap`, `ear_l_speaker_grille`), a perforated microphone and a stub antenna on his right
+  (`ear_r_mic`, `ear_r_mic_holes`, `ear_r_antenna_base`, `ear_r_antenna`). Under the head a faceted dark collar
+  (`head_socket`) takes the neck's swivel cap, with lugs for the neck pistons. The neck is about 0.10 m wide: two
+  wide 12-sided rings and a small one, a purple hairline in the ring gap, braided cables and two small pistons.
+  The face is glyphs, not a smiley (see Faces). Only the top rear corners of the shell chip.
 - **Back.** Two Nullfield emitter pods sit on the light scapula plates: a dark housing, an angular painted bezel, a
   red lens recessed 3 mm behind 9 thin radial blades round a small hub (an aperture), and a purple rim. Low on his
   back, between stepped lower-back plates and inside a raised lip on the lumbar plates, the Veinite power cell glows
@@ -63,9 +72,9 @@ shut). There are no other markings, numbers or logos.
 
 | File | What it is |
 | --- | --- |
-| `n1ck.glb` | The source export: rig at rest, 513 meshes on their bones (gear meshes named `gear_*`), 19 materials with embedded maps, 9 clips, extras on the root node. 16.2 MB. |
-| `unity/n1ck.glb` | Game copy from `tools/unity-export.js` (skinned mode, set by the root extras `unity`): one skinned mesh per LOD, `body_LOD0/1/2` under the root (skin root `hips`), `<bone>_COL` box colliders, same clips and materials. 23.7 MB. |
-| `textures/face-atlas.png` | The expression atlas, 1024 × 768 (the same image is the `screen_face` emissive texture in the .glb). |
+| `n1ck.glb` | The source export: rig at rest, 498 meshes on their bones (gear meshes named `gear_*`), 19 materials with embedded maps, 9 clips, extras on the root node. 15.8 MB. |
+| `unity/n1ck.glb` | Game copy from `tools/unity-export.js` (skinned mode, set by the root extras `unity`): one skinned mesh per LOD, `body_LOD0/1/2` under the root (skin root `hips`), `<bone>_COL` box colliders, same clips and materials. 23.2 MB. |
+| `textures/face-atlas.png` | The expression atlas, 1152 × 768: 4 × 4 cells of 288 × 192 px (the same image is the `screen_face` emissive texture in the .glb). |
 | `textures/*.png` | Every other texture, one file per map: `<family>-albedo`, `-normal`, `-orm` for `paint` (shared by both paint tones), `chip` (plus `chip-light-albedo` for the light paint's chipped edges), `under`, `stainless` (also the chrome), `braid`, `rubber`, `webbing`, `fabric` (pouch fabric), `polymer`; `glow-band` (cell), `glow-radial` (emitter lenses), `nick-scratch`. Each sheet is stored in the same orientation as the image embedded in the .glb, so it is a drop-in replacement with the glTF UVs (v runs down the image). |
 | `preview.png` | Hero still (mid-wave, happy, low angle from his right front). |
 | `viewer.html` | The viewer and the full procedural source (see Rebuilding). |
@@ -251,15 +260,15 @@ All PBR metal/roughness. Textured materials carry three maps: albedo (sRGB, JPEG
 
 UVs on plates and shells are in metres divided by the material's tile size (paint repeats every 0.30 m), so the maps
 tile and stay seamless across bends. Webbing UVs run u 0–1 across the strap (so the stitch rows land near both edges)
-and v in metres / 0.1 along it; pouch fabric is metric at 0.04 m. The screen, lenses, cell core and decal have their
+and v in metres / 0.1 along it; pouch fabric is metric at 0.04 m. The face display, lenses, cell core and decal have their
 own UVs.
 
 No vertex colours are used anywhere: wear lives in the textures and in the mesh split below.
 
 | Material | Look | Where |
 | --- | --- | --- |
-| `armor_paint` | matte two-pack paint, colour factor `#3c3f44` (dark slate) over a neutral paint texture: faint orange peel in the normal map, a slow ±4% value drift, faint scuff patches (a touch lighter and glossier); metalness 0 | most armour: pelvis (girdle, fauld) and the hip socket cups, obliques, rib and lat plates, lower back plates, collar, yokes, pauldrons, upper arm and forearm shells, back of the hands and knuckle guards, finger plates, the lower thigh front plates and the other thigh plates, knee caps and guards, ankle cuffs, calves and shin side plates, boots, the bezel, chin plate and ear plates |
-| `armor_paint_light` | the same maps with colour factor `#8a8781` (warm light grey) | pec plates (clavicle, main and lower plates) and the outside of the chest door, upper thigh front plates, forearm top plates, shin front plates, scapula plates, head housing, crown, side and rear plates |
+| `armor_paint` | matte two-pack paint, colour factor `#3c3f44` (dark slate) over a neutral paint texture: faint orange peel in the normal map, a slow ±4% value drift, faint scuff patches (a touch lighter and glossier); metalness 0 | most armour: pelvis (girdle, fauld) and the hip socket cups, obliques, rib and lat plates, lower back plates, collar, yokes, pauldrons, upper arm and forearm shells, back of the hands and knuckle guards, finger plates, the lower thigh front plates and the other thigh plates, knee caps and guards, ankle cuffs, calves and shin side plates, boots, the head's chin bar and the ear-hub caps |
+| `armor_paint_light` | the same maps with colour factor `#8a8781` (warm light grey) | pec plates (clavicle, main and lower plates) and the outside of the chest door, upper thigh front plates, forearm top plates, shin front plates, scapula plates, the head's crown, side plates, rear and rear panel |
 | `armor_chipped` / `armor_chipped_light` | the paint (dark / light) baked in, with 3–8 mm irregular chips in clusters (few loose specks), ragged outlines, a thin primer ring (about 0.3 grey on the dark paint; lighter, cooler and narrower on the light paint, so its chips read grey, not brown) and a burnished halo, through to dull grey bare metal (about 0.53 / 0.52 / 0.50, roughness about 0.45) with fine scratches; metalness from the ORM (metal only inside the chips) | worn edge strips (see below) |
 | `under_structure` | dark satin anodized alloy, neutral-cool and nearly dielectric (about 0.11 / 0.118 / 0.13 sRGB, metalness about 0.15, roughness about 0.68, environment 0.5), so the frame recedes behind the paint; faint short machining streaks, a few faint scratches, a little dark grime in patches | frame, actuators, hip balls, ab stack, spine column, neck rings, palms and finger cores, emitter housings and blades, cell mount, panel-gap backs and groove floors, screws, the inside of the chest door; the gear's D-rings and zip slider |
 | `piston_chrome` | polished rods (the stainless maps at 0.1 m, colour `#70747b`, roughness 0.24, environment 0.4: a thin highlight, never a glow) | piston rods only |
@@ -269,8 +278,8 @@ No vertex colours are used anywhere: wear lives in the textures and in the mesh 
 | `webbing` | near-black nylon (about 0.14 under a `#8c8c8c` colour factor, environment 0.4): warp ribs with a fine twill, a lock-stitch row 6.5% in from each edge (thread a touch lighter and glossier), darker bound edges | straps, belt, buckle loops, pouch tapes and loops, drop-leg panel |
 | `pouch_fabric` | near-black fine plain weave (Cordura-like, about 0.13 under a `#8c8c8c` colour factor, environment 0.4, threads about 1 mm apart at a 0.04 m tile), no ribs or stitch rows | pouch bodies, lids, flaps and piping |
 | `gear_polymer` | black moulded polymer (about 0.11), fine stipple, satin-matte | buckles, ladder locks, tri-glides, keepers, yoke plate, pouch tabs, zip chain, drop-leg swivel and bracket |
-| `screen_face` | black display with no reflectance of its own (colour `#050505`, metalness 1, roughness 0.5, no environment), so the key light never washes it grey, even when he looks up; emissive = face atlas | the `screen` mesh only |
-| `screen_glass` | thin dark glass, transparent (opacity 0.06), roughness 0.1, specular 0.25 (`KHR_materials_specular`; importers without it use the default), no clearcoat, slightly bowed | `screen_glass`, 1.6 mm in front of the display |
+| `screen_face` | deep black glossy display: dielectric, colour `#030304`, roughness 0.3, environment 0.3, so it shows the head's curve with a soft sheen but stays black; emissive = face atlas | the `screen` mesh only |
+| `screen_glass` | thin dark cover glass, transparent (opacity 0.14), roughness 0.06, specular 0.6 (`KHR_materials_specular`), a clear coat (`KHR_materials_clearcoat`, roughness 0.05; glTFast applies it on HDRP only, elsewhere the glass is a plain dim pane), environment 0.5: tight reflections that never wash out the glyphs | `screen_glass`, the display's own surface lifted 0.6 mm |
 | `energy_core` | emissive `glow-band` (purple ends, dark red `#6b0f12` body, a thin hotter red `#a01c22` line in the middle), strength 1 | `cell_core` (on `spine`); in the chest: the glow strip deep in the door's bottom gap (`chest_gap_leak`, dark red part of the band) and the capacitor caps (`chest_capacitor_glow`) |
 | `energy_rim` | purple `#8a4dff` emissive, strength 1.8 | the rings at the cell ends, the hairline between the neck rings (`neck_glow`) |
 | `nullfield_glow` | emissive `glow-radial` (dark red `#6b0f12` body, a slightly brighter centre, no purple), 0.45 baked into the emissive factor (a faint red glow at rest) | emitter lenses, recessed behind the blades |
@@ -294,15 +303,15 @@ same bone, so Unity gets one sub-mesh per material:
 Chips follow the exposed chamfers in short clusters (1–4 cm) with long clean gaps between them, most on edges that
 face up or forward and get knocked and about three times as often near plate corners: pauldron crowns, yokes,
 forearm plate edges, knuckles, knee caps, shin ridges, toe caps and heels. The dark paint chips about half as much as
-the light paint, so bare metal never sparkles along whole edges. Undersides, flat faces and the whole bezel round
-the screen stay clean; on the head only the top rear corners chip. In the Unity copy they are sub-meshes of the LOD mesh, so keep them
+the light paint, so bare metal never sparkles along whole edges. Undersides, flat faces and the edges round the
+face display stay clean; on the head only the top rear corners chip. In the Unity copy they are sub-meshes of the LOD mesh, so keep them
 together if you re-texture.
 
-**Triangles.** 138,435 at LOD0.
+**Triangles.** 139,759 at LOD0.
 
 | By region | Triangles |
 | --- | --- |
-| head and neck | 16,614 |
+| head and neck (display 1,583, cover glass 1,215) | 17,938 |
 | torso, pelvis and back | 37,297 |
 | arms and hands (5.4k a hand) | 27,796 |
 | legs and boots | 33,954 |
@@ -310,24 +319,25 @@ together if you re-texture.
 
 | By material | Triangles |
 | --- | --- |
-| under_structure | 52.1k |
-| armor_paint | 35.9k |
+| under_structure | 49.1k |
+| armor_paint | 36.1k |
 | webbing | 12.1k |
-| armor_paint_light | 9.2k |
-| rubber | 6.8k |
+| armor_paint_light | 11.2k |
+| rubber | 6.7k |
 | cable_braid | 6.2k |
 | gear_polymer | 5.6k |
 | pouch_fabric | 4.2k |
-| armor_chipped (+ light) | 2.5k |
-| everything else | 3.8k |
+| screen_face + screen_glass | 2.8k |
+| armor_chipped (+ light) | 2.4k |
+| everything else | 3.3k |
 
 **Unity LODs** (`tools/unity-export.js`, driven by the root extras `unity.lod`):
 
 | LOD | Triangles | Sub-meshes | Dropped |
 | --- | --- | --- | --- |
-| LOD0 | 138,435 | 19 | nothing |
-| LOD1 | 49,354 | 17 | the "Nick" decal and the glass; loose specks pruned |
-| LOD2 | 34,286 | 16 | also the cable braids |
+| LOD0 | 139,759 | 19 | nothing |
+| LOD1 | 49,179 | 17 | the "Nick" decal and the cover glass; loose specks pruned |
+| LOD2 | 34,059 | 16 | also the cable braids |
 
 - LOD1 and LOD2 use meshopt's `Permissive` flag, because the hard-edged armour has normal seams everywhere and would
   hardly simplify otherwise.
@@ -340,13 +350,43 @@ together if you re-texture.
     actuators never break into shards.
 - `dropFlipped` removes the triangles the simplifier turns against their vertex normals (and degenerate ones) on
   LOD1/2: no LOD has flipped or degenerate triangles.
-- In the viewer, `n1ck.glb` draws 513 meshes. Import the Unity copy for the game.
+- The face display keeps its glyphs at every LOD (its UVs survive the simplification; checked on LOD0/1/2).
+- In the viewer, `n1ck.glb` draws 498 meshes. Import the Unity copy for the game.
 
 ## Faces
 
-The face is the `screen` mesh (child of `head`) with the `screen_face` material. Its emissive texture is the atlas
-(`textures/face-atlas.png`). The atlas has 4 columns × 4 rows of 256 × 192 px cells (4:3, the screen's shape), each a
-32 × 24 grid of warm off-white LEDs; the alert cells are red. Cell index = row × 4 + column from the top-left.
+The face is the `screen` mesh (child of `head`), the curved display, with the `screen_face` material. Its emissive
+texture is the atlas (`textures/face-atlas.png`, 1152 × 768). The atlas has 4 columns × 4 rows of 288 × 192 px cells
+(3:2, the shape of the display's mapped face area). Each face is drawn on a 48 × 32 grid of display pixels at 6 px.
+Cell index = row × 4 + column from the top-left.
+
+The faces are abstract luminous glyphs where eyes would be, not a smiley: there is no mouth and there are no round
+eyes. They are one family of chevrons, bars, dots and arrows with 3–4 px strokes, in warm off-white `#ffdcac`; the
+alert pair is red `#ff3a2c`. Each glyph is drawn for the left eye and mirrored, eyes 19 px apart on row 14.
+
+- **Pixel levels.** Every display pixel is lit at one of five levels, so edges stay crisp, and pixels fully inside a
+  stroke burn whiter.
+- **Close up.** A faint 1 px gap and faint RGB sub-pixel stripes show only up close.
+- **Glow.** A soft bleed is baked round the strokes, a little stronger on the red pair.
+
+| # | Cell | Glyph |
+| --- | --- | --- |
+| 0 | `neutral` | two level rounded dashes, 11 × 4 |
+| 1 | `neutral_blink` | the dashes collapse to thin lines |
+| 2 | `happy` | ^ ^ chevrons, 13 wide, 4 px thick, square ends |
+| 3 | `happy_blink` | flattened, thin ^ ^ (a squint) |
+| 4 | `worried` | the dashes tilted 22°, inner ends raised (`/ \`) |
+| 5 | `worried_blink` | the same tilt as thin lines |
+| 6 | `laughing_a` | squeezed, taller ^ ^, raised 1.5 px |
+| 7 | `laughing_b` | wide, flat ^ ^, lowered, with a faint copy above (the pair bounces) |
+| 8 | `sad` | deep v v, set a little low, so they still read as v when he hangs his head |
+| 9 | `sad_blink` | flattened, thin v v |
+| 10 | `alert` | red ! ! (a 4 px bar and a dot) |
+| 11 | `alert_blink` | a shorter bar, 72 % brightness |
+| 12 | `talk_a` | the dashes pulse open (10 × 6) |
+| 13 | `talk_b` | the dashes pressed wide and flat (13 × 3) |
+| 14 | `focus` | > < arrow heads pointing inward |
+| 15 | `off` | black, with one dim 2 × 2 standby dot on the eye line, in the middle |
 
 | | col 0 | col 1 | col 2 | col 3 |
 | --- | --- | --- | --- | --- |
@@ -356,8 +396,10 @@ The face is the `screen` mesh (child of `head`) with the `screen_face` material.
 | row 3 | 12 `talk_a` | 13 `talk_b` | 14 `focus` | 15 `off` |
 
 **Switching faces.** The atlas is stored upright in the .glb; the embedded image is identical to
-`textures/face-atlas.png`. The screen UVs cover cell 0, the top-left cell (u 0–0.25, v 0–0.25 in glTF UVs, where v
-runs down the image). To show cell i (col = i % 4, row = floor(i / 4)), move the texture by whole cells and change
+`textures/face-atlas.png`. The display UVs cover cell 0, the top-left cell (u 0–0.25, v 0–0.25 in glTF UVs, where v
+runs down the image). They are proportional to arc length along the curved surface (u across, v down; under 0.5 %
+stretch and under 1.3° shear over the glyph area). The parts of the display outside the 3:2 face area (the wrap round
+the sides, above the brow and over the jaw) map to the cell's black margin, so they read as unlit glass. To show cell i (col = i % 4, row = floor(i / 4)), move the texture by whole cells and change
 nothing else:
 
 - **glTF / three.js** (texture `flipY = false`): offset = (col / 4, row / 4).
@@ -374,17 +416,19 @@ nothing else:
 - **Shader variant.** The atlas texture in both .glb files carries an identity `KHR_texture_transform`. glTFast
   therefore creates `screen_face` with `_TEXTURE_TRANSFORM` already on, and that shader variant is kept in player
   builds. If you import at runtime instead, include glTFast's shader variant collection in the build.
-- **Repainting faces.** Edit `face-atlas.png` (keep the 4 × 4 grid of 256 × 192 cells) and assign it as the
-  material's emission texture; no UV or offset changes are needed. Keep every face at least 8 px (one LED) inside its
-  cell: the outer ring of LEDs is always dark, so mipmaps never bleed one face into the next at range. If you still
-  see bleed on a very small screen, turn off mipmaps on the atlas import (or use a LINEAR min filter).
+- **Repainting faces.** Edit `face-atlas.png` (keep the 4 × 4 grid of 288 × 192 cells) and assign it as the
+  material's emission texture; no UV or offset changes are needed. Keep the glyphs in the middle 70 % of a cell's
+  width and 60 % of its height, a little above its centre (where the eyes are), and keep the 8 px gutter of every
+  cell pure black, so mipmaps never bleed one face into the next at range. If you still see bleed at a very small
+  size, turn off mipmaps on the atlas import (or use a LINEAR min filter).
 
-**Blinks and expressions.** Each `*_blink` cell is its face with the eyes shut (about 0.12 s). `laughing` alternates
+**Blinks and expressions.** Each `*_blink` cell is its glyph flattened to a thin line (shown about 0.12 s). `laughing` alternates
 `laughing_a` / `laughing_b` at about 7 Hz; `talk` alternates `talk_a` / `talk_b`. A held expression blinks every
 3.7 s in the viewer and every 2.6 to 5 s in N1CK.cs.
 
-**Alarm tint.** Multiply the screen's emissive colour toward dark red `#d8141a` by a 0..1 tint (keep the HDR
-strength). The viewer also turns the small screen light red. The alert cells are already red, so they read without
+**Alarm tint.** Multiply the display's emissive colour toward dark red `#d8141a` by a 0..1 tint (keep the HDR
+strength). The viewer also turns its small face light red (a point light inside the head, 2 cm behind the face
+centre, so it lights the chest and hands but never shows in the glass). The alert cells are already red, so they read without
 the tint.
 
 **Face channel.** `face_ctrl.position` is keyed in every clip with STEP interpolation:
@@ -415,13 +459,13 @@ All clips are sampled at 30 fps from pose functions in `viewer.html` (`ANIM.CLIP
 | Clip | Length | Loop | Content | Face timeline (s → cell) | Tint / field |
 | --- | --- | --- | --- | --- | --- |
 | `idle` | 4.0 | loop | Contrapposto: pelvis shifted 3.3 cm over the left leg and rolled 6° (high on that side, left knee nearly straight), right foot 6 cm forward, 4 cm out and turned out 19° with a soft knee, chest lifted and counter-turned, head tilted. The arms hang close (wrists about 0.29 m and 0.37 m out from the pelvis centre, the right a touch more bent), elbows soft (18° and 27°). One breath, a slow weight settle, a look round at 2.2–2.9 s (the neck leads), fingers fidget out of step. | 0 neutral; blinks at 1.3, 3.25, 3.5 | |
-| `walk` | 1.1 | loop | One cycle in place: heel strike, flat foot, toe-off, swing. Pelvis bob, sway and twist (hip flexion up to 38°); arms swing opposite. | 0 happy; blink at 0.621 | |
-| `talk_gesture` | 4.0 | loop | Gestures in front of the chest (hands at y 1.05–1.3): palms-up offer, a right-hand beat with a wrist flick, an index point, a two-hand frame, left palm on the chest ("me"), open-hand chops, settle. The upper chest turns up to 8° toward the gesturing hand, the chest leans in up to 6° on the points, the shoulders lift 5–8° on the beats; nods. | flaps between neutral, talk_a, talk_b; happy at 1.421–1.863 and 3.45–3.85 (blinks 1.5, 3.6) | |
+| `walk` | 1.1 | loop | One cycle in place: heel strike, flat foot, toe-off, swing. Pelvis bob, sway and twist (hip flexion up to 38°); arms swing opposite. | 0 happy (no blink: the loop is 1.1 s, so one would repeat about 55 times a minute; call `Blink()` from game code) | |
+| `talk_gesture` | 4.0 | loop | Gestures in front of the chest (hands at y 1.05–1.3): palms-up offer, a right-hand beat with a wrist flick, an index point, a two-hand frame, left palm on the chest ("me"), open-hand chops, settle. The upper chest turns up to 8° toward the gesturing hand, the chest leans in up to 6° on the points, the shoulders lift 5–8° on the beats; nods. | the eye glyphs pulse once per syllable, talk_a then talk_b (about 5 Hz), back to neutral between words; the stressed syllables land on the gesture beats ("me" at 2.1 s, chops at 2.62, 2.86 and 3.08 s); happy at 1.421–1.9 and 3.45–3.85 (blinks 1.621, 3.621) | |
 | `wave` | 2.4 | once | Weight shifts 2.5 cm onto the left leg. Right arm up and out (elbow above the shoulder, hand above the head and clear of it), three waves from the elbow with the wrist trailing 0.08 s, head tilted up to 18° toward the hand, the left arm easy and a little forward, back down. | 0 neutral, 0.121 happy, 0.85–1.35 happy squint (`happy_blink` held), blink 1.95, 2.25 neutral | |
 | `laugh` | 2.0 | once | Inhale, leans back with the head thrown back, then folds forward (about 11° in each of spine and chest). The left hand lies flat on the stomach above the belt's mag pouches, thumb along the index, riding 1.6 cm higher as he folds; it is solved onto the stomach again after the body's bounce, so it stays on the surface. He slaps the right thigh twice. The shoulders bounce ±5° at 3.5 Hz, in step with the laughing_a / _b flips. | 0 neutral, 0.1 happy, 0.3–1.621 laughing_a/b alternating every ~0.143, then happy (blink 1.721), 1.95 neutral | |
 | `sad` | 3.0 | once | A slump through the whole spine (about 9–10° in each of spine, chest and upper chest, about 26° in all), up to about 32° in the neck and head, shoulders dropped 10–15° and rolled forward, hips 2 cm lower with soft knees. Arms heavy, wrists turned in, a slow sigh and head shake, the right hand closes into a loose fist and lets go. | 0 neutral, 0.15 sad (blinks 0.9, 2.15, 0.2 s long), 2.75 neutral | |
 | `worried` | 2.6 | once | Hunched (upper chest forward 6°), shoulders up 7–10°, hands wringing in front of the chest: palms facing about 6 cm apart, sliding past each other, thumbs and index fingers rubbing out of step. Glances left and right. | 0 neutral, 0.121 worried (blinks 0.662, 1.421, 2.021), 2.45 neutral | |
-| `alert` | 1.6 | once | Startled hop into a wider ready stance that loads forward: hips back 3 cm and down 5 cm, the trunk about 12° forward (hips to neck) with the screen kept level, hands up in loose fists (thumbs tucked along the index). Looks left and right. | 0 neutral, 0.05 alert (blink 0.621), 1.4 neutral | tint 0 → 0.8 by 0.12 s, held, back to 0 by 1.6 |
+| `alert` | 1.6 | once | Startled hop into a wider ready stance that loads forward: hips back 3 cm and down 5 cm, the trunk about 12° forward (hips to neck) with the face kept level, hands up in loose fists (thumbs tucked along the index). Looks left and right. | 0 neutral, 0.05 alert (blink 0.621), 1.4 neutral | tint 0 → 0.8 by 0.12 s, held, back to 0 by 1.6 |
 | `nullfield_activate` | 1.8 | once | Braces in the knees (feet stay planted), fists close in front of the stomach, then arc out over the front mag pouch (0.46 s). He rolls the shoulders well back (about 15°) to bare the emitters and brings the chest out on the upper chest, while the trunk stays about 5° forward over the bent knees and the head over the feet; both fists plant on the hips with the knuckles on the belt (placed in the pelvis frame, so the two sides match). Trembles. | 0 neutral, 0.121 focus, 1.621 neutral | field 0 until 0.45, peak 1 at 0.9, 0.6 by 1.45 |
 
 The exact resolved timelines (every key, blinks included) are in the root extras `clips.<name>.faces`, with `tint` /
@@ -445,8 +489,9 @@ After a clip's tint or field ends, fade it out over about 0.4 s rather than cutt
   Only `energy_core` breathes (N1CK.cs `cellGlow`); the chest door-gap line and the capacitor caps share it and
   breathe with it. `energy_rim` (the cell's end rings and the neck hairline) stays as exported. The cage
   (`cell_shroud`, stainless) is not emissive.
-- **Viewer lights.** The viewer adds two small point lights that follow the bones: a warm one just below and in
-  front of the screen, and a faint short-range red one 2 cm behind the cell (it lights only the back plates and the
+- **Viewer lights.** The viewer adds two small point lights that follow the bones: a warm one inside the head, 2 cm
+  behind the face centre (it lights the chest and hands but can never show in the display glass), and a faint
+  short-range red one 2 cm behind the cell (it lights only the back plates and the
   belt next to it). They are not in the .glb; add your own if you want spill.
 
 ## Chest panel and "Nick"
@@ -501,7 +546,7 @@ The viewer's chest view camera is at (0.352, 1.445, 0.363) looking at (0.064, 1.
 | `SetFace(name)` | Holds an expression (`neutral`, `happy`, `worried`, `laughing`, `sad`, `alert`, `talk`, `focus`, `off`) or a cell name; it blinks now and then. `SetFace(null)` gives the face back to the playing clip's timeline. |
 | `Blink()` | One blink now (when the current face has a `_blink` cell). |
 | `ShowCell(index, tint)` | Shows one atlas cell immediately (the next Update applies the clip / expression again). |
-| `Alarm(bool)` | Screen tint toward `alarmColor` (`#d8141a`), eased in and out. The `alert` clip adds its own tint. |
+| `Alarm(bool)` | Face tint toward `alarmColor` (`#d8141a`), eased in and out. The `alert` clip adds its own tint. |
 | `Nullfield(bool)` | Emitters flare (pulse included; lens × 1 + 4.5 f, rim × 1 + 4 f). `nullfield_activate` adds its own flare. |
 | `cellGlow` | Power-cell (`energy_core`) brightness multiplier (1 = as exported). |
 | `startClip`, `defaultFade`, `alarmColor` | Inspector settings. |
@@ -554,14 +599,14 @@ Where things live in `viewer.html` (search for these lines):
 | --- | --- | --- |
 | proportions, joints, humanoid map | `- proportions */` and `const HUMAN` | `J`, `D` (body envelope, head, screen, cell, emitter, chest panel and gear-path numbers) |
 | procedural textures | `function paintFields` (then `chipMaps`, `underMaps`, `webbingMaps`, `fabricMaps`, `polymerMaps`, `stainlessMaps`, `braidMaps`, `rubberMaps`, `glowRadial`, `glowBand`) | every texture is drawn here |
-| face atlas | `- face atlas */` | `FACES`, layout; the head part redraws the LEDs (`function drawAtlas` in `PARTS.head`) |
+| face atlas | `- face atlas */` | `FACES`, `FACE_CELL` (288 × 192), `FACE_GRID` (48 × 32), `FACE_AREA`, `FACE_DRAW` (one glyph per cell, drawn for the left eye and mirrored), `faceAtlas()` (pixel levels, hot cores, pixel gaps, RGB stripes, glow) |
 | materials | `function buildMaterials` | the 19 materials (`M.paint`, `M.paint2`, `M.chip`, `M.under`, `M.webbing`, `M.fabric`, `M.screen`, ...) |
 | hard-surface kit | `function armorPlate`, `function facetLoft` | faceted plates with chamfers, folds, grooves and steps; faceted shell lofts |
 | gear kit | `function strap`, `function hug` | webbing straps laid onto the armour; buckles, sliders, D-rings, MOLLE, pouches |
 | wear rule and split | `function edgeWear`, `function cornerFlags`, `function wearSplit` | the shared edge-wear rule (clusters, corners, less on dark paint); the split into `_wear` / `_inner` meshes |
 | rig, loader | `- rig */`, `- kit and part loader */` | bones, `K.add` / `K.addW`, pistons, the per-region try/catch loader |
 | faces at runtime | `function setFace` | atlas offset, alarm tint, `face_ctrl` |
-| head | `PARTS.head = function` | housing, bezel, screen (`screen` mesh), ears, neck rings, cables and pistons |
+| head | `PARTS.head = function` | the base form, the borderless curved display (`screen`, arc-length UVs over cell 0) and its cover glass, the shell plates, the core, ear hubs, collar, neck rings, cables and pistons |
 | torso | `PARTS.torso = function` | pelvis, waist under-structure, plates, back, power cell and stainless cage, emitters, chest panel and "Nick" |
 | arms | `PARTS.arms = function` | yokes, pauldrons, arms, elbow actuators and pistons, hands, fingers |
 | legs | `PARTS.legs = function` | hip actuators, hip balls and socket cups, thighs, knees and knee guards, shins, ankle cuffs, boots, pistons |
@@ -610,5 +655,12 @@ Rules the parts follow:
   | drop-leg swivel and its bracket | about 2.3 mm | most clips |
 
   The laugh hand was measured point by point against the torso surface as well: nothing on it sinks more than 3 mm.
+- **Face display.**
+  - The cover glass's clear coat (`KHR_materials_clearcoat`) is applied by glTFast on HDRP only; on URP and the
+    built-in pipeline the glass is a plain dim transparent pane and the display's own sheen carries the reflections.
+  - From a high camera, a bowed head foreshortens the glyphs (the `sad` v v flatten toward a line); from eye level
+    every glyph reads. Glyphs read clearly to about 7 m at 1080p (the head is then about 24 px tall).
+  - The head never comes closer than 3.5 cm to the collar, harness or shoulder plates in any clip (closest in `sad`),
+    and the hands never come near it.
 - **Gear in the Unity copy** is merged into the LOD meshes, and the hit boxes on `hips` and `upper_leg_r` include it.
 - **Pistons** only follow the joints through the clips (or code that aims them); humanoid retargeting does not.
