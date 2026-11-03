@@ -790,8 +790,8 @@ that shatters, rather than coming loose, when its support goes.
 | Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `frame` | metal | detach | – | 9 | 305 | wheel_1, wheel_2, wheel_3, wheel_4 (3) |  | `col_frame_1`, `col_frame_2`, `col_frame_3`, `col_frame_4`, `col_frame_5` | 0 |
-| `tray_top` | metal | detach | – | 2 | 185 | frame (1) |  | `col_tray_top` | 0 |
-| `tray_low` | metal | detach | – | 2 | 185 | frame (1) |  | `col_tray_low` | 0 |
+| `tray_top` | metal | detach | – | 2 | 185 | frame (1) |  | `col_tray_top_1`, `col_tray_top_2`, `col_tray_top_3`, `col_tray_top_4`, `col_tray_top_5` | 0 |
+| `tray_low` | metal | detach | – | 2 | 185 | frame (1) |  | `col_tray_low_1`, `col_tray_low_2`, `col_tray_low_3`, `col_tray_low_4`, `col_tray_low_5` | 0 |
 | `wheel_1` | plastic | detach | – | 0.3 | 30 | frame (1) |  | `col_wheel_1` | 0 |
 | `wheel_2` | plastic | detach | – | 0.3 | 30 | frame (1) |  | `col_wheel_2` | 0 |
 | `wheel_3` | plastic | detach | – | 0.3 | 30 | frame (1) |  | `col_wheel_3` | 0 |

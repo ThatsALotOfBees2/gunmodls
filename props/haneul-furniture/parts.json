@@ -7627,7 +7627,11 @@
      "chunks": 0,
      "debris": [],
      "colliders": [
-      "col_tray_top"
+      "col_tray_top_1",
+      "col_tray_top_2",
+      "col_tray_top_3",
+      "col_tray_top_4",
+      "col_tray_top_5"
      ]
     },
     {
@@ -7647,7 +7651,11 @@
      "chunks": 0,
      "debris": [],
      "colliders": [
-      "col_tray_low"
+      "col_tray_low_1",
+      "col_tray_low_2",
+      "col_tray_low_3",
+      "col_tray_low_4",
+      "col_tray_low_5"
      ]
     },
     {

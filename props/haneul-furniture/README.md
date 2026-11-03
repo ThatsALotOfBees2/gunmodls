@@ -70,7 +70,7 @@ but its two granite plinths stop bullets. Triangles are intact / chunk sets.
 | `reception_desk` | Reception desk (stone front) | 2.40 × 1.10 × 0.85 | 172.5 | soft | 2,812 / 4,524 | 8 | 891 KB | F2 Reception, F2 Concierge, F2 Security, F2 Cloakroom, F3 Foyer |
 | `lobby_bench` | Lift-lobby bench | 1.80 × 0.44 × 0.55 | 27 | soft | 5,256 / 3,816 | 4 | 824 KB | F1 Garden Lifts, F2 Sky Lifts, F3 Media Lifts, F2 Bridge Lobby, F3 Archive Hall |
 | `floor_lamp` | Hanji lantern floor lamp | 0.45 × 1.65 × 0.45 | 11.3 | none | 3,172 / 3,604 | 5 | 703 KB | F1 Tea Room, F1 Ondol Lounge, F2 River Lounge, F2 VIP Lounge, F3 Bedroom, F3 Suite Lounge |
-| `service_trolley` | Service trolley | 0.88 × 0.99 × 0.58 | 18.4 | soft | 9,344 / 11,363 | 10 | 1199 KB | F1 Kitchen, F1 Servery, F1 Kitchen Pass, F1 Laundry, F1 Dining Room, F2 Backstage |
+| `service_trolley` | Service trolley | 0.88 × 0.99 × 0.58 | 18.4 | soft | 9,344 / 11,363 | 10 | 1214 KB | F1 Kitchen, F1 Servery, F1 Kitchen Pass, F1 Laundry, F1 Dining Room, F2 Backstage |
 | `crate_stack` | Stacked crates and a flight case | 1.21 × 1.40 × 0.80 | 41 | soft | 10,108 / 10,994 | 4 | 1468 KB | F1 Plant Room, F1 Staff Entry, F1 Laundry, F1 Kitchen, F2 Studio, F2 Backstage, F2 Wardrobe |
 
 ## Viewer

@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Haneul Furniture</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3659,7 +3664,9 @@ defPiece({
       t.add(rbox(-X, X, y0, y0 + L, -Z, -Z + w, 0.002, 1), M.steel);
       t.add(rbox(X - w, X, y0, y0 + L, -Z + w, Z - w, 0.002, 1), M.steel, { grain: 'z' });
       t.add(rbox(-X, -X + w, y0, y0 + L, -Z + w, Z - w, 0.002, 1), M.steel, { grain: 'z' });
-      t.colBox(-X, X, y0, y0 + L, -Z, Z);
+      // the pan and its four lips (what sits in the tray keeps its own hits)
+      t.colBox(-X, X, y0, y0 + 0.012, -Z, Z).colBox(-X, X, y0, y0 + L, Z - w, Z).colBox(-X, X, y0, y0 + L, -Z, -Z + w)
+        .colBox(X - w, X, y0, y0 + L, -Z + w, Z - w).colBox(-X, -X + w, y0, y0 + L, -Z + w, Z - w);
       return y0 + 0.012;
     };
     const yt = tray('tray_top', 0.828), yl = tray('tray_low', 0.295);
