@@ -142,7 +142,7 @@ def W(fl, a, b, typ, *ops, **kw):
     horiz = abs(a[1] - b[1]) < 1e-6
     w = {'id': nid('%s_W' % fl), 'floor': fl, 'a': list(a), 'b': list(b), 'length': round(L, 3),
          'type': typ, 'thickness': kw.pop('thickness', THICK[typ]),
-         'y0': 0.0, 'y1': kw.pop('y1', 1.1 if typ == 'balustrade' else CEIL)}
+         'y0': 0.0, 'y1': kw.pop('y1', 1.1 if typ == 'balustrade' else CEIL if typ == 'glass' else round(FTF - SLAB, 2))}  # walls close the plenum: up to the slab above
     if kw.get('to_slab'):
         w['y1'] = round(FTF - SLAB, 2)  # 3.9: up to the underside of the slab above
     opl = []
@@ -714,17 +714,17 @@ assert not unused, 'facade overrides on skipped bays: %s' % sorted(unused)
 
 # ---------------------------------------------------------------- hatches and soft floor patches
 # floor = the floor whose slab holds it (its top face is that floor's level); it opens into the floor below.
-hatches = [  # id, slab, x, z, note, reinforce_from (above: face-up on the slab; below: inverted on the ceiling of the site room below)
-    ('H01', 'F2', -2.5, 14.5, 'Reception -> Tea Room (S4)', 'below'),
-    ('H02', 'F2', 6.8, 14.6, 'Reception -> Ondol Lounge (S4)', 'below'),
+hatches = [  # id, slab, x, z, note, reinforce_from: every hatch is reinforced from above (face-up on the slab, as the gadget ships), as in Siege
+    ('H01', 'F2', -2.5, 14.5, 'Reception -> Tea Room (S4)', 'above'),
+    ('H02', 'F2', 6.8, 14.6, 'Reception -> Ondol Lounge (S4)', 'above'),
     ('H03', 'F2', 0.0, 23.5, 'River Lounge -> Veranda', 'above'),
     ('H04', 'F2', -22.0, -20.0, 'Booth 2 -> Dining Room', 'above'),
     ('H05', 'F2', 23.5, -14.0, 'Studio scenery trap -> Laundry', 'above'),
     ('H06', 'F2', 20.5, 15.8, 'Bridge Lobby -> Bathhouse (lands in the 0.6 m hot pool: loud, slow exit; intended)', 'above'),
-    ('H07', 'F3', 23.2, -2.3, 'Archive -> Deposit (S2)', 'below'),
-    ('H08', 'F3', 23.8, 6.4, 'Writers Room -> Concierge (S2)', 'below'),
-    ('H09', 'F3', -14.0, 6.5, 'Newsroom -> Lounge Bar (S3)', 'below'),
-    ('H10', 'F3', -14.0, -4.8, 'Podcast -> Wine Room (S3); dressed as the wine lift', 'below'),
+    ('H07', 'F3', 23.2, -2.3, 'Archive -> Deposit (S2)', 'above'),
+    ('H08', 'F3', 23.8, 6.4, 'Writers Room -> Concierge (S2)', 'above'),
+    ('H09', 'F3', -14.0, 6.5, 'Newsroom -> Lounge Bar (S3)', 'above'),
+    ('H10', 'F3', -14.0, -4.8, 'Podcast -> Wine Room (S3); dressed as the wine lift', 'above'),
     ('H11', 'F3', -2.5, 20.5, 'Suite Bath -> River Lounge', 'above'),
     ('H12', 'F3', -22.0, -14.5, 'Edit Bay -> Booth 1', 'above'),
     ('H13', 'F3', -5.0, -10.5, 'Media Hall -> Backstage', 'above'),
@@ -872,7 +872,7 @@ stairs = [
      'landing': 'north', 'flight_1': 'east half rising south', 'flight_2': 'west half rising north', 'width': 2.6, 'type': 'hard',
      'note': 'core stair; floor landings z 2..3.6, mid landings at the south end'},
     {'id': 'ST_garden', 'name': 'Garden Stair', 'kind': 'straight', 'floors': ['F1', 'F2'], 'width': 2.5,
-     'path': [[-19.75, 0.0, 24.6], [-19.75, 2.1, 19.6], [-19.75, 2.1, 17.6], [-19.75, 4.2, 12.0]],
+     'path': [[-19.75, 0.0, 23.8], [-19.75, 2.1, 19.6], [-19.75, 2.1, 17.6], [-19.75, 4.2, 12.0]],
      'mid_landing': {'y': 2.1, 'box': [-21.0, 17.6, -18.5, 19.6], 'type': 'hard', 'note': 'stone mid-landing: breaks the run, cover from the balustrade'},
      'note': 'stone stair in the Garden up to the Gallery; its head faces the Lounge Bar XL wall, not the bar glass'},
     {'id': 'ST_studio', 'name': 'Studio Stair', 'kind': 'straight', 'floors': ['F2', 'F3'], 'width': 1.4,

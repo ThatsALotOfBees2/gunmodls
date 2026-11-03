@@ -24,7 +24,7 @@ faster on a GPU. It offers:
 - an X-ray overlay coloured by surface type (X), with callout labels (L) and markers (M);
 - toggles for rain and the skyline;
 - camera presets for every site and attacker spawn;
-- the planned furniture footprints (P).
+- the planned furniture footprints (P or M: they show with the markers and are off by default).
 
 ## Floors
 
@@ -53,9 +53,9 @@ Each site is two adjacent rooms with one objective in each and a defender spawn 
 | Site | Floor | Rooms | Defender spawn | Reinforce candidates | Hatches |
 | --- | --- | --- | --- | --- | --- |
 | **S1** | F3 | Control Room / Render Farm | D1 | 10 | H14, H15 (in the site floor, from above) |
-| **S2** | F2 | Concierge / Deposit | D2 | 10 | H07, H08 (from below) |
-| **S3** | F2 | Lounge Bar / Wine Room | D3 | 10 | H09, H10 (from below) |
-| **S4** | F1 | Tea Room / Ondol Lounge | D4 | 12 | H01, H02 (from below) |
+| **S2** | F2 | Concierge / Deposit | D2 | 10 | H07, H08 (ceiling, reinforced from the floor above) |
+| **S3** | F2 | Lounge Bar / Wine Room | D3 | 10 | H09, H10 (ceiling, reinforced from the floor above) |
+| **S4** | F1 | Tea Room / Ondol Lounge | D4 | 12 | H01, H02 (ceiling, reinforced from the floor above) |
 
 Defenders get **8 reinforcements per round**. A wall unit of any size counts 1, and so does a hatch. Every site
 offers more candidates than that, so defenders have to choose.
@@ -88,7 +88,7 @@ The floor plans below show every surface by type. In the viewer, press X for the
 | **hard** | indestructible: concrete core, shear and stone walls, columns and column wraps, slabs, exterior structure | 74 wall segments, 519.6 m (33 core, 30 column wraps) |
 | **soft** | destructible drywall: bullets and charges make holes | 112 walls, 706.3 m |
 | **reinforceable** | a soft wall zone 0–2.0 m high, sized for Wall Fortification units, with a hard transom above | 28 walls, 106.8 m, 34 units: XL ×13, large ×12, standard ×5, small ×4 |
-| **hatch** | 1.2 × 1.2 m breakable floor panel; takes the gadget's hatch unit | 15 (6 reinforced from below) |
+| **hatch** | 1.2 × 1.2 m breakable floor panel; takes the gadget's hatch unit | 15 (all reinforced from above, face-up, as in Siege) |
 | **soft floor** | 2.4 m destructible floor/ceiling patch for vertical play | 9 |
 | **barricadable door / window** | openings that take a barricade | 121 interior doors, 4 interior windows, 39 facade entry windows, 4 facade doors |
 | **open** | archway, counter or pried lift door: never barricaded | 7 |
@@ -102,6 +102,13 @@ There are also 19 deployable-cover spots and 8 objective markers. Wall Fortifica
 standard 1.5 and small 1.0 m wide, all 2.0 m high, and the hatch unit is 1.2 m
 (`gadgets/wall-fortification`). Every unit sits on the clear defender face with at least 5 cm of hard trim at
 each end.
+
+**How to read them in the world.** Every hard surface (core, shear walls, column wraps) is clad in one family:
+dark honed granite panels with deep reveals and a metal base. Soft and reinforceable partitions are thin and
+change with the programme: hanji changsal (tti-sal lattice) in the hotel and spa rooms, dark acoustic fabric on
+the media floor, painted gypsum in back of house. Reinforceable bays add visible unit seams, a steel transom at
+2.0 m and a bronze bulkhead. All walls rise to the slab above (3.9 m), so nothing shoots through the plenum over
+the 3.1 m ceilings; interior glass has a soft bulkhead over its head.
 
 ## Floor plans
 
@@ -127,8 +134,8 @@ steam bench, the shower block, the holo stage, the screening tiers and the stone
 | File | What it is |
 | --- | --- |
 | `viewer.html` | interactive viewer and the procedural source the `.glb` files are exported from |
-| `haneul-tower.glb` | the map: 303k triangles, 26.8 MB, one node per typed surface with extras |
-| `unity/haneul-tower.glb` | the Unity copy: the same typed nodes, with the city backdrop cut into 2 km tiles for culling (27.9 MB) |
+| `haneul-tower.glb` | the map: 319k triangles, 28.8 MB, 1,906 nodes, one node per typed surface with extras |
+| `unity/haneul-tower.glb` | the Unity copy: the same typed nodes, with the city backdrop cut into 2 km tiles for culling (29.3 MB) |
 | `layout.json` | the layout: the single source of truth for floors, rooms, walls, openings, hatches, sites, spawns and routes |
 | `floorplans/` | one plan per floor plus an overview, each with a legend |
 | `shots/` | viewer screenshots |

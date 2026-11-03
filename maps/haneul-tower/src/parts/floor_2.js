@@ -240,19 +240,29 @@ PARTS.floor_2 = function (K) {
       K.obox(g(glow), [m[0], Y + CE - 0.022, m[1]], D3, [0, 1, 0], N3, [len / 2, 0.006, 0.025], '+y');
     }
   }
-  // timber rafters (seokkarae) under a ceiling: plan box, along 'x' or 'z', pitch
+  // timber rafters (seokkarae) under a ceiling: plan box, along 'x' or 'z', pitch; clipped around hatches, patches,
+  // stairwells and slab openings (0.3 m margin) so nothing hangs over a stair
+  const STAIRCUTS = (() => {
+    const out = [], nf = { F1: 'F2', F2: 'F3', F3: null }[FID], m = 0.3;
+    for (const so of K.L.slab_openings) if (so.floor === nf || (so.floor === 'all' && nf)) { const b = K.polyBox(so.polygon); out.push([b[0] - m, b[1] - m, b[2] + m, b[3] + m]); }
+    for (const st of K.L.stairs) {
+      if (!(st.floors || []).includes(FID)) continue;
+      if (st.box) out.push([st.box[0] - m, st.box[1] - m, st.box[2] + m, st.box[3] + m]);
+      else if (st.center) out.push([st.center[0] - st.radius - m, st.center[1] - st.radius - m, st.center[0] + st.radius + m, st.center[1] + st.radius + m]);
+      else if (st.path) { const xs = st.path.map((p) => p[0]), zs = st.path.map((p) => p[2]), hw = (st.width || 1.4) / 2 + m; out.push([Math.min(...xs) - hw, Math.min(...zs) - hw, Math.max(...xs) + hw, Math.max(...zs) + hw]); }
+    }
+    return out;
+  })();
   function rafters(box, along, pitch = 0.6, mk = 'wood_dark', depth = 0.14) {
-    const g = D('rafters'), [x0, z0, x1, z1] = box, bx = (a, b, c, d) => B(g, mk, a, b, CE - depth, CE - 0.005, c, d, '+y');
-    const cuts = K.keepouts(FID).filter((k) => /hatch|patch/.test(k.why)).map((k) => k.box);
-    if (along === 'x') for (let z = z0 + pitch / 2; z < z1; z += pitch) {
-      const ivs = cuts.filter((c) => z + 0.05 > c[1] && z - 0.05 < c[3]).map((c) => [c[0], c[2]]);
-      let a = x0;
-      for (const [c0, c1] of ivs.sort((p, q) => p[0] - q[0])) { if (c0 > a + 0.2) bx(a, Math.min(c0, x1), z - 0.05, z + 0.05); a = Math.max(a, c1); }
-      if (x1 > a + 0.2) bx(a, x1, z - 0.05, z + 0.05);
-    } else for (let x = x0 + pitch / 2; x < x1; x += pitch) {
-      const ivs = cuts.filter((c) => x + 0.05 > c[0] && x - 0.05 < c[2]).map((c) => [c[1], c[3]]); let a = z0;
-      for (const [c0, c1] of ivs.sort((p, q) => p[0] - q[0])) { if (c0 > a + 0.2) bx(x - 0.05, x + 0.05, a, Math.min(c0, z1)); a = Math.max(a, c1); }
-      if (z1 > a + 0.2) bx(x - 0.05, x + 0.05, a, z1);
+    const g = D('rafters'), [x0, z0, x1, z1] = box;
+    const cuts = K.keepouts(FID).filter((k) => /hatch|patch/.test(k.why)).map((k) => k.box).concat(STAIRCUTS);
+    const X = along === 'x', A0 = X ? x0 : z0, A1 = X ? x1 : z1;
+    for (let c = (X ? z0 : x0) + pitch / 2; c < (X ? z1 : x1); c += pitch) {
+      const ivs = cuts.filter((k) => (X ? c + 0.05 > k[1] && c - 0.05 < k[3] : c + 0.05 > k[0] && c - 0.05 < k[2])).map((k) => (X ? [k[0], k[2]] : [k[1], k[3]])).sort((p, q) => p[0] - q[0]);
+      let a = A0;
+      const run = (u0, u1) => { u0 = Math.max(u0, A0); u1 = Math.min(u1, A1); if (u1 - u0 > 0.2) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
+      for (const [c0, c1] of ivs) { if (c0 > a) run(a, c0); a = Math.max(a, c1); }
+      run(a, A1);
     }
   }
 
@@ -393,7 +403,8 @@ PARTS.floor_2 = function (K) {
     const g = D('east_lobby');
     // security: ceiling-hung monitor array along the north side
     if (freeHigh([9.4, 9.2, 13.6, 9.6], 'security monitors')) {
-      for (let k = 0; k < 3; k++) for (let j = 0; j < 2; j++) wallScreen(g, k === 1 && j === 0 ? SCR_TEAL : SCR_FEED, 10.2 + k * 1.3, 2.05 + j * 0.62, 9.5, 1.2, 0.56, [0, 1]);
+      // one row, lower edge 2.22 m: the doors below keep their 2.0 m envelope plus head room
+      for (let k = 0; k < 3; k++) wallScreen(g, k === 1 ? SCR_TEAL : SCR_FEED, 10.2 + k * 1.3, 2.5, 9.5, 1.2, 0.56, [0, 1]);
       B(g, 'black', 9.4, 13.6, 2.75, 2.8, 9.4, 9.46); for (const x of [9.6, 13.4]) C(g, 'black', 'black', x, 9.43, 0.01, 2.8, CE, 4, false);
     }
     // bridge lobby: art screen on the hard bridge screen's west face, a light ring, floor guide lines to the portal
@@ -428,8 +439,12 @@ PARTS.floor_2 = function (K) {
       fbox(g, 'glow_warm', df, 0.15, L - 0.15, 2.6, 2.62, 0.12, 0.13);
     }
     const d2 = roomFace('F2_W58', 'F2_deposit'), c2 = roomFace('F2_W65', 'F2_concierge');
-    if (d2) fslats(g, d2, 0.05, d2.F.len - 0.05, 0, 3.05, { mk: 'bronze', back: 'steel_dark', glow: 'glow_warm' });
-    if (c2) fslats(g, c2, 0.05, c2.F.len - 0.05, 0, 3.05, { glow: 'glow_warm' });
+    // second lockbox wall (deposit face of the column wrap) with a stainless trim band
+    if (d2) { const L = d2.F.len; fbox(g, 'steel_dark', d2, 0.05, L - 0.05, 0, 2.7, 0, 0.1); for (let y = 0.15; y < 2.4; y += 0.3) for (let u = 0.12; u < L - 0.4; u += 0.4) fbox(g, 'bronze', d2, u + 0.01, u + 0.37, y + 0.01, y + 0.28, 0.1, 0.112); fbox(g, 'dz_steel', d2, 0.05, L - 0.05, 2.45, 2.52, 0.1, 0.12); }
+    // concierge: backlit onyx panels on the hard wraps
+    for (const f of [c2, roomFace('F2_W70', 'F2_concierge')]) if (f) { const L = f.F.len; fbox(g, 'dz_onyx', f, 0.08, L - 0.08, 0.1, 2.95, 0, 0.03); fbox(g, 'bronze', f, 0.04, L - 0.04, 0, 0.1, 0, 0.05); }
+    K.pool(FID, 15.5, -4.5, 1.8, 'pool_purple'); K.pool(FID, 22.0, -5.5, 1.8, 'pool_purple'); K.pool(FID, 24.4, -7.5, 1.3, 'pool_warm');
+    K.pool(FID, 19.0, 3.8, 2.4, 'pool_warm'); K.pool(FID, 24.6, 4.5, 1.4, 'pool_warm');
     // concierge: hanji lanterns hung in a canopy line
     if (freeHigh([15.6, 3.0, 22.4, 4.6], 'concierge canopy')) {
       for (let k = 0; k < 6; k++) { const x = 16.0 + k * 1.15; lantern(g, x, 3.8, 2.45 - (k % 2) * 0.15, 0.32, 0.5); C(g, 'black', 'black', x, 3.8, 0.004, 2.95 - (k % 2) * 0.15, CE, 3, false); }
@@ -443,8 +458,8 @@ PARTS.floor_2 = function (K) {
     // LED volume on the studio face of the hard backing wall
     const sf = roomFace('F2_W54', 'F2_studio');
     if (sf) { const L = sf.F.len; fbox(g, 'black', sf, 0.05, L - 0.05, 0.1, 3.85, 0, 0.1); fscreen(g, SCR_PINK, sf, L / 2, 1.97, L - 0.2, 3.7, 0.106); }
-    // lighting truss over the stage, above the grid head height
-    const ty = 6.75;
+    // lighting truss over the stage: cans end 2.34 m above the grid catwalks (>= 2.2 m clear)
+    const ty = 6.95;
     for (const z of [-20.5, -14.5]) { B(g, 'alloy', 11.5, 25.0, ty, ty + 0.06, z - 0.2, z - 0.15); B(g, 'alloy', 11.5, 25.0, ty, ty + 0.06, z + 0.15, z + 0.2); for (let x = 11.6; x < 25; x += 0.5) BM(g, 'alloy', [x, ty + 0.03, z - 0.17], [x + 0.25, ty + 0.03, z + 0.17], 0.025); }
     for (const x of [12.5, 21.5]) { B(g, 'alloy', x - 0.2, x - 0.15, ty, ty + 0.06, -24.5, -10.5); B(g, 'alloy', x + 0.15, x + 0.2, ty, ty + 0.06, -24.5, -10.5); }
     for (const [x, z] of [[11.6, -20.4], [11.6, -14.6], [24.9, -20.4], [24.9, -14.6]]) C(g, 'black', 'black', x, z, 0.008, ty, 7.3, 3, false);
@@ -475,7 +490,7 @@ PARTS.floor_2 = function (K) {
     if (kf) { const L = kf.F.len; fbox(g, 'black', kf, L / 2 - 2.3, L / 2 + 2.3, 0.35, 2.85, 0, 0.05); fscreen(g, SCR_BARS, kf, L / 2, 1.6, 4.4, 2.4, 0.056); fbox(g, 'glow_pink', kf, L / 2 - 2.3, L / 2 + 2.3, 0.3, 0.32, 0, 0.05); }
     for (const [x, z, r, mk] of [[-14.0, -16.0, 1.2, 'glow_pink'], [-11.5, -21.5, 0.9, 'glow_purple'], [-16.2, -24.5, 0.7, 'glow_purple']]) if (freeHigh([x - r, z - r, x + r, z + r], 'karaoke ring')) { const tor = new T.TorusGeometry(r, 0.03, 6, 40); tor.rotateX(PI / 2); GE(g, mk, tor, MX(x, 3.02, z)); }
     // booths: ceiling-hung screens and rings (Booth 2's hatch stays clear)
-    if (freeHigh([-24.6, -12.6, -21.0, -12.2], 'booth1 screen')) { wallScreen(g, SCR_PINK, -22.8, 1.95, -12.45, 2.6, 1.3, [0, -1]); for (const x of [-24.0, -21.6]) C(g, 'black', 'black', x, -12.42, 0.006, 2.6, CE, 3, false); }
+    if (freeHigh([-24.6, -12.6, -21.0, -12.2], 'booth1 screen')) { wallScreen(g, SCR_PINK, -22.8, 2.65, -12.45, 2.6, 0.8, [0, -1]); /* over door F2_O16: lower edge 2.25 m */ for (const x of [-24.0, -21.6]) C(g, 'black', 'black', x, -12.42, 0.006, 2.6, CE, 3, false); }
     if (freeHigh([-24.8, -18.6, -20.8, -18.2], 'booth2 screen')) { wallScreen(g, SCR_ART, -22.8, 1.95, -18.35, 2.6, 1.3, [0, -1]); for (const x of [-24.0, -21.6]) C(g, 'black', 'black', x, -18.32, 0.006, 2.6, CE, 3, false); }
     for (const [x, z] of [[-20.0, -14.0], [-19.5, -22.5]]) if (freeHigh([x - 0.7, z - 0.7, x + 0.7, z + 0.7], 'booth ring')) { const tor = new T.TorusGeometry(0.6, 0.025, 6, 32); tor.rotateX(PI / 2); GE(g, 'glow_pink', tor, MX(x, 3.03, z)); }
     const b1 = roomFace('F2_W40', 'F2_booth_1'), b2 = roomFace('F2_W40', 'F2_booth_2'), n2 = roomFace('F2_W38', 'F2_noraebang');
@@ -497,14 +512,25 @@ PARTS.floor_2 = function (K) {
     for (const wid of ['F2_W31', 'F2_W32']) {
       const wf = roomFace(wid, 'F2_wine_room'); if (!wf) continue;
       const L = wf.F.len, n = Math.max(1, Math.round(L / 1.0)), pw = L / n;
-      fbox(g, 'glow_warm', wf, 0.05, L - 0.05, 0.2, 2.8, 0, 0.01);
-      for (let k = 0; k < n; k++) for (const [y0, y1] of [[0.0, 1.0], [1.04, 2.0], [2.04, 3.05]]) fbox(g, 'stone_dark', wf, k * pw + 0.02, (k + 1) * pw - 0.02, y0, y1, 0.01, 0.06);
+      fbox(g, 'black', wf, 0.05, L - 0.05, 0.2, 2.8, 0, 0.01);
+      for (let k = 0; k < n; k++) for (const [y0, y1] of [[0.0, 1.0], [1.04, 2.0], [2.04, 3.05]]) fbox(g, 'stone_dry', wf, k * pw + 0.02, (k + 1) * pw - 0.02, y0, y1, 0.01, 0.06);
+      // wine niches: rows of dark cells with a warm lamp line at each shelf head
+      for (let k = 0; k < n; k++) for (const y of [0.35, 0.75, 1.15, 1.55]) { fbox(g, 'black', wf, k * pw + 0.12, (k + 1) * pw - 0.12, y, y + 0.3, 0.06, 0.062); fbox(g, 'glow_warm', wf, k * pw + 0.14, (k + 1) * pw - 0.14, y + 0.28, y + 0.29, 0.062, 0.066); }
     }
     cove('F2_lounge_bar'); cove('F2_cigar_room'); cove('F2_wine_room');
     rafters([-25.6, 0.4, -12.4, 8.6], 'x', 1.0, 'dz_wood_black', 0.16);
   }
 
   // skirtings and corridor wayfinding strips on every hard wall face, then the prop markers
+  // ---------------- room identity pass: S3 story lighting and the bronze bar raft ----------------
+  {
+    const g = D('identity');
+    const pb = K.prop('PR34');
+    if (pb) { const [x0, z0, x1, z1] = pb.box; if (freeHigh([x0 - 0.3, z0 - 0.6, x1 + 0.3, z1 + 0.6], 'bar raft')) { B(g, 'bronze', x0 - 0.3, x1 + 0.3, 2.86, 2.92, z0 - 0.6, z1 + 0.6); B(g, 'glow_warm', x0 - 0.28, x1 + 0.28, 2.855, 2.86, z0 - 0.58, z0 - 0.55, '+y'); B(g, 'glow_warm', x0 - 0.28, x1 + 0.28, 2.855, 2.86, z1 + 0.55, z1 + 0.58, '+y'); }
+      for (let x = x0 + 0.5; x < x1; x += 1.25) K.pool(FID, x, (z0 + z1) / 2, 1.1, 'pool_warm'); }
+    K.pool(FID, -16.0, -10.6, 2.2, 'pool_warm'); K.pool(FID, -16.0, -5.25, 1.2, 'pool_warm');
+    K.pool(FID, -24.0, -3.0, 1.0, 'pool_warm'); K.pool(FID, -22.0, -10.5, 1.0, 'pool_warm');
+  }
   skirtings((id) => (typeof FINISH !== 'undefined' ? FINISH.get(id) : ''));
   propMarkers(BUILTIN);
 };

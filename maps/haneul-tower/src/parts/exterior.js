@@ -162,17 +162,17 @@ PARTS.exterior = function (K) {
   }
   const facadeMat = (key, tx, o) => std(key, { map: tx.map, emissiveMap: tx.emissiveMap, emissive: '#ffffff', emissiveIntensity: o.ei ?? 1, roughnessMap: tx.orm, metalnessMap: tx.orm, roughness: 1, metalness: 1 }, { tile: o.tile, haze: o.haze ?? 1, envI: o.envI ?? 1.2 });
   const rowHotel = (R) => ({ occ: R() < 0.15 ? 0.04 : 0.12 + R() * 0.22, kind: 'warm', b: 0.72, acc: 0.04 });
-  const rowOffice = (R) => { const r = R(); return r < 0.22 ? { occ: 0.92, kind: 'cool', b: 0.9, office: true } : r < 0.5 ? { occ: 0.3, kind: 'cool', b: 0.8, office: true } : { occ: 0.06, kind: 'mix', b: 0.7, office: true }; };
-  const rowMixed = (R) => { const r = R(); return r < 0.15 ? { occ: 0.85, kind: 'cool', b: 0.85, office: true } : r < 0.19 ? { occ: 0.4, kind: 'acc', b: 0.6 } : { occ: 0.06 + R() * 0.24, kind: 'mix', b: 0.78 }; };
-  const rowApt = (R) => ({ occ: 0.16 + R() * 0.24, kind: 'mix', b: 0.72 });
+  const rowOffice = (R) => { const r = R(); return r < 0.08 ? { occ: 0.85, kind: 'mix', b: 0.75, office: true } : r < 0.3 ? { occ: 0.18, kind: 'warm', b: 0.7, office: true } : { occ: 0.03, kind: 'mix', b: 0.6, office: true }; };
+  const rowMixed = (R) => { const r = R(); return r < 0.07 ? { occ: 0.8, kind: 'warm', b: 0.75, office: true } : r < 0.1 ? { occ: 0.35, kind: 'acc', b: 0.55 } : { occ: 0.03 + R() * 0.13, kind: 'warm', b: 0.68 }; };
+  const rowApt = (R) => ({ occ: 0.08 + R() * 0.16, kind: 'warm', b: 0.66 });
   // Haneul above and below the map (hotel residences, fins every 3 m, purple on every third fin)
   facadeMat('tower_facade', facadeTex('haneul', { cols: 16, floors: 6, tu: 24, tv: 25.2, seed: 185, band: 'top', bandFrac: 0.262, glass: [16, 19, 28], frame: '#0b0c10', bandCol: '#15161b', rows: rowHotel, fins: 2, glowEvery: 6 }), { tile: [24, 25.2], ei: 0.75, envI: 1.4 });
   // neighbours and the generic glass towers
-  facadeMat('env_facade', facadeTex('glass', { cols: 16, floors: 6, tu: 24, tv: 25.2, seed: 181, band: 'top', bandFrac: 0.24, glass: [14, 17, 24], frame: '#0a0b0e', bandCol: '#111216', rows: rowMixed, fins: 4 }), { tile: [24, 25.2], ei: 0.8 });
-  facadeMat('ext_office', facadeTex('office', { cols: 16, floors: 6, tu: 24, tv: 25.2, seed: 193, band: 'top', bandFrac: 0.3, glass: [18, 21, 28], frame: '#0d0e12', bandCol: '#1a1b20', rows: rowOffice, mullion: 0.08 }), { tile: [24, 25.2], ei: 1.05 });
+  facadeMat('env_facade', facadeTex('glass', { cols: 16, floors: 6, tu: 24, tv: 25.2, seed: 181, band: 'top', bandFrac: 0.24, glass: [14, 17, 24], frame: '#0a0b0e', bandCol: '#111216', rows: rowMixed, fins: 4 }), { tile: [24, 25.2], ei: 0.7 });
+  facadeMat('ext_office', facadeTex('office', { cols: 16, floors: 6, tu: 24, tv: 25.2, seed: 193, band: 'top', bandFrac: 0.3, glass: [18, 21, 28], frame: '#0d0e12', bandCol: '#1a1b20', rows: rowOffice, mullion: 0.08 }), { tile: [24, 25.2], ei: 0.8 });
   // Korean apartment slabs: 3 m units, 2.8 m floors, balcony parapets, a lit stair column every fourth unit
   facadeMat('ext_apt', facadeTex('apt', { cols: 8, floors: 6, tu: 24, tv: 16.8, seed: 211, band: 'bottom', bandFrac: 0.3, glass: [22, 24, 30], frame: '#2a2b30', bandCol: '#3b3c42', rows: rowApt, core: 4, mullion: 0.1, glassMetal: 90 }), { tile: [24, 16.8], ei: 0.95, envI: 0.8 });
-  facadeMat('ext_mid', facadeTex('mid', { w: FP / 2, cols: 32, floors: 12, tu: 48, tv: 50.4, seed: 223, band: 'top', bandFrac: 0.3, glass: [16, 18, 24], frame: '#0c0d10', bandCol: '#141519', rows: rowMixed, mullion: 0.12 }), { tile: [48, 50.4], ei: 1.1 });
+  facadeMat('ext_mid', facadeTex('mid', { w: FP / 2, cols: 32, floors: 12, tu: 48, tv: 50.4, seed: 223, band: 'top', bandFrac: 0.3, glass: [16, 18, 24], frame: '#0c0d10', bandCol: '#141519', rows: rowMixed, mullion: 0.12 }), { tile: [48, 50.4], ei: 0.8 });
   {
     // apartment end walls: plain, a stair-light strip, no numbers or marks
     const n = 256, c = K.canvas(n, n), x = c.getContext('2d'), e = K.canvas(n, n), y = e.getContext('2d');
@@ -603,6 +603,23 @@ PARTS.exterior = function (K) {
   tq = mark('city', tq);
 
   /* ---------------------------------------------------------------- holo screens (abstract imagery only) */
+  function ribbonCanvas(seed, w, h, hue) {   // long flowing light ribbons and drifting particles (a parallax layer)
+    const c = K.canvas(w, h), x = c.getContext('2d'), R = K.rng(seed);
+    x.fillStyle = '#000'; x.fillRect(0, 0, w, h); x.globalCompositeOperation = 'lighter';
+    for (let k = 0; k < 9; k++) {
+      const y0 = h * (0.1 + R() * 0.8), amp = h * (0.05 + R() * 0.1), ph = R() * 6, lw = 4 + R() * 14;
+      x.strokeStyle = `hsla(${hue + R() * 60},100%,${55 + R() * 20}%,${0.12 + R() * 0.18})`; x.lineWidth = lw; x.shadowColor = x.strokeStyle; x.shadowBlur = lw * 2;
+      x.beginPath(); for (let i = 0; i <= 48; i++) { const u = i / 48, yy = y0 + Math.sin(u * 5 + ph) * amp - u * h * 0.2; i ? x.lineTo(u * w, yy) : x.moveTo(0, yy); } x.stroke();
+    }
+    x.shadowBlur = 0; for (let i = 0; i < 260; i++) { x.fillStyle = `hsla(${hue + R() * 60},100%,85%,${R() * 0.5})`; const r = R() * 2.5; x.fillRect(R() * w, R() * h, r, r); }
+    return c;
+  }
+  function glowCanvas(w, h, hue) {   // a big soft halo (additive glow in front of the screen wall)
+    const c = K.canvas(w, h), x = c.getContext('2d');
+    x.fillStyle = '#000'; x.fillRect(0, 0, w, h);
+    const g = x.createRadialGradient(w / 2, h * 0.5, 0, w / 2, h * 0.5, w * 0.75); g.addColorStop(0, `hsla(${hue},100%,60%,0.35)`); g.addColorStop(0.5, `hsla(${hue + 20},100%,45%,0.12)`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(0, 0, w, h); return c;
+  }
   function inkCanvas(seed, w, h, hue) {
     // layered mountain strokes like an ink landscape, a pale moon disc, a few cranes in flight (silhouettes)
     const c = K.canvas(w, h), x = c.getContext('2d'), R = K.rng(seed);
@@ -650,6 +667,12 @@ PARTS.exterior = function (K) {
     const inside = (px, py) => { let c2 = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const a = pts[i], b = pts[j]; if ((a[1] > py) !== (b[1] > py) && px < ((b[0] - a[0]) * (py - a[1])) / (b[1] - a[1]) + a[0]) c2 = !c2; } return c2; };
     const inner = []; for (let k = 0; k < 600 && inner.length < 90; k++) { const px = R() * w, py = h * (0.15 + R() * 0.78); if (inside(px, py)) inner.push([px, py]); }
     const all = pts.concat(inner);
+    // soft volumetric fill: the silhouette filled with a radial glow, blurred, so the figure reads as light, not lines
+    const sil = () => { x.beginPath(); pts.forEach((p, i) => (i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]))); x.closePath(); };
+    const fg = x.createRadialGradient(w * 0.5, h * 0.42, w * 0.04, w * 0.5, h * 0.55, w * 0.62);
+    fg.addColorStop(0, `hsla(${hue + 40},100%,78%,0.75)`); fg.addColorStop(0.45, `hsla(${hue + 15},95%,55%,0.45)`); fg.addColorStop(1, `hsla(${hue},90%,35%,0.18)`);
+    x.save(); x.shadowColor = `hsla(${hue + 20},100%,65%,0.9)`; x.shadowBlur = w * 0.08; x.fillStyle = fg; sil(); x.fill(); x.restore();
+    x.save(); sil(); x.clip(); for (let y = 0; y < h; y += 6) { x.fillStyle = `hsla(${hue + 30},100%,80%,${0.05 + 0.05 * Math.sin(y * 0.07)})`; x.fillRect(0, y, w, 2); } x.restore();
     // facets: connect each point to its 3 nearest neighbours, fill small triangles faintly
     for (let i = 0; i < all.length; i++) {
       const a = all[i], near = all.map((b, j) => [Math.hypot(b[0] - a[0], b[1] - a[1]), j]).filter((d) => d[1] !== i).sort((p, q) => p[0] - q[0]).slice(0, 3);
@@ -681,10 +704,15 @@ PARTS.exterior = function (K) {
     mk('ext_holo_c', fanCanvas(13, HS, HS * 2, 300), 1.4, 0.8);
     mk('ext_holo_e', K.abstractCanvas(17, HS, HS * 2, { hue: 250, bg: 2 }), 2.0, 0.9);
     mk('ext_holo_d', K.abstractCanvas(14, HS, HS * 2, { hue: 290, bg: 2 }), 2.0, 0.9);
+    mk('ext_holo_rib', ribbonCanvas(15, HS, HS * 2, 275), 1.2, 0.7);
+    mk('ext_holo_glow', glowCanvas(HS / 2, HS, 268), 0.9, 0.6);
     // East Tower west face: the big one beside the skybridge (above the bridge roof), a second below the truss
     const nb = EXT.neighbours.find((n) => n.id === 'NB_east'), xw = nb ? nb.footprint[0][0] - 0.6 : 55.4, top = nb ? nb.top_y : 160;
     addUV('holo', quadGeo([[[xw, 10.5, -5], [xw, 10.5, 31], [xw, top - 30, 31], [xw, top - 30, -5]]]), 'ext_holo_a', 'deco');
     addUV('holo', quadGeo([[[xw, -150, 0], [xw, -150, 26], [xw, -40, 26], [xw, -40, 0]]]), 'ext_holo_c', 'deco');
+    // parallax layers in front of the big figure: flowing ribbons at 0.7 m and a soft additive glow plane at 1.8 m
+    addUV('holo', quadGeo([[[xw - 0.7, 8.0, -9], [xw - 0.7, 8.0, 35], [xw - 0.7, top - 24, 35], [xw - 0.7, top - 24, -9]]]), 'ext_holo_rib', 'deco');
+    addUV('holo', quadGeo([[[xw - 1.8, 0.0, -16], [xw - 1.8, 0.0, 42], [xw - 1.8, top - 14, 42], [xw - 1.8, top - 14, -16]]]), 'ext_holo_glow', 'deco');
     const fr = deco('holo', 'deco').gb('glow_purple');
     for (const [y0, y1, z0, z1] of [[10.5, top - 30, -5, 31], [-150, -40, 0, 26]]) { K.abox(fr, xw - 0.1, xw + 0.1, y0 - 0.25, y0, z0 - 0.25, z1 + 0.25); K.abox(fr, xw - 0.1, xw + 0.1, y1, y1 + 0.25, z0 - 0.25, z1 + 0.25); K.abox(fr, xw - 0.1, xw + 0.1, y0, y1, z0 - 0.25, z0); K.abox(fr, xw - 0.1, xw + 0.1, y0, y1, z1, z1 + 0.25); }
     // hero towers
@@ -742,6 +770,7 @@ PARTS.exterior = function (K) {
       const c = K.img(W, H, (i, j, o) => {
         const v = 1 - j / H, f = samp(N, 128, i / W * 4, v), t = sst(0.0, 0.6, v);
         for (let q = 0; q < 3; q++) o[q] = lin(base[q], top[q], t) * (0.8 + 0.4 * f);
+        if (v > 0.955) { const r = sst(0.955, 0.995, v); o[0] += 70 * r; o[1] += 50 * r; o[2] += 110 * r; }   // faint rim from the city glow
         if (v < 0.45 && ((i * 7919 + j * 104729) % 1013) < 2) { o[0] = 255; o[1] = 196; o[2] = 140; }
       });
       return std(key, { color: '#000000', emissiveMap: tex(c, true, key.slice(4) + '_emissive'), emissive: '#ffffff', emissiveIntensity: 1, side: THREE.DoubleSide, roughness: 1 }, { haze: 0.42, envI: 0 });
@@ -755,14 +784,19 @@ PARTS.exterior = function (K) {
     const mt = tex(K.img(16, 128, (i, j, o) => { const v = 1 - j / 128; o[0] = 70; o[1] = 56; o[2] = 104; o[3] = 255 * 0.55 * Math.pow(1 - v, 1.6); }), true, 'mist', false);
     std('ext_mist', { color: '#000000', map: mt, emissiveMap: mt, emissive: '#ffffff', emissiveIntensity: 0.9, transparent: true, depthWrite: false, side: THREE.DoubleSide }, { envI: 0 }).fog = false;
     addUV('ridges', grid(120, 1, (u, v) => { const a = u * Math.PI * 2, r = 4700; return [Math.sin(a) * r, G + v * 260, Math.cos(a) * r, u * 20, v]; }), 'ext_mist');
+    // purple-grey rain haze layers between the city rings (depth)
+    const ht = tex(K.img(16, 128, (i, j, o) => { const v = 1 - j / 128; o[0] = 58; o[1] = 50; o[2] = 82; o[3] = 255 * 0.32 * Math.pow(1 - v, 1.2); }), true, 'rainhaze', false);
+    std('ext_rainhaze', { color: '#000000', map: ht, emissiveMap: ht, emissive: '#ffffff', emissiveIntensity: 0.8, transparent: true, depthWrite: false, side: THREE.DoubleSide }, { envI: 0 }).fog = false;
+    for (const [r, hh] of [[1700, 260], [2600, 380], [3900, 480]]) addUV('ridges', grid(96, 1, (u, v) => { const a = u * Math.PI * 2; return [Math.sin(a) * r, G + v * hh, Math.cos(a) * r, u * 16, v]; }), 'ext_rainhaze');
     // the forested hill (polar texture: dark trees and a lit road winding to the top)
     const HN = K.noise(256, 12, 12, 831, 4);
-    const hc = K.img(256, 256, (i, j, o, k) => { const v = 0.04 + 0.05 * HN[k]; o[0] = v * 120; o[1] = v * 140; o[2] = v * 130; });
+    const hc = K.img(256, 256, (i, j, o, k) => { const v = 0.035 + 0.06 * HN[k] * HN[k]; o[0] = v * 95; o[1] = v * 135; o[2] = v * 110; });   // tree canopy mottling
     const he = K.canvas(256, 256), hx = he.getContext('2d'); hx.fillStyle = '#000'; hx.fillRect(0, 0, 256, 256);
-    hx.fillStyle = 'rgba(255,205,150,0.95)'; for (let t = 0; t < 1; t += 0.004) hx.fillRect(((t * 3.2) % 1) * 256, t * 256, 1.5, 1.5);
+    hx.fillStyle = 'rgba(255,205,150,0.95)'; for (let t = 0; t < 1; t += 0.008) hx.fillRect(((t * 3.2) % 1) * 256, t * 256, 1.2, 1.2);
+    { const R2 = K.rng(832); for (let k = 0; k < 70; k++) { hx.fillStyle = R2() < 0.8 ? 'rgba(255,200,140,0.8)' : 'rgba(180,150,255,0.8)'; hx.fillRect(R2() * 256, 40 + R2() * 216, 1, 1); } }
     std('ext_hill', { map: tex(hc, true, 'hill_albedo'), emissiveMap: tex(he, true, 'hill_emissive'), emissive: '#ffffff', emissiveIntensity: 1.2, roughness: 0.9, side: THREE.DoubleSide }, { haze: 0.55, envI: 0.3 });
-    const hprof = (t) => HILL.h * Math.pow(Math.max(0, 1 - t * t), 1.25);
-    addUV('hill', grid(48, 12, (u, v) => { const a = u * Math.PI * 2, t = 1 - v, r = HILL.r * t * (1 + 0.08 * Math.sin(a * 5)); return [HILL.x + Math.sin(a) * r, G + hprof(t), HILL.z + Math.cos(a) * r, u, v]; }), 'ext_hill');
+    const hprof = (t) => HILL.h * (Math.exp(-3.2 * t * t) - 0.04 * t) / 1.0;   // rounded dome, not a mesa
+    addUV('hill', grid(48, 12, (u, v) => { const a = u * Math.PI * 2, t = 1 - v, r = HILL.r * t * (1 + 0.08 * Math.sin(a * 5)); return [HILL.x + Math.sin(a) * r, G + hprof(t) + HILL.h * 0.025 * Math.sin(a * 23 + t * 17) * Math.sin(t * 3.1), HILL.z + Math.cos(a) * r, u, v]; }), 'ext_hill');
     // lattice broadcast tower (generic): four legs tapering to an observation pod, lattice bracing, a mast
     const bt = deco('hill'), base = G + HILL.h - 2, X = HILL.x, Z = HILL.z;
     glow('ext_bt_pink', '#ff5ad8', 3.2, 0.35); glow('ext_bt_purple', '#9a5cff', 3.0, 0.35); glow('ext_bt_warm', '#ffd8b0', 2.4, 0.35);
@@ -909,9 +943,18 @@ PARTS.exterior = function (K) {
     const n = 128, NH = K.noise(n, 10, 10, 951, 3), H = new Float32Array(n * n); for (let k = 0; k < H.length; k++) H[k] = NH[k];
     std('ext_puddle', { color: '#07080b', roughness: 0.03, metalness: 0.15, normalMap: tex(nrm(H, n, 1.2), false, 'puddle_normal') }, { tile: 1.5, envI: 2.4, ns: 0.25, env: 'out' });
     std('ext_leaf', { map: tex(K.img(128, 128, (i, j, o, k) => { const v = 0.7 + 0.6 * NH[k]; o[0] = 52 * v; o[1] = 92 * v; o[2] = 50 * v; }), true, 'leaf_albedo'), roughness: 0.45, metalness: 0 }, { tile: 0.6, envI: 0.8 });
-    const td = deco('terrace', 'deco'), pu = td.gb('ext_puddle'), R = K.rng(971), T = EXT.terrace, feats = T.features.map((f) => f.box);
+    // soft wet patches: an alpha mask with ragged, feathered edges and streaky reflections (no hard decal edges)
+    {
+      const W2 = 256, NW = K.noise(W2, 6, 6, 952, 4), NS = K.noise(W2, 2, 40, 953, 3);
+      const wc = K.img(W2, W2, (i, j, o, k) => { const u = (i + 0.5) / W2 - 0.5, v = (j + 0.5) / W2 - 0.5, r = Math.hypot(u, v) * 2, a = sst(1.0, 0.45, r + (NW[k] - 0.5) * 0.55);
+        const st = 0.85 + 0.3 * NS[k]; o[0] = 10 * st; o[1] = 11 * st; o[2] = 16 * st; o[3] = 255 * a * 0.85; });
+      std('ext_wet', { color: '#ffffff', map: tex(wc, true, 'wet', false), roughness: 0.04, metalness: 0.2, transparent: true, depthWrite: false, normalMap: tex(nrm(H, n, 0.6), false, 'wet_normal') }, { envI: 2.6, ns: 0.15, env: 'out' }).polygonOffset = true;
+      K.M.ext_wet.polygonOffsetFactor = -2;
+    }
+    const WETQ = [];
+    const td = deco('terrace', 'deco'), pu = WETQ, R = K.rng(971), T = EXT.terrace, feats = T.features.map((f) => f.box);
     const clearOf = (x, z, r) => feats.every((b) => x + r < b[0] - 0.3 || x - r > b[2] + 0.3 || z + r < b[1] - 0.3 || z - r > b[3] + 0.3);
-    const puddle = (g, x, y, z, rx, rz, rot) => { const pts = []; for (let k = 0; k < 14; k++) { const a = (k / 14) * Math.PI * 2, w = 1 + 0.18 * Math.sin(a * 3 + rot * 5), px = Math.cos(a) * rx * w, pz = Math.sin(a) * rz * w; pts.push([x + px * Math.cos(rot) - pz * Math.sin(rot), y, z + px * Math.sin(rot) + pz * Math.cos(rot)]); } g.face(pts, [0, 1, 0]); };
+    const puddle = (g, x, y, z, rx, rz, rot) => { const c = Math.cos(rot), sn = Math.sin(rot), P = (u, v) => [x + u * rx * 1.3 * c - v * rz * 1.3 * sn, y, z + u * rx * 1.3 * sn + v * rz * 1.3 * c]; g.push([P(-1, 1), P(1, 1), P(1, -1), P(-1, -1)]); };
     const inT = (x, z) => K.inPoly([x, z], T.polygon) && !K.inPoly([x, z], L.outline) && K.polyDist([x, z], T.polygon) > 1.2 && K.polyDist([x, z], L.outline) > 1.6;
     for (let t = 0, np = 0; t < 400 && np < 46; t++) {
       const x = -33 + R() * 66, z = 22 + R() * 34, rx = 0.5 + R() * 2.0, rz = 0.4 + R() * 1.4;
@@ -939,7 +982,7 @@ PARTS.exterior = function (K) {
     }
     tuft.dispose();
     // puddles on the West Roof and the Crane Deck (clear of the plant room, stacks, hut and walkway landings)
-    const rg = deco('roofs', 'deco').gb('ext_puddle');
+    const rg = WETQ;
     for (const nb of EXT.neighbours) {
       if (nb.id !== 'NB_west' && nb.id !== 'NB_crane') continue;
       const [x0, z0, x1, z1] = K.polyBox(nb.footprint), boxes = nb.features.filter((f) => f.box).map((f) => f.box);
@@ -949,6 +992,7 @@ PARTS.exterior = function (K) {
         puddle(rg, x, nb.top_y + 0.006, z, rx, rz, R() * 3); k++;
       }
     }
+    if (WETQ.length) addUV('terrace_wet', quadGeo(WETQ), 'ext_wet', 'deco');
   }
   tq = mark('terrace', tq);
 
@@ -962,7 +1006,7 @@ PARTS.exterior = function (K) {
     const RR = K.rng(33);
     // near rain: streaks in a box that follows the camera; two lengths, a little wind
     {
-      const n = FAST ? 2200 : 6500, W = 66, H = 46, pos = new Float32Array(n * 6), at = new Float32Array(n * 2), ln = new Float32Array(n * 2);
+      const n = FAST ? 3000 : 11000, W = 66, H = 46, pos = new Float32Array(n * 6), at = new Float32Array(n * 2), ln = new Float32Array(n * 2);
       for (let i = 0; i < n; i++) { const x = RR() * W, y = RR() * H, z = RR() * W, l = RR() < 0.2 ? 1.3 : 0.6 + RR() * 0.3; pos.set([x, y, z, x, y, z], i * 6); at[i * 2] = 0; at[i * 2 + 1] = 1; ln[i * 2] = ln[i * 2 + 1] = l; }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(at, 1)); g.setAttribute('aLen', new THREE.BufferAttribute(ln, 1));
       const mat = new THREE.ShaderMaterial({
@@ -971,9 +1015,9 @@ PARTS.exterior = function (K) {
         vertexShader: `attribute float aEnd; attribute float aLen; uniform float uT; uniform vec3 uCam; varying float vA; varying float vD;
           void main() { vec3 p = position; float W = ${W.toFixed(1)}, H = ${H.toFixed(1)};
             p.y = mod(p.y - uT * 12.5 * (0.8 + 0.3 * aLen), H); p.x = mod(p.x - uCam.x + uT * 1.8, W); p.z = mod(p.z - uCam.z + uT * 0.6, W);
-            p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5); p += aEnd * vec3(0.06, 0.62, 0.02) * aLen; vA = aEnd;
+            p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5); p += aEnd * vec3(0.07, 0.95, 0.02) * aLen; vA = aEnd;
             vec4 mv = viewMatrix * vec4(p, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
-        fragmentShader: `varying float vA; varying float vD; void main() { float f = smoothstep(0.8, 3.0, vD) * (1.0 - smoothstep(18.0, 33.0, vD)); gl_FragColor = vec4(0.66, 0.68, 0.9, 0.2 * f * (1.0 - vA * 0.75)); }`,
+        fragmentShader: `varying float vA; varying float vD; void main() { float f = smoothstep(0.8, 3.0, vD) * (1.0 - smoothstep(18.0, 33.0, vD)); gl_FragColor = vec4(0.58, 0.62, 0.7, 0.13 * f * (1.0 - vA * 0.85)); }`,
       });
       const l = new THREE.LineSegments(g, mat); l.frustumCulled = false; l.renderOrder = 5;
       K.view(l, 'rain'); K.onTick((dt, t) => { mat.uniforms.uT.value = t; const c = camPos(); if (c) mat.uniforms.uCam.value.copy(c); });

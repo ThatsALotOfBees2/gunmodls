@@ -9,7 +9,7 @@ from geom import seg_len, seg_point, centroid, point_in_poly
 
 MAP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(MAP, 'layout.json')
-outdir = sys.argv[2] if len(sys.argv) > 2 else os.path.join(MAP, 'floorplans')
+outdir = sys.argv[2] if len(sys.argv) > 2 else os.path.join(MAP, 't-design')
 os.makedirs(outdir, exist_ok=True)
 L = json.load(open(path))
 SS = 2  # supersample

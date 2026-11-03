@@ -75,6 +75,13 @@ PARTS.floor_1 = function (K) {
   mat('dz_salt', 'drystone', { color: '#f0b37a', rough: 0.6, tile: 0.6, em: '#ff9a4a', ei: 0.9 });
   mat('dz_underwater', 'water', { color: '#163a52', rough: 0.2, tile: 2, em: '#3d7dff', ei: 0.6 });
   mat('dz_white', 'plaster', { color: '#d9d6d0', rough: 0.4, tile: 1 });
+  mat('dz_giwa', 'polished', { color: '#3a3c43', rough: 0.5, tile: 1.0, ns: 0.4 });
+  mat('dz_giwa_r', 'polished', { color: '#2c2e34', rough: 0.45, tile: 1.0, ns: 0.4 });
+  mat('dz_basalt', 'polished', { color: '#3d3c3b', rough: 0.25, tile: 1.0, ns: 0.6 });
+  mat('dz_earth', 'carpet', { color: '#2a2219', rough: 1.0, tile: 0.8, ns: 1.0 });
+  mat('dz_maple', 'carpet', { color: '#8a2416', rough: 0.85, tile: 0.4, ns: 1.0 });
+  mat('dz_maple2', 'carpet', { color: '#b05a1c', rough: 0.85, tile: 0.4, ns: 1.0 });
+  mat('dz_lamp_dim', 'hanji', { color: '#d8cbb6', rough: 0.8, tile: 0.6, em: '#ffb878', ei: 0.45 });
   mat('dz_seam', 'led', { color: '#3a2a1a', rough: 0.4, em: '#ffad66', ei: 0.7, emMap: false });
   // deco bucket for free dressing: D('kind')(materialKey) -> GB in world space
   const D = (kind) => { const e = K.deco(FID, kind); return (mk) => e.gb(mk); };
@@ -240,19 +247,29 @@ PARTS.floor_1 = function (K) {
       K.obox(g(glow), [m[0], Y + CE - 0.022, m[1]], D3, [0, 1, 0], N3, [len / 2, 0.006, 0.025], '+y');
     }
   }
-  // timber rafters (seokkarae) under a ceiling: plan box, along 'x' or 'z', pitch
+  // timber rafters (seokkarae) under a ceiling: plan box, along 'x' or 'z', pitch; clipped around hatches, patches,
+  // stairwells and slab openings (0.3 m margin) so nothing hangs over a stair
+  const STAIRCUTS = (() => {
+    const out = [], nf = { F1: 'F2', F2: 'F3', F3: null }[FID], m = 0.3;
+    for (const so of K.L.slab_openings) if (so.floor === nf || (so.floor === 'all' && nf)) { const b = K.polyBox(so.polygon); out.push([b[0] - m, b[1] - m, b[2] + m, b[3] + m]); }
+    for (const st of K.L.stairs) {
+      if (!(st.floors || []).includes(FID)) continue;
+      if (st.box) out.push([st.box[0] - m, st.box[1] - m, st.box[2] + m, st.box[3] + m]);
+      else if (st.center) out.push([st.center[0] - st.radius - m, st.center[1] - st.radius - m, st.center[0] + st.radius + m, st.center[1] + st.radius + m]);
+      else if (st.path) { const xs = st.path.map((p) => p[0]), zs = st.path.map((p) => p[2]), hw = (st.width || 1.4) / 2 + m; out.push([Math.min(...xs) - hw, Math.min(...zs) - hw, Math.max(...xs) + hw, Math.max(...zs) + hw]); }
+    }
+    return out;
+  })();
   function rafters(box, along, pitch = 0.6, mk = 'wood_dark', depth = 0.14) {
-    const g = D('rafters'), [x0, z0, x1, z1] = box, bx = (a, b, c, d) => B(g, mk, a, b, CE - depth, CE - 0.005, c, d, '+y');
-    const cuts = K.keepouts(FID).filter((k) => /hatch|patch/.test(k.why)).map((k) => k.box);
-    if (along === 'x') for (let z = z0 + pitch / 2; z < z1; z += pitch) {
-      const ivs = cuts.filter((c) => z + 0.05 > c[1] && z - 0.05 < c[3]).map((c) => [c[0], c[2]]);
-      let a = x0;
-      for (const [c0, c1] of ivs.sort((p, q) => p[0] - q[0])) { if (c0 > a + 0.2) bx(a, Math.min(c0, x1), z - 0.05, z + 0.05); a = Math.max(a, c1); }
-      if (x1 > a + 0.2) bx(a, x1, z - 0.05, z + 0.05);
-    } else for (let x = x0 + pitch / 2; x < x1; x += pitch) {
-      const ivs = cuts.filter((c) => x + 0.05 > c[0] && x - 0.05 < c[2]).map((c) => [c[1], c[3]]); let a = z0;
-      for (const [c0, c1] of ivs.sort((p, q) => p[0] - q[0])) { if (c0 > a + 0.2) bx(x - 0.05, x + 0.05, a, Math.min(c0, z1)); a = Math.max(a, c1); }
-      if (z1 > a + 0.2) bx(x - 0.05, x + 0.05, a, z1);
+    const g = D('rafters'), [x0, z0, x1, z1] = box;
+    const cuts = K.keepouts(FID).filter((k) => /hatch|patch/.test(k.why)).map((k) => k.box).concat(STAIRCUTS);
+    const X = along === 'x', A0 = X ? x0 : z0, A1 = X ? x1 : z1;
+    for (let c = (X ? z0 : x0) + pitch / 2; c < (X ? z1 : x1); c += pitch) {
+      const ivs = cuts.filter((k) => (X ? c + 0.05 > k[1] && c - 0.05 < k[3] : c + 0.05 > k[0] && c - 0.05 < k[2])).map((k) => (X ? [k[0], k[2]] : [k[1], k[3]])).sort((p, q) => p[0] - q[0]);
+      let a = A0;
+      const run = (u0, u1) => { u0 = Math.max(u0, A0); u1 = Math.min(u1, A1); if (u1 - u0 > 0.2) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
+      for (const [c0, c1] of ivs) { if (c0 > a) run(a, c0); a = Math.max(a, c1); }
+      run(a, A1);
     }
   }
 
@@ -342,18 +359,23 @@ PARTS.floor_1 = function (K) {
     for (const z of pz) B(g, 'dz_lacquer', px[0] - 0.12, px[1] + 0.12, ty - 0.3, ty, z - 0.08, z + 0.08);
     for (const x of px) B(g, 'dz_lacquer', x - 0.08, x + 0.08, ty - 0.3, ty, pz[0] - 0.12, pz[1] + 0.12);
     for (const x of px) for (const z of pz) B(g, 'wood_dark', x - 0.2, x + 0.2, ty, ty + 0.14, z - 0.2, z + 0.2);   // brackets
-    lattice(g, 'x', px[0] + 0.12, px[1] - 0.12, pz[0], h + 1.6, ty - 0.32, 0.03, 0.26, 'wood_dark', 'dz_lamp');   // rear lattice
+    lattice(g, 'x', px[0] + 0.12, px[1] - 0.12, pz[0], h + 1.6, ty - 0.32, 0.03, 0.26, 'wood_dark', 'dz_lamp_dim');   // rear lattice, softly lit
     // roof: concave sweep with upturned eaves, extruded along z
     const cx = (eb[0] + eb[2]) / 2, hw = (eb[2] - eb[0]) / 2, ey = r.eave_y, ry = r.ridge_y, N = 10, top = [];
     for (let k = 0; k <= N; k++) { const t = k / N, s = -hw + t * hw, y = ey + 0.22 * (1 - t) ** 3 + (ry - ey - 0.12) * t ** 1.7; top.push([s, y]); }
     const up = []; for (let k = 0; k <= N; k++) up.push(top[k]); for (let k = N - 1; k >= 0; k--) up.push([-top[k][0], top[k][1]]);
     const shape = up.concat(up.slice().reverse().map((p) => [p[0], p[1] - 0.16]));
     const zc = (eb[1] + eb[3]) / 2, len = eb[3] - eb[1];
-    K.extrudeProfile({ cap: g('wood_dark'), top: g('stone_dark'), side: g('wood_dark') }, shape, [cx, Y, zc], [1, 0, 0], [0, 0, 1], len);
+    K.extrudeProfile({ cap: g('dz_wood_mid'), top: g('dz_giwa'), side: g('dz_wood_mid') }, shape, [cx, Y, zc], [1, 0, 0], [0, 0, 1], len);
     for (let z = eb[1] + 0.15; z < eb[3] - 0.1; z += 0.3) for (const sg of [-1, 1]) for (let k = 0; k < N; k++) {
-      const a = top[k], b = top[k + 1]; BM(g, 'black', [cx + sg * -a[0], a[1] + 0.035, z], [cx + sg * -b[0], b[1] + 0.035, z], 0.06, 0.05);
+      const a = top[k], b = top[k + 1]; BM(g, 'dz_giwa_r', [cx + sg * -a[0], a[1] + 0.03, z], [cx + sg * -b[0], b[1] + 0.03, z], 0.07, 0.045);
     }
     B(g, 'black', cx - 0.14, cx + 0.14, ry - 0.1, ry + 0.12, eb[1] - 0.05, eb[3] + 0.05);
+    // exposed seokkarae under the eaves (warm wood, cinnabar ends), seen from the garden floor
+    for (let z = eb[1] + 0.2; z < eb[3] - 0.1; z += 0.4) for (const sg of [-1, 1]) {
+      const a = top[0], b = top[6]; BM(g, 'dz_wood_mid', [cx + sg * -a[0] * 0.98, a[1] - 0.2, z], [cx + sg * -b[0], b[1] - 0.2, z], 0.07, 0.07);
+      B(g, 'dz_lacquer', cx + sg * -a[0] * 0.98 - 0.04, cx + sg * -a[0] * 0.98 + 0.04, a[1] - 0.24, a[1] - 0.16, z - 0.04, z + 0.04);
+    }
     for (const sg of [-1, 1]) B(g, 'glow_purple', cx + sg * (hw - 0.04) - 0.02, cx + sg * (hw - 0.04) + 0.02, ey + 0.02, ey + 0.05, eb[1], eb[3]);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) BM(g, 'wood_dark', [cx + sx * (hw - 0.5), ey + 0.1, zc + sz * (len / 2 - 0.4)], [cx + sx * (hw + 0.02), ey + 0.36, zc + sz * (len / 2 + 0.02)], 0.12, 0.1);
     // a hanji lantern hung from the ridge beam (fixed light)
@@ -361,8 +383,8 @@ PARTS.floor_1 = function (K) {
   });
   dress('PR02', (g, i) => {   // reflecting pool
     const [x0, z0, x1, z1] = i.box;
-    BT(g, 'stone_dark', 'stone', x0, x1, 0, 0.06, z0, z0 + 0.18); BT(g, 'stone_dark', 'stone', x0, x1, 0, 0.06, z1 - 0.18, z1);
-    BT(g, 'stone_dark', 'stone', x0, x0 + 0.18, 0, 0.06, z0 + 0.18, z1 - 0.18); BT(g, 'stone_dark', 'stone', x1 - 0.18, x1, 0, 0.06, z0 + 0.18, z1 - 0.18);
+    BT(g, 'dz_basalt', 'dz_basalt', x0, x1, 0, 0.08, z0, z0 + 0.22); BT(g, 'dz_basalt', 'dz_basalt', x0, x1, 0, 0.08, z1 - 0.22, z1);
+    BT(g, 'dz_basalt', 'dz_basalt', x0, x0 + 0.22, 0, 0.08, z0 + 0.22, z1 - 0.22); BT(g, 'dz_basalt', 'dz_basalt', x1 - 0.22, x1, 0, 0.08, z0 + 0.22, z1 - 0.22);
     B(g, 'water', x0 + 0.18, x1 - 0.18, 0.0, 0.03, z0 + 0.18, z1 - 0.18, '-y');
     B(g, 'glow_purple', x0 + 0.18, x1 - 0.18, 0.03, 0.034, z0 + 0.18, z0 + 0.2, '-y'); B(g, 'glow_purple', x0 + 0.18, x1 - 0.18, 0.03, 0.034, z1 - 0.2, z1 - 0.18, '-y');
   });
@@ -406,6 +428,40 @@ PARTS.floor_1 = function (K) {
         fbox(g, 'glow_warm', tea, a, b, 0.02, 0.035, 0.03, 0.04);
       }
     }
+  }
+
+  // ---------------- Sky garden planting (built-in landscape): moss beds with stone edging, pines, maples, stepping stones ----------------
+  {
+    const g = D('garden_plant'), R = K.rng(77);
+    // maple: a short dark trunk and clusters of small leaf masses in deep red and amber
+    const maple = (x, z, h, seed) => { const Q = K.rng(seed); BM(g, 'dz_wood_black', [x, 0, z], [x + 0.15, h * 0.55, z + 0.1], 0.1);
+      for (let k = 0; k < 9; k++) { const a = Q() * PI * 2, d = 0.3 + Q() * 0.7; GE(g, Q() < 0.6 ? 'dz_maple' : 'dz_maple2', ICO0, MX(x + Math.cos(a) * d, h * (0.6 + Q() * 0.35), z + Math.sin(a) * d, Q() * 3, 0.35 + Q() * 0.25, 0.22 + Q() * 0.1, 0.35 + Q() * 0.25)); } };
+    const bed = (x0, z0, x1, z1, plant) => {
+      if (!free([x0, z0, x1, z1], 'garden bed')) return false;
+      B(g, 'dz_basalt', x0, x1, 0, 0.14, z0, z0 + 0.12); B(g, 'dz_basalt', x0, x1, 0, 0.14, z1 - 0.12, z1);
+      B(g, 'dz_basalt', x0, x0 + 0.12, 0, 0.14, z0 + 0.12, z1 - 0.12); B(g, 'dz_basalt', x1 - 0.12, x1, 0, 0.14, z0 + 0.12, z1 - 0.12);
+      B(g, 'dz_earth', x0 + 0.12, x1 - 0.12, 0, 0.1, z0 + 0.12, z1 - 0.12, '-y');
+      for (let k = 0; k < Math.round((x1 - x0) * (z1 - z0) * 1.4); k++) shrub(g, x0 + 0.3 + R() * (x1 - x0 - 0.6), z0 + 0.3 + R() * (z1 - z0 - 0.6), 0.08, 0.22 + R() * 0.18, 0.14 + R() * 0.12, R() < 0.7 ? 'dz_moss' : 'dz_foliage', 3, 100 + k);
+      plant(); K.pool(FID, (x0 + x1) / 2, (z0 + z1) / 2, Math.max(x1 - x0, z1 - z0) * 0.6, 'pool_warm', 0.11);
+      B(g, 'glow_warm', x0 + 0.14, x1 - 0.14, 0.14, 0.15, z0 + 0.1, z0 + 0.12, '-y');   // low uplight line in the edging
+      return true;
+    };
+    // candidate beds; free() drops any that would block an entry, column, stair or prop (first fit per group wins)
+    const beds = [
+      [[-24.7, 12.7, -22.6, 15.0], [-25.2, 12.6, -23.4, 14.6]],
+      [[-17.4, 22.0, -15.3, 24.0], [-17.2, 21.6, -15.6, 23.4]],
+      [[-14.7, 18.4, -12.6, 21.6], [-14.4, 12.8, -12.6, 15.6]],
+      [[-25.3, 22.0, -23.6, 23.8]],
+    ];
+    const plants = [(c) => { pine(g, c[0] + 0.9, c[1], 0.1, 3.6, 21, [0.5, 0.3]); maple(c[0] - 0.4, c[1] + 0.6, 2.8, 22); },
+      (c) => { maple(c[0], c[1], 3.2, 23); shrub(g, c[0] + 0.6, c[1] + 0.5, 0.1, 0.4, 0.5, 'dz_pine', 4, 24); },
+      (c) => { pine(g, c[0], c[1], 0.1, 2.8, 25, [-0.4, 0.3]); }, (c) => { maple(c[0], c[1], 2.4, 26); }];
+    beds.forEach((opts, k) => { for (const [x0, z0, x1, z1] of opts) if (bed(x0, z0, x1, z1, () => plants[k]([(x0 + x1) / 2, (z0 + z1) / 2]))) break; });
+    // stepping stones from the garden doors toward the pavilion (flush with the paving)
+    for (let k = 0; k < 9; k++) { const x = -13.6 - k * 0.45 + Math.sin(k * 1.3) * 0.25, z = 25.2 - k * 0.62; if (free([x - 0.3, z - 0.25, x + 0.3, z + 0.25], 'stepping stone')) { const st = new T.CylinderGeometry(0.3 - (k % 3) * 0.03, 0.3, 0.02, 9); GE(g, 'dz_basalt', st, MX(x, 0.01, z, k)); } }
+    // rain on the 7 m glass reads from inside: soft purple uplight pools along the south and west glass
+    for (let x = -24; x < -12; x += 3) K.pool(FID, x, 25.3, 1.2, 'pool_purple', 0.006);
+    for (let z = 13; z < 22; z += 3) K.pool(FID, -25.3, z, 1.2, 'pool_purple', 0.006);
   }
 
   // ---------------- S4 Tea Room / Ondol Lounge ----------------
@@ -561,6 +617,10 @@ PARTS.floor_1 = function (K) {
   }
 
   // skirtings and corridor wayfinding strips on every hard wall face, then the prop markers
+  // ---------------- room identity pass: S4 lit from the hanji lightbox and pendants ----------------
+  K.pool(FID, -8.2, 15.4, 1.6, 'pool_warm'); K.pool(FID, -8.2, 18.6, 1.6, 'pool_warm');
+  for (const [x, z] of [[-6.6, 16.3], [-4.4, 16.6], [-6.0, 19.0], [2.0, 15.6], [3.4, 18.6]]) K.pool(FID, x, z, 1.0, 'pool_warm');
+  K.pool(FID, 6.5, 18.5, 1.8, 'pool_warm');
   skirtings((id) => (typeof FINISH !== 'undefined' ? FINISH.get(id) : ''));
   propMarkers(BUILTIN);
 };

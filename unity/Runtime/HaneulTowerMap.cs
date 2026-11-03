@@ -12,15 +12,16 @@
 //   - adds a HaneulSurface component (HaneulSurface.cs) to every typed node (type, id, floor, flags, fortification size);
 //   - colliders: a static MeshCollider on every solid typed mesh (walls, glass, slabs, hatches, decks, rails),
 //     a BoxCollider (size 1, the node's scale is the box size) on every COL_ empty, trigger boxes on the
-//     ZONE_EXT_ reveal volumes; DECO_, ENV_, STAIR_ meshes (walk on the COL_STAIR_ ramps) and HOLO_ get none;
-//   - optional layers per class (soft, hard, glass, trigger, marker);
+//     ZONE_EXT_ reveal volumes; DECO_, ENV_, STAIR_ meshes (walk on the COL_STAIR_ ramps, landings and spiral treads)
+//     and HOLO_ get none;
+//   - optional layers per class (soft, hard, trigger, marker; breakable glass is on the soft layer, tempered on hard);
 //   - fills the registry: lookups by node name or collider, reinforce units, hatches, barricade slots,
 //     attacker and defender spawns, objectives and sites, cover spots, callouts, prop markers.
 //
 // Coordinates: glTFast negates X on import (glTF +X is Unity -X). Node transforms are already converted, so use the
 // transforms. Positions read from layout.json go through FromLayout() (x -> -x).
-// Directions: REINF_ units face transform.forward (the defender room); hatches face transform.up (down for units
-// mounted from below); BARR_ slots face transform.forward (the wall normal). A Wall Fortification prefab placed as
+// Directions: REINF_ units face transform.forward (the defender room); hatches face transform.up (every hatch is
+// reinforced from above, face-up on the slab); BARR_ slots face transform.forward (the wall normal). A Wall Fortification prefab placed as
 // a child at the identity pose of a REINF_ or HATCH_ node sits exactly on its mount.
 using System;
 using System.Collections.Generic;
@@ -196,7 +197,9 @@ public class HaneulTowerMap : MonoBehaviour
                 case HaneulSurfaceType.Cover: CoverSpots.Add(s); break;
                 case HaneulSurfaceType.Callout: Callouts.Add(s); break;
                 case HaneulSurfaceType.PropMarker: PropMarkers.Add(s); break;
-                case HaneulSurfaceType.RevealZone: RevealZones.Add(s); break;
+                case HaneulSurfaceType.RevealZone:   // one entry per zone: the ZONE_EXT_<id> parent, not its box children
+                    if (s.transform.parent == null || !s.transform.parent.name.StartsWith("ZONE_EXT_", StringComparison.Ordinal)) RevealZones.Add(s);
+                    break;
             }
         }
     }
@@ -322,7 +325,9 @@ public class HaneulTowerMap : MonoBehaviour
             if (string.IsNullOrEmpty(s.site)) s.site = SiteOfRoom(h.top_room);
             s.floor = h.floor;
         }
-        s.farSideZ = 0.3f;                    // slab thickness: the anchors sit on the far face
+        // hatches: farSideZ holds the slab thickness the anchors pass through (a depth, positive). It is informative only:
+        // Reinforce() leaves the hatch gadget's own far side as shipped (0.3 m down, which matches the 0.3 m slab)
+        s.farSideZ = 0.3f;
     }
 
     string SiteOfRoom(string room)
@@ -410,7 +415,9 @@ public class HaneulTowerMap : MonoBehaviour
         }
         var mc = go.AddComponent<MeshCollider>();
         mc.sharedMesh = mesh; mc.convex = false;
-        // the cradle moves (clip cradle_cycle); give it a kinematic body so the collider follows cheaply
+        // the cradle moves (clip cradle_cycle); give it a kinematic body so the collider follows cheaply. The clip moves
+        // the transform, not the body, so riders are not carried: parent the player to the cradle while they stand on it
+        // (or move the character controller by the cradle's per-frame delta)
         if (s.type == HaneulSurfaceType.Bridge && s.id.StartsWith("CR_", StringComparison.Ordinal) && go.GetComponent<Rigidbody>() == null)
         { var rb = go.AddComponent<Rigidbody>(); rb.isKinematic = true; rb.useGravity = false; }
     }

@@ -119,7 +119,7 @@ controls.minDistance = 0.4; controls.maxDistance = 900;
 controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.maxPolarAngle = Math.PI * 0.62;
 ao.updateGtaoMaterial({ radius: 0.7, distanceExponent: 1.4, thickness: 1.5, scale: 1.0, samples: 12 });
 ao.blendIntensity = 0.85; ao.enabled = !FAST;
-bloom.strength = 0.72; bloom.radius = 0.55; bloom.threshold = 0.8;
+bloom.strength = 0.55; bloom.radius = 0.5; bloom.threshold = 0.85;
 // a stray NaN or huge HDR value (a grazing specular hit) blows up into a white square through the bloom mips:
 // clamp the scene colour before the bloom
 {
@@ -206,6 +206,7 @@ function visible(u, isOverlay) {
   const n = VIS.floor, fn = fnOf(u.fk);
   if (u.layer === 'skyline' && !VIS.skyline) return false;
   if (u.layer === 'rain' && !VIS.rain) return false;
+  if (u.layer === 'propplan' && !VIS.markers) return false;   // furniture-slot footprints show with the markers (M or P)
   if (VIS.only && !VIS.only.includes(u.layer)) return false;
   if (n > 0) {
     if (fn && fn > n) return false;
@@ -390,7 +391,7 @@ window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
   if (k === 'v') setWalk(!walk.on);
   else if (k === 'f' && walk.on) { walk.fly = !walk.fly; walk.vy = 0; $('st-mode').textContent = walk.fly ? 'Fly' : 'Walk'; }
-  else if (k === 'x') toggle('overlay'); else if (k === 'l') toggle('labels'); else if (k === 'm') toggle('markers');
+  else if (k === 'x') toggle('overlay'); else if (k === 'l') toggle('labels'); else if (k === 'm' || k === 'p') toggle('markers');
   else if (k >= '0' && k <= String(FIDS.length)) setFloor(+k);
 });
 window.addEventListener('keyup', (e) => walk.keys.delete(e.key.toLowerCase()));
@@ -470,9 +471,10 @@ function preview() {
   setLoop(false); setWalk(false);
   document.querySelectorAll('.plate, .bar, .hint, .legend').forEach((e) => { e.hidden = true; });
   VIS.floor = 0; VIS.overlay = false; VIS.labels = false; VIS.markers = false; applyVis();
-  // hero: from the wet Sky Terrace (A1) up at the three lit floors, the East Tower screen on the right
-  camera.fov = 64; camera.updateProjectionMatrix();
-  camera.position.set(-22, 0.8, 54); controls.target.set(3, 13, 0); controls.update();
+  // hero: outside the south-west corner just above 98F, the three lit floors and the Sky Terrace on the left, the river
+  // with its lit bridges and light trails falling away below, the south bank city and ridges behind
+  camera.fov = 70; camera.updateProjectionMatrix();
+  camera.position.set(-42, 19, 2); controls.target.set(12, -60, 200); controls.update();
   tick(0); composer.render();
 }
 window.__model = { id: 'haneul-tower', exportScenes, exportGLB, preview, stats: MAP.STATS, partErrors: window.__partErrors };

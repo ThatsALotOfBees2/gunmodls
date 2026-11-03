@@ -332,8 +332,8 @@ for i in range(len(bands)):
 budget_report = []
 for s in L['sites']:
     units = sum(len(w['reinforce']['panels']) for w in walls if w['type'] == 'reinforceable' and w['reinforce'].get('site') == s['id'])
-    hs = [h['id'] for h in L['hatches'] if (h['reinforce_from'] == 'below' and h['bottom_room'] in s['rooms']) or
-          (h['reinforce_from'] == 'above' and h['top_room'] in s['rooms'])]
+    # a hatch into the site ceiling or in the site floor counts (it is reinforced from above, face-up)
+    hs = [h['id'] for h in L['hatches'] if h['bottom_room'] in s['rooms'] or h['top_room'] in s['rooms']]
     cand = units + len(hs)
     budget_report.append('%s candidates %d (wall units %d + hatches %s) vs budget %d' % (s['id'], cand, units, hs, BUDGET))
     if cand < BUDGET + 2: err('site %s has %d reinforcement candidates; needs at least budget + 2 = %d' % (s['id'], cand, BUDGET + 2))

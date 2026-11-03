@@ -240,19 +240,29 @@ PARTS.floor_3 = function (K) {
       K.obox(g(glow), [m[0], Y + CE - 0.022, m[1]], D3, [0, 1, 0], N3, [len / 2, 0.006, 0.025], '+y');
     }
   }
-  // timber rafters (seokkarae) under a ceiling: plan box, along 'x' or 'z', pitch
+  // timber rafters (seokkarae) under a ceiling: plan box, along 'x' or 'z', pitch; clipped around hatches, patches,
+  // stairwells and slab openings (0.3 m margin) so nothing hangs over a stair
+  const STAIRCUTS = (() => {
+    const out = [], nf = { F1: 'F2', F2: 'F3', F3: null }[FID], m = 0.3;
+    for (const so of K.L.slab_openings) if (so.floor === nf || (so.floor === 'all' && nf)) { const b = K.polyBox(so.polygon); out.push([b[0] - m, b[1] - m, b[2] + m, b[3] + m]); }
+    for (const st of K.L.stairs) {
+      if (!(st.floors || []).includes(FID)) continue;
+      if (st.box) out.push([st.box[0] - m, st.box[1] - m, st.box[2] + m, st.box[3] + m]);
+      else if (st.center) out.push([st.center[0] - st.radius - m, st.center[1] - st.radius - m, st.center[0] + st.radius + m, st.center[1] + st.radius + m]);
+      else if (st.path) { const xs = st.path.map((p) => p[0]), zs = st.path.map((p) => p[2]), hw = (st.width || 1.4) / 2 + m; out.push([Math.min(...xs) - hw, Math.min(...zs) - hw, Math.max(...xs) + hw, Math.max(...zs) + hw]); }
+    }
+    return out;
+  })();
   function rafters(box, along, pitch = 0.6, mk = 'wood_dark', depth = 0.14) {
-    const g = D('rafters'), [x0, z0, x1, z1] = box, bx = (a, b, c, d) => B(g, mk, a, b, CE - depth, CE - 0.005, c, d, '+y');
-    const cuts = K.keepouts(FID).filter((k) => /hatch|patch/.test(k.why)).map((k) => k.box);
-    if (along === 'x') for (let z = z0 + pitch / 2; z < z1; z += pitch) {
-      const ivs = cuts.filter((c) => z + 0.05 > c[1] && z - 0.05 < c[3]).map((c) => [c[0], c[2]]);
-      let a = x0;
-      for (const [c0, c1] of ivs.sort((p, q) => p[0] - q[0])) { if (c0 > a + 0.2) bx(a, Math.min(c0, x1), z - 0.05, z + 0.05); a = Math.max(a, c1); }
-      if (x1 > a + 0.2) bx(a, x1, z - 0.05, z + 0.05);
-    } else for (let x = x0 + pitch / 2; x < x1; x += pitch) {
-      const ivs = cuts.filter((c) => x + 0.05 > c[0] && x - 0.05 < c[2]).map((c) => [c[1], c[3]]); let a = z0;
-      for (const [c0, c1] of ivs.sort((p, q) => p[0] - q[0])) { if (c0 > a + 0.2) bx(x - 0.05, x + 0.05, a, Math.min(c0, z1)); a = Math.max(a, c1); }
-      if (z1 > a + 0.2) bx(x - 0.05, x + 0.05, a, z1);
+    const g = D('rafters'), [x0, z0, x1, z1] = box;
+    const cuts = K.keepouts(FID).filter((k) => /hatch|patch/.test(k.why)).map((k) => k.box).concat(STAIRCUTS);
+    const X = along === 'x', A0 = X ? x0 : z0, A1 = X ? x1 : z1;
+    for (let c = (X ? z0 : x0) + pitch / 2; c < (X ? z1 : x1); c += pitch) {
+      const ivs = cuts.filter((k) => (X ? c + 0.05 > k[1] && c - 0.05 < k[3] : c + 0.05 > k[0] && c - 0.05 < k[2])).map((k) => (X ? [k[0], k[2]] : [k[1], k[3]])).sort((p, q) => p[0] - q[0]);
+      let a = A0;
+      const run = (u0, u1) => { u0 = Math.max(u0, A0); u1 = Math.min(u1, A1); if (u1 - u0 > 0.2) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
+      for (const [c0, c1] of ivs) { if (c0 > a) run(a, c0); a = Math.max(a, c1); }
+      run(a, A1);
     }
   }
 
@@ -345,6 +355,10 @@ PARTS.floor_3 = function (K) {
   // ---- screens: abstract graphics only ----
   const SCR_FEED = screenMat('f3_scr_feed', paintFeeds(311), { ei: 1.1 });
   const SCR_WAVE = screenMat('f3_scr_wave', paintBars(312, 250, 300), { ei: 1.3 });
+  // rack fronts: rows of tiny status LEDs on black (no text)
+  const SCR_RACK = screenMat('f3_scr_rack', () => { const c = K.canvas(256, 256), x = c.getContext('2d'), R = K.rng(313); x.fillStyle = '#040508'; x.fillRect(0, 0, 256, 256);
+    for (let j = 0; j < 32; j++) { x.fillStyle = '#0c0e14'; x.fillRect(4, j * 8 + 1, 248, 6); for (let i = 0; i < 24; i++) if (R() < 0.55) { x.fillStyle = R() < 0.7 ? '#4aa8ff' : R() < 0.6 ? '#5dff9a' : '#b07bff'; x.fillRect(8 + i * 10, j * 8 + 3, 3, 2); } }
+    return c; }, { ei: 1.2 });
   const SCR_ART = screenMat('f3_scr_art', paintAbstract(313, 268, 6), { ei: 1.2 });
   const SCR_CINE = screenMat('f3_scr_cine', paintAbstract(314, 300, 10), { ei: 1.5 });
   const SCR_TEAL = screenMat('f3_scr_teal', paintAbstract(315, 196, 7), { ei: 1.2 });
@@ -721,6 +735,22 @@ PARTS.floor_3 = function (K) {
   }
 
   // skirtings and corridor wayfinding strips on every hard wall face, then the prop markers
+  // ---------------- room identity pass: story lighting pools and built-ins (no furniture) ----------------
+  {
+    const g = D('identity');
+    // S1 Control Room: dim and purple, blue spill from the multiviewer and the director window
+    K.pool(FID, 7.6, -23.1, 1.9, 'pool_blue'); K.pool(FID, 7.9, -19.5, 1.6, 'pool_purple'); K.pool(FID, 4.0, -18.5, 2.4, 'pool_purple'); K.pool(FID, 3.0, -14.2, 1.2, 'pool_warm');
+    // raked director's sill along the window: a sloped built-in console ledge under the glass (abstract graphics only)
+    if (free([8.35, -21.9, 8.95, -17.1], 'director sill')) {
+      B(g, 'black', 8.45, 8.95, 0, 0.7, -21.9, -17.1);
+      const sl = new T.BoxGeometry(0.6, 0.04, 4.8); sl.rotateZ(0.32); GE(g, 'steel_dark', sl, MX(8.62, 0.76, -19.5));
+      for (let k = 0; k < 6; k++) screen(g, k % 2 ? SCR_WAVE : SCR_FEED, 8.44, 0.5, -21.5 + k * 0.8, 0.62, 0.3, [-1, 0]);
+    }
+    // S1 Render Farm: cold-aisle blue, rack bay recessed in the fire wall with LED fronts
+    for (const z of [-23.25, -19.9]) for (const x of [-7.2, -4.8, -2.4]) K.pool(FID, x, z, 1.2, 'pool_blue');
+    const rf = roomFace('F3_W25', 'F3_render_farm');
+    if (rf) { const L = rf.F.len; fbox(g, 'black', rf, 0.1, L - 0.1, 1.15, 2.45, 0, 0.05); for (let k = 0; k < 3; k++) fscreen(g, SCR_RACK, rf, 0.25 + (L - 0.5) * (k + 0.5) / 3, 1.8, (L - 0.6) / 3, 1.2, 0.056); }
+  }
   skirtings((id) => (typeof FINISH !== 'undefined' ? FINISH.get(id) : ''));
   propMarkers(BUILTIN);
 };

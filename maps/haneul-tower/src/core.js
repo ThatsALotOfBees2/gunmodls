@@ -348,23 +348,27 @@ const sstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a)
 
 // The generators return { map, normal?, orm?, emissive? } canvases. Sizes are kept small (export size).
 const GEN = {
-  board(n = 512) {   // board-formed concrete: 16 boards per 2.4 m, form-tie holes every 0.6 m
-    const N1 = noise(n, 6, 6, 11, 5), N2 = noise(n, 3, 96, 12, 3), N3 = noise(n, 64, 64, 13, 2), R = rnd(14);
-    const B = 16, bh = n / B, tone = Array.from({ length: B }, () => R()), off = tone.map(() => Math.floor(R() * n));
-    const holes = []; for (let a = 0; a < 4; a++) for (let b = 0; b < 2; b++) holes.push([(a + 0.5) * n / 4, (b * 0.5 + 0.25) * n]);
+  pool(n = 128) {   // soft light pool on a floor: radial falloff in the alpha (exported as an emissive alpha decal)
+    const c = cv(n), x = c.getContext('2d'), g = x.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+    g.addColorStop(0, 'rgba(255,255,255,0.55)'); g.addColorStop(0.35, 'rgba(255,255,255,0.28)'); g.addColorStop(0.7, 'rgba(255,255,255,0.07)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, n, n);
+    return { map: c, emissive: c, alpha: true };
+  },
+  board(n = 512) {   // hard-surface cladding: dark honed granite in 1.2 x 0.6 m panels (2.4 m tile) with deep reveals
+    const N1 = noise(n, 5, 5, 11, 5), N2 = noise(n, 200, 200, 12, 1), N3 = noise(n, 40, 40, 13, 2), R = rnd(14);
+    const cols = 2, rows = 4, pw = n / cols, ph = n / rows, tone = Array.from({ length: cols * rows }, () => R()), rv = 4.5;
     const H = new Float32Array(n * n), A = new Float32Array(n * n);
     for (let j = 0; j < n; j++) {
-      const b = Math.floor(j / bh), fj = j - b * bh, edge = Math.min(fj, bh - fj);
+      const r = Math.floor(j / ph), fj = j - r * ph, sh = r % 2 ? pw / 2 : 0;
       for (let i = 0; i < n; i++) {
-        const k = j * n + i, gr = N2[j * n + (i + off[b]) % n];
-        let h = 0.5 + 0.3 * (N1[k] - 0.5) + 0.2 * (gr - 0.5) + 0.06 * (N3[k] - 0.5) + (tone[b] - 0.5) * 0.12;
-        let a = 0.44 + 0.16 * (N1[k] - 0.5) + 0.08 * (gr - 0.5) + 0.05 * (tone[b] - 0.5) + 0.05 * (N3[k] - 0.5);
-        if (edge < 1.6) { h -= 0.3; a -= 0.07; }
-        for (const [hx, hy] of holes) { const d = Math.hypot(i - hx, j - hy); if (d < 7) { h -= 0.6 * (1 - d / 7); a -= 0.2 * (1 - d / 7); } }
+        const ii = (i + sh) % n, c = Math.floor(ii / pw), fi = ii - c * pw, edge = Math.min(fi, pw - fi, fj, ph - fj), k = j * n + i, t = tone[r * cols + c];
+        const sp = N2[k] > 0.78 ? 0.1 : N2[k] < 0.2 ? -0.06 : 0;
+        let a = 0.36 + 0.07 * (N1[k] - 0.5) + 0.05 * (N3[k] - 0.5) + sp + (t - 0.5) * 0.06, h = 0.5 + 0.05 * (N3[k] - 0.5);
+        if (edge < rv) { const q = sstep(rv, 0, edge); a -= 0.3 * q; h -= 0.7 * q; }
         H[k] = h; A[k] = a;
       }
     }
-    return { map: img(n, n, (i, j, o, k) => grey(o, A[k], 1, 1, 1.02)), normal: nmap(H, n, 2.0), orm: ormMap(n, (k) => 0.84 + 0.1 * (N3[k] - 0.5), () => 0) };
+    return { map: img(n, n, (i, j, o, k) => grey(o, A[k], 0.98, 1, 1.04)), normal: nmap(H, n, 2.4), orm: ormMap(n, (k) => 0.42 + 0.12 * (N1[k] - 0.5) + (N2[k] > 0.78 ? -0.1 : 0), () => 0) };
   },
   polished(n = 512) {   // polished dark concrete with aggregate
     const N1 = noise(n, 4, 4, 21, 5), N2 = noise(n, 160, 160, 22, 1), N3 = noise(n, 16, 16, 23, 3), H = new Float32Array(n * n);
@@ -381,10 +385,14 @@ const GEN = {
   },
   hanji(n = 512) {   // translucent paper panels on thin dark battens: battens every 0.6 m (u) and 0.9 m (v) over a 1.8 m tile
     const NF = noise(n, 96, 96, 41, 2), NL = noise(n, 3, 3, 42, 4), NW = noise(n, 2, 64, 43, 3), H = new Float32Array(n * n), bat = new Float32Array(n * n);
-    const bw = 4.5, sx = n / 3, sy = n / 2;
+    // tti-sal changsal: wide rails every 0.9 m, thin vertical muntins every 0.15 m, triple horizontal bars near the
+    // top and bottom of each 0.9 m panel (Korean lattice, not a square shoji grid)
+    const bw = 6, sx = n / 2, sy = n / 2, mw = 1.6, mp = n / 12, bands = [0.12, 0.155, 0.19, 0.81, 0.845, 0.88];
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const dx = Math.min(i % sx, sx - (i % sx)), dy = Math.min(j % sy, sy - (j % sy)), d = Math.min(dx, dy), k = j * n + i;
-      bat[k] = d < bw ? 1 : 0; H[k] = d < bw ? 0.8 + 0.2 * sstep(bw, 0, d) : 0.08 * NF[k];
+      const fv = (j % sy) / sy, mu = Math.min(i % mp, mp - (i % mp)), hb = bands.some((b) => Math.abs(fv - b) * sy < mw);
+      const thin = mu < mw || hb;
+      bat[k] = d < bw || thin ? 1 : 0; H[k] = d < bw ? 0.8 + 0.2 * sstep(bw, 0, d) : thin ? 0.55 : 0.08 * NF[k];
     }
     const map = img(n, n, (i, j, o, k) => {
       if (bat[k]) grey(o, 0.15 + 0.05 * NW[k], 1.25, 1.0, 0.85);
@@ -618,7 +626,7 @@ function buildMaterials() {
   const t0 = performance.now();
   const S = (name, gen) => texSet(name, gen);
   // structure
-  mat('concrete_board', S('board', 'board'), { color: '#a4a29d', tile: 2.4, ns: 0.9 });
+  mat('concrete_board', S('board', 'board'), { color: '#8e8d92', tile: 2.4, ns: 0.9 });   // every hard wall: honed granite panels
   mat('concrete', S('polished', 'polished'), { color: '#9a9893', tile: 3, ns: 0.6 });
   mat('concrete_dark', S('polished', 'polished'), { color: '#5d5b57', tile: 3, ns: 0.6, env: 'out' });
   mat('alloy', S('brushed', 'brushed'), { color: '#5a5e66', tile: 0.8, ns: 0.5, env: 'out' });
@@ -627,10 +635,12 @@ function buildMaterials() {
   mat('lift_steel', S('brushed', 'brushed'), { color: '#c3c6cc', tile: 0.8, ns: 0.4 });
   mat('louvre', S('louvre', 'louvre'), { color: '#4a4e56', tile: 1.2, env: 'out' });
   // soft walls: hanji paper panels on dark battens with a warm backlight
-  mat('hanji', S('hanji', 'hanji'), { tile: 1.8, emissive: '#ffffff', ei: 0.34, ns: 0.8 });
+  mat('hanji', S('hanji', 'hanji'), { tile: 1.8, emissive: '#ffffff', ei: 0.12, ns: 0.8 });
   mat('wood', S('wood', 'wood'), { color: '#d29f72', tile: 1.2, ns: 0.8 });
   mat('wood_dark', S('wood', 'wood'), { color: '#5e4030', tile: 1.2, ns: 0.8 });
   mat('plaster', S('plaster', 'plaster'), { color: '#f2ebe0', tile: 2 });
+  mat('gypsum', S('plaster', 'plaster'), { color: '#bdbab3', tile: 2 });
+  mat('acoustic', S('carpet', 'carpet'), { color: '#3b3844', tile: 1.2, ns: 0.5 });
   // floors
   mat('carpet', S('carpet', 'carpet'), { color: '#6c6b72', tile: 2.4 });
   mat('carpet_indigo', S('carpet', 'carpet'), { color: '#4f5592', tile: 2.4 });
@@ -642,7 +652,7 @@ function buildMaterials() {
   mat('stone_wet', S('wetpaver', 'wetpaver'), { color: '#c8ccd6', tile: 3.6, env: 'out' });
   mat('grating', S('grating', 'grating'), { color: '#9a9ea6', tile: 0.6, env: 'out' });
   mat('epoxy', S('epoxy', 'epoxy'), { color: '#7c817f', tile: 3 });
-  mat('ceiling', S('ceiltile', 'ceiltile'), { color: '#f5ede0', tile: 1.2, emissive: '#ffe2bc', ei: 0.06 });
+  mat('ceiling', S('ceiltile', 'ceiltile'), { color: '#b8ab9a', tile: 1.2 });
   mat('ceiling_dark', S('ceiltile', 'ceiltile'), { color: '#4c4d55', tile: 1.2 });
   mat('led', S('led', 'led'), { tile: 2.0, emissive: '#ffffff', ei: 1.3 });
   // glass: tempered facade lites (rain streaks), frit border, breakable lites, interior glass
@@ -653,8 +663,15 @@ function buildMaterials() {
   // emissive accents (no textures)
   mat('glow_purple', null, { color: '#1a0b33', emissive: '#8a4dff', ei: 3.2, rough: 0.4 });
   mat('glow_pink', null, { color: '#2a0920', emissive: '#ff4fd8', ei: 2.6, rough: 0.4 });
-  mat('glow_warm', null, { color: '#3a3026', emissive: '#ffd6a6', ei: 2.1, rough: 0.5 });
-  mat('glow_cool', null, { color: '#2a2e36', emissive: '#dfe8ff', ei: 1.9, rough: 0.5 });
+  mat('glow_warm', null, { color: '#3a3026', emissive: '#ffcf9a', ei: 1.3, rough: 0.5 });
+  mat('glow_cool', null, { color: '#2a2e36', emissive: '#dfe8ff', ei: 1.0, rough: 0.5 });
+  mat('glow_down', null, { color: '#3a3026', emissive: '#ffc890', ei: 1.6, rough: 0.5 });
+  for (const [k, c, e] of [['pool_warm', '#ffc890', 0.5], ['pool_purple', '#9a5cff', 0.6], ['pool_blue', '#5a8cff', 0.55], ['pool_cool', '#dfe8ff', 0.35]]) { mat(k, S('pool', 'pool'), { color: '#000000', emissive: c, ei: e, rough: 1, metal: 0 }); M[k].polygonOffset = true; M[k].polygonOffsetFactor = -2; }
+  mat('ceil_wood', S('wood', 'wood'), { color: '#4a3326', tile: 1.2, ns: 0.8 });
+  mat('dz_onyx', S('polished', 'polished'), { color: '#e8c9a0', tile: 1.4, emissive: '#ffb070', ei: 0.55, rough: 0.25 });
+  mat('glow_amber', null, { color: '#2a1a06', emissive: '#ffa040', ei: 1.6, rough: 0.5 });
+  mat('deck_wet', S('wetpaver', 'wetpaver'), { color: '#5d6068', tile: 2.4, env: 'out' });
+  mat('corten', S('polished', 'polished'), { color: '#6a3a22', tile: 2, rough: 0.7 });
   mat('glow_red', null, { color: '#250606', emissive: '#ff3a30', ei: 2.4, rough: 0.5 });
   // backdrop and misc
   mat('env_facade', S('windows', 'windows'), { tile: [24, 25.2], emissive: '#ffffff', ei: 0.85, env: 'out', envI: 1.2 });
@@ -715,7 +732,7 @@ const yawOf = (d) => THREE.MathUtils.radToDeg(Math.atan2(d[0], d[1]));   // plan
 
 const FINISH_RULES = [
   [/_lifts$/, 'terrazzo'], [/stair_|_shaft$|riser|lifts_|cold_store/, 'concrete'],
-  [/_garden$|veranda|spa_hall|suite_bath/, 'stone'], [/ondol|salt_room/, 'stone_warm'],
+  [/_garden$/, 'stone_dark'], [/veranda|spa_hall|suite_bath/, 'stone'], [/ondol|salt_room/, 'stone_warm'],
   [/tea_room|dining|lounge_bar|cigar|exec_office|boardroom|suite_lounge|locker|treatment/, 'wood'],
   [/changing|steam|bathhouse|wine_room|concierge|deposit/, 'stone_dark'],
   [/kitchen|servery|laundry|plant_room|staff_entry|service_hall|canteen|_studio$|backstage/, 'epoxy'],
@@ -724,6 +741,7 @@ const FINISH_RULES = [
   [/./, 'terrazzo'],
 ];
 const CEIL_RULES = [
+  [/ondol|tea_room|lounge_bar|cigar|wine_room|suite_lounge|exec_office|boardroom/, 'ceil_wood'], [/deposit|concierge/, 'ceiling_dark'],
   [/kitchen|servery|laundry|plant_room|staff_entry|service_hall|canteen|backstage|control|render|edit|news|podcast|archive|writers|media_hall|projection|studio_void|screening/, 'ceiling_dark'],
   [/_lifts$/, 'plaster'], [/./, 'ceiling'],
 ];
@@ -797,6 +815,16 @@ function wallExtensions() {
   for (const w of L.walls) [[0, w.a], [1, w.b]].forEach(([end, p]) => { if (outlineDist(p) < 0.02) ext.get(w.id)[end] = -0.06; });
   return ext;
 }
+// soft partitions by programme: hanji changsal in hotel and spa rooms, dark acoustic fabric on the media floor,
+// painted gypsum in back of house (all thin partitions; studs show at the door returns)
+const MEDIA = /control|render|edit|news|podcast|archive|writers|media_hall|green_room|makeup|wardrobe|screening|projection|studio|booth|noraebang/;
+const SOFT_FACE = (w) => {
+  const rs = [w.side_pos, w.side_neg].filter(Boolean), real = rs.filter((r) => { const R = ROOM.get(r); return R && R.kind !== 'corridor'; });
+  if (rs.some((r) => MEDIA.test(r))) return 'acoustic';
+  if (real.some((r) => !BOH.test(r))) return 'hanji';
+  if (rs.some((r) => BOH.test(r))) return 'gypsum';
+  return 'hanji';
+};
 const WALL_FACE = (w) => {
   if (w.core || w.column_wrap) return 'concrete_board';
   const n = (w.note || '').toLowerCase();
@@ -843,7 +871,7 @@ function buildWall(w, ext) {
   const base = { fk: w.floor, group: 'STRUCT', id: w.id };
   if (w.type === 'soft') {
     const e = node('SOFT_' + w.id, 'soft', w.floor, Object.assign({ extras: wallExtras(w) }, base));
-    const g = { z: e.gb('hanji'), x: e.gb('wood_dark'), y: e.gb('wood_dark') };
+    const g = { z: e.gb(SOFT_FACE(w)), x: e.gb('wood_dark'), y: e.gb('wood_dark') };
     const rects = rectMinus(U0, U1, w.y0, w.y1, holes);
     for (const r of rects) wbox(g, F, r.u0, r.u1, r.y0, r.y1, -t / 2, t / 2, r.y0 < 0.01 ? '-y' : '');
     e.extras.pieces = rects.map((r) => [r3(r.u0), r3(r.u1), r3(r.y0), r3(r.y1)]);
@@ -871,7 +899,7 @@ function buildWall(w, ext) {
           reinforce: { panels: R.panels, clear: R.clear, trim: R.trim, defender_side: R.defender_side, n: w.n, thickness: t, far_side_z: R.far_side_z, units: R.units },
         },
       });
-      wbox({ z: e.gb('hanji'), x: e.gb('wood_dark'), y: e.gb('wood_dark') }, F, p.u0, p.u1, R.y0, R.y1, -t / 2, t / 2, '-y');
+      wbox({ z: e.gb(SOFT_FACE(w)), x: e.gb('wood_dark'), y: e.gb('wood_dark') }, F, p.u0, p.u1, R.y0, R.y1, -t / 2, t / 2, '-y');
       // unit seams: dark joints at both panel edges, both faces
       for (const sg of [1, -1]) for (const u of [p.u0, p.u1 - 0.022]) wbox(e.gb('steel_dark'), F, u, u + 0.022, R.y0, R.y1 - 0.03, sg > 0 ? t / 2 : -t / 2 - 0.006, sg > 0 ? t / 2 + 0.006 : -t / 2);
       UNITS.push({ wall: w, F, p, ds, fk: w.floor });
@@ -893,6 +921,12 @@ function buildWall(w, ext) {
       for (let k = 0; k <= nm; k++) { const u = r.u0 + ((r.u1 - r.u0) * k) / nm; wbox(fr, F, Math.max(r.u0, u - 0.025), Math.min(r.u1, u + 0.025), r.y0, r.y1, -t / 2, t / 2); }
     }
     for (const o of w.openings) openingTrim(e, F, w, o, 'steel_dark');
+    // drywall bulkhead from the glass head to the slab above: closes the plenum over the glazing (soft)
+    const top = F2F - SLAB;
+    if (w.y1 < top - 0.01) {
+      const b = node('SOFT_' + w.id + '_bulk', 'soft', w.floor, Object.assign({ extras: Object.assign(wallExtras(w), { type: 'soft', role: 'plenum bulkhead over interior glass', y0: w.y1, y1: top }) }, base, { id: w.id + '_bulk' }));
+      wbox({ z: b.gb('plaster'), x: b.gb('plaster'), y: b.gb('plaster') }, F, U0, U1, w.y1, top, -t / 2, t / 2);
+    }
   } else if (w.type === 'balustrade') {
     const e = node('RAIL_' + w.id, 'balustrade', w.floor, Object.assign({ extras: Object.assign(wallExtras(w), { height: w.y1 }) }, base));
     for (const r of rectMinus(U0, U1, w.y0, w.y1, holes)) {
@@ -974,7 +1008,7 @@ function buildCeilings() {
       if (!R.traps.length) continue;
       const mk = CEILMAT.get(r.id), e = decoNode(f, 'ceiling', 'ceiling');
       prism(R, y, y, null, e.gb(mk), null);
-      lightStrips(e, r, y, holes, mk === 'ceiling_dark' ? 'glow_cool' : 'glow_warm');
+      if (BOH.test(r.id)) lightStrips(e, r, y, holes, 'glow_cool'); else if (!DARKROOM.test(r.id)) downlights(e, r, y, holes, r.kind === 'corridor' ? 2.4 : 3.2);
     }
     // plenum fascia along void and stair-opening edges in the slab above (closes the 3.1-3.9 m gap)
     if (nf) for (const h of slabHoles(nf)) {
@@ -989,6 +1023,26 @@ function buildCeilings() {
       }
     }
   }
+}
+// back of house keeps tube strips (cool white); every other room gets pools from recessed downlights
+// rooms lit only by their own story lighting in the floor parts (dark zones)
+const DARKROOM = /control_room|render_farm|wine_room|screening|projection|noraebang|booth|tea_room|cigar|studio/;
+const BOH = /kitchen|servery|laundry|plant_room|staff_entry|service_hall|canteen|backstage|cold_store|riser|_shaft/;
+function downlights(e, r, y, holes, pitch) {
+  const [x0, z0, x1, z1] = polyBox(r.polygon), nx = Math.max(1, Math.round((x1 - x0 - 1.2) / pitch)), nz = Math.max(1, Math.round((z1 - z0 - 1.2) / pitch));
+  const g = e.gb('glow_down'), rim = e.gb('black');
+  for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) {
+    const x = x0 + 0.6 + ((x1 - x0 - 1.2) * (i + 0.5)) / nx, z = z0 + 0.6 + ((z1 - z0 - 1.2) * (k + 0.5)) / nz, p = [x, z];
+    if (!inPoly(p, r.polygon) || polyDist(p, r.polygon) < 0.6 || holes.some((h) => inPoly(p, h) || polyDist(p, h) < 0.4)) continue;
+    abox(rim, x - 0.13, x + 0.13, y - 0.012, y - 0.002, z - 0.13, z + 0.13, '+y');
+    abox(g, x - 0.08, x + 0.08, y - 0.016, y - 0.012, z - 0.08, z + 0.08, '+y');
+    lightPool(decoNode(floorOfY(y - CEIL), 'pools'), x, y - CEIL + 0.004, z, 1.3, 'pool_warm');
+  }
+}
+// soft pool decal on a floor (full UV quad, so the radial falloff stays centred)
+const POOLGEO = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+function lightPool(e, x, y, z, r, mk = 'pool_warm') {
+  e.gb(mk).addGeo(POOLGEO, new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(r * 2, 1, r * 2)), true);
 }
 // linear light strips along the longer axis of each room's ceiling, clipped to the room and around holes
 function lightStrips(e, r, y, holes, mk) {
@@ -1105,11 +1159,15 @@ function switchback(st) {
   for (const f of st.floors) {
     const y = FY(f), last = f === TOPF, e = node('STAIR_' + st.id + '_' + f, 'stair', f, { fk: f, ov: 'circ', group: 'STRUCT', id: st.id + '_' + f, extras: { name: st.name, kind: st.kind, type: st.type, note: st.note, collider: 'COL_STAIR_' + st.id + '_' + f + '_*' } });
     const g = { cap: e.gb('concrete'), top: e.gb('concrete'), side: e.gb('concrete') }, rg = e.gb('steel_dark');
-    if (f !== FIDS[0]) abox(e.gb('concrete'), x0, x1, y - SLAB, y, zFloor[0], zFloor[1]);   // floor landing (the slab is open over the stair)
+    if (f !== FIDS[0]) {   // floor landing (the slab is open over the stair)
+      abox(e.gb('concrete'), x0, x1, y - SLAB, y, zFloor[0], zFloor[1]);
+      colBox('COL_STAIR_' + st.id + '_' + f + '_landing', [(x0 + x1) / 2, y - 0.05, (zFloor[0] + zFloor[1]) / 2], [x1 - x0, 0.1, zFloor[1] - zFloor[0]], 0, { fk: f, extras: { surface: 'collider', role: 'stair floor landing (walk surface)', stair: st.id } });
+    }
     const cx1 = (xA[0] + xA[1]) / 2, cx2 = (xB[0] + xB[1]) / 2;
     flight(g, [cx1, sStart], [cx1, sEnd], y, y + F2F / 2, W);
     rampCollider('STAIR_' + st.id + '_' + f + '_1', [cx1, sStart], [cx1, sEnd], y, y + F2F / 2, W);
     abox(e.gb('concrete'), x0, x1, y + F2F / 2 - 0.25, y + F2F / 2, zMid[0], zMid[1]);   // mid landing
+    colBox('COL_STAIR_' + st.id + '_' + f + '_mid', [(x0 + x1) / 2, y + F2F / 2 - 0.05, (zMid[0] + zMid[1]) / 2], [x1 - x0, 0.1, zMid[1] - zMid[0]], 0, { fk: f, extras: { surface: 'collider', role: 'stair mid landing (walk surface)', stair: st.id } });
     const inner1 = f1West ? xA[1] : xA[0];
     rail3(rg, [inner1, y, sStart], [inner1, y + F2F / 2, sEnd]);
     if (!last) {
@@ -1140,6 +1198,8 @@ function straightStair(st) {
       rampCollider('STAIR_' + st.id + '_' + i, A, B, y0, y1, w);
     } else {
       const th = 0.25; sbox({ x: e.gb(mat), y: e.gb(mat), z: e.gb(mat) }, a, b, w, ya - th, ya);
+      const m = P2.lerp(a, b, 0.5);
+      colBox('COL_STAIR_' + st.id + '_' + i + '_landing', [m[0], ya - 0.05, m[1]], [w, 0.1, P2.len(P2.sub(b, a))], yawOf(d), { fk: floorOfY(ya), extras: { surface: 'collider', role: 'stair landing (walk surface)', stair: st.id } });
     }
     for (const sg of [1, -1]) {
       const ea = P2.add(a, P2.mul(n, (sg * w) / 2)), eb = P2.add(b, P2.mul(n, (sg * w) / 2));
@@ -1170,7 +1230,11 @@ function spiralStair(st) {
     beam(e.gb('steel_dark'), pa, [pa[0], pa[1] + 0.95, pa[2]], 0.025);
     if (k) { const pb = [cx + Math.sin(a0 - da / 2) * (R - 0.04), yt - rise, cz + Math.cos(a0 - da / 2) * (R - 0.04)]; beam(e.gb('alloy'), [pb[0], pb[1] + 0.95, pb[2]], [pa[0], pa[1] + 0.95, pa[2]], 0.045); }
   }
-  colBox('COL_STAIR_' + st.id, [cx, (y0 + y1) / 2, cz], [R * 1.6, 0.1, R * 1.6], 0, { fk: f, extras: { surface: 'collider', role: 'spiral stair: use a helical ramp or the step meshes as the walk surface', center: st.center, radius: R, y0, y1 } });
+  // one box per tread (radial length R, outer arc width), stepping up 0.175 m: the walk surface in Unity
+  for (let k = 0; k < n; k++) {
+    const am = (k + 0.5) * da + 0.01, yt = y0 + (k + 1) * rise, dir = [Math.sin(am), Math.cos(am)];
+    colBox('COL_STAIR_' + st.id + '_' + k, [cx + dir[0] * R * 0.55, yt - 0.05, cz + dir[1] * R * 0.55], [R * da * 1.05, 0.1, R * 0.9], yawOf(dir), { fk: f, extras: { surface: 'collider', role: 'spiral stair tread (walk surface)', stair: st.id, step: k } });
+  }
 }
 function openingRail(so) {
   const f = so.floor, y = FY(f), st = L.stairs.find((s) => s.id === so.for), p = so.polygon;
@@ -1434,7 +1498,7 @@ function buildTerrace() {
       for (const [px, pz] of [[x0 + 0.4, z0 + 0.4], [x1 - 0.4, z0 + 0.4], [x0 + 0.4, z1 - 0.4], [x1 - 0.4, z1 - 0.4]]) abox(d.gb('wood_dark'), px - 0.12, px + 0.12, y, y + 3.2, pz - 0.12, pz + 0.12);
       // roof with sweeping eaves: thin slab with upturned ends (profile across x)
       const prof = [[x0 - 0.8, 3.75], [x0 - 0.2, 3.45], [x1 + 0.2, 3.45], [x1 + 0.8, 3.75], [x1 + 0.8, 3.85], [x1 + 0.1, 3.6], [x0 - 0.1, 3.6], [x0 - 0.8, 3.85]];
-      extrudeProfile({ cap: d.gb('wood'), top: d.gb('wood_dark'), side: d.gb('wood') }, prof.map(([s, yy]) => [s - x0, yy]), [x0, y, (z0 + z1) / 2], [1, 0, 0], [0, 0, 1], z1 - z0 + 0.6);
+      extrudeProfile({ cap: d.gb('wood_dark'), top: d.gb('steel_dark'), side: d.gb('wood_dark') }, prof.map(([s, yy]) => [s - x0, yy]), [x0, y, (z0 + z1) / 2], [1, 0, 0], [0, 0, 1], z1 - z0 + 0.6);
       colBox('COL_' + id, [(x0 + x1) / 2, y + 3.6, (z0 + z1) / 2], [x1 - x0 + 1.6, 0.3, z1 - z0 + 0.6], 0, { fk: FIDS[0], extras: { surface: 'collider', role: 'canopy roof' } });
       return;
     }
@@ -1451,7 +1515,7 @@ function buildTerrace() {
       abox(nd.gb('glow_purple'), x0 - 0.01, x1 + 0.01, y + h - 0.12, y + h - 0.08, z0 - 0.01, z1 + 0.01);
       abox(nd.gb('glass_t'), x0 + 3.5, x1 - 3.5, y + 0.1, y + 2.4, z0 - 0.02, z0);
     } else if (ft.kind === 'planter') {
-      abox({ x: nd.gb('stone_dark'), y: nd.gb('stone_dark'), z: nd.gb('stone_dark') }, x0, x1, y, y + h, z0, z1, '-y');
+      abox({ x: nd.gb('corten'), y: nd.gb('corten'), z: nd.gb('corten') }, x0, x1, y, y + h, z0, z1, '-y');
       abox(nd.gb('rubber'), x0 + 0.08, x1 - 0.08, y + h - 0.1, y + h - 0.02, z0 + 0.08, z1 - 0.08, '-y');
     } else if (ft.kind === 'lantern_wall') {
       abox({ x: nd.gb('stone_dry'), y: nd.gb('stone_dark'), z: nd.gb('stone_dry') }, x0, x1, y, y + h, z0, z1, '-y');
@@ -1514,7 +1578,7 @@ function buildBridges() {
   if (sb) {
     const f = sb.floor, y = sb.y, x0 = sb.a[0], x1 = sb.b[0], zc = sb.a[1], z0 = zc - sb.width / 2, z1 = zc + sb.width / 2, yr = sb.roof_y, gf = sb.glass_floor;
     const e = node('BRIDGE_skybridge', 'bridge', f, { fk: f, layer: 'ext', ov: 'circ', group: 'EXTERIOR', id: sb.id, extras: { name: sb.name, a: sb.a, b: sb.b, width: sb.width, y, roof_y: yr, glass: sb.glass, note: 'glass tube; tempered (see through, not shoot through)' } });
-    prism(region([rectP(x0, z0, x1, z1)], [rectP(gf.x0, z0 + 0.1, gf.x1, z1 - 0.1)]), y - 0.3, y, e.gb('stone_dark'), e.gb('alloy'), e.gb('alloy'));
+    prism(region([rectP(x0, z0, x1, z1)], [rectP(gf.x0, z0 + 0.1, gf.x1, z1 - 0.1)]), y - 0.3, y, e.gb('deck_wet'), e.gb('alloy'), e.gb('alloy'));
     const tf = node('GLASS_TF_skybridge', 'glass_floor', f, { fk: f, layer: 'ext', group: 'EXTERIOR', id: 'skybridge_glass_floor', extras: { x0: gf.x0, x1: gf.x1, type: gf.type, note: gf.note } });
     abox(tf.gb('glass_t'), gf.x0, gf.x1, y - 0.04, y - 0.005, z0 + 0.1, z1 - 0.1);
     for (let x = gf.x0; x <= gf.x1 + 1e-6; x += 1.5) abox(tf.gb('steel_dark'), x - 0.03, x + 0.03, y - 0.3, y - 0.04, z0 + 0.1, z1 - 0.1);
@@ -1665,7 +1729,7 @@ function craneDeck(nb) {
   const env = node('ENV_NB_crane', 'env', null, { fk: 'X', layer: 'env', ov: 'env', group: 'ENV', env: true, extras: { name: nb.name } });
   prism(region([fp]), -180, y - 0.3, null, null, env.gb('env_facade'));
   const r = node('HARD_NB_crane_deck', 'hard', null, { fk: 'X', layer: 'ext', ov: 'circ', group: 'EXTERIOR', id: 'NB_crane_deck', extras: { role: 'Crane Deck slab (A4 spawn), level with F3; defender reveal zone', y, footprint: fp, note: nb.note } });
-  prism(region([fp]), y - 0.3, y, r.gb('concrete'), r.gb('concrete_dark'), r.gb('concrete_dark'));
+  prism(region([fp]), y - 0.3, y, r.gb('deck_wet'), r.gb('concrete_dark'), r.gb('concrete_dark'));
   // construction hoarding round the edge, open where the gantry and the hoist ramp leave
   const exits = [EXT.gantry && EXT.gantry.b, EXT.hoist_ramp && EXT.hoist_ramp.b].filter(Boolean);
   const PL = polyline(fp, true), gaps = exits.map((p) => { const pr = PL.project(p); return [pr.s - 1.3, pr.s + 1.3]; });
@@ -1695,7 +1759,18 @@ function craneDeck(nb) {
   });
   // hut posts (west and north sides are open)
   const hi = nb.features.findIndex((ft) => ft.kind === 'hut_roof'), hut = nb.features[hi];
-  if (hut) { const e = BYNAME.get('HARD_NB_crane_hut_roof_' + hi), b = hut.box; for (const [px, pz] of [[b[0] + 0.1, b[1] + 0.1], [b[0] + 0.1, b[3] - 0.1]]) abox(e.gb('steel_dark'), px - 0.08, px + 0.08, y, y + hut.h, pz - 0.08, pz + 0.08, '-y'); }
+  if (hut) {
+    const e = BYNAME.get('HARD_NB_crane_hut_roof_' + hi), b = hut.box; for (const [px, pz] of [[b[0] + 0.1, b[1] + 0.1], [b[0] + 0.1, b[3] - 0.1]]) abox(e.gb('steel_dark'), px - 0.08, px + 0.08, y, y + hut.h, pz - 0.08, pz + 0.08, '-y');
+    // site hut dressing: ribbed dark metal on the closed east side, a caged warm work lamp under the roof
+    const dh = decoNode('X', 'crane_hut', 'ext'), cx = (b[0] + b[2]) / 2, cz = (b[1] + b[3]) / 2;
+    for (let z = b[1] + 0.1; z < b[3] - 0.1; z += 0.2) abox(dh.gb('steel_dark'), b[2] - 0.08, b[2] - 0.03, y + 0.05, y + hut.h - 0.2, z, z + 0.1);
+    abox(dh.gb('glow_warm'), cx - 0.12, cx + 0.12, y + hut.h - 0.45, y + hut.h - 0.3, cz - 0.12, cz + 0.12);
+    for (const [a, c] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) abox(dh.gb('black'), cx + a * 0.15 - 0.01, cx + a * 0.15 + 0.01, y + hut.h - 0.5, y + hut.h - 0.15, cz + c * 0.15 - 0.01, cz + c * 0.15 + 0.01);
+  }
+  { // amber safety-light strips along the deck edge (no stencils)
+    const dh = decoNode('X', 'crane_hut', 'ext');
+    for (let i = 0; i < fp.length; i++) { const a = fp[i], b2 = fp[(i + 1) % fp.length], m = P2.lerp(a, b2, 0.5), c = [(x0 + x1) / 2, (z0 + z1) / 2], n = P2.norm(P2.sub(c, m)); sbox(dh.gb('glow_amber'), P2.add(P2.lerp(a, b2, 0.1), P2.mul(n, 0.35)), P2.add(P2.lerp(a, b2, 0.9), P2.mul(n, 0.35)), 0.05, y, y + 0.012); }
+  }
 }
 function buildTowerBands() {
   // 99F mechanical band: louvres and diagonal lattice bracing, BMU rail; the tower above to the crown
@@ -1910,6 +1985,7 @@ const BUDGET = { trisPerFloor: 140000, trisExterior: 160000, lightsPerFloor: 4, 
 let CURPART = null;
 function makeKit(opts) {
   const K = {
+    pool: (fk, x, z, r, mk = 'pool_warm', dy = 0.004) => lightPool(decoNode(fk, 'pools'), x, FY(fk) + dy, z, r, mk),
     THREE, L, FL, FIDS, FY, CEIL, SLAB, F2F, ROOF_Y, M, TX, fast: !!opts.fast, BUDGET, rng: rnd, timings: {},
     // geometry
     GB, obox, abox, sbox, beam, extrudeProfile, region, prism, cylY, rectP, sqP, inPoly, polyBox, polyDist, outlineDist, polyline, frameZ, flight, P2,

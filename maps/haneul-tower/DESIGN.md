@@ -372,7 +372,7 @@ node names (§10).
 | `glass` | interior glazing, breakable | 12 segments, 88.7 m |
 | `balustrade` | 1.1 m tempered glass rail; shoot over and vault | 2 segments, 28 m (plus walkway rails) |
 | `open` | callout boundary only, no geometry | 15 m |
-| `hatch` | 1.2 m breakable floor panel; fits `wall-fortification-hatch` | 15 (6 reinforced from below, 9 from above) |
+| `hatch` | 1.2 m breakable floor panel; fits `wall-fortification-hatch` | 15 (all reinforced from above, face-up) |
 | `soft_floor` | 2.4 m destructible floor/ceiling patch | 9 |
 | door, barricadable | 1.0 or 2.0 × 2.0 m | 121 interior; facade: 4 door lites, Garden Doors, skybridge portal |
 | window, barricadable | interior 1.5 m windows | 4 |
@@ -396,12 +396,13 @@ Per floor:
 
 ### Construction rules the builders must follow
 - **Visual language (one per type, learnable at a glance).**
-  - Soft: hanji paper panels on thin dark battens, warm backlight glow.
+  - Soft (by programme): hanji changsal (tti-sal lattice, low backlight) in hotel and spa rooms, dark acoustic
+    fabric on the media floor, painted gypsum in back of house. Always thin, with dark studs at the returns.
   - Reinforceable: the same hanji panel below 2.0 m with the **unit seams visible** (thin dark joints at
     every `panels[].u0/u1`), a dark steel transom at 2.0 m, a dark bronze bulkhead above, and steel trims
     at the ends.
-  - Hard: board-formed concrete (core, wraps, vault and void walls) or dry stone (garden, cellar,
-    backdrop).
+  - Hard: one family everywhere: dark honed granite panels (1.2 × 0.6 m, deep reveals) on the core, wraps,
+    vault and void walls, or dry stone (garden, cellar, backdrop). Never timber on a hard wall.
   - Wood lattice only on props and free-standing screens, never on walls.
   - Facade tell: tempered lites have a dark dot-frit border (no text); breakable lites are frameless with a
     thin purple edge glow; entry windows are breakable lites with a steel latch sill.
@@ -409,7 +410,7 @@ Per floor:
   - The units sit on the clear defender face: `reinforce.clear` is the free run along the wall (after
     columns, perpendicular walls and jambs); the units are centred in it (`reinforce.panels`, u from wall end
     `a`) with at least 0.05 m of hard trim at each end (`reinforce.trim`). The trims, transom (2.0 m) and
-    bulkhead to the ceiling (3.1, or 3.9 for `to_slab`) are hard.
+    bulkhead to the slab underside (3.9) are hard.
   - Unit placement: origin = the point at u = (u0+u1)/2 on the wall line, pushed `thickness/2` along
     `defender_side`, at floor level; the unit faces the defender room; `far_side.z = reinforce.far_side_z`
     (−0.2).
@@ -417,13 +418,15 @@ Per floor:
     units, props, columns or walls overlap (validated).
 - **Column wraps.** `walls[].column_wrap = <column id>`: a hard casing from the column face to the glass,
   built into the column.
-- **Walls with `to_slab: true`** (the Studio's F2 walls) store `y1 = 3.9` and rise to the underside of the
-  F3 slab.
+- **Plenum closed.** Every hard, soft and reinforceable wall stores `y1 = 3.9` and rises to the underside of
+  the slab above (the 3.1 m ceiling hangs between them); interior glass stops at 3.1 m with a soft drywall
+  bulkhead (`SOFT_<id>_bulk`) above. `to_slab: true` is kept on the Studio walls as a marker.
 - **Hatch.** A framed 1.2 m square in the slab with a hanji ceiling tile below. `reinforce_from` and
-  `mount` say how the gadget goes on: `above` = as shipped, face-up on the slab (`mount.up` +Y, anchors
-  0.3 m down); `below` = turned 180° about X, face-down on the slab underside in the site room below
-  (`mount.up` −Y, `far_side` +0.3), so S2, S3 and S4 defenders reinforce their own ceilings without leaving
-  the site. S1's H14/H15 are in the site floor and mount from above.
+  `mount` say how the gadget goes on: every hatch is `above` = as shipped, face-up on the slab (`mount.up`
+  +Y, anchors 0.3 m down), as in Siege. Round 1 had six hatches mounted face-down under the slab; that put the
+  unit 3.9 m over the defender, above the ceiling, and broke the terminal eject, so they were moved on top. S2,
+  S3 and S4 ceiling hatches are reinforced by a defender in the room above (it counts as that site's
+  candidate); S1's H14/H15 are in the site floor.
 - **Facade lites.** Each bay has two lites (`lites[].type`). Entry windows and doors carry an `opening`
   with y0/y1; above is a tempered transom, below a hard kick panel. Every entry is ≥ 1.2 m clear of
   columns. Bays with `omit_mullion: true` (Garden Doors F1_S11, portal F2_E11) have no centre mullion or
@@ -653,3 +656,35 @@ Keep one node per gameplay surface; never merge across types. Static decoration 
 - **Door chains under 30 m everywhere.** A 52 m plate cannot avoid every 30–40 m line through two broken doors
   without walling up rooms. v2 makes over 40 m an error and lists the 21 lines of 30–40 m as warnings; all of
   them need at least two barricades broken first.
+
+## Game rule from the user (overrides anything above)
+
+**Every destructible wall can be reinforced.** There is no "soft but unreinforceable" wall: every soft
+wall segment is also reinforceable (split into Wall Fortification-sized panels with hard trims), and the
+overlay, floor plans, layout.json (`reinforceable: true`), glb extras and HaneulTowerMap.cs must agree.
+Hatches stay reinforceable. Hard walls, glass and barricadable openings are unchanged.
+
+## 12. Review round 1 fixes (art and tech)
+
+- **Stairs walkable in Unity:** `COL_STAIR_*_landing` / `_mid` plates on every core-stair floor and mid landing and
+  on the Garden Stair landing; the Spiral Stair has one `COL_STAIR_ST_spiral_<k>` box per tread (the mid-height
+  plate is gone). Rafters are clipped 0.3 m clear of stairwells and slab openings (a clipping bug also drew one
+  rafter 28 m long across the core).
+- **Plenum closed:** see the construction rules (walls to 3.9 m, glass bulkheads).
+- **Hatches:** all reinforced from above (above).
+- **Clearances:** the Garden Stair foot moved 0.8 m north (z 23.8) to clear the SW door; the screens over F2_O16
+  and F2_O33/O35 were raised to a 2.22–2.25 m lower edge; the studio truss lowered its cans to 2.34 m over the
+  grid catwalks.
+- **Lighting:** tube strips only in back of house; other rooms get recessed downlights with soft light-pool decals
+  (`pool_*` materials, exported) and story lighting: dim purple Control Room with blue screen spill, blue cold
+  aisles in the Render Farm, a dark stone wine wall with warm niche lamps, the Tea Room lit by its hanji
+  lightbox. Dark rooms (`DARKROOM` in core.js) have no downlights. Hanji glow and bloom were cut.
+- **Room identity:** director's sill console (Control), LED rack bay in the fire wall (Render), two lockbox walls
+  (Deposit), backlit onyx (Concierge), bronze bar raft (Lounge Bar), wine niches (Wine Room), timber ceilings in
+  the hotel rooms; built-ins only, no furniture.
+- **Sky garden:** basalt-edged moss beds with pines and maples, stepping stones, uplight lines, a basalt pool rim,
+  a darker low-contrast tile roof on the pavilion with exposed warm rafters and cinnabar ends.
+- **Exterior:** fewer, warmer lit windows in the city; a soft volumetric holo figure with ribbon and glow parallax
+  layers; rain haze rings, ridge rim light, a rounded forested hill; soft wet patches instead of puddle decals;
+  denser, thinner rain; dark wet skybridge and crane decks, a lit site hut, corten planters, a dark timber canopy.
+- **Viewer:** furniture footprints show only with the markers (M or P). New hero/preview camera over the river.
