@@ -44,7 +44,8 @@ async function openViewer(viewerPath, { width = 1600, height = 900, colorScheme 
     }
     return route.continue();
   });
-  await page.goto('file://' + file);
+  // pages that build many models run their whole build before the load event
+  await page.goto('file://' + file, { timeout: 180000 });
   await page.waitForFunction(() => window.__model && window.__model.ready, null, { timeout: 180000 });
   return { browser, page };
 }

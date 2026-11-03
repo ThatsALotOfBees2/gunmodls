@@ -1,0 +1,7946 @@
+{
+ "pack": "haneul-furniture",
+ "units": "metres, kilograms",
+ "axes": "+Y up, +Z front, origin on the floor under the middle",
+ "hidden_scale": 0.0001,
+ "classes": {
+  "glass": {
+   "density_kg_m3": 2500,
+   "base_health": 20,
+   "debris": "shard"
+  },
+  "paper": {
+   "density_kg_m3": 500,
+   "base_health": 15,
+   "debris": "scrap"
+  },
+  "ceramic": {
+   "density_kg_m3": 2300,
+   "base_health": 25,
+   "debris": "shard"
+  },
+  "electronics": {
+   "density_kg_m3": 700,
+   "base_health": 40,
+   "debris": "crumb"
+  },
+  "plant": {
+   "density_kg_m3": 400,
+   "base_health": 30,
+   "debris": "leaf"
+  },
+  "plastic": {
+   "density_kg_m3": 1100,
+   "base_health": 60,
+   "debris": "crumb"
+  },
+  "fabric": {
+   "density_kg_m3": 45,
+   "base_health": 80,
+   "debris": "tuft"
+  },
+  "wood": {
+   "density_kg_m3": 650,
+   "base_health": 120,
+   "debris": "splinter"
+  },
+  "metal": {
+   "density_kg_m3": 2700,
+   "base_health": 250,
+   "debris": "bolt"
+  },
+  "stone": {
+   "density_kg_m3": 2600,
+   "base_health": 400,
+   "debris": "crumb"
+  }
+ },
+ "materials": [
+  {
+   "key": "walnut",
+   "name": "wood_walnut",
+   "cls": "wood",
+   "inner": "walnutInner"
+  },
+  {
+   "key": "oak",
+   "name": "wood_oak",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "ebony",
+   "name": "wood_ebony",
+   "cls": "wood",
+   "inner": "ebonyInner"
+  },
+  {
+   "key": "woodInner",
+   "name": "wood_inner",
+   "cls": "wood",
+   "inner": "woodInner"
+  },
+  {
+   "key": "walnutInner",
+   "name": "walnut_inner",
+   "cls": "wood",
+   "inner": "walnutInner"
+  },
+  {
+   "key": "oakInner",
+   "name": "oak_inner",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "ebonyInner",
+   "name": "ebony_inner",
+   "cls": "wood",
+   "inner": "ebonyInner"
+  },
+  {
+   "key": "bark",
+   "name": "bark",
+   "cls": "plant",
+   "inner": "woodInner"
+  },
+  {
+   "key": "fabricCharcoal",
+   "name": "fabric_charcoal",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "fabricOat",
+   "name": "fabric_oat",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "fabricIndigo",
+   "name": "fabric_indigo",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "fabricCinnabar",
+   "name": "fabric_cinnabar",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "fabricOchre",
+   "name": "fabric_ochre",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "fabricPlum",
+   "name": "fabric_plum",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "leatherCognac",
+   "name": "leather_cognac",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "leatherBlack",
+   "name": "leather_black",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "foam",
+   "name": "foam_inner",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "hanji",
+   "name": "paper_hanji",
+   "cls": "paper",
+   "inner": "hanji"
+  },
+  {
+   "key": "hanjiLit",
+   "name": "paper_hanji_lit",
+   "cls": "paper",
+   "inner": "hanji"
+  },
+  {
+   "key": "celadon",
+   "name": "celadon",
+   "cls": "ceramic",
+   "inner": "biscuit"
+  },
+  {
+   "key": "porcelain",
+   "name": "porcelain",
+   "cls": "ceramic",
+   "inner": "biscuit"
+  },
+  {
+   "key": "biscuit",
+   "name": "ceramic_biscuit",
+   "cls": "ceramic",
+   "inner": "biscuit"
+  },
+  {
+   "key": "granite",
+   "name": "stone_granite",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "palestone",
+   "name": "stone_pale",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "pebble",
+   "name": "stone_pebble",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "marble",
+   "name": "stone_marble",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "marbleHoned",
+   "name": "stone_marble_honed",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "basalt",
+   "name": "stone_basalt",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "stoneInner",
+   "name": "stone_inner",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "brass",
+   "name": "brass",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "alloy",
+   "name": "alloy_dark",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "graphite",
+   "name": "graphite",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "steel",
+   "name": "steel_brushed",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "metalInner",
+   "name": "metal_inner",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "glass",
+   "name": "glass_clear",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "glassSmoked",
+   "name": "glass_smoked",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "glassTint",
+   "name": "glass_tint",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "glassFrosted",
+   "name": "glass_frosted",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "glassAmber",
+   "name": "glass_amber",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "glassGreen",
+   "name": "glass_green",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "glassEdge",
+   "name": "glass_edge",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "plastic",
+   "name": "plastic_dark",
+   "cls": "plastic",
+   "inner": "plastic"
+  },
+  {
+   "key": "rubber",
+   "name": "rubber",
+   "cls": "plastic",
+   "inner": "rubber"
+  },
+  {
+   "key": "screen",
+   "name": "screen",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "screenOff",
+   "name": "screen_off",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "pcb",
+   "name": "electronics_inner",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "led",
+   "name": "led_purple",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "ledWarm",
+   "name": "led_warm",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "ledWhite",
+   "name": "led_white",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "ledDim",
+   "name": "led_purple_dim",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "foliage",
+   "name": "foliage",
+   "cls": "plant",
+   "inner": "foliage"
+  },
+  {
+   "key": "soil",
+   "name": "soil",
+   "cls": "plant",
+   "inner": "soil"
+  }
+ ],
+ "pieces": [
+  {
+   "id": "coffee_table",
+   "name": "Coffee table, glass top",
+   "batch": "0",
+   "rooms": [
+    "F2 River Lounge",
+    "F2 VIP Lounge",
+    "F2 Green Room",
+    "F3 Suite Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.2,
+    0.367,
+    0.7
+   ],
+   "floor_contact": 0,
+   "mass_kg": 33.4,
+   "parts": [
+    {
+     "part": "leg_fl",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 0.38,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fl"
+     ]
+    },
+    {
+     "part": "leg_fr",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 0.38,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fr"
+     ]
+    },
+    {
+     "part": "leg_bl",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 0.38,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_bl"
+     ]
+    },
+    {
+     "part": "leg_br",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 0.38,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_br"
+     ]
+    },
+    {
+     "part": "frame",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 3.1,
+     "health": 100,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_frame"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 21.98,
+     "health": 35,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 17,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11",
+      "debris_12",
+      "debris_13"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "shelf",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 6.82,
+     "health": 135,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_14",
+      "debris_15",
+      "debris_16"
+     ],
+     "colliders": [
+      "col_shelf"
+     ]
+    }
+   ],
+   "debris": 16,
+   "triangles": {
+    "intact": 6556,
+    "chunks": 6543
+   },
+   "hidden_scale": 0.0001,
+   "note": "walnut frame on brass-shod legs, 12 mm glass top resting on the frame, slatted lower shelf"
+  },
+  {
+   "id": "celadon_vase_stand",
+   "name": "Celadon vase on stand",
+   "batch": "0",
+   "rooms": [
+    "F3 Exec Hall",
+    "F1 Tea Room",
+    "F2 Reception",
+    "F3 Boardroom"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.4,
+    1,
+    0.4
+   ],
+   "floor_contact": 0,
+   "mass_kg": 11,
+   "parts": [
+    {
+     "part": "stand_top",
+     "material": "wood",
+     "materials": [
+      "wood_ebony"
+     ],
+     "mass": 3.09,
+     "health": 100,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_stand_top"
+     ]
+    },
+    {
+     "part": "leg_fl",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.44,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fl"
+     ]
+    },
+    {
+     "part": "leg_fr",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.44,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fr"
+     ]
+    },
+    {
+     "part": "leg_bl",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.44,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_bl"
+     ]
+    },
+    {
+     "part": "leg_br",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.44,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_br"
+     ]
+    },
+    {
+     "part": "apron",
+     "material": "wood",
+     "materials": [
+      "wood_ebony"
+     ],
+     "mass": 0.75,
+     "health": 65,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_apron"
+     ]
+    },
+    {
+     "part": "stretchers",
+     "material": "wood",
+     "materials": [
+      "wood_ebony"
+     ],
+     "mass": 0.21,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stretchers"
+     ]
+    },
+    {
+     "part": "vase",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 5.19,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "stand_top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10"
+     ],
+     "colliders": [
+      "col_vase_hull"
+     ]
+    }
+   ],
+   "debris": 10,
+   "triangles": {
+    "intact": 9084,
+    "chunks": 10957
+   },
+   "hidden_scale": 0.0001,
+   "note": "maebyeong-form celadon vase (crackle glaze, 7 mm wall) on a low ebony stand with brass feet"
+  },
+  {
+   "id": "lounge_sofa",
+   "name": "Low lounge sofa, 3 seat",
+   "batch": "A",
+   "rooms": [
+    "F2 River Lounge",
+    "F2 VIP Lounge",
+    "F2 Green Room",
+    "F2 Noraebang",
+    "F2 Booth 1",
+    "F2 Booth 2",
+    "F3 Suite Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.2,
+    0.803,
+    0.92
+   ],
+   "floor_contact": 0,
+   "mass_kg": 59.5,
+   "parts": [
+    {
+     "part": "kick",
+     "material": "metal",
+     "materials": [
+      "brass",
+      "graphite"
+     ],
+     "mass": 1,
+     "health": 145,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_kick"
+     ]
+    },
+    {
+     "part": "base",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 18,
+     "health": 185,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "body",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 25,
+     "health": 135,
+     "break": "shatter",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11"
+     ],
+     "colliders": [
+      "col_body_1",
+      "col_body_2",
+      "col_body_3",
+      "col_body_4"
+     ]
+    },
+    {
+     "part": "seat_l",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat_l"
+     ]
+    },
+    {
+     "part": "back_l",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 2,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_l"
+     ]
+    },
+    {
+     "part": "seat_c",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat_c"
+     ]
+    },
+    {
+     "part": "back_c",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 2,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_c"
+     ]
+    },
+    {
+     "part": "seat_r",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat_r"
+     ]
+    },
+    {
+     "part": "back_r",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 2,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_r"
+     ]
+    },
+    {
+     "part": "pillow",
+     "material": "fabric",
+     "materials": [
+      "fabric_cinnabar"
+     ],
+     "mass": 0.5,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "seat_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pillow"
+     ]
+    }
+   ],
+   "debris": 11,
+   "triangles": {
+    "intact": 13464,
+    "chunks": 16280
+   },
+   "hidden_scale": 0.0001,
+   "note": "low charcoal sofa on a walnut plinth with a recessed brass kick strip; loose seat and back cushions"
+  },
+  {
+   "id": "armchair",
+   "name": "Oak-frame lounge armchair",
+   "batch": "A",
+   "rooms": [
+    "F2 VIP Lounge",
+    "F2 River Lounge",
+    "F2 Green Room",
+    "F3 Exec Office",
+    "F3 Suite Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.807,
+    0.795,
+    0.852
+   ],
+   "floor_contact": 0,
+   "mass_kg": 13.7,
+   "parts": [
+    {
+     "part": "leg_fl",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fl"
+     ]
+    },
+    {
+     "part": "leg_fr",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fr"
+     ]
+    },
+    {
+     "part": "leg_bl",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_bl"
+     ]
+    },
+    {
+     "part": "leg_br",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_br"
+     ]
+    },
+    {
+     "part": "frame",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 7,
+     "health": 135,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4"
+     ]
+    },
+    {
+     "part": "seat",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 2.5,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat"
+     ]
+    },
+    {
+     "part": "back",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 1.8,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 8056,
+    "chunks": 4456
+   },
+   "hidden_scale": 0.0001,
+   "note": "solid oak frame with flat arms and a raked back, oat cushions on webbing"
+  },
+  {
+   "id": "club_chair",
+   "name": "Leather club chair",
+   "batch": "A",
+   "rooms": [
+    "F2 Cigar Room",
+    "F2 Wine Room",
+    "F2 Lounge Bar",
+    "F3 Exec Office"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.9,
+    0.78,
+    0.92
+   ],
+   "floor_contact": 0,
+   "mass_kg": 28.2,
+   "parts": [
+    {
+     "part": "foot_fl",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.3,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_foot_fl"
+     ]
+    },
+    {
+     "part": "foot_fr",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.3,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_foot_fr"
+     ]
+    },
+    {
+     "part": "foot_bl",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.3,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_foot_bl"
+     ]
+    },
+    {
+     "part": "foot_br",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.3,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_foot_br"
+     ]
+    },
+    {
+     "part": "body",
+     "material": "fabric",
+     "materials": [
+      "leather_cognac",
+      "wood_ebony"
+     ],
+     "mass": 24,
+     "health": 135,
+     "break": "shatter",
+     "attach": [
+      "foot_fl",
+      "foot_fr",
+      "foot_bl",
+      "foot_br"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8"
+     ],
+     "colliders": [
+      "col_body_1",
+      "col_body_2",
+      "col_body_3",
+      "col_body_4"
+     ]
+    },
+    {
+     "part": "seat",
+     "material": "fabric",
+     "materials": [
+      "leather_cognac"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat"
+     ]
+    }
+   ],
+   "debris": 8,
+   "triangles": {
+    "intact": 9988,
+    "chunks": 22847
+   },
+   "hidden_scale": 0.0001,
+   "note": "deep cognac leather tub with rolled arms on ebony feet with brass cups"
+  },
+  {
+   "id": "bar_counter",
+   "name": "Bar counter module (2 m, fluted front)",
+   "batch": "A",
+   "rooms": [
+    "F2 Lounge Bar",
+    "F2 Wine Room",
+    "F2 Noraebang",
+    "F3 Foyer"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2,
+    1.1,
+    0.708
+   ],
+   "floor_contact": 0,
+   "mass_kg": 165.5,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "metal",
+     "materials": [
+      "graphite"
+     ],
+     "mass": 60,
+     "health": 570,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4",
+      "col_carcass_5",
+      "col_carcass_6"
+     ]
+    },
+    {
+     "part": "front",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 20,
+     "health": 190,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_front"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "stone",
+     "materials": [
+      "stone_granite"
+     ],
+     "mass": 75,
+     "health": 985,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "led",
+     "material": "electronics",
+     "materials": [
+      "alloy_dark",
+      "led_purple"
+     ],
+     "mass": 0.5,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_led"
+     ]
+    },
+    {
+     "part": "foot_rail",
+     "material": "metal",
+     "materials": [
+      "brass"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_foot_rail"
+     ]
+    },
+    {
+     "part": "shelf",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 6,
+     "health": 130,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_shelf"
+     ]
+    }
+   ],
+   "debris": 9,
+   "triangles": {
+    "intact": 5256,
+    "chunks": 12279
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite steel carcass, reeded walnut front, granite top with a purple wash under the lip, brass foot rail; customer side is +Z"
+  },
+  {
+   "id": "bar_stool",
+   "name": "Bar stool",
+   "batch": "A",
+   "rooms": [
+    "F2 Lounge Bar",
+    "F2 Wine Room",
+    "F3 Foyer"
+   ],
+   "cover": "none",
+   "size_m": [
+    0.443,
+    0.782,
+    0.443
+   ],
+   "floor_contact": 0,
+   "mass_kg": 13,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 8,
+     "health": 290,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "column",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 2.5,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_column"
+     ]
+    },
+    {
+     "part": "foot_ring",
+     "material": "metal",
+     "materials": [
+      "brass"
+     ],
+     "mass": 1,
+     "health": 145,
+     "break": "detach",
+     "attach": [
+      "column"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_foot_ring"
+     ]
+    },
+    {
+     "part": "seat",
+     "material": "fabric",
+     "materials": [
+      "alloy_dark",
+      "leather_black"
+     ],
+     "mass": 1.5,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "column"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 3448,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "black leather seat on a dark alloy column and weighted disc base, brass foot ring"
+  },
+  {
+   "id": "bottle_shelf",
+   "name": "Back-bar bottle shelf, backlit",
+   "batch": "A",
+   "rooms": [
+    "F2 Lounge Bar",
+    "F2 Wine Room",
+    "F2 Noraebang"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.6,
+    2.212,
+    0.406
+   ],
+   "floor_contact": 0,
+   "mass_kg": 78.4,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "graphite",
+      "brass",
+      "wood_walnut",
+      "wood_ebony"
+     ],
+     "mass": 35,
+     "health": 480,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5"
+     ]
+    },
+    {
+     "part": "back",
+     "material": "paper",
+     "materials": [
+      "paper_hanji_lit"
+     ],
+     "mass": 3,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "fixed_chunks": [
+      5
+     ],
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5"
+     ],
+     "colliders": [
+      "col_back"
+     ]
+    },
+    {
+     "part": "led",
+     "material": "electronics",
+     "materials": [
+      "alloy_dark",
+      "led_purple"
+     ],
+     "mass": 0.3,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_led"
+     ]
+    },
+    {
+     "part": "shelf_1",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_edge"
+     ],
+     "mass": 6,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 15,
+     "debris": [
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11"
+     ],
+     "colliders": [
+      "col_shelf_1"
+     ]
+    },
+    {
+     "part": "bottle_1",
+     "material": "glass",
+     "materials": [
+      "glass_green",
+      "wood_ebony",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15",
+      "debris_16",
+      "debris_17"
+     ],
+     "colliders": [
+      "col_bottle_1"
+     ]
+    },
+    {
+     "part": "bottle_2",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "brass"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_18",
+      "debris_19",
+      "debris_20",
+      "debris_21",
+      "debris_22",
+      "debris_23"
+     ],
+     "colliders": [
+      "col_bottle_2"
+     ]
+    },
+    {
+     "part": "bottle_3",
+     "material": "glass",
+     "materials": [
+      "glass_smoked",
+      "alloy_dark",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_24",
+      "debris_25",
+      "debris_26",
+      "debris_27",
+      "debris_28",
+      "debris_29"
+     ],
+     "colliders": [
+      "col_bottle_3"
+     ]
+    },
+    {
+     "part": "bottle_4",
+     "material": "glass",
+     "materials": [
+      "glass_amber",
+      "wood_ebony"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_30",
+      "debris_31",
+      "debris_32",
+      "debris_33",
+      "debris_34",
+      "debris_35"
+     ],
+     "colliders": [
+      "col_bottle_4"
+     ]
+    },
+    {
+     "part": "bottle_5",
+     "material": "glass",
+     "materials": [
+      "glass_smoked",
+      "brass",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_36",
+      "debris_37",
+      "debris_38",
+      "debris_39",
+      "debris_40",
+      "debris_41"
+     ],
+     "colliders": [
+      "col_bottle_5"
+     ]
+    },
+    {
+     "part": "bottle_6",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "brass",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_42",
+      "debris_43",
+      "debris_44",
+      "debris_45",
+      "debris_46",
+      "debris_47"
+     ],
+     "colliders": [
+      "col_bottle_6"
+     ]
+    },
+    {
+     "part": "shelf_2",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_edge"
+     ],
+     "mass": 6,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 17,
+     "debris": [
+      "debris_48",
+      "debris_49",
+      "debris_50",
+      "debris_51",
+      "debris_52",
+      "debris_53"
+     ],
+     "colliders": [
+      "col_shelf_2"
+     ]
+    },
+    {
+     "part": "bottle_7",
+     "material": "glass",
+     "materials": [
+      "glass_green",
+      "alloy_dark"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_54",
+      "debris_55",
+      "debris_56",
+      "debris_57",
+      "debris_58",
+      "debris_59"
+     ],
+     "colliders": [
+      "col_bottle_7"
+     ]
+    },
+    {
+     "part": "bottle_8",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "wood_ebony",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_60",
+      "debris_61",
+      "debris_62",
+      "debris_63",
+      "debris_64",
+      "debris_65"
+     ],
+     "colliders": [
+      "col_bottle_8"
+     ]
+    },
+    {
+     "part": "bottle_9",
+     "material": "glass",
+     "materials": [
+      "glass_amber",
+      "brass",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_66",
+      "debris_67",
+      "debris_68",
+      "debris_69",
+      "debris_70",
+      "debris_71"
+     ],
+     "colliders": [
+      "col_bottle_9"
+     ]
+    },
+    {
+     "part": "bottle_10",
+     "material": "glass",
+     "materials": [
+      "glass_smoked",
+      "wood_ebony"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_72",
+      "debris_73",
+      "debris_74",
+      "debris_75",
+      "debris_76",
+      "debris_77"
+     ],
+     "colliders": [
+      "col_bottle_10"
+     ]
+    },
+    {
+     "part": "bottle_11",
+     "material": "glass",
+     "materials": [
+      "glass_green",
+      "alloy_dark",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_78",
+      "debris_79",
+      "debris_80",
+      "debris_81",
+      "debris_82",
+      "debris_83"
+     ],
+     "colliders": [
+      "col_bottle_11"
+     ]
+    },
+    {
+     "part": "bottle_12",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "brass"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_84",
+      "debris_85",
+      "debris_86",
+      "debris_87",
+      "debris_88",
+      "debris_89"
+     ],
+     "colliders": [
+      "col_bottle_12"
+     ]
+    },
+    {
+     "part": "shelf_3",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_edge"
+     ],
+     "mass": 6,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 13,
+     "debris": [
+      "debris_90",
+      "debris_91",
+      "debris_92",
+      "debris_93",
+      "debris_94",
+      "debris_95"
+     ],
+     "colliders": [
+      "col_shelf_3"
+     ]
+    },
+    {
+     "part": "bottle_13",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "brass"
+     ],
+     "mass": 1.4,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_96",
+      "debris_97",
+      "debris_98",
+      "debris_99",
+      "debris_100",
+      "debris_101"
+     ],
+     "colliders": [
+      "col_bottle_13"
+     ]
+    },
+    {
+     "part": "bottle_14",
+     "material": "glass",
+     "materials": [
+      "glass_amber",
+      "wood_ebony"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_102",
+      "debris_103",
+      "debris_104",
+      "debris_105",
+      "debris_106",
+      "debris_107"
+     ],
+     "colliders": [
+      "col_bottle_14"
+     ]
+    },
+    {
+     "part": "bottle_15",
+     "material": "glass",
+     "materials": [
+      "glass_green",
+      "wood_ebony",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_108",
+      "debris_109",
+      "debris_110",
+      "debris_111",
+      "debris_112",
+      "debris_113"
+     ],
+     "colliders": [
+      "col_bottle_15"
+     ]
+    },
+    {
+     "part": "bottle_16",
+     "material": "glass",
+     "materials": [
+      "glass_smoked",
+      "brass",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_114",
+      "debris_115",
+      "debris_116",
+      "debris_117",
+      "debris_118",
+      "debris_119"
+     ],
+     "colliders": [
+      "col_bottle_16"
+     ]
+    },
+    {
+     "part": "bottle_17",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "alloy_dark"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_120",
+      "debris_121",
+      "debris_122",
+      "debris_123",
+      "debris_124",
+      "debris_125"
+     ],
+     "colliders": [
+      "col_bottle_17"
+     ]
+    },
+    {
+     "part": "bottle_18",
+     "material": "glass",
+     "materials": [
+      "glass_smoked",
+      "brass",
+      "paper_hanji"
+     ],
+     "mass": 1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_126",
+      "debris_127",
+      "debris_128",
+      "debris_129",
+      "debris_130",
+      "debris_131"
+     ],
+     "colliders": [
+      "col_bottle_18"
+     ]
+    },
+    {
+     "part": "bottle_19",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "brass"
+     ],
+     "mass": 1.4,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_132",
+      "debris_133",
+      "debris_134",
+      "debris_135",
+      "debris_136",
+      "debris_137"
+     ],
+     "colliders": [
+      "col_bottle_19"
+     ]
+    },
+    {
+     "part": "bottle_20",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber",
+      "brass"
+     ],
+     "mass": 1.4,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_138",
+      "debris_139",
+      "debris_140",
+      "debris_141",
+      "debris_142",
+      "debris_143"
+     ],
+     "colliders": [
+      "col_bottle_20"
+     ]
+    },
+    {
+     "part": "tumbler_1",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_144",
+      "debris_145",
+      "debris_146",
+      "debris_147",
+      "debris_148",
+      "debris_149"
+     ],
+     "colliders": [
+      "col_tumbler_1"
+     ]
+    },
+    {
+     "part": "tumbler_2",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_150",
+      "debris_151",
+      "debris_152",
+      "debris_153",
+      "debris_154",
+      "debris_155"
+     ],
+     "colliders": [
+      "col_tumbler_2"
+     ]
+    },
+    {
+     "part": "tumbler_3",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "glass_amber"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_156",
+      "debris_157",
+      "debris_158",
+      "debris_159",
+      "debris_160",
+      "debris_161"
+     ],
+     "colliders": [
+      "col_tumbler_3"
+     ]
+    }
+   ],
+   "debris": 161,
+   "triangles": {
+    "intact": 15024,
+    "chunks": 29908
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite frame and low cabinet, warm-lit hanji back behind an open ttisal lattice, three green-edged glass shelves with brass rails holding eighteen bottles, two decanters and three tumblers on the walnut ledge"
+  },
+  {
+   "id": "cigar_humidor",
+   "name": "Cigar humidor cabinet, glass doors",
+   "batch": "A",
+   "rooms": [
+    "F2 Cigar Room",
+    "F2 Wine Room"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.916,
+    2,
+    0.536
+   ],
+   "floor_contact": 0,
+   "mass_kg": 72.9,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "wood_ebony",
+      "wood_oak",
+      "led_warm"
+     ],
+     "mass": 45,
+     "health": 250,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4",
+      "col_carcass_5"
+     ]
+    },
+    {
+     "part": "door_l",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 6,
+     "health": 130,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_l_1",
+      "col_door_l_2",
+      "col_door_l_3",
+      "col_door_l_4"
+     ]
+    },
+    {
+     "part": "pane_l",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 3,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "door_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 12,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_pane_l"
+     ]
+    },
+    {
+     "part": "door_r",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 6,
+     "health": 130,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_r_1",
+      "col_door_r_2",
+      "col_door_r_3",
+      "col_door_r_4"
+     ]
+    },
+    {
+     "part": "pane_r",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 3,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "door_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 12,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_pane_r"
+     ]
+    },
+    {
+     "part": "shelf_1",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 1.5,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shelf_1"
+     ]
+    },
+    {
+     "part": "shelf_2",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 1.5,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shelf_2"
+     ]
+    },
+    {
+     "part": "shelf_3",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 1.5,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shelf_3"
+     ]
+    },
+    {
+     "part": "shelf_4",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 1.5,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shelf_4"
+     ]
+    },
+    {
+     "part": "box_1",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "shelf_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_1"
+     ]
+    },
+    {
+     "part": "box_2",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "box_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_2"
+     ]
+    },
+    {
+     "part": "box_3",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "leather_cognac",
+      "brass"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_3"
+     ]
+    },
+    {
+     "part": "box_4",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "shelf_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_4"
+     ]
+    },
+    {
+     "part": "box_5",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "shelf_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_5"
+     ]
+    },
+    {
+     "part": "box_6",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "wood_ebony",
+      "brass"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "shelf_4"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_6"
+     ]
+    },
+    {
+     "part": "gauge",
+     "material": "metal",
+     "materials": [
+      "brass",
+      "porcelain",
+      "graphite",
+      "glass_clear"
+     ],
+     "mass": 0.3,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_gauge"
+     ]
+    }
+   ],
+   "debris": 15,
+   "triangles": {
+    "intact": 13352,
+    "chunks": 2755
+   },
+   "hidden_scale": 0.0001,
+   "note": "walnut cabinet with an oak-lined interior, two glazed doors, slatted oak shelves, cigar boxes and a plain brass gauge"
+  },
+  {
+   "id": "bed",
+   "name": "Platform bed with hanji headboard",
+   "batch": "B",
+   "rooms": [
+    "F3 Bedroom"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.8,
+    1.05,
+    2.2
+   ],
+   "floor_contact": 0,
+   "mass_kg": 82.8,
+   "parts": [
+    {
+     "part": "platform",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "wood_ebony"
+     ],
+     "mass": 40,
+     "health": 240,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_platform"
+     ]
+    },
+    {
+     "part": "mattress",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 25,
+     "health": 135,
+     "break": "detach",
+     "attach": [
+      "platform"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mattress"
+     ]
+    },
+    {
+     "part": "runner",
+     "material": "fabric",
+     "materials": [
+      "fabric_indigo"
+     ],
+     "mass": 2,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "mattress"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_runner"
+     ]
+    },
+    {
+     "part": "pillow_l",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 1,
+     "health": 45,
+     "break": "detach",
+     "attach": [
+      "mattress"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pillow_l"
+     ]
+    },
+    {
+     "part": "pillow_r",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 1,
+     "health": 45,
+     "break": "detach",
+     "attach": [
+      "mattress"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pillow_r"
+     ]
+    },
+    {
+     "part": "head_frame",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 12,
+     "health": 160,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_head_frame_1",
+      "col_head_frame_2",
+      "col_head_frame_3",
+      "col_head_frame_4",
+      "col_head_frame_5"
+     ]
+    },
+    {
+     "part": "head_panel",
+     "material": "paper",
+     "materials": [
+      "paper_hanji_lit"
+     ],
+     "mass": 1.5,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "head_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11"
+     ],
+     "colliders": [
+      "col_head_panel"
+     ]
+    },
+    {
+     "part": "glow",
+     "material": "electronics",
+     "materials": [
+      "led_warm",
+      "alloy_dark"
+     ],
+     "mass": 0.3,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "head_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_glow"
+     ]
+    }
+   ],
+   "debris": 11,
+   "triangles": {
+    "intact": 6692,
+    "chunks": 9370
+   },
+   "hidden_scale": 0.0001,
+   "note": "oak platform floating on a dark recessed plinth; lit hanji headboard behind an oak lattice; indigo throw at the foot"
+  },
+  {
+   "id": "nightstand",
+   "name": "Nightstand with drawer",
+   "batch": "B",
+   "rooms": [
+    "F3 Bedroom",
+    "F3 Suite Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.5,
+    0.52,
+    0.426
+   ],
+   "floor_contact": 0,
+   "mass_kg": 16.5,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "wood_ebony"
+     ],
+     "mass": 8,
+     "health": 140,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4",
+      "col_carcass_5",
+      "col_carcass_6"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "stone",
+     "materials": [
+      "stone_pale"
+     ],
+     "mass": 6,
+     "health": 425,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "drawer",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "brass"
+     ],
+     "mass": 2.5,
+     "health": 95,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 1704,
+    "chunks": 1539
+   },
+   "hidden_scale": 0.0001,
+   "note": "oak box on a shadow plinth, one drawer with a plain brass pull over an open niche, honed pale stone top"
+  },
+  {
+   "id": "wardrobe",
+   "name": "Wardrobe, lattice-and-hanji doors",
+   "batch": "B",
+   "rooms": [
+    "F3 Bedroom",
+    "F3 Suite Bath",
+    "F2 Wardrobe",
+    "F2 Cloakroom"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.2,
+    2.2,
+    0.608
+   ],
+   "floor_contact": 0,
+   "mass_kg": 87.6,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "wood_ebony"
+     ],
+     "mass": 60,
+     "health": 275,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 11,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4",
+      "col_carcass_5",
+      "col_carcass_6",
+      "col_carcass_7"
+     ]
+    },
+    {
+     "part": "door_l",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "brass"
+     ],
+     "mass": 8,
+     "health": 140,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_door_l_1",
+      "col_door_l_2",
+      "col_door_l_3",
+      "col_door_l_4",
+      "col_door_l_5"
+     ]
+    },
+    {
+     "part": "panel_l",
+     "material": "paper",
+     "materials": [
+      "paper_hanji"
+     ],
+     "mass": 0.8,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "door_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11"
+     ],
+     "colliders": [
+      "col_panel_l"
+     ]
+    },
+    {
+     "part": "door_r",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "brass"
+     ],
+     "mass": 8,
+     "health": 140,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_12",
+      "debris_13",
+      "debris_14"
+     ],
+     "colliders": [
+      "col_door_r_1",
+      "col_door_r_2",
+      "col_door_r_3",
+      "col_door_r_4",
+      "col_door_r_5"
+     ]
+    },
+    {
+     "part": "panel_r",
+     "material": "paper",
+     "materials": [
+      "paper_hanji"
+     ],
+     "mass": 0.8,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "door_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_15",
+      "debris_16",
+      "debris_17",
+      "debris_18",
+      "debris_19"
+     ],
+     "colliders": [
+      "col_panel_r"
+     ]
+    },
+    {
+     "part": "shelf",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shelf"
+     ]
+    },
+    {
+     "part": "rail",
+     "material": "metal",
+     "materials": [
+      "brass"
+     ],
+     "mass": 1,
+     "health": 145,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_rail"
+     ]
+    },
+    {
+     "part": "drawer",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 5,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer"
+     ]
+    }
+   ],
+   "debris": 19,
+   "triangles": {
+    "intact": 5448,
+    "chunks": 9738
+   },
+   "hidden_scale": 0.0001,
+   "note": "walnut carcass, two oak lattice doors over hanji on the hinge line, a drawer below; shelf and brass rail inside"
+  },
+  {
+   "id": "low_tea_table",
+   "name": "Low tea table with celadon tea set",
+   "batch": "B",
+   "rooms": [
+    "F1 Tea Room",
+    "F1 Ondol Lounge",
+    "F2 VIP Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.2,
+    0.462,
+    0.7
+   ],
+   "floor_contact": 0,
+   "mass_kg": 21.5,
+   "parts": [
+    {
+     "part": "top",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 14,
+     "health": 170,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "leg_fl",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 0.8,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fl"
+     ]
+    },
+    {
+     "part": "leg_fr",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 0.8,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_fr"
+     ]
+    },
+    {
+     "part": "leg_bl",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 0.8,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_bl"
+     ]
+    },
+    {
+     "part": "leg_br",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 0.8,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_br"
+     ]
+    },
+    {
+     "part": "apron",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 2,
+     "health": 90,
+     "break": "shatter",
+     "attach": [
+      "leg_fl",
+      "leg_fr",
+      "leg_bl",
+      "leg_br"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_apron"
+     ]
+    },
+    {
+     "part": "tray",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 0.8,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tray"
+     ]
+    },
+    {
+     "part": "teapot",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 0.9,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "tray"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_teapot_hull"
+     ]
+    },
+    {
+     "part": "cup_1",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 0.15,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "tray"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_10"
+     ],
+     "colliders": [
+      "col_cup_1_hull"
+     ]
+    },
+    {
+     "part": "cup_2",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 0.15,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "tray"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_11"
+     ],
+     "colliders": [
+      "col_cup_2_hull"
+     ]
+    },
+    {
+     "part": "cup_3",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 0.15,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_12"
+     ],
+     "colliders": [
+      "col_cup_3_hull"
+     ]
+    },
+    {
+     "part": "cup_4",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 0.15,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_13"
+     ],
+     "colliders": [
+      "col_cup_4_hull"
+     ]
+    }
+   ],
+   "debris": 13,
+   "triangles": {
+    "intact": 7724,
+    "chunks": 12002
+   },
+   "hidden_scale": 0.0001,
+   "note": "thick walnut slab on tapered legs and arched aprons; oak tray with a celadon pot and four cups"
+  },
+  {
+   "id": "floor_cushion_set",
+   "name": "Ondol floor cushion set",
+   "batch": "B",
+   "rooms": [
+    "F1 Ondol Lounge",
+    "F1 Tea Room"
+   ],
+   "cover": "none",
+   "size_m": [
+    1.358,
+    0.446,
+    1.016
+   ],
+   "floor_contact": 0,
+   "mass_kg": 9.3,
+   "parts": [
+    {
+     "part": "cushion_1",
+     "material": "fabric",
+     "materials": [
+      "fabric_indigo",
+      "fabric_oat"
+     ],
+     "mass": 1.2,
+     "health": 50,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cushion_1"
+     ]
+    },
+    {
+     "part": "cushion_2",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat",
+      "fabric_indigo"
+     ],
+     "mass": 1.2,
+     "health": 50,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cushion_2"
+     ]
+    },
+    {
+     "part": "cushion_3",
+     "material": "fabric",
+     "materials": [
+      "fabric_cinnabar",
+      "fabric_ochre"
+     ],
+     "mass": 1.2,
+     "health": 50,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cushion_3"
+     ]
+    },
+    {
+     "part": "cushion_4",
+     "material": "fabric",
+     "materials": [
+      "fabric_ochre",
+      "fabric_cinnabar"
+     ],
+     "mass": 1.2,
+     "health": 50,
+     "break": "detach",
+     "attach": [
+      "cushion_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cushion_4"
+     ]
+    },
+    {
+     "part": "bolster_1",
+     "material": "fabric",
+     "materials": [
+      "fabric_indigo",
+      "fabric_cinnabar"
+     ],
+     "mass": 1.5,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_bolster_1"
+     ]
+    },
+    {
+     "part": "bolster_2",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat",
+      "fabric_cinnabar"
+     ],
+     "mass": 1.5,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "cushion_4"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_bolster_2"
+     ]
+    },
+    {
+     "part": "armrest",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 1.5,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_armrest"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 12840,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "four piped bangseok cushions (two stacked), an upright boryo back cushion, a round bolster and a low walnut armrest"
+  },
+  {
+   "id": "folding_screen",
+   "name": "Four-panel hanji folding screen",
+   "batch": "B",
+   "rooms": [
+    "F1 Tea Room",
+    "F1 Ondol Lounge",
+    "F2 River Lounge",
+    "F3 Suite Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.979,
+    1.8,
+    0.439
+   ],
+   "floor_contact": 0,
+   "mass_kg": 13.2,
+   "parts": [
+    {
+     "part": "frame_1",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "wood_walnut"
+     ],
+     "mass": 3,
+     "health": 100,
+     "break": "detach",
+     "attach": [
+      "frame_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1_1",
+      "col_frame_1_2",
+      "col_frame_1_3",
+      "col_frame_1_4"
+     ]
+    },
+    {
+     "part": "paper_1",
+     "material": "paper",
+     "materials": [
+      "paper_hanji"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5"
+     ],
+     "colliders": [
+      "col_paper_1"
+     ]
+    },
+    {
+     "part": "frame_2",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 3,
+     "health": 100,
+     "break": "detach",
+     "attach": [
+      "frame_1",
+      "frame_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_2_1",
+      "col_frame_2_2",
+      "col_frame_2_3",
+      "col_frame_2_4"
+     ]
+    },
+    {
+     "part": "paper_2",
+     "material": "paper",
+     "materials": [
+      "paper_hanji"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10"
+     ],
+     "colliders": [
+      "col_paper_2"
+     ]
+    },
+    {
+     "part": "frame_3",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 3,
+     "health": 100,
+     "break": "detach",
+     "attach": [
+      "frame_2",
+      "frame_4"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_3_1",
+      "col_frame_3_2",
+      "col_frame_3_3",
+      "col_frame_3_4"
+     ]
+    },
+    {
+     "part": "paper_3",
+     "material": "paper",
+     "materials": [
+      "paper_hanji"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_11",
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_paper_3"
+     ]
+    },
+    {
+     "part": "frame_4",
+     "material": "wood",
+     "materials": [
+      "wood_ebony",
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 3,
+     "health": 100,
+     "break": "detach",
+     "attach": [
+      "frame_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_4_1",
+      "col_frame_4_2",
+      "col_frame_4_3",
+      "col_frame_4_4"
+     ]
+    },
+    {
+     "part": "paper_4",
+     "material": "paper",
+     "materials": [
+      "paper_hanji"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "frame_4"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "fixed_chunks": [
+      9
+     ],
+     "debris": [
+      "debris_16",
+      "debris_17",
+      "debris_18",
+      "debris_19",
+      "debris_20"
+     ],
+     "colliders": [
+      "col_paper_4"
+     ]
+    }
+   ],
+   "debris": 20,
+   "triangles": {
+    "intact": 4548,
+    "chunks": 7352
+   },
+   "hidden_scale": 0.0001,
+   "note": "ebony frames in a zig-zag, hanji above a walnut kick panel, brass hinge pins between panels"
+  },
+  {
+   "id": "ondol_chest",
+   "name": "Low ondol cabinet (bandaji-style chest)",
+   "batch": "B",
+   "rooms": [
+    "F1 Ondol Lounge",
+    "F1 Tea Room",
+    "F3 Exec Hall"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.05,
+    0.6,
+    0.461
+   ],
+   "floor_contact": 0.0002,
+   "mass_kg": 38,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 25,
+     "health": 205,
+     "break": "shatter",
+     "attach": [
+      "plinth"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4",
+      "col_carcass_5",
+      "col_carcass_6",
+      "col_carcass_7"
+     ]
+    },
+    {
+     "part": "flap",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_flap"
+     ]
+    },
+    {
+     "part": "drawer_l",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 2,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer_l"
+     ]
+    },
+    {
+     "part": "drawer_r",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 2,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer_r"
+     ]
+    },
+    {
+     "part": "plinth",
+     "material": "wood",
+     "materials": [
+      "wood_ebony"
+     ],
+     "mass": 5,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_plinth"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 10600,
+    "chunks": 4884
+   },
+   "hidden_scale": 0.0001,
+   "note": "walnut chest with a front fall-flap over two drawers, plain brass plates, hinge straps and side handles, on an ebony base"
+  },
+  {
+   "id": "spa_lounger",
+   "name": "Spa lounger",
+   "batch": "B",
+   "rooms": [
+    "F1 Bathhouse",
+    "F1 Steam Room",
+    "F1 Treatment",
+    "F1 Veranda"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.766,
+    0.866,
+    1.955
+   ],
+   "floor_contact": 0,
+   "mass_kg": 23.6,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "rubber"
+     ],
+     "mass": 14,
+     "health": 350,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3"
+     ]
+    },
+    {
+     "part": "slats",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 6,
+     "health": 130,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 28,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_slats_1_hull",
+      "col_slats_2"
+     ]
+    },
+    {
+     "part": "pad",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "slats"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pad_1_hull",
+      "col_pad_2"
+     ]
+    },
+    {
+     "part": "headrest",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 0.6,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "pad"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_headrest"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 7472,
+    "chunks": 2931
+   },
+   "hidden_scale": 0.0001,
+   "note": "dark alloy sled frames with oak slats on a reclined back, oat pad and headrest"
+  },
+  {
+   "id": "towel_rack",
+   "name": "Free-standing towel rack",
+   "batch": "B",
+   "rooms": [
+    "F1 Changing",
+    "F1 Bathhouse",
+    "F1 Steam Room",
+    "F1 Lockers",
+    "F3 Suite Bath"
+   ],
+   "cover": "none",
+   "size_m": [
+    0.58,
+    1.497,
+    0.43
+   ],
+   "floor_contact": 0,
+   "mass_kg": 26.2,
+   "parts": [
+    {
+     "part": "base",
+     "material": "stone",
+     "materials": [
+      "stone_pale"
+     ],
+     "mass": 19.36,
+     "health": 630,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "brass"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1_hull",
+      "col_frame_2_hull",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5",
+      "col_frame_6"
+     ]
+    },
+    {
+     "part": "towel_1",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 0.6,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_towel_1"
+     ]
+    },
+    {
+     "part": "towel_2",
+     "material": "fabric",
+     "materials": [
+      "fabric_indigo"
+     ],
+     "mass": 0.6,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_towel_2"
+     ]
+    },
+    {
+     "part": "towel_3",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 0.6,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_towel_3"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 2836,
+    "chunks": 691
+   },
+   "hidden_scale": 0.0001,
+   "note": "leaning brass ladder set into a pale stone base; two towels over the rungs and one folded on the base"
+  },
+  {
+   "id": "desk_monitors",
+   "name": "Desk with two monitors",
+   "batch": "C",
+   "rooms": [
+    "F3 Newsroom",
+    "F3 Edit Bay",
+    "F3 Edit 1",
+    "F3 Edit 2",
+    "F3 Writers Room",
+    "F3 Exec Office",
+    "F3 Podcast"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.6,
+    1.2,
+    0.8
+   ],
+   "floor_contact": 0,
+   "mass_kg": 44.3,
+   "parts": [
+    {
+     "part": "leg_l",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "rubber"
+     ],
+     "mass": 6,
+     "health": 265,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_l"
+     ]
+    },
+    {
+     "part": "leg_r",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "rubber"
+     ],
+     "mass": 6,
+     "health": 265,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_leg_r"
+     ]
+    },
+    {
+     "part": "modesty",
+     "material": "metal",
+     "materials": [
+      "graphite",
+      "alloy_dark"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "leg_l",
+      "leg_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_modesty"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "leather_black"
+     ],
+     "mass": 16,
+     "health": 175,
+     "break": "shatter",
+     "attach": [
+      "leg_l",
+      "leg_r"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "stand_l",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 1.5,
+     "health": 165,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stand_l_hull"
+     ]
+    },
+    {
+     "part": "monitor_l",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "led_purple"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "stand_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_monitor_l_hull"
+     ]
+    },
+    {
+     "part": "glass_l",
+     "material": "electronics",
+     "materials": [
+      "screen"
+     ],
+     "mass": 1.2,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "monitor_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_glass_l_hull"
+     ]
+    },
+    {
+     "part": "stand_r",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 1.5,
+     "health": 165,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stand_r_hull"
+     ]
+    },
+    {
+     "part": "monitor_r",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "led_purple"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "stand_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_monitor_r_hull"
+     ]
+    },
+    {
+     "part": "glass_r",
+     "material": "electronics",
+     "materials": [
+      "screen"
+     ],
+     "mass": 1.2,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "monitor_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_glass_r_hull"
+     ]
+    },
+    {
+     "part": "keyboard",
+     "material": "plastic",
+     "materials": [
+      "alloy_dark",
+      "plastic_dark"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_keyboard"
+     ]
+    },
+    {
+     "part": "mouse",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.1,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mouse"
+     ]
+    }
+   ],
+   "debris": 9,
+   "triangles": {
+    "intact": 5768,
+    "chunks": 2446
+   },
+   "hidden_scale": 0.0001,
+   "note": "oak top on dark alloy sled legs, graphite modesty panel and cable tray, two slim monitors angled in, keyboard and mouse"
+  },
+  {
+   "id": "office_chair",
+   "name": "Task chair",
+   "batch": "C",
+   "rooms": [
+    "F3 Newsroom",
+    "F3 Edit Bay",
+    "F3 Control Room",
+    "F3 Writers Room",
+    "F3 Podcast"
+   ],
+   "cover": "none",
+   "size_m": [
+    0.662,
+    1.151,
+    0.691
+   ],
+   "floor_contact": 0,
+   "mass_kg": 12.6,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "plastic_dark",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "column",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "plastic_dark",
+      "graphite"
+     ],
+     "mass": 1.5,
+     "health": 165,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_column"
+     ]
+    },
+    {
+     "part": "seat",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal",
+      "plastic_dark"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "column"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat"
+     ]
+    },
+    {
+     "part": "back",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "fabric_charcoal",
+      "graphite"
+     ],
+     "mass": 2.5,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "seat"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_1_hull",
+      "col_back_2"
+     ]
+    },
+    {
+     "part": "lumbar",
+     "material": "fabric",
+     "materials": [
+      "fabric_charcoal"
+     ],
+     "mass": 0.4,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "back"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_lumbar"
+     ]
+    },
+    {
+     "part": "arm_l",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "seat"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_arm_l"
+     ]
+    },
+    {
+     "part": "arm_r",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "seat"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_arm_r"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 11588,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "five-star alloy base on twin casters, gas column, charcoal seat, curved tubular back frame with a woven mesh and a lumbar pad on a spine, T arms"
+  },
+  {
+   "id": "filing_cabinet",
+   "name": "Four-drawer filing cabinet",
+   "batch": "C",
+   "rooms": [
+    "F3 Archive",
+    "F3 Writers Room",
+    "F3 Newsroom",
+    "F3 Exec Office"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.45,
+    1.3,
+    0.636
+   ],
+   "floor_contact": 0,
+   "mass_kg": 45,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 25,
+     "health": 425,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4",
+      "col_carcass_5"
+     ]
+    },
+    {
+     "part": "drawer_1",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "brass",
+      "screen_off",
+      "led_purple"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer_1"
+     ]
+    },
+    {
+     "part": "drawer_2",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "brass"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer_2"
+     ]
+    },
+    {
+     "part": "drawer_3",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "brass"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer_3"
+     ]
+    },
+    {
+     "part": "drawer_4",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "brass"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drawer_4"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 3264,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite steel carcass, four dark alloy drawer fronts with plain brass bar pulls, keypad lock with a status dot"
+  },
+  {
+   "id": "render_rack",
+   "name": "Render-farm rack",
+   "batch": "C",
+   "rooms": [
+    "F3 Render Farm",
+    "F3 Edit 2",
+    "F3 Projection",
+    "F2 Studio"
+   ],
+   "cover": "hard",
+   "size_m": [
+    0.6,
+    2.2,
+    1.1
+   ],
+   "floor_contact": 0,
+   "mass_kg": 217,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "graphite",
+      "alloy_dark",
+      "steel_brushed",
+      "rubber"
+     ],
+     "mass": 90,
+     "health": 655,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5",
+      "col_frame_6",
+      "col_frame_7",
+      "col_frame_8"
+     ]
+    },
+    {
+     "part": "side_l",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 8,
+     "health": 290,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_side_l"
+     ]
+    },
+    {
+     "part": "side_r",
+     "material": "metal",
+     "materials": [
+      "alloy_dark"
+     ],
+     "mass": 8,
+     "health": 290,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_side_r"
+     ]
+    },
+    {
+     "part": "door",
+     "material": "metal",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "alloy_dark"
+     ],
+     "mass": 6,
+     "health": 265,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_1",
+      "col_door_2",
+      "col_door_3",
+      "col_door_4",
+      "col_door_5",
+      "col_door_6"
+     ]
+    },
+    {
+     "part": "pane",
+     "material": "glass",
+     "materials": [
+      "glass_tint"
+     ],
+     "mass": 5,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "door"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 17,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11",
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15",
+      "debris_16",
+      "debris_17",
+      "debris_18",
+      "debris_19",
+      "debris_20",
+      "debris_21",
+      "debris_22",
+      "debris_23",
+      "debris_24"
+     ],
+     "colliders": [
+      "col_pane"
+     ]
+    },
+    {
+     "part": "blade_1",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_1"
+     ]
+    },
+    {
+     "part": "blade_2",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_2"
+     ]
+    },
+    {
+     "part": "blade_3",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_3"
+     ]
+    },
+    {
+     "part": "blade_4",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_4"
+     ]
+    },
+    {
+     "part": "blade_5",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_5"
+     ]
+    },
+    {
+     "part": "blade_6",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_6"
+     ]
+    },
+    {
+     "part": "blade_7",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_7"
+     ]
+    },
+    {
+     "part": "blade_8",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "alloy_dark",
+      "led_purple",
+      "led_white",
+      "led_warm",
+      "screen_off"
+     ],
+     "mass": 12,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_8"
+     ]
+    },
+    {
+     "part": "fans",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "alloy_dark",
+      "steel_brushed",
+      "plastic_dark"
+     ],
+     "mass": 4,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fans"
+     ]
+    }
+   ],
+   "debris": 24,
+   "triangles": {
+    "intact": 14660,
+    "chunks": 950
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite steel rack, light-smoke glass door on a right hinge with a perforated grille over the top fans, eight 4U render nodes each with a purple status strip and activity dots"
+  },
+  {
+   "id": "holo_console",
+   "name": "Holo stage console",
+   "batch": "C",
+   "rooms": [
+    "F3 Control Room",
+    "F3 Screening",
+    "F2 Studio"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.2,
+    1.049,
+    0.798
+   ],
+   "floor_contact": 0,
+   "mass_kg": 57.5,
+   "parts": [
+    {
+     "part": "pedestal",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "graphite",
+      "led_purple",
+      "steel_brushed"
+     ],
+     "mass": 40,
+     "health": 500,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pedestal_hull"
+     ]
+    },
+    {
+     "part": "side_l",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "pedestal"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_side_l_hull"
+     ]
+    },
+    {
+     "part": "side_r",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "pedestal"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_side_r_hull"
+     ]
+    },
+    {
+     "part": "deck",
+     "material": "glass",
+     "materials": [
+      "glass_clear",
+      "screen"
+     ],
+     "mass": 6,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "pedestal"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 12,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10"
+     ],
+     "colliders": [
+      "col_deck_hull"
+     ]
+    },
+    {
+     "part": "ring",
+     "material": "electronics",
+     "materials": [
+      "alloy_dark",
+      "led_purple"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "pedestal"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_ring_1",
+      "col_ring_2",
+      "col_ring_3",
+      "col_ring_4"
+     ]
+    },
+    {
+     "part": "lens",
+     "material": "glass",
+     "materials": [
+      "glass_frosted"
+     ],
+     "mass": 0.5,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "ring"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_11",
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15",
+      "debris_16"
+     ],
+     "colliders": [
+      "col_lens"
+     ]
+    }
+   ],
+   "debris": 16,
+   "triangles": {
+    "intact": 3620,
+    "chunks": 2436
+   },
+   "hidden_scale": 0.0001,
+   "note": "tapered dark alloy pedestal with graphite cheeks, sloped glass touch deck over a light field, purple emitter ring and lens"
+  },
+  {
+   "id": "control_desk",
+   "name": "Broadcast control desk module",
+   "batch": "C",
+   "rooms": [
+    "F3 Control Room",
+    "F3 Edit Bay",
+    "F3 Projection"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.8,
+    1.3,
+    0.95
+   ],
+   "floor_contact": 0,
+   "mass_kg": 71,
+   "parts": [
+    {
+     "part": "body",
+     "material": "metal",
+     "materials": [
+      "graphite",
+      "led_purple"
+     ],
+     "mass": 45,
+     "health": 520,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_body_1",
+      "col_body_2",
+      "col_body_3_hull",
+      "col_body_4_hull",
+      "col_body_5_hull"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 8,
+     "health": 140,
+     "break": "shatter",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "deck",
+     "material": "electronics",
+     "materials": [
+      "plastic_dark",
+      "screen_off",
+      "alloy_dark",
+      "graphite",
+      "led_purple",
+      "screen"
+     ],
+     "mass": 6,
+     "health": 45,
+     "break": "shatter",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_deck_hull"
+     ]
+    },
+    {
+     "part": "screen_1",
+     "material": "electronics",
+     "materials": [
+      "alloy_dark",
+      "graphite"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_screen_1_1_hull",
+      "col_screen_1_2_hull"
+     ]
+    },
+    {
+     "part": "glass_1",
+     "material": "electronics",
+     "materials": [
+      "screen"
+     ],
+     "mass": 1,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "screen_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_glass_1_hull"
+     ]
+    },
+    {
+     "part": "screen_2",
+     "material": "electronics",
+     "materials": [
+      "alloy_dark",
+      "graphite",
+      "led_purple"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_screen_2_1_hull",
+      "col_screen_2_2_hull"
+     ]
+    },
+    {
+     "part": "glass_2",
+     "material": "electronics",
+     "materials": [
+      "screen"
+     ],
+     "mass": 1,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "screen_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_glass_2_hull"
+     ]
+    },
+    {
+     "part": "screen_3",
+     "material": "electronics",
+     "materials": [
+      "alloy_dark",
+      "graphite"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_screen_3_1_hull",
+      "col_screen_3_2_hull"
+     ]
+    },
+    {
+     "part": "glass_3",
+     "material": "electronics",
+     "materials": [
+      "screen"
+     ],
+     "mass": 1,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "screen_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_glass_3_hull"
+     ]
+    }
+   ],
+   "debris": 15,
+   "triangles": {
+    "intact": 7440,
+    "chunks": 5453
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite console with knee space, walnut arm rest, sloped fader deck, three screens on the riser, one purple reveal line"
+  },
+  {
+   "id": "vault_shelving",
+   "name": "Deposit-box shelving",
+   "batch": "C",
+   "rooms": [
+    "F2 Deposit",
+    "F2 Concierge",
+    "F3 Archive"
+   ],
+   "cover": "hard",
+   "size_m": [
+    1.2,
+    2.1,
+    0.61
+   ],
+   "floor_contact": 0,
+   "mass_kg": 214,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "led_purple"
+     ],
+     "mass": 150,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5",
+      "col_frame_6",
+      "col_frame_7",
+      "col_frame_8",
+      "col_frame_9",
+      "col_frame_10",
+      "col_frame_11"
+     ]
+    },
+    {
+     "part": "box_1",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_1"
+     ]
+    },
+    {
+     "part": "box_2",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_2"
+     ]
+    },
+    {
+     "part": "box_3",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_3"
+     ]
+    },
+    {
+     "part": "box_4",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_4"
+     ]
+    },
+    {
+     "part": "box_5",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_5"
+     ]
+    },
+    {
+     "part": "box_6",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_6"
+     ]
+    },
+    {
+     "part": "box_7",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_7"
+     ]
+    },
+    {
+     "part": "box_8",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_8"
+     ]
+    },
+    {
+     "part": "box_9",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_9"
+     ]
+    },
+    {
+     "part": "box_10",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_10"
+     ]
+    },
+    {
+     "part": "box_11",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_11"
+     ]
+    },
+    {
+     "part": "box_12",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_12"
+     ]
+    },
+    {
+     "part": "box_13",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_13"
+     ]
+    },
+    {
+     "part": "box_14",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_14"
+     ]
+    },
+    {
+     "part": "box_15",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_15"
+     ]
+    },
+    {
+     "part": "box_16",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "graphite",
+      "brass",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box_16"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 9948,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite steel carcass in a 4 by 4 grid, brushed steel deposit boxes with plain bar pulls and brass lock discs"
+  },
+  {
+   "id": "media_wall",
+   "name": "Media wall unit",
+   "batch": "C",
+   "rooms": [
+    "F3 Suite Lounge",
+    "F3 Exec Office",
+    "F3 Boardroom",
+    "F3 Foyer",
+    "F2 Green Room",
+    "F2 VIP Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.4,
+    2,
+    0.457
+   ],
+   "floor_contact": 0,
+   "mass_kg": 75.8,
+   "parts": [
+    {
+     "part": "credenza",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "graphite",
+      "led_purple"
+     ],
+     "mass": 35,
+     "health": 230,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_credenza_1",
+      "col_credenza_2"
+     ]
+    },
+    {
+     "part": "door_l",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_l"
+     ]
+    },
+    {
+     "part": "door_r",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "brass"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_r"
+     ]
+    },
+    {
+     "part": "screen",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "screen"
+     ],
+     "mass": 18,
+     "health": 60,
+     "break": "shatter",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 16,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_screen"
+     ]
+    },
+    {
+     "part": "speaker_l",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "fabric_charcoal",
+      "alloy_dark"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_speaker_l"
+     ]
+    },
+    {
+     "part": "speaker_r",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "fabric_charcoal",
+      "alloy_dark"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_speaker_r"
+     ]
+    },
+    {
+     "part": "shelf_l",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "fabric_indigo",
+      "fabric_ochre"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "shatter",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_shelf_l"
+     ]
+    },
+    {
+     "part": "shelf_r",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "shatter",
+     "attach": [
+      "credenza"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_shelf_r"
+     ]
+    },
+    {
+     "part": "bowl",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 0.8,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "shelf_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_bowl_hull"
+     ]
+    }
+   ],
+   "debris": 15,
+   "triangles": {
+    "intact": 5412,
+    "chunks": 8867
+   },
+   "hidden_scale": 0.0001,
+   "note": "walnut credenza on a shadow plinth with a fluted walnut back wall, wall screen, slim speakers, two floating shelves, celadon bowl"
+  },
+  {
+   "id": "planter_large",
+   "name": "Large basalt planter with shrub",
+   "batch": "D",
+   "rooms": [
+    "F2 Gallery",
+    "F2 Reception",
+    "F2 Bridge Lobby",
+    "F1 Veranda",
+    "F1 Garden"
+   ],
+   "cover": "hard",
+   "size_m": [
+    1.266,
+    1.702,
+    0.61
+   ],
+   "floor_contact": 0,
+   "mass_kg": 289,
+   "parts": [
+    {
+     "part": "basin",
+     "material": "stone",
+     "materials": [
+      "stone_basalt"
+     ],
+     "mass": 220,
+     "health": 1200,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_basin_1",
+      "col_basin_2",
+      "col_basin_3",
+      "col_basin_4",
+      "col_basin_5"
+     ]
+    },
+    {
+     "part": "soil",
+     "material": "plant",
+     "materials": [
+      "soil",
+      "stone_granite",
+      "stone_pale"
+     ],
+     "mass": 60,
+     "health": 400,
+     "break": "shatter",
+     "attach": [
+      "basin"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8"
+     ],
+     "colliders": [
+      "col_soil"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "shrub_1",
+     "material": "plant",
+     "materials": [
+      "bark",
+      "foliage"
+     ],
+     "mass": 3,
+     "health": 25,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_9",
+      "debris_10"
+     ],
+     "colliders": [
+      "col_shrub_1"
+     ]
+    },
+    {
+     "part": "shrub_2",
+     "material": "plant",
+     "materials": [
+      "bark",
+      "foliage"
+     ],
+     "mass": 3,
+     "health": 25,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_shrub_2"
+     ]
+    },
+    {
+     "part": "shrub_3",
+     "material": "plant",
+     "materials": [
+      "bark",
+      "foliage"
+     ],
+     "mass": 3,
+     "health": 25,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_13",
+      "debris_14"
+     ],
+     "colliders": [
+      "col_shrub_3"
+     ]
+    }
+   ],
+   "debris": 14,
+   "triangles": {
+    "intact": 8644,
+    "chunks": 13633
+   },
+   "hidden_scale": 0.0001,
+   "note": "honed basalt trough with a projecting cap and a shadow-gap foot; white pebble mulch and three shrubs"
+  },
+  {
+   "id": "garden_bench",
+   "name": "Stone and oak garden bench",
+   "batch": "D",
+   "rooms": [
+    "F1 Garden",
+    "F1 Veranda",
+    "F2 Bridge Lobby",
+    "F2 Gallery"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.8,
+    0.45,
+    0.5
+   ],
+   "floor_contact": 0,
+   "mass_kg": 188,
+   "parts": [
+    {
+     "part": "plinth_l",
+     "material": "stone",
+     "materials": [
+      "stone_granite",
+      "brass"
+     ],
+     "mass": 80,
+     "health": 1010,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_plinth_l"
+     ]
+    },
+    {
+     "part": "plinth_r",
+     "material": "stone",
+     "materials": [
+      "stone_granite",
+      "brass"
+     ],
+     "mass": 80,
+     "health": 1010,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_plinth_r"
+     ]
+    },
+    {
+     "part": "seat",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 28,
+     "health": 215,
+     "break": "shatter",
+     "attach": [
+      "plinth_l",
+      "plinth_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_seat"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 1632,
+    "chunks": 1613
+   },
+   "hidden_scale": 0.0001,
+   "note": "two honed granite plinths on shadow-gap feet carrying a thick two-board oak seat; the plinths stop bullets"
+  },
+  {
+   "id": "potted_tree",
+   "name": "Potted tree",
+   "batch": "D",
+   "rooms": [
+    "F2 Reception",
+    "F2 River Lounge",
+    "F2 Lounge Bar",
+    "F3 Exec Hall",
+    "F3 Suite Lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.041,
+    2.449,
+    0.803
+   ],
+   "floor_contact": 0,
+   "mass_kg": 57,
+   "parts": [
+    {
+     "part": "pot",
+     "material": "ceramic",
+     "materials": [
+      "celadon"
+     ],
+     "mass": 25,
+     "health": 45,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4"
+     ],
+     "colliders": [
+      "col_pot_hull"
+     ]
+    },
+    {
+     "part": "soil",
+     "material": "plant",
+     "materials": [
+      "soil"
+     ],
+     "mass": 20,
+     "health": 400,
+     "break": "shatter",
+     "attach": [
+      "pot"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8"
+     ],
+     "colliders": [
+      "col_soil"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "trunk",
+     "material": "plant",
+     "materials": [
+      "bark"
+     ],
+     "mass": 6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_trunk"
+     ]
+    },
+    {
+     "part": "canopy_1",
+     "material": "plant",
+     "materials": [
+      "foliage"
+     ],
+     "mass": 2,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "trunk"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_9",
+      "debris_10"
+     ],
+     "colliders": [
+      "col_canopy_1"
+     ]
+    },
+    {
+     "part": "canopy_2",
+     "material": "plant",
+     "materials": [
+      "foliage"
+     ],
+     "mass": 2,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "trunk"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_canopy_2"
+     ]
+    },
+    {
+     "part": "canopy_3",
+     "material": "plant",
+     "materials": [
+      "foliage"
+     ],
+     "mass": 2,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "trunk"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_13",
+      "debris_14"
+     ],
+     "colliders": [
+      "col_canopy_3"
+     ]
+    }
+   ],
+   "debris": 14,
+   "triangles": {
+    "intact": 4508,
+    "chunks": 5676
+   },
+   "hidden_scale": 0.0001,
+   "note": "celadon jar planter (hollow, 2 cm wall) with a slender multi-branch tree and three leaf canopies"
+  },
+  {
+   "id": "reception_desk",
+   "name": "Reception desk (stone front)",
+   "batch": "D",
+   "rooms": [
+    "F2 Reception",
+    "F2 Concierge",
+    "F2 Security",
+    "F2 Cloakroom",
+    "F3 Foyer"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.4,
+    1.1,
+    0.853
+   ],
+   "floor_contact": 0,
+   "mass_kg": 172.5,
+   "parts": [
+    {
+     "part": "carcass",
+     "material": "wood",
+     "materials": [
+      "rubber",
+      "wood_walnut",
+      "graphite",
+      "brass"
+     ],
+     "mass": 50,
+     "health": 260,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_carcass_1",
+      "col_carcass_2",
+      "col_carcass_3",
+      "col_carcass_4"
+     ]
+    },
+    {
+     "part": "front",
+     "material": "stone",
+     "materials": [
+      "stone_marble"
+     ],
+     "mass": 60,
+     "health": 915,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_front"
+     ]
+    },
+    {
+     "part": "band",
+     "material": "metal",
+     "materials": [
+      "brass"
+     ],
+     "mass": 1,
+     "health": 145,
+     "break": "detach",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_band"
+     ]
+    },
+    {
+     "part": "led",
+     "material": "electronics",
+     "materials": [
+      "led_purple_dim"
+     ],
+     "mass": 0.5,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_led"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "stone",
+     "materials": [
+      "stone_marble_honed"
+     ],
+     "mass": 45,
+     "health": 830,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_top"
+     ]
+    },
+    {
+     "part": "worktop",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 12,
+     "health": 160,
+     "break": "shatter",
+     "attach": [
+      "carcass"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_worktop"
+     ]
+    },
+    {
+     "part": "monitor",
+     "material": "electronics",
+     "materials": [
+      "graphite",
+      "alloy_dark"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "worktop"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_monitor_1",
+      "col_monitor_2"
+     ]
+    },
+    {
+     "part": "monitor_glass",
+     "material": "electronics",
+     "materials": [
+      "screen"
+     ],
+     "mass": 1,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "monitor"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_monitor_glass"
+     ]
+    }
+   ],
+   "debris": 12,
+   "triangles": {
+    "intact": 2812,
+    "chunks": 4524
+   },
+   "hidden_scale": 0.0001,
+   "note": "three book-matched veined marble slabs with 3 mm reveals and a brass top band on a walnut carcass, dark toe-kick, soft purple wash under the stone ledge; staff worktop, drawer pedestal and monitor behind"
+  },
+  {
+   "id": "lobby_bench",
+   "name": "Lift-lobby bench",
+   "batch": "D",
+   "rooms": [
+    "F1 Garden Lifts",
+    "F2 Sky Lifts",
+    "F3 Media Lifts",
+    "F2 Bridge Lobby",
+    "F3 Archive Hall"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.8,
+    0.443,
+    0.552
+   ],
+   "floor_contact": 0,
+   "mass_kg": 27,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "alloy_dark",
+      "rubber"
+     ],
+     "mass": 15,
+     "health": 360,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3"
+     ]
+    },
+    {
+     "part": "slats",
+     "material": "wood",
+     "materials": [
+      "wood_walnut"
+     ],
+     "mass": 6,
+     "health": 130,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 12,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_slats"
+     ]
+    },
+    {
+     "part": "cushion_l",
+     "material": "fabric",
+     "materials": [
+      "leather_black"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "slats"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cushion_l"
+     ]
+    },
+    {
+     "part": "cushion_r",
+     "material": "fabric",
+     "materials": [
+      "leather_black"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "slats"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cushion_r"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 5256,
+    "chunks": 3816
+   },
+   "hidden_scale": 0.0001,
+   "note": "dark alloy flat-bar frame, walnut slat deck with two black leather pads; bare slats at the ends as a ledge"
+  },
+  {
+   "id": "floor_lamp",
+   "name": "Hanji lantern floor lamp",
+   "batch": "D",
+   "rooms": [
+    "F1 Tea Room",
+    "F1 Ondol Lounge",
+    "F2 River Lounge",
+    "F2 VIP Lounge",
+    "F3 Bedroom",
+    "F3 Suite Lounge"
+   ],
+   "cover": "none",
+   "size_m": [
+    0.452,
+    1.65,
+    0.452
+   ],
+   "floor_contact": 0,
+   "mass_kg": 11.3,
+   "parts": [
+    {
+     "part": "base",
+     "material": "stone",
+     "materials": [
+      "stone_basalt",
+      "brass"
+     ],
+     "mass": 9,
+     "health": 485,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "stem",
+     "material": "metal",
+     "materials": [
+      "brass",
+      "graphite"
+     ],
+     "mass": 1.5,
+     "health": 165,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stem"
+     ]
+    },
+    {
+     "part": "shade_frame",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 0.6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "stem"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shade_frame_1",
+      "col_shade_frame_2",
+      "col_shade_frame_3",
+      "col_shade_frame_4",
+      "col_shade_frame_5",
+      "col_shade_frame_6",
+      "col_shade_frame_7",
+      "col_shade_frame_8",
+      "col_shade_frame_9",
+      "col_shade_frame_10",
+      "col_shade_frame_11",
+      "col_shade_frame_12"
+     ]
+    },
+    {
+     "part": "shade",
+     "material": "paper",
+     "materials": [
+      "paper_hanji_lit"
+     ],
+     "mass": 0.2,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "shade_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 20,
+     "fixed_chunks": [
+      5,
+      10,
+      15,
+      20
+     ],
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5"
+     ],
+     "colliders": [
+      "col_shade_1",
+      "col_shade_2",
+      "col_shade_3",
+      "col_shade_4"
+     ]
+    },
+    {
+     "part": "bulb",
+     "material": "glass",
+     "materials": [
+      "glass_frosted",
+      "led_warm"
+     ],
+     "mass": 0.05,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "stem"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11"
+     ],
+     "colliders": [
+      "col_bulb"
+     ]
+    }
+   ],
+   "debris": 11,
+   "triangles": {
+    "intact": 3172,
+    "chunks": 3604
+   },
+   "hidden_scale": 0.0001,
+   "note": "square oak lantern frame with lit hanji panels on a brass stem and a basalt foot"
+  },
+  {
+   "id": "service_trolley",
+   "name": "Service trolley",
+   "batch": "D",
+   "rooms": [
+    "F1 Kitchen",
+    "F1 Servery",
+    "F1 Kitchen Pass",
+    "F1 Laundry",
+    "F1 Dining Room",
+    "F2 Backstage"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.88,
+    0.994,
+    0.576
+   ],
+   "floor_contact": 0.0004,
+   "mass_kg": 18.4,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "rubber"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "wheel_1",
+      "wheel_2",
+      "wheel_3",
+      "wheel_4"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5"
+     ]
+    },
+    {
+     "part": "tray_top",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 2,
+     "health": 185,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tray_top_1",
+      "col_tray_top_2",
+      "col_tray_top_3",
+      "col_tray_top_4",
+      "col_tray_top_5"
+     ]
+    },
+    {
+     "part": "tray_low",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 2,
+     "health": 185,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tray_low_1",
+      "col_tray_low_2",
+      "col_tray_low_3",
+      "col_tray_low_4",
+      "col_tray_low_5"
+     ]
+    },
+    {
+     "part": "wheel_1",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "steel_brushed"
+     ],
+     "mass": 0.3,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wheel_1"
+     ]
+    },
+    {
+     "part": "wheel_2",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "steel_brushed"
+     ],
+     "mass": 0.3,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wheel_2"
+     ]
+    },
+    {
+     "part": "wheel_3",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "steel_brushed"
+     ],
+     "mass": 0.3,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wheel_3"
+     ]
+    },
+    {
+     "part": "wheel_4",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "steel_brushed"
+     ],
+     "mass": 0.3,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wheel_4"
+     ]
+    },
+    {
+     "part": "cloth",
+     "material": "fabric",
+     "materials": [
+      "fabric_oat"
+     ],
+     "mass": 0.4,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "tray_top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cloth_1",
+      "col_cloth_2"
+     ]
+    },
+    {
+     "part": "plates",
+     "material": "ceramic",
+     "materials": [
+      "porcelain"
+     ],
+     "mass": 3,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "tray_top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_plates"
+     ]
+    },
+    {
+     "part": "teapot",
+     "material": "ceramic",
+     "materials": [
+      "porcelain"
+     ],
+     "mass": 0.8,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "tray_top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_teapot_hull"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 9344,
+    "chunks": 11363
+   },
+   "hidden_scale": 0.0001,
+   "note": "brushed steel two-tray trolley on rubber casters with a push bar; linen cloth, a porcelain teapot and a stack of plates"
+  },
+  {
+   "id": "crate_stack",
+   "name": "Stacked crates and a flight case",
+   "batch": "D",
+   "rooms": [
+    "F1 Plant Room",
+    "F1 Staff Entry",
+    "F1 Laundry",
+    "F1 Kitchen",
+    "F2 Studio",
+    "F2 Backstage",
+    "F2 Wardrobe"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.214,
+    1.4,
+    0.8
+   ],
+   "floor_contact": 0,
+   "mass_kg": 41,
+   "parts": [
+    {
+     "part": "crate_big",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 18,
+     "health": 185,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 14,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_crate_big"
+     ]
+    },
+    {
+     "part": "lid_big",
+     "material": "wood",
+     "materials": [
+      "wood_oak"
+     ],
+     "mass": 3,
+     "health": 100,
+     "break": "detach",
+     "attach": [
+      "crate_big"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_lid_big"
+     ]
+    },
+    {
+     "part": "crate_small",
+     "material": "wood",
+     "materials": [
+      "wood_oak",
+      "wood_walnut"
+     ],
+     "mass": 8,
+     "health": 140,
+     "break": "shatter",
+     "attach": [
+      "lid_big"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 8,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_crate_small"
+     ]
+    },
+    {
+     "part": "case",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark",
+      "steel_brushed",
+      "alloy_dark"
+     ],
+     "mass": 12,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_case"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 10108,
+    "chunks": 10994
+   },
+   "hidden_scale": 0.0001,
+   "note": "slatted pine-look crate with a loose plank lid, a panelled small crate set askew on top, and an upright dark flight case"
+  }
+ ]
+}

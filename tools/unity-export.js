@@ -23,10 +23,19 @@
 //   simplify matching groups gently on LOD1+ (keep at least `keep`, their own error, no pruning unless prune is
 //   set), so a key part never vanishes at range; colliders as above. The skin's first joint is the common
 //   ancestor of all joints (the skeleton root, e.g. the hips).
+//   - rigid files may set { lod: { keep, error, flags } } (three LODs) to override the default LOD targets.
+//   - collider proxies (nodes named col_*, the furniture convention): a box proxy keeps its node with one child box
+//     <node>_COL; a convex proxy (name ending _hull) keeps its hull as an invisible child <node>_HULL (no LODs); a
+//     node with proxies among its children gets no automatic box of its own. Pre-cut chunks (chunk_* nodes inside a
+//     chunks_* group) get a convex hull <node>_HULL of their own mesh instead of a box (cells are convex, and boxes of
+//     neighbouring cells overlap). Every hull is kept to at most 250 triangles (Unity cooks convex MeshColliders up to
+//     255). Every primitive written is checked to be indexed whole triangles.
 // Texture transforms (KHR_texture_transform) and the scene name of the source file are kept.
 //
 //   node tools/unity-export.js gadgets/wall-fortification/*.glb --sealed --drop terminal
 //   node tools/unity-export.js rifles/ak47/ak47.glb
+//   node tools/unity-export.js props/haneul-furniture/glb/*.glb --out props/haneul-furniture/unity   (--out: write there
+//   instead of a unity/ folder next to each file)
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
@@ -42,6 +51,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
 import { MeshoptSimplifier as MS } from 'meshoptimizer';
 
 const LOD_KEEP = [1, 0.45, 0.15];          // share of triangles each LOD aims for
@@ -102,6 +112,7 @@ function simplify(geo, keep, err, flags = [], nw = 0.6) {
     let target = Math.max(3, Math.floor(gr.count * keep / 3) * 3);
     // normals weigh in, so collapses do not drag a hard edge across a flat face (shading streaks)
     const [res] = gr.count >= 60 ? MS.simplifyWithAttributes(src, pos, 3, nrm, 3, [nw, nw, nw], null, target, err, flags) : [src];
+    if (!res.length) continue;                // simplified away: no empty (non-indexed) primitive
     groups.push({ start: out.length, count: res.length, materialIndex: gr.materialIndex });
     for (const i of res) out.push(i);
   }
@@ -117,10 +128,10 @@ function simplify(geo, keep, err, flags = [], nw = 0.6) {
   return g;
 }
 
-function addLods(parent, base, geo, mats, stats) {
-  const scale = MS.getScale(geo.attributes.position.array, 3);
-  for (let l = 0; l < LOD_KEEP.length; l++) {
-    const g = simplify(geo, LOD_KEEP[l], LOD_ERROR[l], LOD_FLAGS[l]);
+function addLods(parent, base, geo, mats, stats, L = {}) {
+  const scale = MS.getScale(geo.attributes.position.array, 3), KEEP = L.keep || LOD_KEEP, ERR = L.error || LOD_ERROR, FLAGS = L.flags || LOD_FLAGS;
+  for (let l = 0; l < KEEP.length; l++) {
+    const g = simplify(geo, KEEP[l], ERR[l], FLAGS[l]);
     const m = new THREE.Mesh(g, mats.length === 1 ? mats[0] : mats); m.name = base + '_LOD' + l;
     parent.add(m); stats[l] += g.index.count / 3;
   }
@@ -228,6 +239,36 @@ function addCollider(parent, base, geo, min = 0.03) {
   return 1;
 }
 
+// convex hull of a geometry's points, at most maxTris triangles (a farthest-point sample of its corners when it has more)
+function hullOf(geo, maxTris = 250) {
+  const pa = geo.attributes.position, uniq = new Map();
+  for (let i = 0; i < pa.count; i++) { const k = Math.round(pa.getX(i) * 1e5) + ',' + Math.round(pa.getY(i) * 1e5) + ',' + Math.round(pa.getZ(i) * 1e5); if (!uniq.has(k)) uniq.set(k, new THREE.Vector3(pa.getX(i), pa.getY(i), pa.getZ(i))); }
+  const pts = [...uniq.values()];
+  if (pts.length < 4) return null;
+  let g = new ConvexGeometry(pts);
+  for (let n = 100; g.attributes.position.count / 3 > maxTris && n >= 12; n = Math.floor(n * 0.8)) {
+    const pick = [pts[0]], dist = pts.map((q) => q.distanceToSquared(pts[0]));
+    while (pick.length < Math.min(n, pts.length)) { let bi = 0; for (let i = 1; i < pts.length; i++) if (dist[i] > dist[bi]) bi = i; pick.push(pts[bi]); for (let i = 0; i < pts.length; i++) dist[i] = Math.min(dist[i], pts[i].distanceToSquared(pts[bi])); }
+    g = new ConvexGeometry(pick);
+  }
+  return g;
+}
+// an invisible <base>_HULL child (falls back to a box when the mesh is too flat for a hull)
+function addHull(parent, base, geo) {
+  const g = hullOf(geo); if (!g) return addCollider(parent, base, geo, 0);
+  const c = new THREE.Mesh(g, COLLIDER); c.name = base + '_HULL'; parent.add(c);
+  return 1;
+}
+// every mesh must be indexed triangles: no index count or material group that is not whole triangles
+function checkPrimitives(root) {
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry, n = g.index ? g.index.count : g.attributes.position.count;
+    if (n % 3) throw new Error(o.name + ': ' + n + ' indices is not whole triangles');
+    for (const gr of g.groups) if (!gr.count || gr.count % 3) throw new Error(o.name + ': material group with ' + gr.count + ' indices');
+  });
+}
+
 window.convert = async (b64, opts) => {
   await MS.ready;
   const gltf = await load(b64), root = gltf.scene.children[0];
@@ -236,9 +277,22 @@ window.convert = async (b64, opts) => {
   if (cfg && cfg.skinned) out.push(await skinnedCopy(gltf, root, cfg));
   // animated / game file: merge per parent node
   else {
-    const byParent = new Map();
-    root.traverse((o) => { if (o.isMesh) { if (!byParent.has(o.parent)) byParent.set(o.parent, []); byParent.get(o.parent).push(o); } });
-    const stats = [0, 0, 0]; let cols = 0, nodes = 0;
+    const byParent = new Map(), proxies = [];
+    let cols = 0, nodes = 0;
+    root.traverse((o) => { if (o.isMesh && /^col_/.test(o.name)) proxies.push(o); });
+    for (const o of proxies) {
+      const g = new THREE.Group(); g.name = o.name; g.position.copy(o.position); g.quaternion.copy(o.quaternion); g.scale.copy(o.scale);
+      g.userData = o.userData; o.parent.add(g); o.parent.remove(o);
+      if (/_hull$/.test(o.name)) {
+        let hg = prep(o, new THREE.Matrix4());
+        if (hg.attributes.position.count / 3 > 250) hg = hullOf(hg) || hg;
+        const h = new THREE.Mesh(hg, COLLIDER); h.name = o.name + '_HULL'; g.add(h); cols++;
+      }
+      else cols += addCollider(g, o.name, o.geometry.clone(), 0);
+    }
+    const isProxy = (o) => /_(COL|HULL)$/.test(o.name);
+    root.traverse((o) => { if (o.isMesh && !isProxy(o)) { if (!byParent.has(o.parent)) byParent.set(o.parent, []); byParent.get(o.parent).push(o); } });
+    const stats = [0, 0, 0];
     for (const [p, meshes] of byParent) {
       const entries = meshes.map((m) => ({ geo: prep(m, m.matrix), mat: m.material }));
       meshes.forEach((m) => p.remove(m));
@@ -247,8 +301,11 @@ window.convert = async (b64, opts) => {
       if (/^(fx_|laser_|lattice_[0-9]|lattice_glow)/.test(base)) {   // effect geometry (laser beam, kerf glow): one mesh, no LODs, no collider
         const m = new THREE.Mesh(geo, mats.length === 1 ? mats[0] : mats); m.name = base + '_mesh'; p.add(m); nodes++; continue;
       }
-      addLods(p, base, geo, mats, stats); cols += addCollider(p, base, geo); nodes++;
+      addLods(p, base, geo, mats, stats, (cfg && cfg.lod) || {}); nodes++;
+      if (/^chunk_/.test(base) && p.parent && /^chunks_/.test(p.parent.name)) cols += addHull(p, base, geo);
+      else if (!p.children.some((c) => /^col_/.test(c.name))) cols += addCollider(p, base, geo);
     }
+    checkPrimitives(root);
     const buf = await new GLTFExporter().parseAsync(root, { binary: true, animations: gltf.animations });
     out.push({ suffix: '', b64: toB64(buf), info: { merged_nodes: nodes, triangles_per_lod: stats, colliders: cols, clips: gltf.animations.map((a) => a.name) } });
   }
@@ -299,9 +356,10 @@ async function main() {
   const args = process.argv.slice(2);
   const sealed = args.includes('--sealed');
   const drop = args.includes('--drop') ? args[args.indexOf('--drop') + 1].split(',') : [];
-  const files = args.filter((a, i) => a.endsWith('.glb') && args[i - 1] !== '--drop' && !a.includes(`${path.sep}unity${path.sep}`));
+  const outArg = args.includes('--out') ? args[args.indexOf('--out') + 1] : null;
+  const files = args.filter((a, i) => a.endsWith('.glb') && args[i - 1] !== '--drop' && args[i - 1] !== '--out' && !a.includes(`${path.sep}unity${path.sep}`));
   if (!files.length) {
-    console.error('usage: node tools/unity-export.js <file.glb> [...] [--sealed] [--drop node,node]');
+    console.error('usage: node tools/unity-export.js <file.glb> [...] [--sealed] [--drop node,node] [--out dir]');
     process.exit(1);
   }
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
@@ -319,7 +377,7 @@ async function main() {
     for (const file of files) {
       const src = fs.readFileSync(file);
       const res = await page.evaluate(([b, o]) => window.convert(b, o), [src.toString('base64'), { sealed, drop }]);
-      const dir = path.join(path.dirname(file), 'unity');
+      const dir = outArg ? path.resolve(outArg) : path.join(path.dirname(file), 'unity');
       fs.mkdirSync(dir, { recursive: true });
       for (const r of res) {
         const out = path.join(dir, path.basename(file, '.glb') + r.suffix + '.glb');
