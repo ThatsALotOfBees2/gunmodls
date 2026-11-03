@@ -1,7 +1,7 @@
 // Tools > Gunmodls > Set Up Haneul Tower Map: select the imported maps/haneul-tower/unity/haneul-tower.glb (or an
 // instance of it in a scene) and run it. It adds HaneulTowerMap to the root, assigns layout.json (searched by name
 // next to the .glb and in the project), runs Setup in the editor (typed components, mesh and box colliders, layers),
-// marks the structure static, and saves HaneulTowerMap.prefab next to the .glb. The saved prefab has setupOnAwake off,
+// sets static flags by surface type (destructibles and glass are never occluders), and saves HaneulTowerMap.prefab next to the .glb. The saved prefab has setupOnAwake off,
 // so at runtime only the registry is rebuilt. Keep this file in an Editor folder. Unity 2021 LTS to Unity 6.
 using System.IO;
 using UnityEditor;
@@ -49,14 +49,41 @@ public static class HaneulTowerMapSetup
         if (map.layoutJson == null) Debug.LogWarning("layout.json not found: Wall Fortification sizes are guessed from mesh widths. Copy maps/haneul-tower/layout.json into the project.");
         map.Setup();
         map.setupOnAwake = false;
-        // structure, glass and decks never move (the cradle does): batching and occlusion static. Lightmap static is left
-        // to the project (the backdrop is kilometres wide and lit by emissive maps)
+        // static flags by surface type (the cradle moves and gets none):
+        // - hard structure, decks, stairs: batching + occluder + occludee static
+        // - dressing and backdrop: batching + occludee (thin or far, never an occluder)
+        // - glass, rails, holograms: occludee only (see-through: never occluders, never batched)
+        // - destructible soft walls, units, hatches, floor/ceiling patches: no static flags, so their meshes stay
+        //   their own (holes can be cut at runtime) and nothing stays culled behind a wall after it is blown open
+        // Lightmap static is left to the project (the backdrop is kilometres wide and lit by emissive maps)
         foreach (var s in root.GetComponentsInChildren<HaneulSurface>(true))
         {
-            var moving = s.type == HaneulSurfaceType.Bridge && s.id.StartsWith("CR_", System.StringComparison.Ordinal);
-            if (!moving && s.GetComponent<MeshRenderer>() != null) GameObjectUtility.SetStaticEditorFlags(s.gameObject, StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic);
+            var flags = StaticFlagsFor(s);
+            if (flags == 0) continue;
+            foreach (var r in s.GetComponentsInChildren<MeshRenderer>(true))
+                if (r.GetComponentInParent<HaneulSurface>() == s) GameObjectUtility.SetStaticEditorFlags(r.gameObject, flags);
         }
         EditorUtility.SetDirty(map);
+    }
+
+    static StaticEditorFlags StaticFlagsFor(HaneulSurface s)
+    {
+        const StaticEditorFlags solid = StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccluderStatic | StaticEditorFlags.OccludeeStatic;
+        switch (s.type)
+        {
+            case HaneulSurfaceType.Bridge:
+                return s.id.StartsWith("CR_", System.StringComparison.Ordinal) ? (StaticEditorFlags)0 : solid;
+            case HaneulSurfaceType.Hard: case HaneulSurfaceType.Ledge: case HaneulSurfaceType.Walkway:
+            case HaneulSurfaceType.Terrace: case HaneulSurfaceType.Stair: case HaneulSurfaceType.Ladder:
+                return solid;
+            case HaneulSurfaceType.Deco: case HaneulSurfaceType.Env:
+                return StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccludeeStatic;
+            case HaneulSurfaceType.FacadeGlassBreakable: case HaneulSurfaceType.FacadeGlassTempered: case HaneulSurfaceType.InteriorGlass:
+            case HaneulSurfaceType.GlassFloor: case HaneulSurfaceType.Rail: case HaneulSurfaceType.Hologram:
+                return StaticEditorFlags.OccludeeStatic;
+            default:
+                return 0;   // Soft, Reinforceable, Hatch, SoftFloor, SoftCeiling and the markers
+        }
     }
 
     static TextAsset FindLayout(string folder)
