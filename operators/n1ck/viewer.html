@@ -113,7 +113,7 @@
 </style>
 </head>
 <body>
-<div id="stage" aria-label="Interactive 3D model of N1CK, a sleek armoured robot operator in tactical gear, with a screen for a face"></div>
+<div id="stage" aria-label="Interactive 3D model of N1CK, a sleek armoured robot operator in tactical gear, with a curved, borderless display for a face"></div>
 
 <header class="plate">
   <div class="eyebrow">Operator</div>
@@ -149,7 +149,7 @@
         <button type="button" data-face="alert">Alert</button>
       </div>
       <div class="group" role="group" aria-label="Toggles">
-        <button type="button" class="toggle" id="alarm" aria-pressed="false" title="Screen tints dark red">Alarm</button>
+        <button type="button" class="toggle" id="alarm" aria-pressed="false" title="The face display tints dark red">Alarm</button>
         <button type="button" class="toggle" id="field" aria-pressed="false" title="Nullfield emitters flare">Nullfield</button>
         <button type="button" class="toggle" id="panel" aria-pressed="false" title="Open the chest panel">Chest</button>
         <button type="button" class="toggle" id="gear" aria-pressed="true" title="Show the tactical gear (off: bare armour)">Gear</button>
@@ -470,7 +470,7 @@ const D = {
   },
   head: {
     halfW: 0.09, bottom: 1.618, top: HEIGHT, front: 0.093, back: -0.105, corner: 0.044,
-    screen: { cx: 0, cy: 1.735, w: 0.136, h: 0.102, r: 0.014, z: 0.081 },          // display surface, 12 mm behind the bezel face
+    screen: { cx: 0, cy: 1.735, w: 0.136, r: 0.014, z: 0.081 },                    // blockout display (its height: FACE_CELL's 3:2)
     ear: { x: 0.102, y: 1.73, z: -0.012, r: 0.026, len: 0.022 },                    // cylinder axis along X, x = outer face centre
   },
   hand: { palmHalfW: 0.044, palmTop: 0.015, palmBot: -0.017, palmLen: 0.1 },
@@ -759,92 +759,141 @@ function glowBand(W = 128, H = 256) {
 }
 
 /* ------------------------------------------------------------------ face atlas */
-// 4 x 4 cells of 256 x 192 px (4:3, the screen's shape); each face is a 32 x 24 grid of LEDs at 8 px.
-// Cell i sits at column i % 4, row floor(i / 4) from the top-left. The screen mesh's UVs cover cell 0;
-// another face shows by offsetting the emissive map by (col / 4, -row / 4).
+// 4 x 4 cells of 288 x 192 px (3:2, the display's mapped face area); each face is a 48 x 32 grid of display pixels
+// at 6 px. Cell i sits at column i % 4, row floor(i / 4) from the top-left. The display mesh's UVs cover cell 0 in
+// proportion to arc length, and its wrap round the sides, brow and jaw lands on the cell's black margin. Another
+// face shows by offsetting the emissive map by (col / 4, row / 4) in three.js (the texture is not flipped), which is
+// (col / 4, -row / 4) in glTF / Unity terms.
+// The faces are abstract luminous glyphs where eyes would be, with no mouth: warm off-white, the alert pair red.
+// Glyphs stay inside FACE_AREA (the middle 70 % x 60 % of a cell, a little above its centre); everything else is
+// black, and every cell keeps an 8 px black gutter so mipmaps never bleed one face into the next.
 
-const FACE_COLS = 4, FACE_ROWS = 4, FACE_CELL = [256, 192], FACE_GRID = [32, 24];
+const FACE_COLS = 4, FACE_ROWS = 4, FACE_CELL = [288, 192], FACE_GRID = [48, 32];
 const FACES = ['neutral', 'neutral_blink', 'happy', 'happy_blink', 'worried', 'worried_blink', 'laughing_a', 'laughing_b',
   'sad', 'sad_blink', 'alert', 'alert_blink', 'talk_a', 'talk_b', 'focus', 'off'];
 const FACE_INDEX = Object.fromEntries(FACES.map((f, i) => [f, i]));
 const FACE_WARM = [255, 220, 172], FACE_RED = [255, 58, 44];
+// glyph area in display pixels [x0, y0, x1, y1]: 70 % of the width, 60 % of the height, centred 1.6 px above the middle
+const FACE_AREA = [FACE_GRID[0] * 0.15, FACE_GRID[1] * 0.2 - 1.6, FACE_GRID[0] * 0.85, FACE_GRID[1] * 0.8 - 1.6];
+// Each entry draws the glyph for the viewer's left eye in display pixels (white on a clear canvas); faceAtlas()
+// mirrors it to the other eye, so the pair matches pixel for pixel. It may return a brightness gain (default 1).
+// One family: chevrons, bars, brackets and dots. Primary strokes are 5 px, blink strokes 2 px, eyes 14 to 15 px wide
+// and up to 15 px tall (the alert ! 16), 19 px apart; each mood has its own silhouette (not just a size), so it reads at range.
 const FACE_DRAW = (() => {
-  const EL = 10.5, ER = 21.5, EY = 9.5;
-  const rr = (S, x, y, w, h, r) => { S.beginPath(); S.roundRect(x - w / 2, y - h / 2, w, h, r); S.fill(); };
-  const line = (S, pts, lw = 1.35) => { S.lineWidth = Math.max(lw, 1.9); S.beginPath(); S.moveTo(...pts[0]); for (const p of pts.slice(1)) S.lineTo(...p); S.stroke(); };
-  const quad = (S, a, c, b, lw = 1.35) => { S.lineWidth = Math.max(lw, 1.9); S.beginPath(); S.moveTo(...a); S.quadraticCurveTo(...c, ...b); S.stroke(); };
-  const fillPath = (S, f) => { S.beginPath(); f(); S.fill(); };
-  const eyes = (S, w = 3.2, h = 6, y = EY) => { rr(S, EL, y, w, h, 1.4); rr(S, ER, y, w, h, 1.4); };
-  const lids = (S, y = EY + 1, w = 4.6) => { line(S, [[EL - w / 2, y], [EL + w / 2, y]], 1.4); line(S, [[ER - w / 2, y], [ER + w / 2, y]], 1.4); };
-  const smile = (S, w = 9, d = 1.8, y = 16.4, lw = 1.35) => quad(S, [16 - w / 2, y], [16, y + d * 2], [16 + w / 2, y], lw);
-  const frown = (S, w = 8, d = 1.6, y = 19, lw = 1.35) => quad(S, [16 - w / 2, y], [16, y - d * 2], [16 + w / 2, y], lw);
-  const arcs = (S, y = EY + 1.4) => { quad(S, [EL - 2.7, y], [EL, y - 4.4], [EL + 2.7, y], 1.45); quad(S, [ER - 2.7, y], [ER, y - 4.4], [ER + 2.7, y], 1.45); };
-  const worriedBrows = (S) => { line(S, [[EL - 2.9, 4.4], [EL + 2.5, 2.8]], 1.2); line(S, [[ER - 2.5, 2.8], [ER + 2.9, 4.4]], 1.2); };
-  const wavy = (S) => { S.lineWidth = 1.9; S.beginPath(); S.moveTo(11.2, 18.4); S.quadraticCurveTo(12.8, 15.6, 14.4, 18); S.quadraticCurveTo(16, 20.4, 17.6, 18); S.quadraticCurveTo(19.2, 15.6, 20.8, 18.4); S.stroke(); };
-  const alertBrows = (S) => { line(S, [[EL - 3, 2.6], [EL + 2.8, 4.6]], 1.35); line(S, [[ER - 2.8, 4.6], [ER + 3, 2.6]], 1.35); };
-  const cut = (S, f) => { S.globalCompositeOperation = 'destination-out'; f(); S.globalCompositeOperation = 'source-over'; };
+  const EX = 14.5, EY = 14.5;   // left glyph centre (edges land on whole display pixels); the right one is at 48 - EX
+  const poly = (S, pts) => { S.beginPath(); S.moveTo(...pts[0]); for (const p of pts.slice(1)) S.lineTo(...p); S.closePath(); S.fill(); };
+  const bar = (S, x, y, w, h, r = Math.min(1.5, h / 2)) => { S.beginPath(); S.roundRect(x - w / 2, y - h / 2, w, h, r); S.fill(); };
+  // chevron w wide, h from its tips to its apex, t thick measured vertically (square ends), centred on (x, y);
+  // up 1 points the apex up (^), -1 down (v)
+  const chev = (S, x, y, w, h, t, up = 1) => {
+    const k = up, y0 = y - k * (h + t) / 2;
+    poly(S, [[x - w / 2, y0 + k * h], [x, y0], [x + w / 2, y0 + k * h], [x + w / 2, y0 + k * (h + t)], [x, y0 + k * t], [x - w / 2, y0 + k * (h + t)]]);
+  };
+  // rotate f's drawing by deg about (x, y); negative raises the glyph's inner (right) end
+  const tilt = (S, x, y, deg, f) => { S.save(); S.translate(x, y); S.rotate(deg * Math.PI / 180); S.translate(-x, -y); f(); S.restore(); };
+  // outer bracket [ : a w px upright with feet pointing in, h tall, its outer edge at x
+  const bracket = (S, x, y, h, foot = 3, w = 2) => { S.fillRect(x, y - h / 2, w, h); S.fillRect(x, y - h / 2, foot, w); S.fillRect(x, y + h / 2 - w, foot, w); };
+  // three level bars, 4 px wide and 1.5 px apart, of heights hs, centred on the eye line (a voice meter)
+  const meter = (S, hs) => hs.forEach((h, i) => bar(S, EX + (i - 1) * 5.5, EY, 4, h, 1.2));
   return {
-    neutral: (S) => { eyes(S); smile(S); },
-    neutral_blink: (S) => { lids(S); smile(S); },
-    happy: (S) => { for (const x of [EL, ER]) fillPath(S, () => { S.moveTo(x - 2, EY + 2.6); S.lineTo(x - 2, EY - 0.6); S.quadraticCurveTo(x, EY - 4.8, x + 2, EY - 0.6); S.lineTo(x + 2, EY + 2.6); S.quadraticCurveTo(x, EY + 0.2, x - 2, EY + 2.6); }); smile(S, 12, 2.6, 15.8, 1.5); },
-    happy_blink: (S) => { arcs(S); smile(S, 12, 2.6, 15.8, 1.5); },
-    worried: (S) => { eyes(S, 3, 5.2, EY + 0.9); worriedBrows(S); wavy(S); },
-    worried_blink: (S) => { lids(S, EY + 1.7, 4.2); worriedBrows(S); wavy(S); },
-    laughing_a: (S) => {
-      line(S, [[EL - 2.4, EY - 2.4], [EL + 2, EY], [EL - 2.4, EY + 2.4]], 1.4); line(S, [[ER + 2.4, EY - 2.4], [ER - 2, EY], [ER + 2.4, EY + 2.4]], 1.4);
-      fillPath(S, () => { S.moveTo(10.5, 15); S.lineTo(21.5, 15); S.quadraticCurveTo(16, 24.6, 10.5, 15); });
-    },
-    laughing_b: (S) => { arcs(S, EY + 1.2); fillPath(S, () => { S.moveTo(11.2, 15.4); S.lineTo(20.8, 15.4); S.quadraticCurveTo(16, 22.4, 11.2, 15.4); }); },
-    sad: (S) => {
-      eyes(S, 3.2, 5, EY + 1.4);
-      cut(S, () => { fillPath(S, () => { S.moveTo(EL - 3.4, EY + 1.4); S.lineTo(EL + 2.2, EY - 1.8); S.lineTo(EL - 3.4, EY - 3); }); fillPath(S, () => { S.moveTo(ER + 3.4, EY + 1.4); S.lineTo(ER - 2.2, EY - 1.8); S.lineTo(ER + 3.4, EY - 3); }); });
-      line(S, [[EL - 2.6, 5.2], [EL + 2.4, 4.0]], 1.1); line(S, [[ER - 2.4, 4.0], [ER + 2.6, 5.2]], 1.1);
-      frown(S); rr(S, EL - 1.4, 15.8, 1, 1.8, 0.4);
-    },
-    sad_blink: (S) => { line(S, [[EL - 2.4, EY + 2.8], [EL + 2.2, EY + 1.8]], 1.35); line(S, [[ER - 2.2, EY + 1.8], [ER + 2.4, EY + 2.8]], 1.35); frown(S); },
-    alert: (S) => { eyes(S, 4.4, 6.8, EY + 0.6); alertBrows(S); line(S, [[12.6, 18.2], [19.4, 18.2]], 1.4); },
-    alert_blink: (S) => { lids(S, EY + 1.2, 5); alertBrows(S); line(S, [[12.6, 18.2], [19.4, 18.2]], 1.4); },
-    talk_a: (S) => { eyes(S); fillPath(S, () => { S.ellipse(16, 17.8, 2.6, 2.1, 0, 0, 7); }); },
-    talk_b: (S) => { eyes(S); fillPath(S, () => { S.moveTo(12.4, 16.4); S.lineTo(19.6, 16.4); S.quadraticCurveTo(16, 21.2, 12.4, 16.4); }); },
-    focus: (S) => { rr(S, EL, EY + 0.6, 4.6, 2.6, 1); rr(S, ER, EY + 0.6, 4.6, 2.6, 1); line(S, [[EL - 2.6, 5.4], [EL + 2.6, 6.2]], 1.2); line(S, [[ER - 2.6, 6.2], [ER + 2.6, 5.4]], 1.2); quad(S, [12.6, 17.4], [16.6, 19.2], [19.8, 16.6], 1.3); },
-    off: () => { },
+    // calm: two level blocks, fatter than any other bar so they keep their mass at range
+    neutral: (S) => bar(S, EX, EY, 14, 7, 1.5),
+    neutral_blink: (S) => bar(S, EX, EY + 1.5, 14, 2, 1),
+    // happy: tall, pointed ^ ^
+    happy: (S) => chev(S, EX, EY - 0.5, 15, 7, 5, 1),
+    happy_blink: (S) => chev(S, EX, EY + 1, 15, 3.5, 2, 1),
+    // worried: the dashes tilt steeply, inner ends raised (/ \)
+    worried: (S) => tilt(S, EX, EY, -31, () => bar(S, EX, EY, 14, 5)),
+    worried_blink: (S) => tilt(S, EX, EY + 1, -31, () => bar(S, EX, EY + 1, 14.5, 2, 1)),
+    // laughing: wide, flat ^ ^ squeezed shut, bouncing: the b frame is the same glyph 2.5 px higher and a touch taller
+    laughing_a: (S) => chev(S, EX, EY - 2, 15, 3, 5, 1),
+    laughing_b: (S) => chev(S, EX, EY - 4.5, 15, 3.5, 5, 1),
+    // sad: deep v v, set a little low (downcast)
+    sad: (S) => chev(S, EX, EY + 1.5, 15, 7, 5, -1),
+    // sad blink: a heavy lid, a flat 2 px bar set low whose outer end droops a pixel (never a bowl)
+    sad_blink: (S) => poly(S, [[EX + 7, EY + 1], [EX - 4.5, EY + 1], [EX - 7, EY + 2], [EX - 7, EY + 4], [EX - 4.5, EY + 3], [EX + 7, EY + 3]]),
+    // alert: ! ! (red); the blink frame is a shortened, dimmer !
+    alert: (S) => { bar(S, EX, EY - 3, 5, 10, 1); bar(S, EX, EY + 5.5, 5, 4, 1); },
+    alert_blink: (S) => { bar(S, EX, EY - 1.5, 5, 7, 1); bar(S, EX, EY + 5.5, 5, 4, 1); return 0.72; },
+    // talk: each eye is a three-bar voice meter; the levels move a few pixels between frames while the meter's
+    // width and centre stay put, so speech flickers gently instead of swapping shapes
+    talk_a: (S) => meter(S, [5, 8, 5]),
+    talk_b: (S) => meter(S, [7, 5, 7]),
+    // focus: thin slits held in heavy outer brackets, [-  -], locked on
+    focus: (S) => { bar(S, EX + 1.5, EY, 9, 2, 1); bracket(S, EX - 7.5, EY, 11, 5, 3); },
+    // off: a dim standby tick on the eye line, in the middle (low down it would read as a mouth)
+    off: (S) => { bar(S, 24, EY, 3, 1, 0.5); return 0.5; },
   };
 })();
 function faceAtlas() {
-  const [cw, ch] = FACE_CELL, [gw, gh] = FACE_GRID, pitch = cw / gw;
+  const [cw, ch] = FACE_CELL, [gw, gh] = FACE_GRID, P = cw / gw, SS = 8, [ax0, ay0, ax1, ay1] = FACE_AREA;
   const atlas = canvas(cw * FACE_COLS, ch * FACE_ROWS), A = atlas.getContext('2d');
-  A.fillStyle = '#000'; A.fillRect(0, 0, atlas.width, atlas.height);
-  const small = canvas(gw, gh), S = small.getContext('2d', { willReadFrequently: true });
+  const img = A.createImageData(atlas.width, atlas.height), out = img.data;
+  const hi = canvas(gw * SS, gh * SS), S = hi.getContext('2d', { willReadFrequently: true });
+  // separable gaussian blur of a gw x gh field (sigma in display pixels)
+  const blur = (f, sg) => {
+    const r = Math.ceil(sg * 3), k = []; let ks = 0;
+    for (let i = -r; i <= r; i++) { k.push(Math.exp(-i * i / (2 * sg * sg))); ks += k[k.length - 1]; }
+    const tmp = new Float32Array(gw * gh), o = new Float32Array(gw * gh);
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) { let s = 0; for (let d = -r; d <= r; d++) { const ii = i + d; if (ii >= 0 && ii < gw) s += f[j * gw + ii] * k[d + r]; } tmp[j * gw + i] = s / ks; }
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) { let s = 0; for (let d = -r; d <= r; d++) { const jj = j + d; if (jj >= 0 && jj < gh) s += tmp[jj * gw + i] * k[d + r]; } o[j * gw + i] = s / ks; }
+    return o;
+  };
+  // bilinear sample of a field at display-pixel coordinates (pixel centres at i + 0.5)
+  const sample = (f, x, y) => {
+    const fx = Math.min(gw - 1.001, Math.max(0, x - 0.5)), fy = Math.min(gh - 1.001, Math.max(0, y - 0.5)), i = fx | 0, j = fy | 0, u = fx - i, v = fy - j, q = j * gw + i;
+    return (f[q] * (1 - u) + f[q + 1] * u) * (1 - v) + (f[q + gw] * (1 - u) + f[q + gw + 1] * u) * v;
+  };
+  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  // inside one display pixel: a 1 px darker gap on its right and bottom, R G B sub-pixel columns (2 px each)
+  const mask = new Float32Array(P * P), stripe = [];
+  for (let y = 0; y < P; y++) for (let x = 0; x < P; x++) mask[y * P + x] = (x === P - 1 ? 0.8 : 1) * (y === P - 1 ? 0.74 : 1) * ((x === 0 || x === P - 2) && (y === 0 || y === P - 2) ? 0.95 : 1);
+  for (let x = 0; x < P; x++) { const c = Math.min(2, Math.floor(x * 3 / P)); stripe.push([0, 1, 2].map((k) => k === c ? 1.05 : 0.975)); }
   FACES.forEach((name, idx) => {
-    S.setTransform(1, 0, 0, 1, 0, 0); S.clearRect(0, 0, gw, gh); S.fillStyle = S.strokeStyle = '#fff'; S.lineCap = 'round'; S.lineJoin = 'round';
-    if (/^(worried|alert)/.test(name)) S.translate(0, 1);
-    FACE_DRAW[name](S); S.setTransform(1, 0, 0, 1, 0, 0);
-    const px = S.getImageData(0, 0, gw, gh).data, ox = (idx % FACE_COLS) * cw, oy = Math.floor(idx / FACE_COLS) * ch;
-    const col = name.startsWith('alert') ? FACE_RED : FACE_WARM;
-    A.save(); A.beginPath(); A.rect(ox, oy, cw, ch); A.clip();
-    A.fillStyle = '#080605'; A.fillRect(ox, oy, cw, ch);
-    const lit = [];
+    S.setTransform(SS, 0, 0, SS, 0, 0); S.clearRect(0, 0, gw, gh);
+    S.fillStyle = S.strokeStyle = '#fff'; S.globalAlpha = 1; S.lineJoin = 'miter'; S.lineCap = 'butt';
+    const gain = FACE_DRAW[name](S) ?? 1;
+    S.setTransform(1, 0, 0, 1, 0, 0);
+    const a = S.getImageData(0, 0, hi.width, hi.height).data;
+    // coverage per display pixel, mirrored so both glyphs match
+    const cov = new Float32Array(gw * gh);
     for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
-      const edge = i === 0 || j === 0 || i === gw - 1 || j === gh - 1, a = edge ? 0 : px[(j * gw + i) * 4 + 3] / 255, b = a < 0.2 ? 0 : a < 0.5 ? 0.42 : a < 0.78 ? 0.72 : 1;
-      const x = ox + i * pitch, y = oy + j * pitch;
-      if (!b) { A.fillStyle = 'rgb(27,21,17)'; A.beginPath(); A.roundRect(x + 1, y + 1, pitch - 2, pitch - 2, 1.6); A.fill(); continue; }
-      A.fillStyle = `rgb(${col[0] * b | 0},${col[1] * b | 0},${col[2] * b | 0})`; A.beginPath(); A.roundRect(x + 0.8, y + 0.8, pitch - 1.6, pitch - 1.6, 1.8); A.fill();
-      lit.push([x + pitch / 2, y + pitch / 2, b]);
+      let c = 0; for (let y = 0; y < SS; y++) for (let x = 0; x < SS; x++) c += a[((j * SS + y) * hi.width + i * SS + x) * 4 + 3];
+      cov[j * gw + i] = c / (SS * SS * 255);
     }
-    // glow bleeding between lit pixels
-    A.globalCompositeOperation = 'lighter';
-    for (const [x, y, b] of lit) {
-      const g = A.createRadialGradient(x, y, 0, x, y, pitch * 1.4);
-      g.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},${0.16 * b})`); g.addColorStop(1, 'rgba(0,0,0,0)');
-      A.fillStyle = g; A.fillRect(x - pitch * 1.5, y - pitch * 1.5, pitch * 3, pitch * 3);
+    // pixel levels follow coverage smoothly, so a diagonal ramps over one pixel; nothing outside the glyph area
+    const lv = new Float32Array(gw * gh);
+    for (let j = 0; j < gh; j++) for (let i = 0; i < gw; i++) {
+      const c = Math.max(cov[j * gw + i], cov[j * gw + gw - 1 - i]), inside = i + 0.5 > ax0 && i + 0.5 < ax1 && j + 0.5 > ay0 && j + 0.5 < ay1;
+      lv[j * gw + i] = inside ? ss(0.05, 0.95, c) : 0;
     }
-    A.globalCompositeOperation = 'source-over';
-    // soft vignette toward the bezel
-    const v = A.createRadialGradient(ox + cw / 2, oy + ch / 2, ch * 0.35, ox + cw / 2, oy + ch / 2, cw * 0.62);
-    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.35)');
-    A.fillStyle = v; A.fillRect(ox, oy, cw, ch);
-    A.restore();
+    // hot core: full pixels surrounded by full pixels burn whiter
+    const hot = new Float32Array(gw * gh);
+    for (let j = 1; j < gh - 1; j++) for (let i = 1; i < gw - 1; i++) {
+      const q = j * gw + i; if (lv[q] < 0.99) continue;
+      const n = (lv[q - 1] >= 0.88) + (lv[q + 1] >= 0.88) + (lv[q - gw] >= 0.88) + (lv[q + gw] >= 0.88);
+      hot[q] = n === 4 ? 1 : n === 3 ? 0.45 : 0;
+    }
+    const g1 = blur(lv, 1.0), g2 = blur(lv, 3.0);
+    // red reads darker than the warm white, so its glow is a little stronger
+    const red = name.startsWith('alert'), col = red ? FACE_RED : FACE_WARM, hotC = red ? [255, 140, 116] : [255, 242, 222], glowC = red ? [255, 34, 22] : [255, 176, 104], glowK = red ? 1.3 : 1;
+    const rnd = prng(311 + idx * 17), vary = new Float32Array(gw * gh); for (let k = 0; k < vary.length; k++) vary[k] = 0.95 + rnd() * 0.07;
+    const ox = (idx % FACE_COLS) * cw, oy = Math.floor(idx / FACE_COLS) * ch;
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+      const o = ((oy + y) * atlas.width + ox + x) * 4; out[o + 3] = 255;
+      if (x < 8 || y < 8 || x >= cw - 8 || y >= ch - 8) continue;   // the black gutter
+      const i = (x / P) | 0, j = (y / P) | 0, q = j * gw + i, lx = x - i * P, ly = y - j * P, m = mask[ly * P + lx], st = stripe[lx];
+      const fx = (x + 0.5) / P, fy = (y + 0.5) / P, l = lv[q] * gain * vary[q], h = hot[q];
+      // soft bleed in the glass: smooth, with a trace of the pixel grid, fading out well before the gutter
+      const edge = ss(8, 34, Math.min(x, y, cw - 1 - x, ch - 1 - y));
+      const halo = gain * glowK * (0.7 * sample(g1, fx, fy) + 0.22 * sample(g2, fx, fy)) * (0.78 + 0.22 * m) * (1 - 0.45 * lv[q]) * edge;
+      for (let c = 0; c < 3; c++) {
+        const lit = l * m * st[c] * (col[c] + (hotC[c] - col[c]) * 0.6 * h);
+        out[o + c] = Math.min(255, lit + halo * glowC[c]);
+      }
+    }
   });
+  A.putImageData(img, 0, 0);
   return atlas;
 }
 function faceOffset(name) { const i = FACE_INDEX[name] ?? 0; return [(i % FACE_COLS) / FACE_COLS, Math.floor(i / FACE_COLS) / FACE_ROWS]; }
@@ -965,18 +1014,21 @@ function buildMaterials() {
   M.webbing = pbr('webbing', TX.webbing, 0.1, { color: '#8c8c8c', envMapIntensity: 0.4 }, 0.8);
   M.polymer = pbr('gear_polymer', TX.polymer, 0.05, {}, 0.5);
   M.fabric = pbr('pouch_fabric', TX.fabric, 0.04, { color: '#8c8c8c', envMapIntensity: 0.4 }, 0.7);
-  // the display is black metal with no reflectance of its own (metalness 1, colour near black) and no environment, so
-  // the key light never sheets it grey, even when he looks up; the thin glass in front has a weak, tight highlight
-  // (low specular, no clearcoat), so the face keeps its contrast at grazing angles
-  M.screen = new THREE.MeshStandardMaterial({ name: 'screen_face', color: '#050505', roughness: 0.5, metalness: 1, emissive: '#ffffff', emissiveMap: TX.faceAtlas, emissiveIntensity: 1.0, envMapIntensity: 0 });
-  M.glass = new THREE.MeshPhysicalMaterial({ name: 'screen_glass', color: '#14161c', roughness: 0.1, metalness: 0, transparent: true, opacity: 0.06, specularIntensity: 0.25, clearcoat: 0, envMapIntensity: 0.15, depthWrite: false });
+  // the face display: a deep black panel with no reflections of its own, under a glossy cover glass with a clear coat;
+  // only the glass reflects, so reflections stay dim and never wash out the glyphs. The panel is black metal
+  // (metalness 1, base colour black: F0 0), which every PBR importer honours, glTFast included, so it needs no
+  // KHR_materials_specular to stay black; the glass is rough enough that point lights spread into soft highlights.
+  // The glyphs run at 1.05, just under the viewer's bloom threshold through the glass (above it the bloom hazes the
+  // whole face); their glow is the soft bleed baked into the atlas, so it looks the same in any engine
+  M.screen = new THREE.MeshPhysicalMaterial({ name: 'screen_face', color: '#000000', roughness: 0.5, metalness: 1, specularIntensity: 0, emissive: '#ffffff', emissiveMap: TX.faceAtlas, emissiveIntensity: 1.05, envMapIntensity: 0.05 });
+  M.glass = new THREE.MeshPhysicalMaterial({ name: 'screen_glass', color: '#14161c', roughness: 0.1, metalness: 0, transparent: true, opacity: 0.14, specularIntensity: 0.45, clearcoat: 0.7, clearcoatRoughness: 0.1, envMapIntensity: 0.5, depthWrite: false });
   M.core = new THREE.MeshStandardMaterial({ name: 'energy_core', color: '#1a0305', roughness: 0.35, metalness: 0, emissive: '#ffffff', emissiveMap: TX.glowBand, emissiveIntensity: 1.0 });
   M.rim = new THREE.MeshStandardMaterial({ name: 'energy_rim', color: '#120a22', roughness: 0.4, metalness: 0, emissive: '#8a4dff', emissiveIntensity: 1.8 });
   M.field = new THREE.MeshStandardMaterial({ name: 'nullfield_glow', color: '#080102', roughness: 0.4, metalness: 0, emissive: '#ffffff', emissiveMap: TX.glowRadial, emissiveIntensity: 0.45 });
   M.fieldRim = new THREE.MeshStandardMaterial({ name: 'nullfield_rim', color: '#120a22', roughness: 0.4, metalness: 0, emissive: '#8a4dff', emissiveIntensity: 0.3 });
   M.nick = new THREE.MeshStandardMaterial({ name: 'nick_scratch', map: TX.nick, alphaTest: 0.4, roughness: 0.32, metalness: 1, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   for (const m of [M.screen, M.glass, M.core, M.rim, M.field, M.fieldRim, M.nick]) m.userData.tile = 0.1;
-  M.screen.userData.rest = { emissive: '#ffffff', intensity: 1.0 };
+  M.screen.userData.rest = { emissive: '#ffffff', intensity: 1.05 };
   M.field.userData.rest = 0.45; M.fieldRim.userData.rest = 0.3; M.core.userData.rest = 1.0; M.rim.userData.rest = 1.8;
   CHIP.set(M.paint, M.chip); CHIP.set(M.paint2, M.chip2);
   for (const m of [M.paint, M.paint2, M.chip, M.chip2, M.under, M.rubber, M.polymer, M.fabric]) TILED.add(m);
@@ -1489,6 +1541,30 @@ const KIT2 = (() => {
     }
     return out;
   }
+  // split every edge split(a, b) picks at its midpoint, up to depth times; an edge is judged once for both triangles
+  // that share it, so no cracks open. Puts vertices on the creases a warp adds (refine option of armorPlate)
+  function refineTris(tris, { split, depth = 3 }) {
+    const key = (p) => `${Math.round(p[0] * 1e7)},${Math.round(p[1] * 1e7)},${Math.round(p[2] * 1e7)}`;
+    const mid = (a, b) => a.map((v, i) => (v + b[i]) / 2);
+    for (let d = 0; d < depth; d++) {
+      const memo = new Map(), out = []; let any = false;
+      const cut = (a, b) => { const ka = key(a), kb = key(b), k = ka < kb ? ka + '|' + kb : kb + '|' + ka; let v = memo.get(k); if (v === undefined) { v = !!split(a, b); memo.set(k, v); } return v; };
+      for (const T of tris) {
+        const s = [0, 1, 2].map((e) => cut(T.p[e], T.p[(e + 1) % 3])), ns = s.filter(Boolean).length;
+        if (!ns) { out.push(T); continue; }
+        any = true;
+        const V = (i) => ({ p: T.p[i], n: T.n[i], uv: T.uv[i] });
+        const M = [0, 1, 2].map((e) => { const i = e, j = (e + 1) % 3; return s[e] ? { p: mid(T.p[i], T.p[j]), n: norm3(mid(T.n[i], T.n[j])), uv: mid(T.uv[i], T.uv[j]) } : null; });
+        const mk = (a, b, c) => ({ p: [a.p, b.p, c.p], n: [a.n, b.n, c.n], uv: [a.uv, b.uv, c.uv], tag: T.tag });
+        if (ns === 3) { out.push(mk(V(0), M[0], M[2]), mk(M[0], V(1), M[1]), mk(M[1], V(2), M[2]), mk(M[0], M[1], M[2])); continue; }
+        if (ns === 1) { const e = s.indexOf(true), j = (e + 1) % 3, k = (e + 2) % 3; out.push(mk(V(e), M[e], V(k)), mk(M[e], V(j), V(k))); continue; }
+        const i = s.indexOf(false), j = (i + 1) % 3, k = (i + 2) % 3;   // edges j-k and k-i split
+        out.push(mk(M[j], V(k), M[k]), mk(V(i), V(j), M[j]), mk(V(i), M[j], M[k]));
+      }
+      tris = out; if (!any) break;
+    }
+    return tris;
+  }
   // move every vertex through W(x, y, z) and carry its normal through W's Jacobian (smooth over bends, crisp
   // where the flat normals differ)
   function warpTris(tris, W) {
@@ -1618,12 +1694,13 @@ const KIT2 = (() => {
   // Angular armour plate. The outline (see outline()) lies in XY; the plate runs from its back (z about 0) to its face
   // (z about t), with a 45 degree chamfer of `chamfer` round the face and `back` round the back, the outline kept
   // exact. lines add facets and panel lines (see feature()). bulge domes the face by that much at its centre
-  // (soft parts). warp(x, y, z) -> [x, y, z] is any custom deformation; bendY / bendX then wrap the plate around a
+  // (soft parts). warp(x, y, z) -> [x, y, z] is any custom deformation (refine: { split(a, b), depth } then splits the
+  // chart-space edges split() picks before warping, so creases the warp adds land on vertices); bendY / bendX then wrap the plate around a
   // cylinder of that radius whose axis is behind it (positive: convex face), as plate() does.
   // geo.userData.surf(x, y, dh = 0) -> { p, n } on the warped face (dh lifts off it): place screws and parts with it.
   // uvFit: u runs 0..1 across the plate's x extent (webbing panels: the stitch rows land on its edges).
   function armorPlate(spec, t, o = {}) {
-    const { chamfer = 0.002, back = 0.0008, holeChamfer = chamfer, holeBack = back, bendX = 0, bendY = 0, lines = [], holes = [], tess = 0.012, tile = 0.3, seg = 0.012, uvFit = false, bulge = 0, warp = null, edgeTag = true, holeTag = false, roundSeg = 4, smoothDeg = 30 } = o;
+    const { chamfer = 0.002, back = 0.0008, holeChamfer = chamfer, holeBack = back, bendX = 0, bendY = 0, lines = [], holes = [], tess = 0.012, tile = 0.3, seg = 0.012, uvFit = false, bulge = 0, warp = null, edgeTag = true, holeTag = false, roundSeg = 4, smoothDeg = 30, refine = null } = o;
     const cfO = Math.min(chamfer, t * 0.6), cbO = Math.min(back, Math.max(0, t - cfO) * 0.6), cfH = Math.min(holeChamfer, t * 0.6), cbH = Math.min(holeBack, Math.max(0, t - cfH) * 0.6);
     // a loop: outline points P (the outer one CCW, holes CW so the material is always on the left), its face and
     // back insets, smooth flags; long edges broken so worn runs can change along an edge
@@ -1716,7 +1793,7 @@ const KIT2 = (() => {
       return bend(X, Y, Zz);
     };
     const wt = warp || bulge ? [1, 1, 0] : [bendY ? 1 : 0, bendX ? 1 : 0, 0];
-    const res = warped ? warpTris(subdivide(tris, tess, wt), Wf) : tris;
+    const sub = warped ? subdivide(tris, tess, wt) : tris, res = warped ? warpTris(refine ? refineTris(sub, refine) : sub, Wf) : tris;
     const g = soup(res);
     g.userData.surf = (x, y, dh = 0) => {
       const [gx, gy] = grad(x, y), nn = norm3([-gx, -gy, 1]), z = t + fF(x, y) + dh;
@@ -2222,7 +2299,7 @@ BLOCKOUT.torso = (K) => {
 };
 
 BLOCKOUT.head = (K) => {
-  const { M, D } = K, A = KIT2, h = D.head, sc = h.screen;
+  const { M, D } = K, A = KIT2, h = D.head, sc = { ...h.screen, h: h.screen.w * FACE_CELL[1] / FACE_CELL[0] };   // the cell's 3:2
   const rings = []; for (let k = 0; k < 3; k++) rings.push(A.facetLoft([[0.0, 0.036, 0.034, 0.012], [0.014, 0.036, 0.034, 0.012]], { axis: 'y', steps: 1, endChamfer: 0.002, micro: 0 }).translate(0, 0.006 + k * 0.024, 0));
   K.add('neck', mergeUV(rings), M.under, 'neck_rings');
   K.add('neck', new THREE.CylinderGeometry(0.024, 0.028, 0.095, 16).translate(0, 0.04, 0), M.under, 'neck_core');
@@ -2498,7 +2575,8 @@ function buildSampleBoard(K) {
     const fr = A.armorPlate([[-0.088, -0.068, -0.024], [0.088, -0.068, -0.024], [0.088, 0.068, -0.028], [-0.088, 0.068, -0.028]], 0.016,
       { chamfer: 0.0035, holes: [[[-0.069, -0.052, -0.015], [0.069, -0.052, -0.015], [0.069, 0.052, -0.015], [-0.069, 0.052, -0.015]]], holeTag: true }).translate(0.09, 0.93, -0.008);
     add(fr, M.paint, 'b_bezel');
-    add(screenUV(new THREE.ShapeGeometry(rect(-0.069, 0.069, -0.052, 0.052, 0.015), 6), 0, 0, 0.136, 0.102).translate(0.09, 0.93, -0.002), M.screen, 'b_screen', { cast: false });
+    { const bw = 0.136, bh = bw * FACE_CELL[1] / FACE_CELL[0];   // the cell's 3:2, so the glyphs are not squashed
+      add(screenUV(new THREE.ShapeGeometry(rect(-bw / 2 - 0.001, bw / 2 + 0.001, -bh / 2 - 0.001, bh / 2 + 0.001, 0.015), 6), 0, 0, bw, bh).translate(0.09, 0.93, -0.002), M.screen, 'b_screen', { cast: false }); }
     const sc = []; for (const [x, y] of [[-0.079, -0.06], [0.079, -0.06], [-0.079, 0.06], [0.079, 0.06]]) sc.push(A.flushScrew(0.0032, V3(0.09 + x, 0.93 + y, 0.008), Z_, x * 40));
     add(mergeUV(sc), M.under, 'b_screws');
   }
@@ -2552,23 +2630,29 @@ function buildN1CK() {
 }
 
 
-/* ================================================================== PARTS.head (v2) */
-// Head and neck (SPEC.md v2). A rounded-rectangle housing in light paint with crisp bevels (brow, chin, back), a
-// panel seam and a 4 degree taper behind it; a thick dark bezel and a metal trim ring round the recessed screen; a
-// crown plate; light side panels; a light raised rear panel over a small louvred vent; ear pods (speaker on his left,
-// mic and a stub antenna on his right) on dark angular plates. The exposed neck has wide faceted rings, braided cables
-// into bosses, a purple hairline in the ring gap, two small pistons to the head and a wide head-base disc. Modelled in rest-pose world space and attached with K.addW.
-// The face atlas drawing and hooks.face are v1's, unchanged.
+/* ================================================================== PARTS.head (v3) */
+// Head and neck (SPEC.md v3 head). The face is one continuous curved display: a borderless glossy black surface from
+// the brow to the chin that wraps round the sides. It stands 1 mm proud and its rolled edge laps over the shell, so
+// the boundary is a dark line, never a lit frame. The shell is a light crown with a raised keel down its middle, light
+// side and rear plates, and a dark chin bar that wraps under the display and sweeps up behind it to the ear hubs
+// (speaker on his left, mic and a stub antenna on his right). Every plate sits on one base form: a superellipsoid
+// whose front stays smooth under the display, cut behind it by flat facets (sides, crown sides, top, rear) that meet
+// in crisp creases. A dark core shows in the panel gaps. The exposed neck keeps its rings, cables, purple hairline
+// and pistons. Rest-pose world space (addW). The face atlas is drawn in core.js; the display UVs cover cell 0 in
+// proportion to arc length.
 PARTS.head = function (K) {
-  const { THREE, D, M, TX, V3 } = K;
-  const H = D.head, SC = H.screen, E = H.ear;
-  const X = V3(1, 0, 0), Y = V3(0, 1, 0), Z = V3(0, 0, 1);
+  const { THREE, D, M, V3 } = K;
+  const X = V3(1, 0, 0), Y = V3(0, 1, 0), Z = V3(0, 0, 1), DEG = Math.PI / 180;
 
-  /* ---------------- geometry helpers (non-indexed, with the kit's wear tag: 0 surface, 1 exposed edge, 2 crevice) */
+  /* ---------------- small vector and soup helpers (non-indexed, with the kit's wear tag) */
   const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const add = (a, b, s = 1) => [a[0] + b[0] * s, a[1] + b[1] * s, a[2] + b[2] * s];
   const crs = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
   const nrm = (a) => { const l = Math.hypot(a[0], a[1], a[2]); return l > 1e-14 ? [a[0] / l, a[1] / l, a[2] / l] : [0, 0, 0]; };
+  const len = (a) => Math.hypot(a[0], a[1], a[2]);
+  const cl1 = (v) => Math.max(-1, Math.min(1, v));
+  const sst = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   const soup = () => {
     const T = [];
     T.tri = (p, n, uv, tag, want) => {
@@ -2591,59 +2675,7 @@ PARTS.head = function (K) {
     g.setAttribute('uv', new THREE.BufferAttribute(U, 2)); g.setAttribute('wtag', new THREE.BufferAttribute(W, 1));
     return g;
   };
-  // rounded rectangle (CCW seen from +Z) with fixed point counts Q = [side, top, corner], so rings of any size match
-  const rrPts = (cx, cy, hw, hh, r, Q) => {
-    r = Math.max(0.0004, Math.min(r, hw - 2e-4, hh - 2e-4));
-    const sx = hw - r, sy = hh - r, P = [];
-    const arc = (ox, oy, a0) => { for (let i = 0; i < Q[2]; i++) { const a = a0 + Math.PI / 2 * i / Q[2]; P.push([cx + ox + r * Math.cos(a), cy + oy + r * Math.sin(a)]); } };
-    for (let i = 0; i < Q[0]; i++) P.push([cx + hw, cy - sy + 2 * sy * i / Q[0]]);
-    arc(sx, sy, 0);
-    for (let i = 0; i < Q[1]; i++) P.push([cx + sx - 2 * sx * i / Q[1], cy + hh]);
-    arc(-sx, sy, Math.PI / 2);
-    for (let i = 0; i < Q[0]; i++) P.push([cx - hw, cy + sy - 2 * sy * i / Q[0]]);
-    arc(-sx, -sy, Math.PI);
-    for (let i = 0; i < Q[1]; i++) P.push([cx - sx + 2 * sx * i / Q[1], cy - hh]);
-    arc(sx, -sy, Math.PI * 1.5);
-    return P;
-  };
-  // Loft through rounded-rect rings { z, cx, cy, hw, hh, r, tag } (tag: of the band to the next ring). Normal =
-  // around x along, so an outer shell runs back to front and a frame runs outer edge -> face -> inner edge -> back.
-  // Every band has its own normals (crisp between bands, smooth round the ring). autoTag: a narrow band that turns
-  // more than 7 degrees from both neighbours is an exposed chamfer (tag 1). Returns the ring points.
-  const rrLoft = (T, rings, Q, { closed = false, tile = 0.3, autoTag = false, cap0 = null, cap1 = null } = {}) => {
-    const R = rings.map((g) => rrPts(g.cx || 0, g.cy, g.hw, g.hh, g.r, Q).map(([x, y]) => [x, y, g.z]));
-    const S = R.length, N = R[0].length, nb = closed ? S : S - 1, cos7 = Math.cos(7 * Math.PI / 180);
-    const V = [new Float64Array(N)];
-    for (let i = 1; i <= nb; i++) { const v = new Float64Array(N); for (let j = 0; j < N; j++) v[j] = V[i - 1][j] + Math.hypot(...sub(R[i % S][j], R[i - 1][j])); V.push(v); }
-    const U = R.map((ring) => { const u = [0]; for (let j = 1; j <= N; j++) u.push(u[j - 1] + Math.hypot(...sub(ring[j % N], ring[j - 1]))); return u; });
-    const fN = (i, j) => { const A = R[i], B = R[(i + 1) % S], j1 = (j + 1) % N; return nrm(crs(sub(A[j1], A[j]).map((v, k) => v + B[j1][k] - B[j][k]), sub(B[j], A[j]).map((v, k) => v + B[j1][k] - A[j1][k]))); };
-    const vn = (ring, j, al) => nrm(crs(sub(ring[(j + 1) % N], ring[(j - 1 + N) % N]), al));
-    for (let i = 0; i < nb; i++) {
-      const A = R[i], B = R[(i + 1) % S];
-      for (let j = 0; j < N; j++) {
-        const j1 = (j + 1) % N, alA = sub(B[j], A[j]), alB = sub(B[j1], A[j1]);
-        if (Math.hypot(...alA) < 1e-9 && Math.hypot(...alB) < 1e-9) continue;
-        let tag = rings[i].tag || 0;
-        if (autoTag && !tag) {
-          const len = (Math.hypot(...alA) + Math.hypot(...alB)) / 2, f = fN(i, j);
-          const pv = i > 0 ? fN(i - 1, j) : cap0, nx = i < nb - 1 ? fN(i + 1, j) : cap1;
-          if (len < 0.0045 && pv && nx && dot(f, pv) < cos7 && dot(f, nx) < cos7) tag = 1;
-        }
-        const ia = i, ib = i + 1;
-        T.quad([A[j], A[j1], B[j1], B[j]], [vn(A, j, alA), vn(A, j1, alB), vn(B, j1, alB), vn(B, j, alA)],
-          [[U[ia][j] / tile, V[ia][j] / tile], [U[ia][j + 1] / tile, V[ia][j1] / tile], [U[ib % S][j + 1] / tile, V[ib][j1] / tile], [U[ib % S][j] / tile, V[ib][j] / tile]], tag);
-      }
-    }
-    return R;
-  };
-  // flat cap on a ring of points (z fixed), facing nz, with holes; planar uvs
-  const capT = (T, ring, z, nz, holes = [], tag = 0, tile = 0.3) => {
-    const C = ring.map((p) => new THREE.Vector2(p[0], p[1])), Hs = holes.map((h) => h.map((p) => new THREE.Vector2(p[0], p[1])));
-    const all = C.concat(...Hs), n = [0, 0, nz];
-    for (const t of THREE.ShapeUtils.triangulateShape(C, Hs)) { const p = t.map((i) => [all[i].x, all[i].y, z]); T.tri(p, [n, n, n], p.map((q) => [q[0] / tile, q[1] / tile]), tag, n); }
-  };
-  // crisp lathe about X or Y through o: profile [[r, h, tag]] (tag of the band to the next point); h is the
-  // coordinate along the axis. smooth: normals smooth round the axis, else flat facets (seg sides, phase).
+  // crisp lathe about X or Y through o: profile [[r, h, tag]] (tag of the band to the next point); smooth or faceted
   const lathe = (T, prof, { axis = 'y', o = [0, 0, 0], seg = 32, smooth = true, phase = 0, tile = 0.3 } = {}) => {
     const pt = (r, h, a) => (axis === 'y' ? [o[0] + r * Math.sin(a), h, o[2] + r * Math.cos(a)] : [h, o[1] + r * Math.cos(a), o[2] + r * Math.sin(a)]);
     const nAt = (r0, h0, r1, h1, a) => { const al = sub(pt(r1, h1, a), pt(r0, h0, a)), ar = sub(pt(1, 0, a + 1e-3), pt(1, 0, a - 1e-3)); return nrm(crs(ar, al)); };
@@ -2661,198 +2693,436 @@ PARTS.head = function (K) {
       vacc += L;
     }
   };
-  // plate frame: plate coords (x, y, thickness z) -> world o + x ex + y ey + z (ex x ey)
-  const basis = (o, ex, ey) => { ex = ex.clone().normalize(); ey = ey.clone().normalize(); return new THREE.Matrix4().makeBasis(ex, ey, ex.clone().cross(ey).normalize()).setPosition(o); };
-  const onM = (g, m) => g.applyMatrix4(m);
-  const surfAt = (g, m, x, y, dh = 0) => { const s = g.userData.surf(x, y, dh); return { p: s.p.applyMatrix4(m), n: s.n.transformDirection(m) }; };
   const screws = (list, r = 0.0026) => K.merge(list.map(({ p, n }, i) => K.flushScrew(r, p, n, 0.4 + i * 1.3)));
 
-  /* ---------------- housing: rounded rectangle seen from the front; beveled brow, chin and back; a panel seam */
-  // side profiles as functions of z (back to front), each interior corner cut by a 1.8 mm micro chamfer
-  const ZB = H.back + 0.004, ZF = 0.09, R0 = H.corner, mc = 0.0018;
-  const pwl = (pts) => (z) => { if (z <= pts[0][0]) return pts[0][1]; for (let i = 1; i < pts.length; i++) if (z <= pts[i][0]) { const a = pts[i - 1], b = pts[i]; return a[1] + (b[1] - a[1]) * (z - a[0]) / (b[0] - a[0]); } return pts[pts.length - 1][1]; };
-  const cutC = (pts, m) => { const out = [pts[0]]; for (let i = 1; i < pts.length - 1; i++) { const p = pts[i]; for (const q of [pts[i - 1], pts[i + 1]]) { const d = Math.hypot(q[0] - p[0], q[1] - p[1]); out.push([p[0] + (q[0] - p[0]) * m / d, p[1] + (q[1] - p[1]) * m / d]); } } out.push(pts[pts.length - 1]); return out; };
-  const TOPY = H.top - 0.0035;    // the crown plate brings the top to H.top
-  const TOPB = TOPY - 0.005;      // the top falls 5 mm toward the back
-  const TOP = cutC([[ZB, 1.826], [-0.074, TOPB], [0.05, TOPY], [ZF, 1.8125]], mc);
-  const BOT = cutC([[ZB, 1.647], [-0.07, H.bottom], [0.046, H.bottom], [ZF, 1.6555]], mc);
-  const yT = pwl(TOP), yB = pwl(BOT), hW = pwl([[ZB, H.halfW - 0.131 * Math.tan(4 * Math.PI / 180)], [0.03, H.halfW], [ZF, H.halfW]]);   // sides taper 4 degrees behind the seam
-  const cF = 0.003, cB = 0.003, ZG = 0.03, GW = 0.0022, GD = 0.0012;
-  const sec = (z, e = 0) => { const t = yT(z) - e, b = yB(z) + e; return { cy: (t + b) / 2, hh: (t - b) / 2, hw: hW(z) - e, r: R0 - e }; };
-  const QH = [10, 8, 8];
-  const VENT = { cy: 1.672, hw: 0.03, hh: 0.011, d: 0.008 };   // small rear vent window low on the back (a pocket in the housing)
-  {
-    const st = [[ZB, sec(ZB + cB, cB), 1]];
-    const zs = [...TOP, ...BOT].map((p) => p[0]).filter((z) => z > ZB + cB + 3e-4 && z < ZF - cF - 3e-4 && Math.abs(z - ZG) > GW);
-    zs.push(ZB + cB, ZF - cF);
-    zs.sort((a, b) => a - b);
-    for (const z of zs) if (z - st[st.length - 1][0] > 2e-4) st.push([z, sec(z), 0]);
-    st.push([ZG - GW / 2, sec(ZG - GW / 2), 2], [ZG - GW / 2 + GD * 0.7, sec(ZG - GW / 2 + GD * 0.7, GD), 2], [ZG + GW / 2 - GD * 0.7, sec(ZG + GW / 2 - GD * 0.7, GD), 2], [ZG + GW / 2, sec(ZG + GW / 2), 0]);
-    st.sort((a, b) => a[0] - b[0]);
-    // the last ring before the front cap starts the front chamfer
-    st[st.length - 1][2] = 1;
-    st.push([ZF, sec(ZF - cF, cF), 0]);
-    const T = soup();
-    const R = rrLoft(T, st.map(([z, s, tag]) => ({ z, ...s, tag })), QH, { autoTag: true, cap0: [0, 0, -1], cap1: [0, 0, 1] });
-    // front cap with the socket the bezel sits in; the socket walls and floor read as a dark seam round the bezel
-    const SO = { cy: SC.cy, hw: 0.0815, hh: 0.0675, r: 0.0215 }, SD = 0.019;
-    const sock = rrPts(0, SO.cy, SO.hw, SO.hh, SO.r, [8, 8, 6]);
-    capT(T, R[R.length - 1], ZF, 1, [sock]);
-    const RS = rrLoft(T, [{ z: ZF, ...SO, tag: 2 }, { z: ZF - SD, ...SO }], [8, 8, 6]);
-    capT(T, RS[1], ZF - SD, 1, [], 2);
-    // back cap with the vent pocket behind the rear plate's window
-    const VP = { cy: VENT.cy, hw: VENT.hw + 0.0006, hh: VENT.hh + 0.0006, r: 0.0032 }, vent = rrPts(0, VP.cy, VP.hw, VP.hh, VP.r, [3, 8, 3]);
-    capT(T, R[0], ZB, -1, [vent]);
-    const RV = rrLoft(T, [{ z: ZB + VENT.d, ...VP, tag: 2 }, { z: ZB, ...VP }], [3, 8, 3]);
-    capT(T, RV[0], ZB + VENT.d, -1, [], 2);
-    // no chips along the brow crease right over the face (head-bone space: y up from the head joint, z forward)
-    // light wear: a few chip clusters on the top rear corners only (head-bone space: y up from the head joint, z forward)
-    K.addW('head', geo(T), M.paint2, 'head_housing', { wear: { chip: 0.5, mask: (p) => p[1] > 0.12 && p[2] < -0.03 } });
-  }
-  /* ---------------- chin plate: a dark faceted plate on the chin bevel under the bezel (it ties the head to the body) */
-  {
-    const up = V3(0, 0.0375, 0.044).normalize(), o = V3(0, 1.6372, 0.068).addScaledVector(X.clone().cross(up), 0.0003);
-    const g = K.armorPlate([[-0.046, -0.009, 0.004], [0.046, -0.009, 0.004], [0.05, 0.004, 0.003], [0.036, 0.013, 0.004], [-0.036, 0.013, 0.004], [-0.05, 0.004, 0.003]], 0.003,
-      { chamfer: 0.0016, back: 0.0005, lines: [{ type: 'crease', a: [0.026, 1], b: [0.026, -1], deg: 15 }, { type: 'crease', a: [-0.026, -1], b: [-0.026, 1], deg: 15 }, { type: 'groove', a: [-0.1, 0.0], angle: 0 }] });
-    onM(g, basis(o, X, up));
-    K.addW('head', g, M.paint, 'head_chin_plate', { wear: { chip: 0.6 } });
-  }
+  /* ---------------- base form: a superellipsoid round C (side profile per quadrant, swept across by a superellipse
+     that is rounder at the front), narrowing toward the jaw; G is about 1 on the surface */
+  const C = [0, 1.735, -0.006];
+  // nxf + nxe: the front is flatter across the eye band (a Gaussian in height round ye), so at 45 degrees the far
+  // eye keeps black glass between it and the silhouette and about three quarters of the near eye's width
+  const F = { ax: 0.092, cf: 0.097, cb: 0.1, bt: 0.116, bb: 0.116, nft: 3.0, nfb: 3.0, nbt: 3.4, nbb: 3.0, nxf: 2.9, nxe: 1.8, ye: 0.004, se: 0.05, nxb: 3.3, tap: 0.14, t0: 0.05, t1: -0.085 };
+  // facets (normal, distance from C, blend). Soft ones the display wraps over: jaw sides and under the chin. Crisp
+  // ones on the shell only, meeting in creases about 6 mm wide (KC), soft enough that the mesh shades them clean: occiput, crown sides, crown
+  // back, flat sides (the ear hubs sit on them), rear and top. The crown side's lower crease runs back from the
+  // display's top corner; the rear corners stay round.
+  const SOFT = [[[0.82, -0.57, 0], 0.096, 0.06], [[-0.82, -0.57, 0], 0.096, 0.06], [[0, -0.65, 0.76], 0.104, 0.06]];
+  const CRISP = [[[0, -0.6, -0.8], 0.106], [[0.62, 0.78, -0.05], 0.110], [[-0.62, 0.78, -0.05], 0.110], [[0, 0.68, -0.73], 0.116],
+    [[1, 0, -0.12], 0.089], [[-1, 0, -0.12], 0.089], [[0, 0.05, -1], 0.0985], [[0, 1, -0.1], 0.113]];
+  const KC = 0.035;
+  const PL = [...SOFT, ...CRISP.map(([n, h]) => [n, h, KC])].map(([n, h, k]) => [nrm(n), h, k]);
+  const NS = SOFT.length;
+  const G = (x, y, z) => {
+    const a = F.ax * (1 - F.tap * sst(F.t0, F.t1, y)), fr = z > 0;
+    const c = fr ? F.cf : F.cb, n = fr ? (y > 0 ? F.nft : F.nfb) : (y > 0 ? F.nbt : F.nbb), b = y > 0 ? F.bt : F.bb;
+    const S = Math.pow(Math.pow(Math.abs(y) / b, n) + Math.pow(Math.abs(z) / c, n), 1 / n);
+    const nf = F.nxf + F.nxe * Math.exp(-(((y - F.ye) / F.se) ** 2)), nx = F.nxb + (nf - F.nxb) * sst(-0.02, 0.06, z);
+    let g = Math.pow(Math.pow(Math.abs(x) / a, nx) + Math.pow(S, nx), 1 / nx);
+    for (const [pn, h, k] of PL) { const gp = (x * pn[0] + y * pn[1] + z * pn[2]) / h, hh = Math.max(k - Math.abs(g - gp), 0) / k; g = Math.max(g, gp) + hh * hh * k / 4; }
+    return g;
+  };
+  // which crisp facet carries a surface point (-1: the round form); an edge whose ends differ crosses a crease
+  const facetAt = (p) => {
+    const x = p[0] - C[0], y = p[1] - C[1], z = p[2] - C[2]; let best = 1 - KC, k = -1;
+    for (let i = NS; i < PL.length; i++) { const [pn, h] = PL[i], gp = (x * pn[0] + y * pn[1] + z * pn[2]) / h; if (gp > best) { best = gp; k = i; } }
+    return k;
+  };
+  // distance from C to the surface along a unit direction (secant iteration; G is close to linear along a ray)
+  const rayT = (d) => {
+    let t0 = 0.085, t1 = 0.115, g0 = G(d[0] * t0, d[1] * t0, d[2] * t0) - 1, g1 = G(d[0] * t1, d[1] * t1, d[2] * t1) - 1;
+    for (let i = 0; i < 40 && Math.abs(g1) > 1e-12; i++) {
+      if (Math.abs(g1 - g0) < 1e-16) break;
+      const t2 = Math.min(0.3, Math.max(0.01, t1 - g1 * (t1 - t0) / (g1 - g0)));
+      t0 = t1; g0 = g1; t1 = t2; g1 = G(d[0] * t1, d[1] * t1, d[2] * t1) - 1;
+    }
+    return t1;
+  };
+  const surf = (d) => { const t = rayT(d); return [C[0] + d[0] * t, C[1] + d[1] * t, C[2] + d[2] * t]; };
+  const normalAt = (p) => { const x = p[0] - C[0], y = p[1] - C[1], z = p[2] - C[2], e = 1e-6; return nrm([G(x + e, y, z) - G(x - e, y, z), G(x, y + e, z) - G(x, y - e, z), G(x, y, z + e) - G(x, y, z - e)]); };
+  const proj = (p) => surf(nrm(sub(p, C)));
+  // longitude / latitude in degrees round C: 0 is straight ahead (+Z), +90 his left (+X), latitude up
+  const llDir = (al, be) => { const a = al * DEG, b = be * DEG; return [Math.sin(a) * Math.cos(b), Math.sin(b), Math.cos(a) * Math.cos(b)]; };
+  const dirLL = (d) => [Math.atan2(d[0], d[2]) / DEG, Math.asin(cl1(d[1])) / DEG];
+  const LL = (al, be) => surf(llDir(al, be));
 
-  /* ---------------- bezel: thick dark frame round the screen, crisp outer chamfer, an inset panel line */
-  const BO = { hw: 0.0798, hh: 0.0658, r: 0.0198 }, BI = { hw: SC.w / 2 + 0.0042, hh: SC.h / 2 + 0.0042, r: SC.r + 0.004 };
-  const BF = H.front, BK = 0.0735;
-  {
-    const ring = (g, z, e, tag = 0) => ({ z, cy: SC.cy, hw: g.hw + e, hh: g.hh + e, r: g.r + e, tag });
-    const lerpG = (t, e) => ({ hw: BI.hw + (BO.hw - BI.hw) * t + e, hh: BI.hh + (BO.hh - BI.hh) * t + e, r: BI.r + (BO.r - BI.r) * t + e });
-    const mid = 0.52, gw = 0.0008, gd = 0.0008, bc = 0.0028, ic = 0.0018;
-    const rings = [
-      ring(BO, BK, -0.0008), ring(BO, BK + 0.0008, 0), ring(BO, BF - bc, 0, 1), ring(BO, BF, -bc),
-      { ...ring(lerpG(mid, gw), BF, 0), cy: SC.cy, tag: 2 }, { ...ring(lerpG(mid, gw * 0.3), BF - gd, 0), tag: 2 }, { ...ring(lerpG(mid, -gw * 0.3), BF - gd, 0), tag: 2 }, ring(lerpG(mid, -gw), BF, 0),
-      ring(BI, BF, ic), ring(BI, BF - ic, 0), ring(BI, BK, 0),
-    ];
-    const T = soup();
-    rrLoft(T, rings, [8, 8, 6], { closed: true });
-    K.addW('head', geo(T), M.paint, 'face_bezel', { wear: { mask: () => false } }); // no chips on the bezel: its narrow lips sit right over the face
-  }
-  /* ---------------- trim ring lining the recess, and the screen and its cover glass 12 mm behind the bezel face */
-  const TI = { hw: SC.w / 2 + 0.0006, hh: SC.h / 2 + 0.0006, r: SC.r + 0.0004 };
-  {
-    const TO = { hw: BI.hw - 0.0002, hh: BI.hh - 0.0002, r: BI.r - 0.0002 };
-    const ring = (g, z, e) => ({ z, cy: SC.cy, hw: g.hw + e, hh: g.hh + e, r: g.r + e });
-    const T = soup();
-    rrLoft(T, [ring(TO, 0.0785, 0), ring(TO, 0.0893, 0), ring(TO, 0.0898, -0.0005), ring(TI, 0.0898, 0.0005), ring(TI, 0.0893, 0), ring(TI, 0.0785, 0)], [8, 8, 6], { closed: true });
-    K.addW('head', geo(T), M.under, 'screen_trim');
-  }
-  {
-    const pl = (dz, bulge) => {
-      const g = new THREE.PlaneGeometry(SC.w + 0.003, SC.h + 0.003, 12, 9), p = g.attributes.position;
-      for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), b = bulge * Math.max(0, 1 - (2 * x / SC.w) ** 2) * Math.max(0, 1 - (2 * y / SC.h) ** 2); p.setXYZ(i, x, y + SC.cy, SC.z + dz + b); }
-      g.computeVertexNormals(); return g;
+  /* ---------------- charts: plate coordinates (x, y in metres) <-> directions from C */
+  // azimuthal equidistant round ez; ex, ey span the plate (ex x ey = ez, outward)
+  const azChart = (ez, up, R0) => {
+    ez = nrm(ez); const ey = nrm(add(up, ez, -dot(up, ez))), ex = crs(ey, ez);
+    return {
+      fwd(x, y) { const r = Math.hypot(x, y) / R0, az = Math.atan2(y, x), s = Math.sin(r), c = Math.cos(r), ca = Math.cos(az), sa = Math.sin(az); return nrm([0, 1, 2].map((k) => ez[k] * c + (ex[k] * ca + ey[k] * sa) * s)); },
+      inv(d) { d = nrm(d); const r = Math.acos(cl1(dot(d, ez))), az = Math.atan2(dot(d, ey), dot(d, ex)); return [R0 * r * Math.cos(az), R0 * r * Math.sin(az)]; },
     };
-    K.addW('head', K.screenUV(pl(0, 0), SC.cx, SC.cy, SC.w, SC.h), M.screen, 'screen', { cast: false });
-    K.addW('head', pl(0.0016, 0.0012), M.glass, 'screen_glass', { cast: false, receive: false });
-  }
+  };
+  // longitude-latitude chart, x scaled at latitude b0
+  const llChart = (R0, b0 = 0) => {
+    const kx = R0 * Math.cos(b0 * DEG) * DEG, ky = R0 * DEG;
+    return { fwd: (x, y) => llDir(x / kx, y / ky), inv: (d) => { const [a, b] = dirLL(nrm(d)); return [a * kx, b * ky]; } };
+  };
+  const onChart = (ch, x, y) => surf(ch.fwd(x, y));
+  // plate warp: chart (x, y) onto the base form, z = t on the surface (+ h), z = 0 a depth t below it
+  const warpOn = (ch, t, h = 0) => (x, y, z) => { const p = onChart(ch, x, y), n = normalAt(p), o = z - t + h; return [p[0] + n[0] * o, p[1] + n[1] * o, p[2] + n[2] * o]; };
 
-  /* ---------------- crown plate on the top: clipped front corners, two panel lines, the front part raised */
-  {
-    const m = basis(V3(0, yT(0) - 0.0002, 0), X, V3(0, TOPB - TOPY, -0.124));
-    const g = K.armorPlate([[-0.049, 0.068, 0.009], [0.049, 0.068, 0.009], [0.049, -0.02, 0], [0.024, -0.045, 0.004], [-0.024, -0.045, 0.004], [-0.049, -0.02, 0]], 0.0037,
-      { chamfer: 0.0022, back: 0.0006, lines: [{ type: 'groove', a: [-0.017, 0], angle: 90 }, { type: 'groove', a: [0.017, 0], angle: 90 }, { type: 'step', a: [0, 0.05], angle: 180, h: 0.0012 }] });
-    onM(g, m);
-    K.addW('head', g, M.paint2, 'head_crown', { wear: { chip: 0.62 } });
-  }
-
-  /* ---------------- rear panel (light, like the housing): a raised plate with one groove and four screws; the small
-     louvred vent sits in the housing below it */
-  {
-    const m = basis(V3(0, 0, ZB + 0.0002), V3(-1, 0, 0), Y), v = VENT;
-    const g = K.armorPlate([[-0.056, 1.691, 0.008], [0.056, 1.691, 0.008], [0.068, 1.704, 0], [0.068, 1.785, 0.006], [0.05, 1.806, 0.008], [-0.05, 1.806, 0.008], [-0.068, 1.785, 0.006], [-0.068, 1.704, 0]], 0.0038,
-      { chamfer: 0.0024, back: 0.0006, lines: [{ type: 'groove', a: [0, 1.776], angle: 0 }] });
-    onM(g, m);
-    K.addW('head', g, M.paint2, 'head_rear_plate', { wear: { chip: 0.62 } });
-    const sp = [[-0.056, 1.7], [0.056, 1.7], [-0.052, 1.791], [0.052, 1.791]].map(([x, y]) => surfAt(g, m, x, y));
-    K.addW('head', screws(sp), M.under, 'head_rear_screws', { cast: false });
-    // louvres: four thin blades tilted down, set in the pocket
-    const lv = [];
-    for (let i = 0; i < 4; i++) { const y = v.cy - v.hh + 0.0035 + i * 0.005; lv.push(K.turn(K.cbox(-v.hw + 0.0006, v.hw - 0.0006, -0.0005, 0.0005, -0.0036, 0.0036, 0.0003), X, -48, V3(0, 0, 0)).translate(0, y, ZB + 0.0032)); }
-    K.addW('head', K.merge(lv), M.under, 'head_vent');
-  }
-
-  /* ---------------- ears: angular side plates with a pod each; speaker on his left, mic on his right */
-  {
-    const k = (H.halfW - hW(ZB)) / (0.03 - ZB);   // side draft (x per metre of z)
-    const ex = V3(-k, 0, -1), ST = 0.0024;
-    // light side panel on the flat of each side (plate x runs back, y up, about the ear centre), clipped to stay
-    // on the flat where the back bevels pull the rounded corners in
-    const ms = basis(V3(hW(E.z) - 0.0003, E.y, E.z), ex, Y);
-    const sidePl = K.armorPlate([[-0.0365, 0.05, 0.006], [0.036, 0.058, 0.004], [0.074, 0.028, 0.004], [0.076, -0.036, 0.008], [0.044, -0.0635, 0.004], [-0.008, -0.0635, 0.004], [-0.0365, -0.036, 0]], ST,
-      { chamfer: 0.0016, back: 0.0005, lines: [{ type: 'groove', a: [0.058, 0], angle: 90 }] });
-    const ssc = [surfAt(sidePl, ms, 0.066, 0.024), surfAt(sidePl, ms, 0.066, -0.034)];
-    onM(sidePl, ms);
-    // dark ear plate on top of it
-    const m = basis(V3(hW(E.z) - 0.0005 + ST, E.y, E.z), ex, Y);
-    const plate = K.armorPlate([[-0.027, -0.031, 0.006], [-0.027, 0.027, 0.007], [0.024, 0.033, 0.006], [0.048, 0.006, 0.005], [0.031, -0.036, 0.008]], 0.004,
-      { chamfer: 0.0018, back: 0.0005, lines: [{ type: 'groove', a: [0.034, 0], angle: 70 }] });
-    const sc = [surfAt(plate, m, 0.041, 0.007), surfAt(plate, m, 0.029, -0.027)], ant = surfAt(plate, m, 0.029, 0.021);
-    onM(plate, m);
-    const PX = hW(E.z) - 0.0005 + ST + 0.004;      // ear plate face
-    const body = soup(), cap = soup(), well = soup(), mic = soup();
-    const o = [0, E.y, E.z];
-    lathe(body, [[0.02, PX - 0.0015], [0.0262, PX - 0.0015], [0.0262, PX + 0.0012], [0.0252, PX + 0.0022], [0.0244, PX + 0.0022], [0.0244, PX + 0.0045]], { axis: 'x', o, seg: 36 });
-    const C0 = PX + 0.0035, CT = E.x;
-    lathe(cap, [[0.0244, C0], [0.026, C0 + 0.0003], [0.026, CT - 0.0013, 1], [0.0247, CT], [0.0199, CT], [0.0188, CT - 0.0011], [0.0188, CT - 0.0034]], { axis: 'x', o, seg: 36 });
-    lathe(well, [[0.0189, CT - 0.0034], [0, CT - 0.0034]], { axis: 'x', o, seg: 36 });
-    // speaker louvres
-    const FL = CT - 0.0034, bars = [];
-    for (const dy of [-0.0128, -0.0064, 0, 0.0064, 0.0128]) { const hz = Math.sqrt(0.0187 ** 2 - (Math.abs(dy) + 0.0013) ** 2) - 0.0004; bars.push(K.cbox(FL - 0.0003, FL + 0.0016, E.y + dy - 0.0013, E.y + dy + 0.0013, E.z - hz, E.z + hz, 0.0004)); }
-    // mic: a perforated dome boss in the well
-    lathe(mic, [[0.0108, FL - 0.0002], [0.0108, FL + 0.0009], [0.0098, FL + 0.0017], [0.0062, FL + 0.0023], [0, FL + 0.0025]], { axis: 'x', o, seg: 28 });
-    const dots = [];
-    for (let j = -4; j <= 4; j++) for (let i = -4; i <= 4; i++) {
-      const y = j * 0.0019 * 0.866, z = (i + (j & 1) * 0.5) * 0.0019, r = Math.hypot(y, z); if (r > 0.0074) continue;
-      dots.push(K.orient(new THREE.CircleGeometry(0.00062, 6), Z, X).translate(FL + 0.0025 - (r > 0.0062 ? 0.0004 : 0) + 0.00012, E.y + y, E.z + z));
+  /* ---------------- outlines: edges of lon-lat points, resampled on the surface, inset by half the seam, cornered */
+  const resample = (pts3, step) => {
+    const L = [0]; for (let i = 1; i < pts3.length; i++) L.push(L[i - 1] + len(sub(pts3[i], pts3[i - 1])));
+    const n = Math.max(1, Math.round(L[L.length - 1] / step)), out = [];
+    for (let k = 0, j = 0; k <= n; k++) {
+      const s = L[L.length - 1] * k / n; while (j < L.length - 2 && L[j + 1] < s) j++;
+      const t = (s - L[j]) / Math.max(1e-12, L[j + 1] - L[j]); out.push(proj(add(pts3[j], sub(pts3[j + 1], pts3[j]), t)));
     }
-    const pod = { body: geo(body), cap: geo(cap), well: geo(well) };
-    for (const s of [1, -1]) {
-      const sd = s > 0 ? 'l' : 'r', side = (g) => (s > 0 ? g : K.mirrorX(g));
-      K.addW('head', side(sidePl.clone()), M.paint2, `head_side_${sd}`, { wear: { chip: 0.63 } });
-      K.addW('head', side(screws(ssc, 0.0022)), M.under, `head_side_${sd}_screws`, { cast: false });
-      K.addW('head', side(plate.clone()), M.paint, `ear_${sd}_plate`, { wear: { chip: 0.5 } });
-      K.addW('head', side(screws(sc, 0.0024)), M.under, `ear_${sd}_plate_screws`, { cast: false });
-      K.addW('head', side(pod.body.clone()), M.under, `ear_${sd}`);
-      K.addW('head', side(pod.cap.clone()), M.paint, `ear_${sd}_cap`, { wear: { chip: 0.46 } });
-      K.addW('head', side(pod.well.clone()), M.under, `ear_${sd}_well`, { cast: false });
+    return out;
+  };
+  const area2 = (P) => { let a = 0; for (let i = 0; i < P.length; i++) { const p = P[i], q = P[(i + 1) % P.length]; a += p[0] * q[1] - q[0] * p[1]; } return a / 2; };
+  // cut corner i of a closed 2D polyline: c > 0 a crisp clip, c < 0 a round of radius -c
+  const cutCorner = (Q, i, c) => {
+    const n = Q.length, r = Math.abs(c);
+    const walk = (dir) => { let acc = 0, k = i; for (let s = 0; s < n - 1; s++) { const k2 = (k + dir + n) % n, l = Math.hypot(Q[k2][0] - Q[k][0], Q[k2][1] - Q[k][1]); if (acc + l >= r) { const t = (r - acc) / l; return { p: [Q[k][0] + (Q[k2][0] - Q[k][0]) * t, Q[k][1] + (Q[k2][1] - Q[k][1]) * t], k, k2 }; } acc += l; k = k2; } return null; };
+    const A = walk(-1), B = walk(1); if (!A || !B) return Q;
+    const mid = [];
+    if (c > 0) mid.push(A.p, B.p);
+    else for (let s = 0; s <= 5; s++) { const t = s / 5, u = 1 - t; mid.push([u * u * A.p[0] + 2 * u * t * Q[i][0] + t * t * B.p[0], u * u * A.p[1] + 2 * u * t * Q[i][1] + t * t * B.p[1]]); }
+    // keep Q from B.k2 round to A.k2 (A.k2 is the point after A walking back, i.e. on the far side)
+    const out = [...mid]; for (let k = B.k2; k !== A.k2; k = (k + 1) % n) out.push(Q[k]); out.push(Q[A.k2]);
+    return out;
+  };
+  // spec: { edges: [{ pts: [[al, be], ...], gap }], corners: [c at the start of each edge] } -> chart outline
+  const SEAM = 0.0005, GAP = 0.001;    // half widths: the display seam, the panel gaps
+  const outlineOn = (ch, spec, step = 0.005) => {
+    let P = [], gp = [], cn = [];
+    spec.edges.forEach((e, ei) => {
+      const dense = []; for (let i = 0; i < e.pts.length - 1; i++) { const a = e.pts[i], b = e.pts[i + 1], m = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.5)); for (let k = 0; k < m; k++) dense.push(LL(a[0] + (b[0] - a[0]) * k / m, a[1] + (b[1] - a[1]) * k / m)); }
+      dense.push(LL(...e.pts[e.pts.length - 1]));
+      const rs = resample(dense, step); rs.pop();   // the next edge starts where this one ends
+      rs.forEach((p, k) => { P.push(p); gp.push(e.gap ?? GAP); cn.push(k === 0 ? (spec.corners ? spec.corners[ei] || 0 : 0) : 0); });
+    });
+    let Q = P.map((p) => ch.inv(sub(p, C)));
+    if (area2(Q) < 0) { P.reverse(); gp.reverse(); cn.reverse(); }
+    // inset on the surface: inward = n x tangent for a loop that runs counter-clockwise seen from outside
+    const n = P.length, In = P.map((p, i) => {
+      const T = nrm(sub(P[(i + 1) % n], P[(i - 1 + n) % n])), w = nrm(crs(normalAt(p), T)), g = gp[i];
+      return proj(add(p, w, g));
+    });
+    Q = In.map((p) => ch.inv(sub(p, C)));
+    // corners, last first so indices stay valid
+    const cidx = cn.map((c, i) => [i, c]).filter(([, c]) => c).reverse();
+    for (const [i, c] of cidx) Q = cutCorner(Q, i, c);
+    return Q.map(([x, y]) => [x, y, 0]);
+  };
+  // armour plate on the base form: chart, outline spec, thickness, armorPlate options, face offset h
+  // (crease: false skips the crease refinement, for the display, which no crisp facet reaches)
+  const shellPlate = (ch, spec, t, o = {}, h = 0) => {
+    const ol = Array.isArray(spec) ? spec : outlineOn(ch, spec, o.step || 0.007);
+    const memo = new Map(), fac = (q) => { const k = Math.round(q[0] * 1e6) + ',' + Math.round(q[1] * 1e6); let v = memo.get(k); if (v === undefined) { v = facetAt(onChart(ch, q[0], q[1])); memo.set(k, v); } return v; };
+    // edges that cross a crease are halved twice (to about 4 mm), so the crease lands on vertices and shades crisp
+    const refine = o.crease === false ? null : { split: (a, b) => fac(a) !== fac(b), depth: 2 };
+    const g = K.armorPlate(ol, t, { back: 0, tess: 0.018, seg: 0.02, ...o, refine, warp: warpOn(ch, t, h) });
+    return finish(g, o.keepBack);
+  };
+  // copy of a soup geometry with only the triangles f(a, b, c) accepts
+  const keepTris = (g, f) => {
+    const P = g.attributes.position.array, keep = [];
+    for (let t = 0; t < P.length / 9; t++) keep.push(f([P[t * 9], P[t * 9 + 1], P[t * 9 + 2]], [P[t * 9 + 3], P[t * 9 + 4], P[t * 9 + 5]], [P[t * 9 + 6], P[t * 9 + 7], P[t * 9 + 8]]));
+    const out = new THREE.BufferGeometry(), nk = keep.filter(Boolean).length;
+    for (const [k, at] of Object.entries(g.attributes)) {
+      const sz = at.itemSize, src = at.array, dst = new Float32Array(nk * 3 * sz); let w = 0;
+      keep.forEach((kp, t) => { if (kp) { dst.set(src.subarray(t * 3 * sz, (t + 1) * 3 * sz), w); w += 3 * sz; } });
+      out.setAttribute(k, new THREE.BufferAttribute(dst, sz));
     }
-    K.addW('head', K.merge(bars), M.under, 'ear_l_speaker_grille', { cast: false });
-    K.addW('head', K.mirrorX(geo(mic)), M.under, 'ear_r_mic', { cast: false });
-    K.addW('head', K.mirrorX(K.merge(dots)), M.rubber, 'ear_r_mic_holes', { cast: false });
-    // a short stub antenna on the mic side, leaning up and back from the ear plate
+    out.userData = g.userData;
+    return out;
+  };
+  // a few tiny slivers from the plate warp come out with their winding or their normals turned inward (pinholes or
+  // dark specks): a sliver whose normals point out gets its winding turned, one that faces out gets its face normal
+  const fixTris = (g) => {
+    const P = g.attributes.position.array, N = g.attributes.normal.array, atts = Object.values(g.attributes);
+    for (let t = 0; t < P.length / 9; t++) {
+      const o = t * 9, a = [P[o], P[o + 1], P[o + 2]], f = nrm(crs(sub([P[o + 3], P[o + 4], P[o + 5]], a), sub([P[o + 6], P[o + 7], P[o + 8]], a)));
+      const n = nrm([N[o] + N[o + 3] + N[o + 6], N[o + 1] + N[o + 4] + N[o + 7], N[o + 2] + N[o + 5] + N[o + 8]]);
+      if (dot(f, n) >= 0) continue;
+      const r = nrm(sub([(P[o] + P[o + 3] + P[o + 6]) / 3, (P[o + 1] + P[o + 4] + P[o + 7]) / 3, (P[o + 2] + P[o + 5] + P[o + 8]) / 3], C));
+      if (dot(n, r) > 0) for (const at of atts) { const s = at.itemSize, A = at.array, i1 = (t * 3 + 1) * s, i2 = (t * 3 + 2) * s; for (let k = 0; k < s; k++) { const x = A[i1 + k]; A[i1 + k] = A[i2 + k]; A[i2 + k] = x; } }
+      else for (let k = 0; k < 3; k++) N.set(f, o + k * 3);
+    }
+    return g;
+  };
+  // fix the slivers, drop the hidden back faces, then smooth normals across the dense outline (within 26 degrees)
+  const finish = (g, keepBack = false) => {
+    g = fixTris(g);
+    if (!keepBack) g = keepTris(g, (a, b, c) => dot(nrm(crs(sub(b, a), sub(c, a))), nrm(sub([(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3], C))) > -0.45);
+    return faceN(smoothN(g, 26));
+  };
+  // the plate's outer face (triangles within 30 degrees of the base form there) takes the base form's own normal
+  // at each vertex, so slivers from the crease refinement never streak; chamfers and walls keep theirs
+  const faceN = (g) => {
+    const P = g.attributes.position.array, N = g.attributes.normal.array, memo = new Map();
+    const nAt = (o) => { const k = `${Math.round(P[o] * 2e5)},${Math.round(P[o + 1] * 2e5)},${Math.round(P[o + 2] * 2e5)}`; let v = memo.get(k); if (!v) { v = normalAt([P[o], P[o + 1], P[o + 2]]); memo.set(k, v); } return v; };
+    for (let t = 0; t < P.length / 9; t++) {
+      const o = t * 9, a = [P[o], P[o + 1], P[o + 2]], f = nrm(crs(sub([P[o + 3], P[o + 4], P[o + 5]], a), sub([P[o + 6], P[o + 7], P[o + 8]], a)));
+      const m = normalAt([(P[o] + P[o + 3] + P[o + 6]) / 3, (P[o + 1] + P[o + 4] + P[o + 7]) / 3, (P[o + 2] + P[o + 5] + P[o + 8]) / 3]);
+      if (dot(f, m) < 0.866) continue;
+      for (let k = 0; k < 3; k++) N.set(nAt(o + k * 3), o + k * 3);
+    }
+    return g;
+  };
+  const smoothN = (g, deg) => {
+    const P = g.attributes.position.array, N = g.attributes.normal.array, cs = Math.cos(deg * DEG), map = new Map(), out = new Float32Array(N.length);
+    const key = (i) => `${Math.round(P[i] * 2e5)},${Math.round(P[i + 1] * 2e5)},${Math.round(P[i + 2] * 2e5)}`;
+    // area of each triangle, for weights
+    const A = new Float32Array(P.length / 9);
+    for (let t = 0; t < A.length; t++) { const o = t * 9; A[t] = len(crs([P[o + 3] - P[o], P[o + 4] - P[o + 1], P[o + 5] - P[o + 2]], [P[o + 6] - P[o], P[o + 7] - P[o + 1], P[o + 8] - P[o + 2]])) + 1e-12; }
+    for (let i = 0; i < P.length; i += 3) { const k = key(i); if (!map.has(k)) map.set(k, []); map.get(k).push(i); }
+    for (const list of map.values()) for (const i of list) {
+      let x = 0, y = 0, z = 0;
+      for (const j of list) { const d = N[i] * N[j] + N[i + 1] * N[j + 1] + N[i + 2] * N[j + 2]; if (d >= cs) { const w = A[(j / 9) | 0]; x += N[j] * w; y += N[j + 1] * w; z += N[j + 2] * w; } }
+      const l = Math.hypot(x, y, z) || 1; out[i] = x / l; out[i + 1] = y / l; out[i + 2] = z / l;
+    }
+    N.set(out);
+    return g;
+  };
+
+  /* ---------------- layout in longitude / latitude (degrees); the +X side, mirrored for -X */
+  // display outline: an arched brow, a jaw line rising to the sides, side edges that wrap round to 78 degrees
+  const DO = { top: 44, topA: 8, bot: 40, botA: 10, side: 78, b0: 4, cT: 58, cB: 50 };
+  const dTop = (a) => DO.top - DO.topA * (a / 60) ** 2, dBot = (a) => -DO.bot + DO.botA * (a / 60) ** 2;
+  const bTC = dTop(DO.cT), bBC = dBot(DO.cB);
+  // the +X side edge by s in -1..1 (bottom corner, widest point, top corner); near each corner its latitude leans
+  // to the brow / jaw line's slope there, so the outline turns the corner without a kink; sOf(latitude) inverts it
+  const slopeT = (a) => -2 * DO.topA * a / 3600, slopeB = (a) => 2 * DO.botA * a / 3600;
+  const sideP = (s) => {
+    const up = s >= 0, lim = up ? DO.cT : DO.cB, bc = up ? bTC : bBC, ph = Math.abs(s) * Math.PI / 2, q = Math.sin(ph);
+    const a = lim + (DO.side - lim) * Math.sqrt(Math.max(0, 1 - Math.pow(q, 2.2)));
+    return [a, DO.b0 + (bc - DO.b0) * q + (up ? slopeT(lim) : slopeB(lim)) * (a - lim) * q ** 4];
+  };
+  const sOf = (b) => { const up = b >= DO.b0; let lo = 0, hi = 1; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2, y = sideP(up ? m : -m)[1]; if (up ? y < b : y > b) lo = m; else hi = m; } return (up ? 1 : -1) * (lo + hi) / 2; };
+  const run = (f, a, b, n) => { const o = []; for (let k = 0; k <= n; k++) o.push(f(a + (b - a) * k / n)); return o; };
+  const sideSeg = (s1, s2, n = 30) => run(sideP, s1, s2, n);
+  const topEdge = (a1, a2, n = 40) => run((a) => [a, dTop(a)], a1, a2, n);
+  const botEdge = (a1, a2, n = 40) => run((a) => [a, dBot(a)], a1, a2, n);
+  const line = (p, q, n = 12) => run((t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t], 0, 1, n);
+  const mir = (pts) => pts.map(([a, b]) => [-a, b]);
+  const rev = (pts) => pts.slice().reverse();
+  const cat = (...L) => L.reduce((o, l) => o.concat(o.length ? l.slice(1) : l), []);
+  const BJ = 28, BC = -4, sJ = sOf(BJ), sC = sOf(BC);   // where the crown seam and the chin seam leave the display edge
+  const JU = sideP(sJ), JD = sideP(sC);
+  const csAt = (a) => BJ + 20 * (1 - Math.exp(-(a - JU[0]) / 20)) - 3 * sst(110, 180, a);
+  // crown seam (+X) from the display edge back over the temple, and its mirror (longitudes past 180)
+  const crownSeam = (a1, a2, n = 40) => run((a) => (a <= 180 ? [a, csAt(a)] : [a, csAt(360 - a)]), a1, a2, n);
+  // the ear hub (+X) and the chin bar's round boss about it (angle th in degrees: 0 behind, 90 above)
+  const HUB = [103, 1], BOSS = 15.5;
+  const bossP = (th) => [HUB[0] + BOSS * Math.cos(th * DEG), HUB[1] + BOSS * Math.sin(th * DEG)];
+  const thF = 180 - Math.asin((BC - HUB[1]) / BOSS) / DEG, thR = -62;   // where the chin seam meets the boss; where the rear edge leaves it
+  const CHB = -64, CHR = 117;                       // the chin bar's bottom latitude, and its rear longitude there
+  const RS0 = [150, csAt(150)], RS1 = [131, -52];   // rear seam (+X), top and bottom
+
+  /* ---------------- the display: 1 mm proud, borderless; UVs by arc length over cell 0 */
+  // DOVER: how far the display's outline runs past the seam line, so its rolled edge laps 1 mm over the shell's edge
+  // and chamfer (the shell tucks under it) and the boundary reads as a dark line, never a lit frame
+  const DOVER = 0.002, DH = 0.001;
+  const chF = azChart([0, 0, 1], [0, 1, 0], 0.1);
+  {
+    const loop = cat(topEdge(0, DO.cT), sideSeg(1, -1, 60), botEdge(DO.cB, -DO.cB, 60), mir(sideSeg(-1, 1, 60)), topEdge(-DO.cT, 0));
+    // arc-length tables over the display's longitude / latitude range (2 degrees, bilinear), measured from the face centre
+    const ST = 2, A0 = -84, B0 = -48, NA = 85, NB = 51, BF = 1;   // BF: latitude of the face centre (a table row)
+    const S = []; for (let j = 0; j < NB; j++) { const row = []; for (let i = 0; i < NA; i++) row.push(LL(A0 + i * ST, B0 + j * ST)); S.push(row); }
+    const U = S.map((row) => { const u = new Float64Array(NA), c = -A0 / ST; for (let i = c + 1; i < NA; i++) u[i] = u[i - 1] + len(sub(row[i], row[i - 1])); for (let i = c - 1; i >= 0; i--) u[i] = u[i + 1] - len(sub(row[i + 1], row[i])); return u; });
+    // v from the face centre's latitude: rows are 2 degrees apart, so the centre sits half way between two rows
+    const V = []; for (let j = 0; j < NB; j++) V.push(new Float64Array(NA));
+    const jc = (BF - B0) / ST, j0 = Math.floor(jc), fj = jc - j0;
+    for (let i = 0; i < NA; i++) {
+      const half = len(sub(S[j0 + 1][i], S[j0][i]));
+      V[j0][i] = -fj * half; V[j0 + 1][i] = (1 - fj) * half;
+      for (let j = j0 + 2; j < NB; j++) V[j][i] = V[j - 1][i] + len(sub(S[j][i], S[j - 1][i]));
+      for (let j = j0 - 1; j >= 0; j--) V[j][i] = V[j + 1][i] - len(sub(S[j + 1][i], S[j][i]));
+    }
+    const look = (Tb, a, b) => { const x = Math.min(NA - 1.001, Math.max(0, (a - A0) / ST)), y = Math.min(NB - 1.001, Math.max(0, (b - B0) / ST)), i = x | 0, j = y | 0, u = x - i, v = y - j; return (Tb[j][i] * (1 - u) + Tb[j][i + 1] * u) * (1 - v) + (Tb[j + 1][i] * (1 - u) + Tb[j + 1][i + 1] * u) * v; };
+    // the face area: FACE_CELL's aspect (width along the surface : height), centred on the face centre; 0.159 m wide,
+    // so the eyes sit well inside the wrap
+    const HF = 0.106, WF = HF * FACE_CELL[0] / FACE_CELL[1];
+    const dspec = { edges: [{ gap: -DOVER, pts: loop }] };
+    const DTESS = 0.015;   // display grid: fine enough for the arc-length UVs, the glass reuses it
+    const g = shellPlate(chF, dspec, 0.003, { chamfer: 0.0009, tess: DTESS, edgeTag: false, step: 0.0075, crease: false }, DH);
+    const P = g.attributes.position.array, uv = g.attributes.uv.array;
+    for (let i = 0, j = 0; i < P.length; i += 3, j += 2) {
+      const [a, b] = dirLL(nrm(sub([P[i], P[i + 1], P[i + 2]], C)));
+      const cu = Math.min(1, Math.max(0, 0.5 + look(U, a, b) / WF)), cv = Math.min(1, Math.max(0, 0.5 - look(V, a, b) / HF));
+      uv[j] = (0.002 + cu * 0.996) / FACE_COLS; uv[j + 1] = (0.002 + cv * 0.996) / FACE_ROWS;   // atlas not flipped: v 0 is its top row
+    }
+    g.deleteAttribute('wtag');
+    // cover glass: the display's own front face (not its rolled edge, which stays bare and dark), lifted 0.6 mm along
+    // the base form's normal, so the gap stays even over the tight curve of the jaw
+    const gl = keepTris(g, (a, b, c) => { const m = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3]; return dot(nrm(crs(sub(b, a), sub(c, a))), normalAt(m)) > 0.906; });
+    // its outline is pulled 0.8 mm in along the surface first, so its edge stays over the flat front and never
+    // reaches the rolled lip (the chin's tight curve)
     {
-      const dir = ant.n.clone().multiplyScalar(0.3).add(V3(0, 0.8, -0.5)).normalize(), base = soup(), whip = soup();
-      lathe(base, [[0, 0], [0.0043, 0], [0.0043, 0.0022], [0.0034, 0.0031], [0.0024, 0.0031], [0.0024, 0.0062], [0.0017, 0.0072], [0.0015, 0.0072]], { seg: 14 });
-      lathe(whip, [[0.0013, 0.006], [0.0013, 0.033], [0.0011, 0.034], [0.0019, 0.0352], [0.0019, 0.0372], [0.0011, 0.0386], [0, 0.0388]], { seg: 10 });
-      const put = (g) => K.orient(g, Y, dir).translate(ant.p.x - ant.n.x * 0.0004, ant.p.y, ant.p.z);
-      K.addW('head', K.mirrorX(put(geo(base))), M.under, 'ear_r_antenna_base');
-      K.addW('head', K.mirrorX(put(geo(whip))), M.rubber, 'ear_r_antenna', { cast: false });
+      const Q = gl.attributes.position.array, key = (i) => `${Math.round(Q[i] * 2e5)},${Math.round(Q[i + 1] * 2e5)},${Math.round(Q[i + 2] * 2e5)}`;
+      const edges = new Map(), inward = new Map();
+      for (let t = 0; t < Q.length / 9; t++) for (let e = 0; e < 3; e++) { const a = key(t * 9 + e * 3), b = key(t * 9 + ((e + 1) % 3) * 3), k = a < b ? a + '|' + b : b + '|' + a; edges.set(k, (edges.get(k) || 0) + 1); }
+      const rim = new Set(); for (const [k, c] of edges) if (c === 1) for (const v of k.split('|')) rim.add(v);
+      // inward: toward the centres of the triangles round it
+      for (let t = 0; t < Q.length / 9; t++) {
+        const o = t * 9, m = [0, 1, 2].map((c) => (Q[o + c] + Q[o + 3 + c] + Q[o + 6 + c]) / 3);
+        for (let e = 0; e < 3; e++) { const i = o + e * 3, k = key(i); if (rim.has(k)) inward.set(k, add(inward.get(k) || [0, 0, 0], sub(m, [Q[i], Q[i + 1], Q[i + 2]]))); }
+      }
+      const moved = new Map();
+      for (let i = 0; i < Q.length; i += 3) {
+        const k = key(i); let p = [Q[i], Q[i + 1], Q[i + 2]];
+        if (rim.has(k) && inward.has(k)) {
+          if (!moved.has(k)) { const n = normalAt(p), w = inward.get(k), d = nrm(add(w, n, -dot(w, n))), q = proj(add(p, d, 0.0008)); moved.set(k, add(q, normalAt(q), DH)); }
+          p = moved.get(k);
+        }
+        const n = normalAt(p); for (let c = 0; c < 3; c++) Q[i + c] = p[c] + n[c] * 0.0006;
+      }
     }
+    // the few slivers along the outline that the pull folds over (all three corners on it) go
+    const gl2 = keepTris(gl, (a, b, c) => { const f = crs(sub(b, a), sub(c, a)); return len(f) > 1e-9 && dot(nrm(f), normalAt([(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3])) > 0.5; });
+    K.addW('head', g, M.screen, 'screen', { cast: false });
+    K.addW('head', gl2, M.glass, 'screen_glass', { cast: false, receive: false });
   }
 
-  /* ---------------- socket under the head: a dark cup the neck's swivel cap turns in, piston lugs */
+  /* ---------------- core: the dark structure under the shell, showing in every gap */
+  {
+    const T = soup(), NA = 20, NB = 13, IN = 0.0058;
+    const pt = (i, j) => { const p = LL(-180 + 360 * i / NA, -87 + 174 * j / NB); return add(p, normalAt(p), -IN); };
+    const R = []; for (let j = 0; j <= NB; j++) { const row = []; for (let i = 0; i <= NA; i++) row.push(pt(i % NA, j)); R.push(row); }
+    for (let j = 0; j < NB; j++) for (let i = 0; i < NA; i++) {
+      const q = [R[j][i], R[j][i + 1], R[j + 1][i + 1], R[j + 1][i]], ns = q.map((p) => normalAt(proj(p)));
+      T.quad(q, ns, q.map((p) => [(p[0] + p[2]) / 0.3, p[1] / 0.3]), 0);
+    }
+    for (const [j, s] of [[0, -1], [NB, 1]]) { const c = add(LL(0, s * 90), [0, s, 0], -IN); for (let i = 0; i < NA; i++) T.tri([R[j][i], R[j][i + 1], c], [[0, s, 0], [0, s, 0], [0, s, 0]], [[0, 0], [0.1, 0], [0, 0.1]], 0, [0, s, 0]); }
+    K.addW('head', geo(T), M.under, 'head_core');
+  }
+
+  /* ---------------- shell plates (light crown with a dark keel, sides and rear; dark chin bar) */
+  const chTop = azChart([0, 1, 0], [0, 0, -1], 0.11), chBack = azChart([0, 0, -1], [0, 1, 0], 0.1);
+  const chSide = azChart(llDir(112, 2), [0, 1, 0], 0.092), chChin = llChart(0.1, -35);
+  const T_SH = 0.005, CH_SH = 0.0024, CH_D = 0.0012;   // shell thickness, chamfer; chamfer of the plates that meet the display
+  const TJ = 0.0012;   // where a seam meets the display: a small clip, tucked under the display's edge
+  const backMask = (p) => p[1] > 0.15 && p[2] < -0.045;   // chips only on the top rear corners (head-bone space)
+  // round corner i of a lon / lat polyline: the r degrees either side become a quadratic curve tangent to both
+  const filletLL = (pts, i, r, n = 12) => {
+    const dist = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+    const walk = (dir) => { let acc = 0, k = i; while (k + dir >= 0 && k + dir < pts.length) { const k2 = k + dir, l = dist(pts[k], pts[k2]); if (acc + l >= r) { const t = (r - acc) / l; return { p: [pts[k][0] + (pts[k2][0] - pts[k][0]) * t, pts[k][1] + (pts[k2][1] - pts[k][1]) * t], k2 }; } acc += l; k = k2; } return null; };
+    const A = walk(-1), B = walk(1), mid = [];
+    for (let k = 0; k <= n; k++) { const t = k / n, u = 1 - t; mid.push([u * u * A.p[0] + 2 * u * t * pts[i][0] + t * t * B.p[0], u * u * A.p[1] + 2 * u * t * pts[i][1] + t * t * B.p[1]]); }
+    return [...pts.slice(0, A.k2 + 1), ...mid, ...pts.slice(B.k2)];
+  };
+  // the seam the chin bar shares with the side plate (+X): back from the display edge, over the top of the ear boss
+  // and down to the bottom, with a 4 degree fillet where it meets the boss ring at both ends, so both plates end in
+  // one smooth curve with the same chamfer and no exposed end caps
+  const chinSeam = filletLL(filletLL(cat(line(JD, bossP(thF), 8), run(bossP, thF, thR, 40), line(bossP(thR), [CHR, CHB], 14)), 48, 4), 8, 4);
+  // crown: the brow (the display's top edge) round its top corners and down to the crown seam
+  {
+    const front = cat(mir(sideSeg(sJ, 1, 16)), topEdge(-DO.cT, DO.cT, 50), sideSeg(1, sJ, 16));
+    const spec = { edges: [{ gap: SEAM, pts: front }, { gap: GAP, pts: crownSeam(JU[0], 360 - JU[0], 90) }], corners: [TJ, TJ] };
+    const g = shellPlate(chTop, spec, T_SH, { chamfer: CH_D });
+    K.addW('head', g, M.paint2, 'head_crown', { wear: { chip: 0.68, mask: backMask } });
+    // the keel: a raised dark plate down the middle of the crown, from just behind the brow back onto the crown's
+    // rear facet, narrow and clipped at the front; his silhouette hook from the front and side
+    const keel = shellPlate(chTop, [[-0.0095, -0.079, 0.003], [0.0095, -0.079, 0.003], [0.0155, -0.054, 0], [0.0155, 0.02, 0], [0.008, 0.046, 0.003], [-0.008, 0.046, 0.003], [-0.0155, 0.02, 0], [-0.0155, -0.054, 0]], 0.0065,
+      { chamfer: 0.0021, crease: false }, 0.0045);
+    K.addW('head', keel, M.paint, 'head_keel', { wear: { chip: 0.7, mask: (q) => q[2] < -0.02 } });
+  }
+  // sides: behind the display's upper side edge and the chin bar, up to the crown seam, back to the rear seam; the
+  // bottom runs from the chin bar's lower corner up to the rear plate, so the head's lower edge is one line
+  {
+    const spec = {
+      edges: [
+        { gap: SEAM, pts: sideSeg(sJ, sC, 16) },
+        { gap: GAP, pts: chinSeam },
+        { gap: 0, pts: line([CHR, CHB], RS1, 12) },
+        { gap: GAP, pts: line(RS1, RS0, 16) },
+        { gap: GAP, pts: crownSeam(RS0[0], JU[0], 30) },
+      ], corners: [TJ, TJ, 0.0015, -0.006, 0.0012],
+    };
+    const ga = chSide.inv(sub(LL(100, 25), C)), gb = chSide.inv(sub(LL(133, 41), C));   // clear of the ear boss
+    const g = shellPlate(chSide, spec, T_SH, { chamfer: CH_D, lines: [{ type: 'groove', a: ga, b: gb }] });
+    for (const s of [1, -1]) {
+      const sd = s > 0 ? 'l' : 'r', side = (gg) => (s > 0 ? gg : K.mirrorX(gg.clone()));
+      K.addW('head', side(g), M.paint2, `head_side_${sd}`, { wear: { chip: 0.68, mask: backMask } });
+    }
+  }
+  // rear
+  {
+    const spec = { edges: [{ gap: GAP, pts: crownSeam(RS0[0], 360 - RS0[0], 30) }, { gap: GAP, pts: line([360 - RS0[0], RS0[1]], [360 - RS1[0], RS1[1]], 16) }, { gap: 0, pts: run((a) => [a, -52 + 4 * Math.sin((a - RS1[0]) / (360 - 2 * RS1[0]) * Math.PI)], 360 - RS1[0], RS1[0], 24) }, { gap: GAP, pts: line(RS1, RS0, 16) }], corners: [0.0012, 0.0012, -0.006, -0.006] };
+    const g = shellPlate(chBack, spec, T_SH, { chamfer: CH_SH });
+    K.addW('head', g, M.paint2, 'head_rear', { wear: { chip: 0.7, mask: backMask } });
+    // raised rear panel with two grooves (a panel line across its middle) and two screws
+    const pnl = shellPlate(chBack, [[-0.05, -0.03, 0.006], [0.05, -0.03, 0.006], [0.058, -0.018, 0], [0.058, 0.042, 0.008], [0.042, 0.06, 0.006], [-0.042, 0.06, 0.006], [-0.058, 0.042, 0.008], [-0.058, -0.018, 0]], 0.0042,
+      { chamfer: 0.0021, crease: false, lines: [{ type: 'groove', a: [0, 0.046], angle: 0 }, { type: 'groove', a: [0, 0.006], angle: 0 }] }, 0.0032);
+    K.addW('head', pnl, M.paint2, 'head_rear_plate', { wear: { chip: 0.66, mask: backMask } });
+    K.addW('head', screws([[-0.044, 0.05], [0.044, 0.05]].map(([x, y]) => pnl.userData.surf(x, y))), M.under, 'head_rear_screws', { cast: false });
+  }
+  // chin bar: under the display, up behind its lower side edges to a round boss round each ear hub
+  {
+    const spec = {
+      edges: [
+        { gap: SEAM, pts: cat(mir(sideSeg(sC, -1, 16)), botEdge(-DO.cB, DO.cB, 50), sideSeg(-1, sC, 16)) },
+        { gap: GAP, pts: chinSeam },
+        { gap: 0, pts: line([CHR, CHB], [-CHR, CHB], 40) },
+        { gap: GAP, pts: rev(mir(chinSeam)) },
+      ], corners: [TJ, TJ, 0.0015, 0.0015],
+    };
+    const ky = chChin.inv(llDir(0, -55.5))[1];
+    const g = shellPlate(chChin, spec, T_SH, { chamfer: CH_D, lines: [{ type: 'groove', a: [0, ky], angle: 0 }] });
+    K.addW('head', g, M.paint, 'head_chin', { wear: { chip: 0.7, mask: (p) => p[1] < -0.005 && p[2] < 0.02 } });
+  }
+
+  /* ---------------- under the head: a faceted dark collar the neck's swivel cap turns in, piston lugs */
+  // height of the base form's underside above (x, z)
+  const underY = (x, z) => { let lo = C[1] - 0.14, hi = C[1]; for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (G(x - C[0], m - C[1], z - C[2]) > 1) lo = m; else hi = m; } return hi; };
   const HP = [0, 0, D.J.head.z];
   {
-    const T = soup();
-    lathe(T, [[0, H.bottom - 0.0006], [0.0362, H.bottom - 0.0006], [0.0362, 1.6072], [0.0377, 1.6052], [0.0482, 1.6052], [0.0502, 1.6072, 1], [0.0502, H.bottom + 0.0004]], { axis: 'y', o: HP, seg: 40 });
+    const T = soup(), yIn = underY(0, HP[2] + 0.056) + 0.006;
+    lathe(T, [[0.0362, yIn], [0.0362, 1.6074], [0.0378, 1.6056, 1], [0.0448, 1.6056], [0.0466, 1.6074, 1], [0.0474, 1.6125], [0.0492, yIn]], { axis: 'y', o: HP, seg: 12, smooth: false, phase: Math.PI / 12 });
     K.addW('head', geo(T), M.under, 'head_socket');
   }
   const PIN = (s) => [V3(s * 0.04, 1.5715, -0.056), V3(s * 0.04, 1.611, -0.052)];
   {
     const lug = [];
     for (const s of [1, -1]) {
-      const [, b] = PIN(s);
-      for (const dx of [-0.0049, 0.0049]) lug.push(K.cbox(b.x + dx - 0.0008, b.x + dx + 0.0008, b.y - 0.0055, H.bottom + 0.0006, b.z - 0.0055, b.z + 0.0055, 0.0005));
-      lug.push(K.cbox(b.x - 0.0057, b.x + 0.0057, H.bottom - 0.0016, H.bottom + 0.0006, b.z - 0.0065, b.z + 0.0065, 0.0006));
+      const [, b] = PIN(s), top = underY(b.x, b.z) + 0.005;
+      for (const dx of [-0.0049, 0.0049]) lug.push(K.cbox(b.x + dx - 0.0008, b.x + dx + 0.0008, b.y - 0.0055, top, b.z - 0.0055, b.z + 0.0055, 0.0005));
+      lug.push(K.cbox(b.x - 0.0057, b.x + 0.0057, b.y + 0.0045, top, b.z - 0.0065, b.z + 0.0065, 0.0006));
     }
     K.addW('head', K.merge(lug), M.under, 'head_piston_lugs');
+  }
+
+  /* ---------------- ear hubs on the chin bar's bosses: a dark seat ring and a chamfered cap round a recessed well;
+     speaker louvres on his left, a perforated mic boss and a stub antenna on his right (built on +X, then mirrored) */
+  {
+    const p = LL(HUB[0], HUB[1]), n = normalAt(p), q = new THREE.Quaternion().setFromUnitVectors(X, V3(...n));
+    const put = (g) => g.applyQuaternion(q).translate(p[0], p[1], p[2]);
+    const seat = soup(), cap = soup(), well = soup(), mic = soup();
+    lathe(seat, [[0.0166, -0.004], [0.0197, -0.004], [0.0197, 0.0014], [0.019, 0.0021, 1], [0.0166, 0.0021]], { axis: 'x', seg: 28 });
+    lathe(cap, [[0.0166, 0.0014], [0.0177, 0.0014], [0.0177, 0.0058, 1], [0.0163, 0.0072], [0.0129, 0.0072, 1], [0.0121, 0.0064], [0.0121, 0.0042]], { axis: 'x', seg: 28 });
+    lathe(well, [[0.0122, 0.0042], [0, 0.0042]], { axis: 'x', seg: 28 });
+    const FL = 0.0042, bars = [];
+    for (const dy of [-0.0084, -0.0042, 0, 0.0042, 0.0084]) { const hz = Math.sqrt(0.0119 ** 2 - (Math.abs(dy) + 0.0011) ** 2) - 0.0005; bars.push(K.cbox(FL - 0.0003, FL + 0.0013, dy - 0.0011, dy + 0.0011, -hz, hz, 0.0004)); }
+    lathe(mic, [[0.0082, FL - 0.0002], [0.0082, FL + 0.0008], [0.0074, FL + 0.0015], [0.0046, FL + 0.002], [0, FL + 0.0022]], { axis: 'x', seg: 24 });
+    const dots = [];
+    for (let j = -3; j <= 3; j++) for (let i = -3; i <= 3; i++) {
+      const y = j * 0.0017 * 0.866, z = (i + (j & 1) * 0.5) * 0.0017, r = Math.hypot(y, z); if (r > 0.0057) continue;
+      dots.push(K.orient(new THREE.CircleGeometry(0.00055, 6), Z, X).translate(FL + 0.0022 - (r > 0.0046 ? 0.0004 : 0) + 0.00012, y, z));
+    }
+    const pod = { seat: put(geo(seat)), cap: put(geo(cap)), well: put(geo(well)) };
+    for (const s of [1, -1]) {
+      const sd = s > 0 ? 'l' : 'r', side = (g) => (s > 0 ? g : K.mirrorX(g.clone()));
+      K.addW('head', side(pod.seat), M.under, `ear_${sd}`);
+      K.addW('head', side(pod.cap), M.paint, `ear_${sd}_cap`, { wear: { chip: 0.6, mask: (pp) => pp[2] < -0.03 } });
+      K.addW('head', side(pod.well), M.under, `ear_${sd}_well`, { cast: false });
+    }
+    K.addW('head', put(K.merge(bars)), M.under, 'ear_l_speaker_grille', { cast: false });
+    K.addW('head', K.mirrorX(put(geo(mic))), M.under, 'ear_r_mic', { cast: false });
+    K.addW('head', K.mirrorX(put(K.merge(dots))), M.rubber, 'ear_r_mic_holes', { cast: false });
+    // a short stub antenna on the mic side, from the cap's top rear rim, leaning up and back
+    {
+      const at = V3(0.0064, 0.0118, -0.0085).applyQuaternion(q).add(V3(...p)), dir = V3(0.25, 0.85, -0.47).normalize(), base = soup(), whip = soup();
+      lathe(base, [[0, 0], [0.0036, 0], [0.0036, 0.002], [0.0028, 0.0028], [0.002, 0.0028], [0.002, 0.0056], [0.0014, 0.0064], [0.0012, 0.0064]], { seg: 12 });
+      lathe(whip, [[0.0011, 0.0055], [0.0011, 0.026], [0.0009, 0.027], [0.0016, 0.0281], [0.0016, 0.0297], [0.0009, 0.0309], [0, 0.031]], { seg: 10 });
+      const pl = (g) => K.orient(g, Y, dir).translate(at.x, at.y, at.z);
+      K.addW('head', K.mirrorX(pl(geo(base))), M.under, 'ear_r_antenna_base');
+      K.addW('head', K.mirrorX(pl(geo(whip))), M.rubber, 'ear_r_antenna', { cast: false });
+    }
   }
 
   /* ---------------- neck: a faceted column, segmented rings, swivel cap, cables, purple hairline, pistons */
@@ -2872,7 +3142,7 @@ PARTS.head = function (K) {
     lathe(T2, [[0.0165, 1.6005], [0.0262, 1.6005], [0.0272, 1.6015], [0.0272, 1.6095], [0.0262, 1.6105], [0, 1.6105]], { axis: 'y', o: [0, 0, D.J.head.z], seg: 24 });
     K.addW('neck', geo(T2), M.under, 'neck_swivel');
     K.addW('neck', new THREE.CylinderGeometry(0.0385, 0.0385, 0.0084, 24, 1, true).translate(0, 1.5695, NO[2]), M.under, 'neck_gap_core');   // the ring gap is a shallow slot, not a hole
-    K.addW('neck', new THREE.TorusGeometry(0.0398, 0.0009, 5, 40).rotateX(Math.PI / 2).translate(0, 1.5695, NO[2]), M.rim, 'neck_glow', { cast: false });
+    K.addW('neck', new THREE.TorusGeometry(0.0398, 0.0009, 4, 36).rotateX(Math.PI / 2).translate(0, 1.5695, NO[2]), M.rim, 'neck_glow', { cast: false });
     // cables: two at the front sides and a pair down the back, from the skirt up into bosses under the top ring
     const at = (a, r, y) => V3(Math.sin(a) * r, y, NO[2] + Math.cos(a) * r);
     const CA = [0.7, -0.7, Math.PI], RB = 0.0425;
@@ -2880,12 +3150,14 @@ PARTS.head = function (K) {
     const boss = [];
     for (const a of CA) {
       const rb = a === Math.PI ? 0.0064 : 0.0047, g = soup();
-      lathe(g, [[0, 1.5848], [rb - 0.0008, 1.5848], [rb, 1.5856], [rb, 1.5995], [0, 1.5995]], { axis: 'y', o: [0, 0, NO[2] + RB], seg: 14 });
+      lathe(g, [[0, 1.5848], [rb - 0.0008, 1.5848], [rb, 1.5856], [rb, 1.5995], [0, 1.5995]], { axis: 'y', o: [0, 0, NO[2] + RB], seg: 10 });
       boss.push(K.turn(K.merge([geo(g), K.cbox(-0.003, 0.003, 1.5918, 1.5985, NO[2] + 0.032, NO[2] + RB, 0.0006)]), Y, a * 180 / Math.PI, V3(0, 0, NO[2])));
     }
     K.addW('neck', K.merge(boss), M.under, 'neck_cable_bosses');
     K.addW('neck', K.merge([K.cable(path(CA[0]), 0.0033, { seg: 8 }), K.cable(path(CA[1]), 0.0033, { seg: 8 }), K.cableBundle(path(CA[2]), { n: 2, r: 0.0026, twist: 3, seg: 7 })]), M.cable, 'neck_cables', { cast: false });
-    K.addW('neck', K.merge([K.cableEnds(path(CA[0]), 0.0033, 0.007), K.cableEnds(path(CA[1]), 0.0033, 0.007), K.cableEnds(path(CA[2]), 0.0052, 0.007)]), M.under, 'neck_ferrules', { cast: false });
+    // ferrules at both ends of each cable (10-sided)
+    const fer = (pts, r, l) => [[pts[0], pts[1]], [pts[pts.length - 1], pts[pts.length - 2]]].map(([p, q]) => { const T = soup(); lathe(T, [[0, -l * 0.3], [r * 1.45, -l * 0.3], [r * 1.5, -l * 0.05], [r * 1.3, 0], [r * 1.18, l * 0.7], [0, l * 0.7]], { seg: 10 }); return K.orient(geo(T), Y, q.clone().sub(p)).translate(p.x, p.y, p.z); });
+    K.addW('neck', K.merge([...fer(path(CA[0]), 0.0033, 0.007), ...fer(path(CA[1]), 0.0033, 0.007), ...fer(path(CA[2]), 0.0052, 0.007)]), M.under, 'neck_ferrules', { cast: false });
     // piston lugs on the bottom ring
     const lug = [];
     for (const s of [1, -1]) { const [a] = PIN(s); for (const dx of [-0.0049, 0.0049]) lug.push(K.cbox(a.x + dx - 0.0008, a.x + dx + 0.0008, 1.5645, a.y + 0.005, a.z - 0.0052, a.z + 0.0052, 0.0005)); }
@@ -2897,134 +3169,6 @@ PARTS.head = function (K) {
       const y0 = 0.6 * r + 0.62 * p.d0 - 0.001, y1 = 0.6 * r + 0.93 * p.d0;
       K.add(p.b, new THREE.CylinderGeometry(r * 0.52, r * 0.52, y1 - y0, 14, 1, true).translate(0, (y0 + y1) / 2, 0), M.chrome, `pist_neck_${sd}_rod_ext`, { cast: false });
     }
-  }
-
-  /* ---------------- face atlas and the face switching hook */
-  const FACE_LIST = ['neutral', 'neutral_blink', 'happy', 'happy_blink', 'worried', 'worried_blink', 'laughing_a', 'laughing_b', 'sad', 'sad_blink', 'alert', 'alert_blink', 'talk_a', 'talk_b', 'focus', 'off'];
-  drawAtlas();
-  const red = new THREE.Color('#d8141a');
-  K.hooks.face = {
-    cells: FACE_LIST,
-    offset: (i) => [(i % 4) / 4, Math.floor(i / 4) / 4],
-    // show a cell (index or name) and an alarm tint 0..1 on the screen material
-    set(cell, tint = 0) {
-      const i = typeof cell === 'number' ? cell : Math.max(0, FACE_LIST.indexOf(cell));
-      const [u, v] = this.offset(i);
-      M.screen.emissiveMap.offset.set(u, v);
-      M.screen.emissive.set('#ffffff').lerp(red, Math.min(1, Math.max(0, tint)));
-      return i;
-    },
-  };
-
-  // Crisp warm LED faces with sub-pixel stripes and scan rows, redrawn into TX.faceAtlasCanvas in place
-  // (same 4 x 4 layout of 256 x 192 cells, 32 x 24 LEDs at 8 px). Alert cells are red.
-  function drawAtlas() {
-    const CW = 256, CH = 192, GW = 32, GH = 24, P = 8, SS = 4;
-    const cvs = TX.faceAtlasCanvas, ctx = cvs.getContext('2d');
-    const img = ctx.createImageData(CW * 4, CH * 4), px = img.data;
-    const hi = document.createElement('canvas'); hi.width = GW * SS; hi.height = GH * SS;
-    const S = hi.getContext('2d', { willReadFrequently: true });
-    const EL = 10.5, ER = 21.5, EY = 9.5;
-    const rr = (x, y, w, h, r) => { S.beginPath(); S.roundRect(x - w / 2, y - h / 2, w, h, r); S.fill(); };
-    const ln = (pts, lw = 1.5) => { S.lineWidth = lw; S.beginPath(); S.moveTo(...pts[0]); for (const p of pts.slice(1)) S.lineTo(...p); S.stroke(); };
-    const qd = (a, c, b, lw = 1.5) => { S.lineWidth = lw; S.beginPath(); S.moveTo(...a); S.quadraticCurveTo(...c, ...b); S.stroke(); };
-    const fill = (f) => { S.beginPath(); f(); S.fill(); };
-    const both = (f) => { f(EL, 1); f(ER, -1); };
-    const eyes = (w = 3.1, h = 6.2, y = EY) => both((x) => rr(x, y, w, h, 1.5));
-    const lids = (y = EY + 1, w = 4.6, droop = 0.7) => both((x) => qd([x - w / 2, y], [x, y + droop * 2], [x + w / 2, y], 1.5));
-    const smile = (w = 8, d = 1.4, y = 16.8, lw = 1.6) => qd([16 - w / 2, y], [16, y + d * 2], [16 + w / 2, y], lw);
-    const frown = (w = 7.6, d = 1.5, y = 19.2) => qd([16 - w / 2, y], [16, y - d * 2], [16 + w / 2, y], 1.5);
-    const happyEyes = (lift = 3.4, y = EY + 1.6) => both((x) => qd([x - 2.8, y], [x, y - lift * 1.6], [x + 2.8, y], 1.7));
-    const brows = (yo, yi, dx = 0) => both((x, s) => ln([[x - s * 2.8, yo], [x + s * (2.4 + dx), yi]], 1.6));
-    const wavy = () => { S.lineWidth = 1.5; S.beginPath(); S.moveTo(11.4, 18.9); S.quadraticCurveTo(13.7, 16.6, 16, 18.4); S.quadraticCurveTo(18.3, 20.2, 20.6, 17.9); S.stroke(); };
-    const laughEyes = (dy = 0) => both((x, s) => ln([[x - s * 2.3, EY - 2.3 + dy], [x + s * 1.9, EY + dy], [x - s * 2.3, EY + 2.3 + dy]], 1.6));
-    const cut = (f) => { S.globalCompositeOperation = 'destination-out'; f(); S.globalCompositeOperation = 'source-over'; };
-    const FACE = {
-      neutral: () => { eyes(); smile(); },
-      neutral_blink: () => { lids(); smile(); },
-      happy: () => { happyEyes(); smile(11, 2.6, 15.9, 1.6); },
-      happy_blink: () => { happyEyes(1.6, EY + 1.8); smile(11, 2.6, 15.9, 1.6); },
-      worried: () => { eyes(3.0, 5.0, EY + 1.1); brows(5.2, 3.4); wavy(); },
-      // worried: the blink frame is a quick eye-dart to one side
-      worried_blink: () => { both((x) => rr(x + 1.1, EY + 1.3, 2.6, 4.4, 1.2)); brows(5.2, 3.4); wavy(); },
-      laughing_a: () => { laughEyes(); fill(() => { S.moveTo(10.4, 14.8); S.lineTo(21.6, 14.8); S.quadraticCurveTo(16, 25, 10.4, 14.8); }); },
-      laughing_b: () => { laughEyes(-0.5); fill(() => { S.moveTo(11.2, 14.6); S.lineTo(20.8, 14.6); S.quadraticCurveTo(16, 21.8, 11.2, 14.6); }); },
-      // sad: eyes low with their outer tops cut away, brows drooping at the outer ends, a wide flat frown
-      sad: () => {
-        eyes(3.2, 4.6, EY + 3.1);
-        cut(() => both((x, s) => fill(() => { S.moveTo(x - s * 3.6, EY + 2.7); S.lineTo(x + s * 2.4, EY - 0.1); S.lineTo(x - s * 3.6, EY - 1.9); })));
-        brows(7.6, 4.6, -0.2); frown(10, 0.9, 19.6);
-      },
-      sad_blink: () => { both((x, s) => ln([[x - s * 2.3, EY + 4.1], [x + s * 2.1, EY + 3.2]], 1.5)); brows(7.6, 4.6, -0.2); frown(10, 0.9, 19.6); rr(EL - 1.2, EY + 6.4, 1, 1.4, 0.4); },
-      alert: () => { eyes(4.1, 7.4, EY + 0.6); brows(3.7, 3.3); rr(16, 18.2, 4.2, 2.4, 1.1); },
-      alert_blink: () => { lids(EY + 1.4, 5, 0.3); brows(3.7, 3.3); rr(16, 18.2, 4.2, 2.4, 1.1); },
-      talk_a: () => { eyes(); rr(16, 17.7, 5.2, 2.6, 1.2); },
-      talk_b: () => { eyes(); fill(() => { S.moveTo(12.2, 16.1); S.lineTo(19.8, 16.1); S.quadraticCurveTo(16, 21.8, 12.2, 16.1); }); },
-      focus: () => { both((x) => rr(x, EY + 0.6, 4.8, 2.4, 1)); brows(5.5, 5.9); qd([12.8, 17.4], [16.6, 19.2], [19.8, 16.5], 1.5); },
-      off: () => { },
-    };
-    const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-    const WARM = [215, 184, 140], REDC = [236, 46, 34];
-    FACE_LIST.forEach((name, idx) => {
-      S.setTransform(1, 0, 0, 1, 0, 0); S.clearRect(0, 0, hi.width, hi.height);
-      // features drawn 1.28x about the face centre, so they fill the screen (eyes about 4 LEDs wide)
-      const FS = 1.28, cx0 = 16, cy0 = 12.3;
-      // worried and alert sit one LED lower, so their brows stay off the cell's edge row
-      const dy = /^(worried|alert)/.test(name) ? SS : 0;
-      S.setTransform(SS * FS, 0, 0, SS * FS, SS * cx0 * (1 - FS), SS * cy0 * (1 - FS) + dy); S.fillStyle = S.strokeStyle = '#fff'; S.lineCap = 'round'; S.lineJoin = 'round';
-      FACE[name]();
-      const a = S.getImageData(0, 0, hi.width, hi.height).data;
-      // LED levels from coverage: off, a dim anti-alias step, on (mirrored for the symmetric faces)
-      const cov = new Float32Array(GW * GH), lv = new Float32Array(GW * GH), sym = !/^(worried|focus)/.test(name);
-      for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-        let c = 0; for (let y = 0; y < SS; y++) for (let x = 0; x < SS; x++) c += a[((j * SS + y) * hi.width + i * SS + x) * 4 + 3];
-        cov[j * GW + i] = c / (SS * SS * 255);
-      }
-      for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-        const c = sym ? Math.max(cov[j * GW + i], cov[j * GW + GW - 1 - i]) : cov[j * GW + i];
-        // the outer ring of LEDs stays dark: an 8 px gutter round every cell, so mipmaps never bleed a face into its neighbour
-        const edge = i === 0 || j === 0 || i === GW - 1 || j === GH - 1;
-        lv[j * GW + i] = edge || c < 0.22 ? 0 : c < 0.5 ? 0.42 : 1;
-      }
-      // soft glow: the LED levels blurred
-      const gl = new Float32Array(GW * GH), kr = 2;
-      for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
-        let s = 0, w = 0;
-        for (let y = -kr; y <= kr; y++) for (let x = -kr; x <= kr; x++) { const ii = i + x, jj = j + y, k = Math.exp(-(x * x + y * y) / 1.6); w += k; if (ii >= 0 && jj >= 0 && ii < GW && jj < GH) s += lv[jj * GW + ii] * k; }
-        gl[j * GW + i] = s / w;
-      }
-      const glow = (fx, fy) => {
-        const x = Math.min(GW - 1.001, Math.max(0, fx - 0.5)), y = Math.min(GH - 1.001, Math.max(0, fy - 0.5)), i = Math.floor(x), j = Math.floor(y), u = x - i, v = y - j;
-        const g = (ii, jj) => gl[Math.min(GH - 1, jj) * GW + Math.min(GW - 1, ii)];
-        return (g(i, j) * (1 - u) + g(i + 1, j) * u) * (1 - v) + (g(i, j + 1) * (1 - u) + g(i + 1, j + 1) * u) * v;
-      };
-      // unlit LEDs keep a faint warm backlight so the screen reads as on
-      const isRed = name.startsWith('alert'), col = isRed ? REDC : WARM, base = isRed ? [20, 7, 6] : [17, 13, 10], ground = isRed ? [6, 2, 2] : [6, 5, 4];
-      const ox = (idx % 4) * CW, oy = Math.floor(idx / 4) * CH, rnd = K.prng(77 + idx * 13);
-      const vary = new Float32Array(GW * GH); for (let k = 0; k < vary.length; k++) vary[k] = 0.9 + rnd() * 0.16;
-      for (let y = 0; y < CH; y++) for (let x = 0; x < CW; x++) {
-        const i = x >> 3, j = y >> 3, lx = x & 7, ly = y & 7, k = j * GW + i, b = lv[k] * vary[k];
-        // LED cell: 6 x 6 lit area with clipped corners, one dark pixel of gap all round
-        const inX = lx >= 1 && lx <= 6, inY = ly >= 1 && ly <= 6, corner = (lx === 1 || lx === 6) && (ly === 1 || ly === 6);
-        const mask = inX && inY ? (corner ? 0.45 : 1) : 0;
-        // sub-pixel stripes (R G B, two columns each) and a dim scan row at the bottom of each LED
-        const sp = lx <= 2 ? 0 : lx <= 4 ? 1 : 2, scan = ly === 6 ? 0.72 : ly === 1 ? 0.92 : 1;
-        const cx = lx - 3.5, cy = ly - 3.5, hot = 1 + 0.18 * Math.max(0, 1 - Math.sqrt(cx * cx + cy * cy) / 3.2);
-        const vx = (x + 0.5) / CW - 0.5, vy = (y + 0.5) / CH - 0.5, vig = 1 - 0.32 * sstep(0.28, 0.62, Math.sqrt(vx * vx + vy * vy * 1.6));
-        const g = glow((x + 0.5) / P, (y + 0.5) / P);
-        const o = ((oy + y) * CW * 4 + ox + x) * 4;
-        for (let c = 0; c < 3; c++) {
-          const stripe = 0.94 + (c === sp ? 0.14 : 0);
-          let v = mask ? base[c] * (0.7 + 0.3 * vary[k]) : ground[c];
-          v += mask * b * col[c] * stripe * scan * hot;
-          v += col[c] * g * (mask ? 0.1 : 0.2) + col[c] * 0.03 * (1 - sstep(0.1, 0.55, Math.sqrt(vx * vx + vy * vy * 1.6)));
-          px[o + c] = Math.min(255, v * vig);
-        }
-        px[o + 3] = 255;
-      }
-    });
-    ctx.putImageData(img, 0, 0);
-    TX.faceAtlas.needsUpdate = true;
   }
 };
 
@@ -5113,7 +5257,8 @@ const ANIM = (() => {
     const hips = [0.013 * sw(0.06), WK.Y0 - WK.bob * c2(0.04), 0.014];
     return { rot, hips, feet: feet0(), feetT: { l: walkFoot('l', ph), r: walkFoot('r', (ph + 0.5) % 1) } };
   }
-  clip('walk', { len: WK.T, loop: true, label: 'Walk', spec: walkSpec, speed: WK.v, faces: [[0, 'happy']], blinks: [0.62] });
+  // no blink in the clip: it loops every 1.1 s, so one would repeat about 55 times a minute (game code calls Blink())
+  clip('walk', { len: WK.T, loop: true, label: 'Walk', spec: walkSpec, speed: WK.v, faces: [[0, 'happy']] });
 
   /* ================================================================== talk_gesture (4 s loop) */
   // "So here's the thing..." (offer, palms up) - beats with the right hand - "you know?" (open shrug) -
@@ -5173,11 +5318,14 @@ const ANIM = (() => {
       curlAdd(sp.rot, 'r', { thumb: [0, 3 * Math.sin(TAU * t + 1), 3 * Math.sin(TAU * t + 1.6)] });
       return sp;
     };
-    const talkFaces = [[0, 'neutral'], [0.2, 'talk_a'], [0.3, 'talk_b'], [0.42, 'neutral'], [0.5, 'talk_b'], [0.62, 'talk_a'], [0.74, 'talk_b'],
-      [0.86, 'neutral'], [0.94, 'talk_a'], [1.04, 'talk_b'], [1.18, 'talk_a'], [1.3, 'neutral'], [1.42, 'happy'], [1.86, 'talk_a'], [1.98, 'talk_b'],
-      [2.08, 'talk_a'], [2.2, 'neutral'], [2.3, 'talk_b'], [2.44, 'talk_a'], [2.56, 'neutral'], [2.64, 'talk_a'], [2.74, 'talk_b'], [2.88, 'talk_a'],
-      [3.0, 'talk_b'], [3.1, 'neutral'], [3.2, 'talk_a'], [3.32, 'neutral'], [3.45, 'happy'], [3.85, 'neutral']];
-    clip('talk_gesture', { len: 4, loop: true, label: 'Talk', spec, faces: talkFaces, blinks: [1.5, 3.6] });
+    // the eye dashes pulse once per syllable (talk_a open, then talk_b pressed, about 5 Hz), back to neutral between
+    // words; the stressed syllables land on the beat, "me" and the three chops; a smile on "you know?" and the settle
+    const talkFaces = [[0, 'neutral'], [0.2, 'talk_a'], [0.32, 'talk_b'], [0.4, 'talk_a'], [0.52, 'talk_b'], [0.6, 'neutral'],
+      [0.7, 'talk_a'], [0.83, 'talk_b'], [0.91, 'talk_a'], [1.03, 'talk_b'], [1.11, 'talk_a'], [1.23, 'talk_b'], [1.31, 'neutral'], [1.42, 'happy'],
+      [1.9, 'talk_a'], [2.02, 'talk_b'], [2.1, 'talk_a'], [2.24, 'talk_b'], [2.32, 'neutral'],
+      [2.42, 'talk_a'], [2.54, 'talk_b'], [2.62, 'talk_a'], [2.74, 'talk_b'], [2.86, 'talk_a'], [2.98, 'talk_b'], [3.08, 'talk_a'], [3.2, 'talk_b'], [3.28, 'neutral'],
+      [3.45, 'happy'], [3.85, 'neutral']];
+    clip('talk_gesture', { len: 4, loop: true, label: 'Talk', spec, faces: talkFaces, blinks: [1.62, 3.62] });
   }
 
   /* ================================================================== wave (2.4 s) */
@@ -5517,7 +5665,8 @@ const fill = new THREE.DirectionalLight('#b8c4ff', 0.42); fill.position.set(3, 1
 const wallWash = new THREE.SpotLight('#d9cbb8', 40, 0, 0.42, 1, 2); wallWash.position.set(0.6, 0.2, -1.2); wallWash.target.position.set(0, 1.6, -4.8); scene.add(wallWash, wallWash.target);
 scene.add(new THREE.HemisphereLight('#8e94ab', '#1a1817', 0.22));
 // the screen and the cell light their surroundings a little (viewer only; they follow the bones)
-// the screen light sits under the chin so it never shows as a highlight on the screen; the cell light sits 2 cm behind
+// the screen light sits inside the head, 2 cm behind the face centre, so it lights the chest and hands but can never
+// show as a highlight in the display glass (which wraps down over the jaw); the cell light sits 2 cm behind
 // the cell with a short reach, so it only warms the back plates and belt next to it, never the front of the waist
 const screenLight = new THREE.PointLight('#ffe6c4', 0.04, 0.5, 2); scene.add(screenLight);
 const cellLight = new THREE.PointLight('#ff2a2a', 0.04, 0.12, 2); scene.add(cellLight);
@@ -5567,7 +5716,9 @@ function tick(dt) {
   st.last = pose;
   // face, alarm tint, emitters, chest panel
   st.alarm += ((st.alarmOn ? 1 : 0) - st.alarm) * (1 - Math.exp(-dt * 6));
-  const face = st.forceFace || (st.expr ? exprFace(st.expr, st.now) : C.face(tt));
+  let face = st.forceFace || (st.expr ? exprFace(st.expr, st.now) : C.face(tt));
+  // a clip with no blink of its own (walk) blinks now and then, as N1CK.cs does
+  if (!st.forceFace && !st.expr && !C.faces.some((k) => k[1].endsWith('_blink')) && (st.now % 3.7) < 0.12 && FACE_INDEX[face + '_blink'] !== undefined) face += '_blink';
   // a clip's screen tint and emitter glow fade out (rather than cut) when the next clip takes over
   st.cTint = Math.max(C.tint ? C.tint(tt) : 0, st.cTint - dt * 2.5);
   st.cField = Math.max(C.field ? C.field(tt) : 0, st.cField - dt * 1.2);
@@ -5591,7 +5742,7 @@ const _w = new THREE.Vector3();
 function followLights() {
   const h = rig.bones.head, sp = rig.bones.spine;
   h.updateWorldMatrix(true, false); sp.updateWorldMatrix(true, false);
-  screenLight.position.copy(_w.set(0, K.D.head.screen.cy - 0.135 - J.head.y, K.D.head.front + 0.105 - J.head.z).applyMatrix4(h.matrixWorld));
+  screenLight.position.copy(_w.set(0, 0.097, 0.075).applyMatrix4(h.matrixWorld));   // head-local: behind the face centre
   screenLight.color.set('#ffe6c4').lerp(new THREE.Color('#ff2020'), st.alarm);
   screenLight.intensity = 0.04 * (1 - 0.6 * st.alarm);   // red spill on the chin stays weaker than the face
   cellLight.position.copy(_w.set(0, K.D.cell.y - J.spine.y, K.D.cell.z - 0.02 - J.spine.z).applyMatrix4(sp.matrixWorld));   // 2 cm behind the cell: it lights only the back plates and belt
@@ -5682,21 +5833,25 @@ function exportScenes() {
     clips: Object.fromEntries(Object.entries(ANIM.CLIPS).map(([n, C]) => [n, Object.assign({ seconds: C.len, loop: !!C.loop, faces: C.faces },
       C.tint ? { tint: keys10(C.len, C.tint) } : {}, C.field ? { field: keys10(C.len, C.field) } : {},
       C.speed ? { root_speed_mps: C.speed, root_motion: 'none: the clip walks in place; move the root along +Z at root_speed_mps' } : {})])),
-    materials: 'PBR metal/roughness with embedded maps: albedo (JPEG), normal and ORM (G roughness, B metalness) per family; UVs in metres / tile (webbing: u 0..1 across the strap). armor_paint and armor_paint_light share one paint texture set (the colour factor sets the tone); armor_chipped(_light) are the worn edge strips; under_structure is the frame and gear metal; webbing is strap nylon (u across the strap) and pouch_fabric is the fine weave of the pouches. Only screen_face, energy_core, energy_rim, nullfield_glow and nullfield_rim are emissive. screen_glass is a thin transparent pane over the screen.',
+    materials: 'PBR metal/roughness with embedded maps: albedo (JPEG), normal and ORM (G roughness, B metalness) per family; UVs in metres / tile (webbing: u 0..1 across the strap). armor_paint and armor_paint_light share one paint texture set (the colour factor sets the tone); armor_chipped(_light) are the worn edge strips; under_structure is the frame and gear metal; webbing is strap nylon (u across the strap) and pouch_fabric is the fine weave of the pouches. Only screen_face, energy_core, energy_rim, nullfield_glow and nullfield_rim are emissive. screen_face is the curved face display (black metal: metallic 1, base colour black, so it has no reflections of its own in any importer; the glyph atlas as emissive); screen_glass is its thin clear-coated cover glass, 0.6 mm in front of it.',
     // tools/unity-export.js: one skinned mesh per LOD (each piece 100% on its bone), small parts dropped at range
     // protect: the stainless shroud and the cell's glow never vanish at range (the lore needs the bright band), and
     // the spine column (under_structure on spine / chest / upper_chest) keeps its shape instead of turning into spikes;
     // the webbing and pouch fabric (belt, harness, pouches, drop-leg panel) keep their outline so the gear still reads
     // at range; the hip balls and their thigh frames (under_structure on hips / upper_leg_*) are simplified without
     // Permissive so they never break into shards
-    // LOD1 (about 6-27 m) prunes loose specks; LOD2 also drops the cable braids; normals weigh a little less than the default.
+    // LOD1 (about 6-27 m) prunes loose specks and keeps the cover glass (so the glyphs do not brighten at the switch);
+    // LOD2 also drops the glass and the cable braids; normals weigh a little less than the default. The display and its
+    // glass keep their shape at LOD1 (screen protect rules: the display simplifies gently, the glass not at all), so the
+    // display's chords stay inside the glass and never poke through it.
     // dropFlipped removes the few triangles the simplifier turns inside out on LOD1/2.
     // The faceted armour is hard-edged everywhere, so LOD1/2 collapse across normal seams (Permissive); the head and the
     // pelvis armour are simplified without it so their plates keep closed outlines
     unity: { skinned: true, lod: { keep: [1, 0.22, 0.06], error: [0, 0.03, 0.13], flags: [[], ['Prune', 'Permissive'], ['Prune', 'Permissive']], normalWeight: 0.4, dropFlipped: true,
-      drop: { 1: ['nick_scratch', 'screen_glass'], 2: ['nick_scratch', 'screen_glass', 'cable_braid'] },
+      drop: { 1: ['nick_scratch'], 2: ['nick_scratch', 'screen_glass', 'cable_braid'] },
       protect: [{ material: 'stainless_shroud', keep: 0.4, error: 0.01 }, { material: 'energy_core', keep: 0.4, error: 0.01 }, { material: 'energy_rim', keep: 0.4, error: 0.01 }, { material: 'nullfield_rim', keep: 0.4, error: 0.01 }, { material: 'nullfield_glow', keep: 0.5, error: 0.01 }, { material: 'webbing', keep: 0.3, error: 0.02 }, { material: 'pouch_fabric', keep: 0.3, error: 0.02 }, { node: '^(chest|upper_chest|spine)$', material: 'under_structure', keep: 0.2, error: 0.03 },
         { node: '^(upper_leg_[lr]|hips)$', material: 'under_structure', keep: 0.3, error: 0.03 },
+        { material: 'screen_face', keep: 0.5, error: 0.004 }, { material: 'screen_glass', keep: 1, error: 0 },
         { node: '^head$', keep: 0.3, error: 0.03 }, { node: '^hips$', material: 'armor_paint', keep: 0.3, error: 0.03 }] },
       colliders: { skip: '^(pist_|emitter_|chest_panel$|shoulder_[lr]$|(thumb|index|middle|ring|pinky)_[123]_)', merge: { hand_l: '^(thumb|index|middle|ring|pinky)_[123]_l$', hand_r: '^(thumb|index|middle|ring|pinky)_[123]_r$' } } },
     source: 'operators/n1ck/viewer.html',
