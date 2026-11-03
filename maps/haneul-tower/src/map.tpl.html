@@ -1,0 +1,511 @@
+/*@@HEAD@@*/
+<div id="stage" aria-label="Interactive 3D map of Haneul Tower: three upper floors of a supertall in Seoul at night, with destructible, reinforceable and hard surfaces you can colour by type"></div>
+<div id="labels" class="labels" aria-hidden="true"></div>
+
+<header class="plate">
+  <div class="eyebrow">Siege map · Seoul, 2111</div>
+  <h1>Haneul <span>Tower</span></h1>
+  <dl class="specs">
+    <dt>Floors</dt><dd>96F to 98F, 403 m above the river</dd>
+    <dt>Sites</dt><dd>Four pairs, attack and defend 5v5</dd>
+    <dt>Spawns</dt><dd>Terrace, West Roof, Skybridge, Crane Deck</dd>
+  </dl>
+  <div class="state" aria-live="polite">
+    <span class="chip">View <b id="st-view">Overview</b></span>
+    <span class="chip">Floor <b id="st-floor">All</b></span>
+    <span class="chip">Mode <b id="st-mode">Orbit</b></span>
+  </div>
+</header>
+
+<aside id="legend" class="legend" hidden aria-label="Surface types">
+  <div class="eyebrow">X-ray · surface types</div>
+  <ul id="legend-list"></ul>
+</aside>
+
+<div class="hint" id="hint">Drag to orbit · scroll to zoom · V to walk · X for x-ray</div>
+<div id="loading">Raising the tower…</div>
+<div id="crosshair" hidden></div>
+
+<nav class="bar" aria-label="Map controls">
+  <div class="controls">
+    <div class="row">
+      <div class="group" role="group" aria-label="Floor">
+        <button type="button" data-floor="0" aria-pressed="true" title="All floors (0)">All</button>
+        <button type="button" data-floor="1" title="F1 96F Garden Level, ceiling cut away (1)">F1</button>
+        <button type="button" data-floor="2" title="F2 97F Sky Lobby (2)">F2</button>
+        <button type="button" data-floor="3" title="F3 98F Broadcast (3)">F3</button>
+      </div>
+      <div class="group" role="group" aria-label="Layers">
+        <button type="button" id="t-overlay" aria-pressed="false" title="Colour every surface by type (X)">X-ray</button>
+        <button type="button" id="t-labels" aria-pressed="false" title="Callout names (L)">Labels</button>
+        <button type="button" id="t-markers" aria-pressed="false" title="Spawns, objectives, cover, routes (M)">Markers</button>
+        <button type="button" id="t-rain" aria-pressed="true" title="Rain">Rain</button>
+        <button type="button" id="t-skyline" aria-pressed="true" title="City backdrop">Skyline</button>
+      </div>
+      <button type="button" id="walk" class="primary" aria-pressed="false" title="Walk at eye height: WASD, mouse to look, Shift to sprint, F to fly (V)">Walk <kbd>V</kbd></button>
+    </div>
+    <div class="row">
+      <div class="group" role="group" aria-label="Views">
+        <button type="button" data-view="overview">Overview</button>
+        <button type="button" data-view="plan_F1">F1 plan</button>
+        <button type="button" data-view="plan_F2">F2 plan</button>
+        <button type="button" data-view="plan_F3">F3 plan</button>
+        <button type="button" data-view="bridge">Skybridge</button>
+      </div>
+      <div class="group" role="group" aria-label="Sites">
+        <button type="button" data-view="S1" title="Control Room / Render Farm (F3)">S1</button>
+        <button type="button" data-view="S2" title="Concierge / Deposit (F2)">S2</button>
+        <button type="button" data-view="S3" title="Lounge Bar / Wine Room (F2)">S3</button>
+        <button type="button" data-view="S4" title="Tea Room / Ondol Lounge (F1)">S4</button>
+      </div>
+      <div class="group" role="group" aria-label="Attacker spawns">
+        <button type="button" data-view="A1" title="Sky Terrace">A1</button>
+        <button type="button" data-view="A2" title="West Roof">A2</button>
+        <button type="button" data-view="A3" title="Skybridge hall">A3</button>
+        <button type="button" data-view="A4" title="Crane Deck">A4</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+    "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.7/src/index.js",
+    "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
+import { computeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+
+// Haneul Tower: metres, +Y up, plan x east and z south (north is -z). F1 floor is y = 0, 403 m above the river.
+
+const LAYOUT = /*@@LAYOUT@@*/;
+/*@@FAST@@*/
+const FAST = !!(window.__MAP_FAST || /(^|[?&#])fast\b/.test(location.search + location.hash));
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+/*@@HELPERS@@*/
+
+/*@@CORE@@*/
+
+/*@@PARTS@@*/
+
+/* ------------------------------------------------------------------ scene */
+
+/*@@SCENE@@*/
+renderer.shadowMap.enabled = false;
+renderer.toneMappingExposure = 1.05;
+scene.background = new THREE.Color('#0f0b1c');
+scene.fog = new THREE.FogExp2('#171029', 0.0011);
+const bg0 = scene.background.clone(), OV_BG = new THREE.Color('#0c0e13'), FOG = scene.fog;
+camera.fov = 45; camera.near = 0.15; camera.far = 9000; camera.updateProjectionMatrix();
+controls.minDistance = 0.4; controls.maxDistance = 900;
+controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.maxPolarAngle = Math.PI * 0.62;
+ao.updateGtaoMaterial({ radius: 0.7, distanceExponent: 1.4, thickness: 1.5, scale: 1.0, samples: 12 });
+ao.blendIntensity = 0.85; ao.enabled = !FAST;
+bloom.strength = 0.72; bloom.radius = 0.55; bloom.threshold = 0.8;
+// a stray NaN or huge HDR value (a grazing specular hit) blows up into a white square through the bloom mips:
+// clamp the scene colour before the bloom
+{
+  const clampPass = new ShaderPass({ uniforms: { tDiffuse: { value: null } }, vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform sampler2D tDiffuse; varying vec2 vUv; void main() { vec4 c = texture2D(tDiffuse, vUv); bvec4 bad = isnan(c); if (any(bad) || any(isinf(c.rgb))) c = vec4(0.0, 0.0, 0.0, 1.0); gl_FragColor = vec4(min(max(c.rgb, 0.0), vec3(24.0)), c.a); }' });
+  composer.insertPass(clampPass, composer.passes.indexOf(bloom));
+}
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+// environments: a night city for glass and exterior surfaces, a warm room for interiors
+function nightEnv() {
+  const s = new THREE.Scene(), c = canvas(16, 256), x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#06040c'); g.addColorStop(0.38, '#1c1236'); g.addColorStop(0.5, '#6a3f8a'); g.addColorStop(0.56, '#2a1a3c'); g.addColorStop(1, '#0a0810');
+  x.fillStyle = g; x.fillRect(0, 0, 16, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide })));
+  const R = rnd(5);
+  for (let i = 0; i < 40; i++) {
+    const a = R() * Math.PI * 2, h = 0.5 + R() * 3, w = 1 + R() * 4, col = ['#ffd2a0', '#8a4dff', '#ff4fd8', '#9ac0ff', '#ffffff'][Math.floor(R() * 5)];
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide }));
+    m.position.set(Math.sin(a) * 40, -2 + R() * 6, Math.cos(a) * 40); m.lookAt(0, m.position.y, 0); s.add(m);
+  }
+  return pmrem.fromScene(s, 0.02).texture;
+}
+function warmEnv() {
+  const r = new RoomEnvironment();
+  // warm the room and soften its light panels so glossy floors reflect a glow, not hot spots
+  r.traverse((o) => {
+    if (!o.isMesh) return;
+    o.material = o.material.clone();
+    if (o.material.color) o.material.color.multiply(new THREE.Color('#ffd7ae'));
+    if (o.material.emissiveIntensity > 1) { o.material.emissive.set('#ffd2a0'); o.material.emissiveIntensity *= 0.18; }
+  });
+  return pmrem.fromScene(r, 0.04).texture;
+}
+const ENV = { out: nightEnv(), in: warmEnv() };
+scene.environment = ENV.out; scene.environmentIntensity = 0.8;
+const hemi = new THREE.HemisphereLight('#7a6aa8', '#241a14', 0.45); scene.add(hemi);
+const moon = new THREE.DirectionalLight('#a9b4ff', 0.35); moon.position.set(-60, 120, -40); scene.add(moon);
+
+/* ------------------------------------------------------------------ build */
+
+await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+const MAP = buildMap({ fast: FAST });
+const { D, K } = MAP;
+for (const m of Object.values(MAP.M)) {
+  if (m.isMeshMatcapMaterial) continue;
+  m.envMap = ENV[m.userData.env] || ENV.out;
+  m.envMapIntensity = (m.userData.envI ?? 1) * (m.userData.env === 'in' ? 0.75 : 1.0);
+}
+scene.add(D.view, D.overlay, D.markers);
+for (const l of MAP.LIGHTS) {
+  const o = l.o, p = new THREE.PointLight(o.color || '#ffd9b0', o.intensity ?? 4, o.distance ?? 12, o.decay ?? 2);
+  p.position.set(...o.pos); p.userData = { fk: l.fk, layer: 'light', kind: 'display' }; D.view.add(p); D.meshes.push(p);
+}
+
+// fallback rain: streaks in a box that follows the camera (viewer only)
+const RAIN = (() => {
+  const n = FAST ? 1500 : 4000, W = 70, H = 46, pos = new Float32Array(n * 6), R = rnd(33);
+  for (let i = 0; i < n; i++) { const x = R() * W, y = R() * H, z = R() * W; pos.set([x, y, z, x, y, z], i * 6); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const end = new Float32Array(n * 2); for (let i = 0; i < n; i++) { end[i * 2] = 0; end[i * 2 + 1] = 1; } g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uT: { value: 0 }, uCam: { value: new THREE.Vector3() } },
+    vertexShader: `attribute float aEnd; uniform float uT; uniform vec3 uCam; varying float vA;
+      void main() { vec3 p = position; float W = ${W.toFixed(1)}, H = ${H.toFixed(1)};
+        p.y = mod(p.y - uT * 11.0, H); p.x = mod(p.x - uCam.x + uT * 1.4, W); p.z = mod(p.z - uCam.z, W);
+        p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5); p += aEnd * vec3(0.03, 0.55, 0.0); vA = aEnd;
+        gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0); }`,
+    fragmentShader: `varying float vA; void main() { gl_FragColor = vec4(0.62, 0.68, 0.86, 0.13 * (1.0 - vA * 0.7)); }`,
+  });
+  const l = new THREE.LineSegments(g, mat); l.frustumCulled = false; l.userData = { fk: 'X', layer: 'rain', kind: 'display' }; scene.add(l);
+  return { l, mat };
+})();
+
+/* ------------------------------------------------------------------ visibility: floors, x-ray, toggles */
+
+const $ = (id) => document.getElementById(id);
+const VIS = { floor: 0, overlay: false, labels: false, markers: false, rain: true, skyline: true, only: null };
+const fnOf = (fk) => (FL[fk] ? FL[fk].n : null);
+function visible(u, isOverlay) {
+  const n = VIS.floor, fn = fnOf(u.fk);
+  if (u.layer === 'skyline' && !VIS.skyline) return false;
+  if (u.layer === 'rain' && !VIS.rain) return false;
+  if (VIS.only && !VIS.only.includes(u.layer)) return false;
+  if (n > 0) {
+    if (fn && fn > n) return false;
+    if (u.fk === 'R') return false;
+    if (fn === n && u.layer === 'ceiling') return false;
+  }
+  if (VIS.overlay && (u.layer === 'skyline' || u.layer === 'rain')) return false;
+  if (!isOverlay && VIS.overlay && !['env', 'light'].includes(u.layer)) return false;
+  return true;
+}
+// x-ray with one floor isolated cuts every surface at 1.6 m above that floor (a plan section), so the reinforceable
+// panel zone (0-2 m) reads in plan instead of the hard bulkhead above it
+let USER_CLIP = [];
+function applyClip() {
+  const planes = [...USER_CLIP];
+  if (VIS.overlay && VIS.floor > 0) planes.push(new THREE.Plane(new THREE.Vector3(0, -1, 0), FY(FIDS[VIS.floor - 1]) + 1.6));
+  renderer.clippingPlanes = planes;
+}
+function applyVis() {
+  for (const m of D.meshes) m.visible = visible(m.userData, false);
+  for (const o of MAP.D.view.children) if (o.userData && o.userData.layer && !o.userData.kind) o.visible = visible(o.userData, false);
+  D.overlay.visible = VIS.overlay;
+  for (const m of D.overlay.children) m.visible = visible(m.userData, true);
+  D.markers.visible = VIS.markers;
+  for (const m of D.markers.children) m.visible = m.userData.fk === 'X' || VIS.floor === 0 || fnOf(m.userData.fk) <= VIS.floor;
+  RAIN.l.visible = VIS.rain && MAP.FALLBACK_RAIN.on && !VIS.overlay;
+  $('legend').hidden = !VIS.overlay;
+  bloom.enabled = !VIS.overlay; scene.background = VIS.overlay ? OV_BG : bg0; scene.fog = VIS.overlay ? null : FOG; applyClip();
+  $('labels').hidden = !VIS.labels;
+  $('st-floor').textContent = VIS.floor ? FIDS[VIS.floor - 1] + ' ' + FL[FIDS[VIS.floor - 1]].level : 'All';
+  document.querySelectorAll('[data-floor]').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.floor === VIS.floor)));
+  for (const [id, k] of [['t-overlay', 'overlay'], ['t-labels', 'labels'], ['t-markers', 'markers'], ['t-rain', 'rain'], ['t-skyline', 'skyline']]) $(id).setAttribute('aria-pressed', String(VIS[k]));
+}
+function setFloor(n) { VIS.floor = n; applyVis(); }
+{
+  const ul = $('legend-list');
+  for (const k of ['hard', 'slab', 'soft', 'reinforceable', 'hatch', 'soft_floor', 'glass', 'glass_breakable', 'glass_tempered', 'glass_floor', 'door_barricadable', 'window_barricadable', 'opening', 'balustrade', 'circ', 'prop_hard', 'prop_soft', 'holo']) {
+    const v = MAP.OVERLAY[k], li = document.createElement('li'), sw = document.createElement('i');
+    sw.style.background = v.color; if (v.opacity != null) sw.style.opacity = String(Math.max(0.55, v.opacity));
+    li.append(sw, document.createTextNode(v.label)); ul.append(li);
+  }
+  const li = document.createElement('li'), sw = document.createElement('i'); sw.className = 'outline';
+  li.append(sw, document.createTextNode('Outline: hatch, soft patch, reinforcement unit')); ul.append(li);
+}
+
+/* ------------------------------------------------------------------ callout labels (HTML only, never in the world) */
+
+const LBL = MAP.LABELS.map((l) => { const d = document.createElement('div'); d.className = 'lbl ' + l.kind; d.textContent = l.text; d.hidden = true; $('labels').append(d); return Object.assign({ el: d, v: new THREE.Vector3(...l.pos) }, l); });
+const _v = new THREE.Vector3();
+function updateLabels() {
+  if (!VIS.labels) return;
+  const w = window.innerWidth, h = window.innerHeight, n = VIS.floor;
+  for (const l of LBL) {
+    let show = n > 0 ? l.fk === FIDS[n - 1] : l.kind === 'ext' || l.kind === 'spawn' || l.kind === 'site';
+    if (show && n === 0 && l.kind === 'site') show = true;
+    if (show) {
+      _v.copy(l.v); if (n > 0) _v.y = FY(FIDS[n - 1]) + 0.3;
+      _v.project(camera);
+      show = _v.z < 1 && _v.x > -1.05 && _v.x < 1.05 && _v.y > -1.05 && _v.y < 1.05 && camera.position.distanceTo(l.v) < 420;
+      if (show) l.el.style.transform = `translate(${((_v.x + 1) / 2) * w}px, ${((1 - _v.y) / 2) * h}px) translate(-50%, -100%)`;
+    }
+    l.el.hidden = !show;
+  }
+}
+
+/* ------------------------------------------------------------------ views */
+
+const centroid3 = (pts) => pts.reduce((s, p) => [s[0] + p[0] / pts.length, s[1] + p[1] / pts.length, s[2] + p[2] / pts.length], [0, 0, 0]);
+const PRESETS = {
+  overview: { label: 'Overview', floor: 0, pos: [74, 24, 98], target: [0, 6, 4], fov: 45 },
+  bridge: { label: 'Skybridge', floor: 0, pos: [53.5, 5.95, 13.9], target: [26, 5.4, 13.4], fov: 55 },
+  bridge_out: { label: 'Skybridge outside', floor: 0, pos: [44, 2.5, 38], target: [38, 5.6, 13.5], fov: 50 },
+};
+FIDS.forEach((f, i) => { const y = FY(f); PRESETS['plan_' + f] = { label: f + ' plan', floor: i + 1, pos: [0, y + 150, 0.01], target: [0, y, 0], fov: 30 }; });
+for (const s of L.sites) {
+  const pts = s.rooms.flatMap((r) => ROOM.get(r).polygon), [x0, z0, x1, z1] = polyBox(pts), c = [(x0 + x1) / 2, (z0 + z1) / 2], y = FY(s.floor), d = P2.norm(c[0] || c[1] ? c : [0, 1]);
+  PRESETS[s.id] = { label: s.id + ' ' + s.name, floor: FL[s.floor].n, pos: [c[0] + d[0] * 15 + 4, y + 21, c[1] + d[1] * 15 + 7], target: [c[0], y + 0.5, c[1]], fov: 45 };
+}
+for (const a of L.spawns.attackers) {
+  const c = centroid3(a.points), rt = L.routes.find((r) => r.from === a.id);
+  let tg = rt ? rt.points.find((p) => outlineDist([p[0], p[2]]) < 1.6 || inPoly([p[0], p[2]], L.outline)) : null;
+  tg = tg || [0, c[1], 0];
+  const d = P2.norm([tg[0] - c[0], tg[2] - c[2]]);
+  // over the spawn cover (at eye height the cover hides the building by design): 7 m behind, 4 m above eye height
+  PRESETS[a.id] = { label: a.id + ' ' + a.name, floor: 0, pos: [c[0] - d[0] * 7, c[1] + 1.7 + 4, c[2] - d[1] * 7], target: [tg[0], tg[1] + 1.6, tg[2]], fov: 55 };
+}
+let camTween = null, curView = 'overview';
+function goView(name, instant = false) {
+  const v = PRESETS[name]; if (!v) throw new Error('no view ' + name);
+  if (walk.on) setWalk(false);
+  curView = name; setFloor(v.floor);
+  $('st-view').textContent = v.label;
+  document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  const asp = camera.aspect, k = asp < 1.1 ? 1.2 / Math.max(asp, 0.5) : 1, t = new THREE.Vector3(...v.target), p = new THREE.Vector3(...v.pos).sub(t).multiplyScalar(k).add(t);
+  camera.fov = v.fov || 45; camera.updateProjectionMatrix();
+  if (instant) { camera.position.copy(p); controls.target.copy(t); controls.update(); return; }
+  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: p, tt: t, t: 0 };
+}
+
+/* ------------------------------------------------------------------ walk mode: eye height 1.7 m, WASD and mouse look */
+
+const walk = { on: false, fly: false, yaw: 0, pitch: 0, feet: new THREE.Vector3(), vy: 0, keys: new Set(), colliders: null, drag: null };
+const ray = new THREE.Raycaster(); ray.firstHitOnly = true;
+function walkColliders() {
+  if (walk.colliders) return walk.colliders;
+  const list = [];
+  for (const m of D.meshes) { if (!m.isMesh || !['struct', 'props', 'ext', 'facade', 'glass', 'deco'].includes(m.userData.layer)) continue; if (!m.geometry.boundsTree) m.geometry.computeBoundsTree(); list.push(m); }
+  return (walk.colliders = list);
+}
+function visibleColliders() { return walkColliders().filter((m) => m.visible); }
+function groundAt(x, y, z, cols) { ray.set(_g.set(x, y + 0.65, z), _dn); ray.far = 60; const h = ray.intersectObjects(cols, false)[0]; return h ? h.point.y : null; }
+const _g = new THREE.Vector3(), _dn = new THREE.Vector3(0, -1, 0), _fw = new THREE.Vector3();
+function setWalk(on, at = null) {
+  walk.on = on; $('walk').setAttribute('aria-pressed', String(on)); $('st-mode').textContent = on ? (walk.fly ? 'Fly' : 'Walk') : 'Orbit';
+  $('crosshair').hidden = !on; controls.enabled = !on;
+  if (on) {
+    camTween = null;
+    if (at) { walk.feet.set(at.pos[0], at.pos[1], at.pos[2]); walk.yaw = at.yaw; walk.pitch = at.pitch || 0; }
+    else {
+      const a = L.spawns.attackers[0], c = centroid3(a.points); walk.feet.set(c[0], c[1], c[2] - 3);
+      const tg = PRESETS.A1.target; walk.yaw = Math.atan2(-(tg[0] - c[0]), -(tg[2] - c[2])); walk.pitch = 0;
+    }
+    camera.fov = 70; camera.updateProjectionMatrix(); placeWalkCam();
+  } else if (document.pointerLockElement) document.exitPointerLock();
+}
+function placeWalkCam() {
+  camera.position.set(walk.feet.x, walk.feet.y + 1.7, walk.feet.z);
+  camera.rotation.set(walk.pitch, walk.yaw, 0, 'YXZ');
+}
+function walkStep(dt) {
+  const k = walk.keys, sp = (k.has('shift') ? 6.0 : 3.2) * dt, f = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0), s = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0);
+  const cols = visibleColliders();
+  const dir = new THREE.Vector3(-Math.sin(walk.yaw) * f + Math.cos(walk.yaw) * s, 0, -Math.cos(walk.yaw) * f - Math.sin(walk.yaw) * s);
+  if (walk.fly) {
+    const up = (k.has(' ') ? 1 : 0) - (k.has('c') ? 1 : 0);
+    if (dir.lengthSq()) walk.feet.addScaledVector(dir.normalize(), sp * 2);
+    walk.feet.y += up * sp * 2;
+  } else {
+    if (dir.lengthSq()) {
+      dir.normalize();
+      let blocked = false;
+      for (const hh of [0.45, 1.3]) { ray.set(_g.set(walk.feet.x, walk.feet.y + hh, walk.feet.z), dir); ray.far = sp + 0.32; if (ray.intersectObjects(cols, false).length) { blocked = true; break; } }
+      if (!blocked) {
+        const nx = walk.feet.x + dir.x * sp, nz = walk.feet.z + dir.z * sp, gy = groundAt(nx, walk.feet.y, nz, cols);
+        if (gy !== null && gy - walk.feet.y < 0.62 && walk.feet.y - gy < 40) { walk.feet.x = nx; walk.feet.z = nz; }
+      }
+    }
+    const gy = groundAt(walk.feet.x, walk.feet.y, walk.feet.z, cols);
+    if (gy !== null) {
+      if (gy > walk.feet.y - 0.02) { walk.feet.y += (gy - walk.feet.y) * Math.min(1, dt * 14); walk.vy = 0; }
+      else { walk.vy -= 9.8 * dt; walk.feet.y = Math.max(gy, walk.feet.y + walk.vy * dt); }
+    }
+  }
+  placeWalkCam();
+}
+renderer.domElement.addEventListener('click', () => { if (walk.on && !document.pointerLockElement && renderer.domElement.requestPointerLock) renderer.domElement.requestPointerLock(); });
+renderer.domElement.addEventListener('pointerdown', (e) => { if (walk.on && !document.pointerLockElement) walk.drag = [e.clientX, e.clientY]; });
+window.addEventListener('pointerup', () => { walk.drag = null; });
+window.addEventListener('pointermove', (e) => {
+  if (!walk.on) return;
+  let dx = 0, dy = 0;
+  if (document.pointerLockElement) { dx = e.movementX; dy = e.movementY; } else if (walk.drag) { dx = e.clientX - walk.drag[0]; dy = e.clientY - walk.drag[1]; walk.drag = [e.clientX, e.clientY]; } else return;
+  walk.yaw -= dx * 0.0026; walk.pitch = Math.max(-1.45, Math.min(1.45, walk.pitch - dy * 0.0026)); placeWalkCam();
+});
+
+/* ------------------------------------------------------------------ UI */
+
+document.querySelectorAll('[data-floor]').forEach((b) => b.addEventListener('click', () => setFloor(+b.dataset.floor)));
+document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => goView(b.dataset.view)));
+const toggle = (k) => { VIS[k] = !VIS[k]; applyVis(); };
+$('t-overlay').addEventListener('click', () => toggle('overlay'));
+$('t-labels').addEventListener('click', () => toggle('labels'));
+$('t-markers').addEventListener('click', () => toggle('markers'));
+$('t-rain').addEventListener('click', () => toggle('rain'));
+$('t-skyline').addEventListener('click', () => toggle('skyline'));
+$('walk').addEventListener('click', () => setWalk(!walk.on));
+controls.addEventListener('start', () => { camTween = null; });
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (walk.on && ['w', 'a', 's', 'd', 'c', ' ', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { e.preventDefault(); walk.keys.add(k); return; }
+  if (e.repeat) return;
+  if (k === 'v') setWalk(!walk.on);
+  else if (k === 'f' && walk.on) { walk.fly = !walk.fly; walk.vy = 0; $('st-mode').textContent = walk.fly ? 'Fly' : 'Walk'; }
+  else if (k === 'x') toggle('overlay'); else if (k === 'l') toggle('labels'); else if (k === 'm') toggle('markers');
+  else if (k >= '0' && k <= String(FIDS.length)) setFloor(+k);
+});
+window.addEventListener('keyup', (e) => walk.keys.delete(e.key.toLowerCase()));
+window.addEventListener('blur', () => walk.keys.clear());
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+window.addEventListener('resize', resize);
+
+/* ------------------------------------------------------------------ animation: rain, cradle, hologram, lightning, parts */
+
+const anim = { t: 0, flash: 0, nextFlash: 12 + Math.random() * 20 }, SKY = new THREE.Color(), FLASH = new THREE.Color('#6b5ca8');
+const cradleGrp = D.meshes.find((m) => m.userData.own && m.name.startsWith('BRIDGE_CR_'));
+function cradleY(t) { const cr = MAP.CRADLE.cr; if (!cr) return 0; const s = cr.moving.stops_y, T = cr.moving.travel_s, c = t % (8 + 2 * T); const e = (u) => u * u * (3 - 2 * u); return c < 4 ? s[0] : c < 4 + T ? s[0] + (s[1] - s[0]) * e((c - 4) / T) : c < 8 + T ? s[1] : s[1] + (s[0] - s[1]) * e((c - 8 - T) / T); }
+function tick(dt) {
+  anim.t += dt;
+  RAIN.mat.uniforms.uT.value = anim.t; RAIN.mat.uniforms.uCam.value.copy(camera.position);
+  if (cradleGrp) cradleGrp.position.y = cradleY(anim.t);
+  if (MAP.TX.holo) MAP.TX.holo.offset.x = (anim.t * 0.02) % 1;
+  // lightning over the river: a double sky pulse every 20-40 s (no extra lights)
+  anim.nextFlash -= dt;
+  if (anim.nextFlash <= 0) { anim.flash = 0.5; anim.nextFlash = 20 + Math.random() * 20; }
+  if (anim.flash > 0 && !VIS.overlay) { anim.flash -= dt; const p = anim.flash > 0.38 || (anim.flash > 0.1 && anim.flash < 0.2) ? 1 : 0; SKY.copy(bg0).lerp(FLASH, p * 0.6); scene.background = SKY; hemi.intensity = 0.45 + p * 1.4; }
+  else if (!VIS.overlay) { scene.background = bg0; hemi.intensity = 0.45; anim.flash = Math.max(0, anim.flash - dt); }
+  for (const f of MAP.TICKS) { try { f(dt, anim.t); } catch (e) { console.error(e); } }
+  if (walk.on) walkStep(dt);
+  else if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 1.1); const e = camTween.t < 0.5 ? 4 * camTween.t ** 3 : 1 - Math.pow(-2 * camTween.t + 2, 3) / 2; camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+}
+
+/* ------------------------------------------------------------------ export */
+
+function toBase64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+function patchGLB(buf, fn) {
+  const dv = new DataView(buf), jl = dv.getUint32(12, true), dec = new TextDecoder(), enc = new TextEncoder();
+  const json = JSON.parse(dec.decode(new Uint8Array(buf, 20, jl)));
+  fn(json);
+  let js = enc.encode(JSON.stringify(json)); const pad = (4 - (js.length % 4)) % 4;
+  if (pad) { const p = new Uint8Array(js.length + pad); p.set(js); p.fill(0x20, js.length); js = p; }
+  const rest = new Uint8Array(buf, 20 + jl), out = new Uint8Array(20 + js.length + rest.length), o = new DataView(out.buffer);
+  out.set(new Uint8Array(buf, 0, 12)); o.setUint32(8, out.length, true); o.setUint32(12, js.length, true); o.setUint32(16, 0x4E4F534A, true);
+  out.set(js, 20); out.set(rest, 20 + js.length);
+  return out.buffer;
+}
+// glTFast ignores KHR_materials_emissive_strength: bake strengths up to 1 into emissiveFactor; stronger ones keep the
+// extension (and the integration notes say to apply it); the material userData (tile, env) goes along as extras
+function patchMap(json) {
+  json.scenes[0].name = 'haneul_tower';
+  for (const m of json.materials || []) {
+    const ext = m.extensions && m.extensions.KHR_materials_emissive_strength;
+    if (!ext || ext.emissiveStrength > 1) continue;
+    m.emissiveFactor = (m.emissiveFactor || [1, 1, 1]).map((v) => +(v * ext.emissiveStrength).toFixed(5));
+    delete m.extensions.KHR_materials_emissive_strength; if (!Object.keys(m.extensions).length) delete m.extensions;
+  }
+  if (!(json.materials || []).some((m) => m.extensions && m.extensions.KHR_materials_emissive_strength)) {
+    json.extensionsUsed = (json.extensionsUsed || []).filter((e) => e !== 'KHR_materials_emissive_strength');
+    if (!json.extensionsUsed.length) delete json.extensionsUsed;
+  }
+}
+function exportScenes(opts = {}) {
+  const { scene: s, animations } = MAP.exportScene(opts);
+  return [{ file: 'haneul-tower.glb', root: s, animations }];
+}
+async function exportGLB(opts = {}) {
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const was = looping; setLoop(false);
+  const offs = Object.values(MAP.TX).filter((t) => t && t.isTexture).map((t) => [t, t.offset.clone()]);
+  for (const s of Object.values(MAP.TX)) if (s && !s.isTexture) for (const t of Object.values(s)) if (t && t.isTexture) offs.push([t, t.offset.clone()]);
+  for (const [t] of offs) t.offset.set(0, 0);
+  const out = [];
+  try {
+    for (const s of exportScenes(opts)) {
+      const buf = patchGLB(await new GLTFExporter().parseAsync(s.root, { binary: true, animations: s.animations }), patchMap);
+      out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
+    }
+  } finally { for (const [t, o] of offs) t.offset.copy(o); if (was) setLoop(true); }
+  return out;
+}
+function preview() {
+  setLoop(false); setWalk(false);
+  document.querySelectorAll('.plate, .bar, .hint, .legend').forEach((e) => { e.hidden = true; });
+  VIS.floor = 0; VIS.overlay = false; VIS.labels = false; VIS.markers = false; applyVis();
+  // hero: from the wet Sky Terrace (A1) up at the three lit floors, the East Tower screen on the right
+  camera.fov = 64; camera.updateProjectionMatrix();
+  camera.position.set(-22, 0.8, 54); controls.target.set(3, 13, 0); controls.update();
+  tick(0); composer.render();
+}
+window.__model = { id: 'haneul-tower', exportScenes, exportGLB, preview, stats: MAP.STATS, partErrors: window.__partErrors };
+
+/* ------------------------------------------------------------------ go */
+
+goView('overview', true); applyVis();
+$('loading').hidden = true;
+const clock = new THREE.Clock();
+let looping = false;
+function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
+function loop() { const dt = Math.min(clock.getDelta(), 1 / 20); tick(dt); if (!walk.on) controls.update(); updateLabels(); composer.render(dt); }
+tick(0);
+setLoop(true);
+window.__model.ready = true;
+// debug contract (closeups.js / evalpage.js use m = window.__model.debug)
+window.__model.debug = {
+  tick, stop: () => setLoop(false), start: () => setLoop(true),
+  // renderOnce waits for the GPU (a 1-pixel read) so a screenshot never races a slow shader compile
+  renderOnce: () => { if (!walk.on) controls.update(); updateLabels(); composer.render(); const gl = renderer.getContext(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); },
+  // set(view): a preset (overview, plan_F1..F3, S1..S4, A1..A4, bridge, bridge_out); floor(n): show floors up to n with the ceiling cut (0 = all)
+  set: (v) => goView(v, true), floor: (n) => setFloor(n), overlay: (on = true) => { VIS.overlay = on; applyVis(); },
+  labels: (on = true) => { VIS.labels = on; applyVis(); updateLabels(); }, markers: (on = true) => { VIS.markers = on; applyVis(); },
+  rain: (on = true) => { VIS.rain = on; applyVis(); }, skyline: (on = true) => { VIS.skyline = on; applyVis(); },
+  // only(['struct', 'facade', ...]) shows those display layers only (null = all); clip([x0, x1, y0, y1, z0, z1]) cuts to a box
+  only: (layers) => { VIS.only = layers; applyVis(); },
+  clip: (b) => { USER_CLIP = b ? [new THREE.Plane(new THREE.Vector3(1, 0, 0), -b[0]), new THREE.Plane(new THREE.Vector3(-1, 0, 0), b[1]), new THREE.Plane(new THREE.Vector3(0, 1, 0), -b[2]), new THREE.Plane(new THREE.Vector3(0, -1, 0), b[3]), new THREE.Plane(new THREE.Vector3(0, 0, 1), -b[4]), new THREE.Plane(new THREE.Vector3(0, 0, -1), b[5])] : []; applyClip(); },
+  // eye(pos [x, y_feet, z], yawDeg, pitchDeg): walk-mode camera at 1.7 m (yaw 0 looks north / -z)
+  eye: (pos, yawDeg = 0, pitchDeg = 0) => { setWalk(true, { pos, yaw: THREE.MathUtils.degToRad(yawDeg), pitch: THREE.MathUtils.degToRad(pitchDeg) }); },
+  walkStep: (dt, keys = []) => { walk.keys = new Set(keys); walkStep(dt); walk.keys.clear(); return walk.feet.toArray(); },
+  ao: (on) => { ao.enabled = on; }, cradle: (t) => { if (cradleGrp) cradleGrp.position.y = cradleY(t); },
+  stats: () => MAP.STATS, partErrors: () => window.__partErrors, timings: MAP.STATS.timings,
+  MAP, K, D, VIS, PRESETS, camera, controls, scene, renderer, composer, bloom, aoPass: ao, M: MAP.M, TX: MAP.TX, applyVis, goView, setWalk, walk,
+  setSway: () => { }, setSpin: () => { }, pivot: { rotation: {} },
+};
+</script>

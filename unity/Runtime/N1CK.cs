@@ -11,12 +11,18 @@
 //   cellGlow              power-cell brightness (1 = as exported); it breathes slowly. energy_core also lights the
 //                         thin strip deep in the bottom gap of the shut chest door and the capacitor caps behind it,
 //                         so they breathe with the cell
-// Faces are glyphs (chevrons, bars, dots) from a 4 x 4 atlas of 288 x 192 px cells on the screen_face material (stored
+// Faces are glyphs (chevrons, bars, brackets, dots) from a 4 x 4 atlas of 288 x 192 px cells on the screen_face material (stored
 // upright, same as textures/face-atlas.png). The display UVs cover cell 0 (top-left); a face is shown by moving the
 // texture offset by whole cells (a quarter of the atlas each way), relative to the scale and offset glTFast imported.
 // Each clip carries a face timeline (below; the same data is in the .glb extras and in face_ctrl.position.x).
 // walk is in place: move the root forward at WalkSpeed (1.3 m/s) while it plays. Its face has no blink of its own (the
-// loop is 1.1 s), so call Blink() now and then during long walks.
+// loop is 1.1 s), so the same 2.6 to 5 s blink timer as a held expression runs while it (or any clip without a blink)
+// plays.
+// Colours: Unity takes material colours in sRGB terms and converts them in a Linear project, so the tint and glow math
+// here reads and writes through ReadLinear / WriteLinear and works in linear, like the viewer. The display is exported
+// as black metal (metallic 1, base colour black), so it has no specular or reflections of its own in any shader,
+// glTFast's included, and only the cover glass (screen_glass) reflects, as in the viewer. Where the shader also has the
+// reflection toggles (URP Lit, Standard) they are switched off too, which removes the last grazing-angle sheen.
 // Give the same object a NullfieldCarrier (from Nullfield.cs) so Nullfield sensors ignore him: add it in code with
 // gameObject.AddComponent<NullfieldCarrier>() (the Inspector only lists a MonoBehaviour whose file has its name).
 using System.Collections.Generic;
@@ -41,9 +47,13 @@ public class N1CK : MonoBehaviour
     {
         public readonly string name; public readonly float length; public readonly bool loop;
         public readonly float[] times; public readonly string[] faces;
+        public readonly bool hasBlink;            // the timeline blinks on its own; otherwise the blink timer runs
         public float[] tint, field;               // [t0, v0, t1, v1, ...], linear between keys
         public ClipInfo(string name, float length, bool loop, float[] times, string[] faces)
-        { this.name = name; this.length = length; this.loop = loop; this.times = times; this.faces = faces; }
+        {
+            this.name = name; this.length = length; this.loop = loop; this.times = times; this.faces = faces;
+            foreach (var f in faces) if (f.EndsWith("_blink")) hasBlink = true;
+        }
     }
 
     // face timelines (blinks included), as in the viewer and the .glb extras
@@ -83,7 +93,9 @@ public class N1CK : MonoBehaviour
     static readonly string[] AtlasProps = { "emissiveTexture", "baseColorTexture", "_EmissionMap", "_BaseMap", "_MainTex" };
     // emissive strengths above 1 that the .glb keeps in KHR_materials_emissive_strength, which glTFast ignores
     // (every strength up to 1 is already baked into emissiveFactor): applied here when the import left them out
-    static readonly Dictionary<string, float> EmissiveStrength = new Dictionary<string, float> { { "energy_rim", 1.8f } };
+    static readonly Dictionary<string, float> EmissiveStrength = new Dictionary<string, float> { { "energy_rim", 1.8f }, { "screen_face", 1.05f } };
+    // shader toggles that switch a material's own specular highlights and environment reflections off (URP Lit, Standard)
+    static readonly string[,] NoReflections = { { "_SpecularHighlights", "_SPECULARHIGHLIGHTS_OFF" }, { "_EnvironmentReflections", "_ENVIRONMENTREFLECTIONS_OFF" }, { "_GlossyReflections", "_GLOSSYREFLECTIONS_OFF" } };
 
     struct AtlasSlot { public Material mat; public string prop; public Vector2 scale, offset; }
     struct Glow { public Material mat; public Color factor, color; }
@@ -150,7 +162,7 @@ public class N1CK : MonoBehaviour
                 {
                     copy = new Material(m) { name = n };
                     copies[m] = copy;
-                    var g = new Glow { mat = copy, factor = GetColor(copy, "emissiveFactor"), color = GetColor(copy, "_EmissionColor") };
+                    var g = new Glow { mat = copy, factor = ReadLinear(copy, "emissiveFactor"), color = ReadLinear(copy, "_EmissionColor") };
                     // restore an HDR strength the importer dropped (the imported factor is then still at most 1)
                     foreach (var kv in EmissiveStrength)
                         if (n.StartsWith(kv.Key) && g.factor.maxColorComponent <= 1.001f && g.color.maxColorComponent <= 1.001f)
@@ -158,7 +170,7 @@ public class N1CK : MonoBehaviour
                             g.factor *= kv.Value; g.color *= kv.Value;
                             SetGlow(new List<Glow> { g }, 1f);
                         }
-                    if (kind == 1) { screen.Add(g); AddAtlas(copy); }
+                    if (kind == 1) { screen.Add(g); AddAtlas(copy); NoOwnReflections(copy); }
                     else if (kind == 2) field.Add(g);
                     else if (kind == 3) fieldRim.Add(g);
                     else if (kind == 4) core.Add(g);
@@ -186,7 +198,27 @@ public class N1CK : MonoBehaviour
         m.EnableKeyword("_TEXTURE_TRANSFORM");
     }
 
-    static Color GetColor(Material m, string prop) { return m.HasProperty(prop) ? m.GetColor(prop) : Color.black; }
+    // only the cover glass reflects: the display is black metal already; this also drops its grazing sheen where the
+    // shader has the toggles. They are shader_feature keywords, so a player build keeps them only if some material
+    // used them at build time; without them the display simply stays black metal (no visible change face-on)
+    static void NoOwnReflections(Material m)
+    {
+        for (var i = 0; i < NoReflections.GetLength(0); i++)
+            if (m.HasProperty(NoReflections[i, 0])) { m.SetFloat(NoReflections[i, 0], 0f); m.EnableKeyword(NoReflections[i, 1]); }
+    }
+
+    static bool LinearSpace { get { return QualitySettings.activeColorSpace == ColorSpace.Linear; } }
+    // a material colour in linear terms (GetColor / SetColor work in sRGB terms and Unity converts in a Linear project)
+    static Color ReadLinear(Material m, string prop)
+    {
+        if (!m.HasProperty(prop)) return Color.black;
+        var c = m.GetColor(prop);
+        return LinearSpace ? c.linear : c;
+    }
+    static void WriteLinear(Material m, string prop, Color c)
+    {
+        if (m.HasProperty(prop)) m.SetColor(prop, LinearSpace ? c.gamma : c);
+    }
 
     /* ------------------------------------------------------------------ public API */
 
@@ -258,7 +290,8 @@ public class N1CK : MonoBehaviour
         }
         if (heldFace != null) { exprTime += dt; face = Expression(heldFace, exprTime); }
         if (Time.time < blinkUntil && face != null && CellIndex(face + "_blink") >= 0) face = face + "_blink";
-        if (heldFace != null && Time.time > nextBlink) { Blink(); nextBlink = Time.time + 2.6f + Random.value * 2.4f; }
+        // a held expression, or a clip with no blink of its own (walk), blinks every 2.6 to 5 s
+        if ((heldFace != null || (current != null && !current.hasBlink)) && Time.time > nextBlink) { Blink(); nextBlink = Time.time + 2.6f + Random.value * 2.4f; }
 
         // a clip's tint and glow fade out (rather than cut) when the next clip takes over
         clipTint = Mathf.Max(tint, clipTint - dt * 2.5f);
@@ -330,11 +363,12 @@ public class N1CK : MonoBehaviour
         var c = new Color(k, 0, 0, 0);
         if (c == shownTint) return;
         shownTint = c;
-        var red = alarmColor.linear;
+        // in linear, like the viewer (the factors are read in linear, so the red is too)
+        var red = LinearSpace ? alarmColor.linear : alarmColor;
         foreach (var g in screen)
         {
-            if (g.mat.HasProperty("emissiveFactor")) g.mat.SetColor("emissiveFactor", Tint(g.factor, red, k));   // glTFast shaders
-            if (g.mat.HasProperty("_EmissionColor")) g.mat.SetColor("_EmissionColor", Tint(g.color, red, k));    // Standard / URP Lit
+            WriteLinear(g.mat, "emissiveFactor", Tint(g.factor, red, k));   // glTFast shaders
+            WriteLinear(g.mat, "_EmissionColor", Tint(g.color, red, k));    // Standard / URP Lit
         }
     }
 
@@ -349,8 +383,8 @@ public class N1CK : MonoBehaviour
     {
         foreach (var g in list)
         {
-            if (g.mat.HasProperty("emissiveFactor")) g.mat.SetColor("emissiveFactor", g.factor * mul);
-            if (g.mat.HasProperty("_EmissionColor")) g.mat.SetColor("_EmissionColor", g.color * mul);
+            WriteLinear(g.mat, "emissiveFactor", g.factor * mul);
+            WriteLinear(g.mat, "_EmissionColor", g.color * mul);
             if (mul > 0f) { g.mat.EnableKeyword("_EMISSIVE"); g.mat.EnableKeyword("_EMISSION"); }
         }
     }
