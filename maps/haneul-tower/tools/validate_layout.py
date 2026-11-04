@@ -407,10 +407,10 @@ if not SHR: err('rules.shutters missing')
 else:
     SP0, SP1 = SHR['plane']; HH = SHR['housing'][2]
     bays_by_id = {b['id']: b for b in L['facade']['bays']}
-    # door openings are exempt (user: no shutter for the door): a bay whose opening is a door or portal gets none, and a
-    # door lite is left out of its bay's shutter, which must still cover every glass lite of the bay
+    # door openings are exempt (user: no shutter on a wall with a door): a bay with a door, a door across the bay or the
+    # portal gets no shutter at all, glass beside the door included
     DOOR_LITES = set(SHR.get('door_lites', ['door_barricadable']))
-    door_bay = lambda b: b['kind'] == 'portal' or bool(b.get('opening'))
+    door_bay = lambda b: b['kind'] == 'portal' or bool(b.get('opening')) or any(l['type'] in DOOR_LITES for l in b['lites'])
     need = [b['id'] for b in L['facade']['bays'] if not door_bay(b) and any(l['type'] != 'spandrel' and l['type'] not in DOOR_LITES for l in b['lites'])]
     have = Counter(sh['bay'] for sh in shutters)
     for bid in need:
@@ -419,6 +419,8 @@ else:
         if door_bay(b) and have[b['id']]: err('door bay %s has a blast shutter (door openings are exempt)' % b['id'])
     exempt_ = {e['bay'] for e in SHR.get('exempt', [])}
     if exempt_ != {b['id'] for b in L['facade']['bays'] if door_bay(b)}: err('rules.shutters.exempt does not list exactly the door bays')
+    for sh in shutters:
+        if sh.get('door_side'): err('shutter %s is a door-side shutter (door bays get none)' % sh['id'])
     FY_ = {f['id']: f['y'] for f in L['floors']}
     def frame_(b):
         a, c = b['a'], b['b']; W = b['width']; d = ((c[0] - a[0]) / W, (c[1] - a[1]) / W); return a, d, (-d[1], d[0]), W
@@ -568,9 +570,8 @@ else:
             for nm_, P_ in parts_:
                 if sat_(P_, dq): err('shutter %s: %s stands in the doorway of facade bay %s' % (sh['id'], nm_, did))
     cnt_sh = Counter(sh['floor'] for sh in shutters)
-    print('blast shutters: %d (%s), sealed ends: %d guides, %d columns/walls; all open by default; door openings exempt: %d bays without (%s), %d door bays shuttered over their glass lite only (%s)' % (len(shutters), ', '.join('%s %d' % (f, cnt_sh[f]) for f in floors),
-          sum(len(sh['guides']) for sh in shutters), sum(2 - len(sh['guides']) for sh in shutters), len(exempt_), ', '.join(sorted(exempt_)),
-          sum(1 for sh in shutters if sh.get('door_side')), ', '.join(sh['id'] for sh in shutters if sh.get('door_side'))))
+    print('blast shutters: %d (%s), sealed ends: %d guides, %d columns/walls; all open by default; door openings exempt: %d bays without (%s)' % (len(shutters), ', '.join('%s %d' % (f, cnt_sh[f]) for f in floors),
+          sum(len(sh['guides']) for sh in shutters), sum(2 - len(sh['guides']) for sh in shutters), len(exempt_), ', '.join(sorted(exempt_))))
     print('blast shutters vs facade doorways: %d doors, %d shutter/door pairs checked in plan; %d corner ends sealed in a reveal plate beside a door (%s)' % (len(doors_), n_door_checked,
           sum(len(sh.get('reveal', {})) for sh in shutters), ', '.join('%s.%s@%s' % (sh['id'], k, rv['door_bay']) for sh in shutters for k, rv in sh.get('reveal', {}).items())))
 

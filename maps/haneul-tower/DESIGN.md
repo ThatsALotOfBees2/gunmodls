@@ -384,7 +384,7 @@ node names (§10).
 | `portal` | skybridge portal frame with a barricadable double door | 1 |
 | `glass_floor` | walkable tempered glass floor | 1 (Skybridge, x 39.5…42.5) |
 | `holo` | stage hologram: blocks vision, not bullets; emitter ring destructible | 1 (`set_pieces`) |
-| `shutter` | armoured blast shutter inside a facade bay; open by default, closed it blocks vision and bullets over the bay's glass; never over a door; indestructible | 170 (`shutters`): F1 61, F2 55, F3 54 |
+| `shutter` | armoured blast shutter inside a facade bay; open by default, closed it blocks vision and bullets over the bay's glass; never on a bay with a door; indestructible | 166 (`shutters`): F1 58, F2 55, F3 53 |
 | `zone_ext` | defender reveal zone, trigger only | 15 |
 
 Per floor:
@@ -730,7 +730,7 @@ default and stay open for now.
 
 *Applied (tools/build_layout.py `shutters`, core.js `buildShutters`, validate_layout.py, render_plans.py, the viewer,
 HaneulTowerMap.cs):*
-- **170 shutters** (F1 61, F2 55, F3 54): every bay with glass, entry windows included, none over a door (see the
+- **166 shutters** (F1 58, F2 55, F3 53): every bay with glass, entry windows included, none on a bay with a door (see the
   next note); the two opaque Cold Store bays (F1_N04, F1_N05, all spandrel) have none. The skybridge tube needs none, since
   the portal is its only way in. Double-height Garden and Studio bays get one 7.3 m shutter.
 - **Inside the glass, housed in the plenum.** The curtain runs 0.30–0.37 m inside the glass, behind the mullions, door
@@ -767,3 +767,17 @@ Door openings are exempt from the blast shutters; windows and entry windows keep
   alone and carries that line's status dot (`guides_solo`).
 - **Validator:** door bays must have no shutter, no curtain or guide may reach into a door lite, every glass lite must
   still be covered, and the partner-guide rule skips lines whose other side is a door.
+
+**No shutter on a wall with a door (user, overrides the door note above).** *"just delete the shutter that's on walls
+with a door. dont overcomplicate it"*. The four narrower door-bay shutters are gone: every facade bay with a door or
+portal has no shutter at all, glass beside the door included. Every other bay keeps its shutter unchanged.
+
+*Applied (tools/build_layout.py, validate_layout.py, docs):*
+- **Removed:** F1_SE00 Bath Door, F1_SW00 Garden side door, F1_W08 catwalk door, F3_NW01 gantry door (the glass-lite
+  shutters). With F1_S11 Garden Doors and F2_E11 portal, six door bays are in `rules.shutters.exempt`. 170 → 166
+  (F1 61 → 58, F2 55, F3 54 → 53).
+- **Neighbours unchanged**, except F1_W07, whose guide beside F1_W08 now stands alone (`guides_solo` b) and carries
+  the line's status dot. The chamfer-corner reveal plates beside F1_SE00, F1_SW00 and F3_NW01 stay (F1_E13, F1_S13,
+  F3_N00 still need their curtain end kept out of the doorway).
+- **Validator:** a door bay is any bay with a door lite, a door opening or the portal; it must have no shutter, and
+  every other glass bay must have one.

@@ -88,18 +88,34 @@
    "seal": 0.04,
    "free_end": 0.03,
    "default": "open",
-   "rule": "every facade bay with glass has one (entry windows included) except over a door: door openings are exempt (a door lite is left out of its bay's shutter, which covers the glass lite only and seals in a guide on the door-side mullion line; a bay whose opening is a door across the bay, or the skybridge portal, gets none); inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible",
+   "rule": "every facade bay with glass has one (entry windows included) except a bay with a door: door openings are exempt (a bay with a facade door, a door across the bay, or the skybridge portal gets no shutter at all, glass beside the door included); inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible",
    "door_lites": [
     "door_barricadable"
    ],
    "exempt": [
     {
+     "bay": "F1_SE00",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    },
+    {
      "bay": "F1_S11",
      "reason": "door across the bay middle (double_door): the glass left is two 0.47 m strips beside it and a transom, too narrow for a clean curtain"
     },
     {
+     "bay": "F1_SW00",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    },
+    {
+     "bay": "F1_W08",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    },
+    {
      "bay": "F2_E11",
      "reason": "skybridge portal: a door, no glass"
+    },
+    {
+     "bay": "F3_NW01",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
     }
    ],
    "barricade_clear": 0.16
@@ -15167,70 +15183,6 @@
    "guides_solo": []
   },
   {
-   "id": "F1_SE00",
-   "bay": "F1_SE00",
-   "floor": "F1",
-   "face": "SE",
-   "room": "F1_bathhouse",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "glass_tempered"
-   ],
-   "entry": false,
-   "door_side": "a",
-   "span": [
-    1.768,
-    3.536
-   ],
-   "u0": 1.798,
-   "u1": 3.205,
-   "width": 1.407,
-   "a": [
-    24.492,
-    22.034
-   ],
-   "b": [
-    23.497,
-    23.029
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "C_corner_SE"
-   },
-   "guides": [
-    "a"
-   ],
-   "guide_u": {
-    "a": 1.768
-   },
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_SE00",
-   "collider": "COL_SHUTTER_F1_SE00",
-   "guides_solo": [
-    "a"
-   ]
-  },
-  {
    "id": "F1_SE01",
    "bay": "F1_SE01",
    "floor": "F1",
@@ -16152,70 +16104,6 @@
    "guides_solo": []
   },
   {
-   "id": "F1_SW00",
-   "bay": "F1_SW00",
-   "floor": "F1",
-   "face": "SW",
-   "room": "F1_garden",
-   "site": null,
-   "double_height": true,
-   "covers": [
-    "glass_tempered"
-   ],
-   "entry": false,
-   "door_side": "a",
-   "span": [
-    1.768,
-    3.536
-   ],
-   "u0": 1.798,
-   "u1": 3.205,
-   "width": 1.407,
-   "a": [
-    -22.034,
-    24.492
-   ],
-   "b": [
-    -23.029,
-    23.497
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "C_corner_SW"
-   },
-   "guides": [
-    "a"
-   ],
-   "guide_u": {
-    "a": 1.768
-   },
-   "y_closed": [
-    0.0,
-    7.3
-   ],
-   "y_open": 7.3,
-   "travel_m": 7.3,
-   "travel_s": 2.0,
-   "slats": 34,
-   "housing": {
-    "y0": 7.3,
-    "y1": 8.1,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_SW00",
-   "collider": "COL_SHUTTER_F1_SW00",
-   "guides_solo": [
-    "a"
-   ]
-  },
-  {
    "id": "F1_SW01",
    "bay": "F1_SW01",
    "floor": "F1",
@@ -16788,70 +16676,6 @@
    "default": "open",
    "node": "SHUTTER_F1_W07",
    "collider": "COL_SHUTTER_F1_W07",
-   "guides_solo": []
-  },
-  {
-   "id": "F1_W08",
-   "bay": "F1_W08",
-   "floor": "F1",
-   "face": "W",
-   "room": "F1_staff_entry",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "glass_tempered"
-   ],
-   "entry": false,
-   "door_side": "b",
-   "span": [
-    0.0,
-    1.5
-   ],
-   "u0": 0.03,
-   "u1": 1.47,
-   "width": 1.44,
-   "a": [
-    -25.665,
-    -3.03
-   ],
-   "b": [
-    -25.665,
-    -4.47
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "guide"
-   },
-   "guides": [
-    "a",
-    "b"
-   ],
-   "guide_u": {
-    "a": 0.0,
-    "b": 1.5
-   },
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_W08",
-   "collider": "COL_SHUTTER_F1_W08",
    "guides_solo": [
     "b"
    ]
@@ -24195,70 +24019,6 @@
    "node": "SHUTTER_F3_NW00",
    "collider": "COL_SHUTTER_F3_NW00",
    "guides_solo": []
-  },
-  {
-   "id": "F3_NW01",
-   "bay": "F3_NW01",
-   "floor": "F3",
-   "face": "NW",
-   "room": "F3_edit_bay",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "glass_tempered"
-   ],
-   "entry": false,
-   "door_side": "b",
-   "span": [
-    0.0,
-    1.768
-   ],
-   "u0": 0.33,
-   "u1": 1.738,
-   "width": 1.408,
-   "a": [
-    -23.03,
-    -23.496
-   ],
-   "b": [
-    -22.034,
-    -24.492
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "C_corner_NW",
-    "b": "guide"
-   },
-   "guides": [
-    "b"
-   ],
-   "guide_u": {
-    "b": 1.768
-   },
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F3_NW01",
-   "collider": "COL_SHUTTER_F3_NW01",
-   "guides_solo": [
-    "b"
-   ]
   }
  ],
  "facade": {

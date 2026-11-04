@@ -1191,12 +1191,9 @@ sightlines = [
 ]
 
 # ---------------------------------------------------------------- blast shutters (user: every outer room, open for now)
-# Every facade bay with glass gets a heavy armoured slat shutter, except over a DOOR (user: "dont have a shutter for the
-# door"): a bay whose opening is a door or portal (the skybridge portal, the Garden Doors: the door spans the bay
-# middle, so the glass left is two 0.47 m strips and a transom, no clean curtain) gets none, and a bay with a facade
-# door in one lite gets a narrower shutter over its glass lite only, sealed in its own guide channel on the door-side
-# mullion line (behind the door jamb, out of the doorway); the transom over the door stays glass. Entry windows keep
-# theirs. Each shutter sits on the INSIDE of the glass: the curtain runs in the plane s = SH_PLANE (metres inside the
+# Every facade bay with glass gets a heavy armoured slat shutter, except a bay with a DOOR (user: "just delete the
+# shutter that's on walls with a door"): any bay whose opening is a door or portal (the skybridge portal, the Garden
+# Doors, the four facade doors) gets no shutter at all, glass beside the door included. Entry windows keep theirs. Each shutter sits on the INSIDE of the glass: the curtain runs in the plane s = SH_PLANE (metres inside the
 # glass outer face, behind the mullions, the door frames and the barricade slots) and retracts into a housing in the plenum above
 # the ceiling, so the facade, the ledges, the reveal zones and rappel play are untouched and the open state shows only
 # slim guide channels on the mullion lines. Closed, the curtain covers the whole vision height of the bay (0 to
@@ -1258,6 +1255,8 @@ for bay in bays:
         shutter_exempt.append({'bay': bay['id'], 'reason': 'skybridge portal: a door, no glass'}); continue
     if bay.get('opening'):
         shutter_exempt.append({'bay': bay['id'], 'reason': 'door across the bay middle (%s): the glass left is two %.2f m strips beside it and a transom, too narrow for a clean curtain' % (bay['opening']['kind'], bay['opening']['u0'] - 0.03)}); continue
+    if any(l['type'] in SH_DOOR_LITES for l in bay['lites']):
+        shutter_exempt.append({'bay': bay['id'], 'reason': 'facade door bay: no shutter on a wall with a door (glass beside the door included)'}); continue
     a, b, W = bay['a'], bay['b'], bay['width']
     d = ((b[0] - a[0]) / W, (b[1] - a[1]) / W); n = (-d[1], d[0])
     # the span to shutter: every lite but a door (doors sit in an end lite, so the glass span is contiguous)
@@ -1413,7 +1412,7 @@ layout = {
         'thickness': THICK, 'core_thickness': {'outer': 0.6, 'inner': 0.3},
         'shutters': {'plane': list(SH_PLANE), 'guide': SH_GUIDE, 'guide_s': list(SH_GUIDE_S), 'housing': list(SH_HOUSING), 'slat': SH_SLAT,
                      'overlap': SH_OVERLAP, 'rail': SH_RAIL, 'travel_s': SH_TRAVEL_S, 'seal': SH_SEAL, 'free_end': SH_FREE, 'default': 'open',
-                     'rule': 'every facade bay with glass has one (entry windows included) except over a door: door openings are exempt (a door lite is left out of its bay\'s shutter, which covers the glass lite only and seals in a guide on the door-side mullion line; a bay whose opening is a door across the bay, or the skybridge portal, gets none); inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible',
+                     'rule': 'every facade bay with glass has one (entry windows included) except a bay with a door: door openings are exempt (a bay with a facade door, a door across the bay, or the skybridge portal gets no shutter at all, glass beside the door included); inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible',
                      'door_lites': list(SH_DOOR_LITES), 'exempt': shutter_exempt,
                      'barricade_clear': round(SH_GUIDE_S[0] - 0.1, 3)},
         'curtain_wall': {'bay': 3.0, 'lites_per_bay': 2, 'chamfer_bay': round(seg_len((21, -26), (26, -21)) / 2, 3),

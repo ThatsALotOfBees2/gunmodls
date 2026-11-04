@@ -10,6 +10,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 | [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
 | [Recon Tablet](gadgets/recon-tablet/) | Gadgets | `recon-tablet.glb` (left-hand scanner), sounds, Unity ability script |
+| [Tactical Phone](gadgets/tactical-phone/) | Gadgets | `tactical-phone.glb` (rugged left-hand smartphone, 16-cell screen atlas), sounds, Unity script |
 | [Conductive Lattice](gadgets/conductive-lattice/) | Gadgets | `conductive-lattice-node.glb` (thrown wall electrification; circuit grown at runtime), sounds |
 | [Cameras](gadgets/cameras/) | Gadgets | `security-camera.glb`, `sticky-camera.glb`, sounds |
 | [Scout Drone](gadgets/scout-drone/) | Gadgets | `scout-drone.glb` (thrown four-wheel recon drone: deploy, drive, turn, hop, shutdown), sounds, Unity driver |
@@ -26,6 +27,8 @@ Open `index.html` to browse every model in one page: pick one at the top, or pre
 ![Breach Spider](gadgets/breach-spider/preview.png)
 
 ![Recon Tablet](gadgets/recon-tablet/preview.png)
+
+![Tactical Phone](gadgets/tactical-phone/preview.png)
 
 ![Conductive Lattice](gadgets/conductive-lattice/preview.png)
 
@@ -93,6 +96,7 @@ The Breach Spider's effects and timing come with a reference player: add `unity/
 to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
 (see `gadgets/recon-tablet/INTEGRATION.md`). The lattice runs on `unity/Runtime/ConductiveLattice.cs` and the cameras on
 `unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`).
+The Tactical Phone runs on `unity/Runtime/TacticalPhone.cs` (see `gadgets/tactical-phone/INTEGRATION.md`).
 
 glTFast converts glTF's right-handed axes to Unity's by negating X, so any x coordinate quoted in these
 docs (glTF space) has its sign flipped in a prefab's local space.
