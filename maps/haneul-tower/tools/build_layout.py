@@ -1191,9 +1191,10 @@ sightlines = [
 ]
 
 # ---------------------------------------------------------------- blast shutters (user: every outer room, open for now)
-# Every facade bay with glass (entry windows, facade doors and the skybridge portal included) gets a heavy armoured
-# slat shutter on the INSIDE of the glass: the curtain runs in the plane s = SH_PLANE (metres inside the glass outer
-# face, behind the mullions, the door frames and the barricade slots) and retracts into a housing in the plenum above
+# Every facade bay with glass gets a heavy armoured slat shutter, except a bay with a DOOR (user: "just delete the
+# shutter that's on walls with a door"): any bay whose opening is a door or portal (the skybridge portal, the Garden
+# Doors, the four facade doors) gets no shutter at all, glass beside the door included. Entry windows keep theirs. Each shutter sits on the INSIDE of the glass: the curtain runs in the plane s = SH_PLANE (metres inside the
+# glass outer face, behind the mullions, the door frames and the barricade slots) and retracts into a housing in the plenum above
 # the ceiling, so the facade, the ledges, the reveal zones and rappel play are untouched and the open state shows only
 # slim guide channels on the mullion lines. Closed, the curtain covers the whole vision height of the bay (0 to
 # vision_y1, 7.3 m on double-height bays) and seals at both ends: against a column or a hard wall end that crosses
@@ -1211,6 +1212,7 @@ SH_SLAT, SH_OVERLAP, SH_RAIL = 0.25, 0.03, 0.10
 SH_TRAVEL_S = 2.0            # every shutter travels its full height in 2.0 s
 SH_SEAL = 0.04               # the curtain runs this far into a sealing column or wall end
 SH_FREE = 0.03               # a free end runs this far into its guide channel
+SH_DOOR_LITES = ('door_barricadable',)   # lite types that are a door: never shuttered
 
 
 def _sh_obstacles(fl):
@@ -1244,40 +1246,125 @@ def _sh_clip(poly, lo, hi):
 
 SITE_OF_ROOM = {r['id']: r.get('site') for r in rooms}
 shutters = []
+shutter_exempt = []          # door bays without a shutter: [{bay, reason}]
 _sh_obs = {f['id']: _sh_obstacles(f['id']) for f in FLOORS}
 for bay in bays:
     if bay['kind'] != 'portal' and all(l['type'] == 'spandrel' for l in bay['lites']):
         continue   # opaque bay (Cold Store): nothing to shutter
+    if bay['kind'] == 'portal':
+        shutter_exempt.append({'bay': bay['id'], 'reason': 'skybridge portal: a door, no glass'}); continue
+    if bay.get('opening'):
+        shutter_exempt.append({'bay': bay['id'], 'reason': 'door across the bay middle (%s): the glass left is two %.2f m strips beside it and a transom, too narrow for a clean curtain' % (bay['opening']['kind'], bay['opening']['u0'] - 0.03)}); continue
+    if any(l['type'] in SH_DOOR_LITES for l in bay['lites']):
+        shutter_exempt.append({'bay': bay['id'], 'reason': 'facade door bay: no shutter on a wall with a door (glass beside the door included)'}); continue
     a, b, W = bay['a'], bay['b'], bay['width']
     d = ((b[0] - a[0]) / W, (b[1] - a[1]) / W); n = (-d[1], d[0])
+    # the span to shutter: every lite but a door (doors sit in an end lite, so the glass span is contiguous)
+    doors_ = [l for l in bay['lites'] if l['type'] in SH_DOOR_LITES]
+    keep_ = [l for l in bay['lites'] if l['type'] not in SH_DOOR_LITES]
+    if not any(l['type'] != 'spandrel' for l in keep_):
+        shutter_exempt.append({'bay': bay['id'], 'reason': 'door bay with no glass beside the door'}); continue
+    S0, S1 = min(l['u0'] for l in keep_), max(l['u1'] for l in keep_)
+    for l in doors_:
+        if not (l['u1'] <= S0 + 1e-6 or l['u0'] >= S1 - 1e-6): raise SystemExit('shutter %s: door lite inside the glass span' % bay['id'])
+    door_side = ('a' if doors_[0]['u1'] <= S0 + 1e-6 else 'b') if doors_ else None
     ends = {'a': None, 'b': None}
     seal = {'a': 'guide', 'b': 'guide'}
     for oid, poly in _sh_obs[bay['floor']]:
         P = [((p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1], (p[0] - a[0]) * n[0] + (p[1] - a[1]) * n[1]) for p in poly]
         r = _sh_clip(P, SH_PLANE[0], SH_PLANE[1])
-        if not r or r[1] <= 1e-6 or r[0] >= W - 1e-6: continue
-        if r[0] < 0.1 and r[1] < W / 2:
+        if not r or r[1] <= S0 + 1e-6 or r[0] >= S1 - 1e-6: continue
+        if r[0] < S0 + 0.1 and r[1] < (S0 + S1) / 2:
             if ends['a'] is None or r[1] > ends['a']: ends['a'], seal['a'] = r[1], oid
-        elif r[1] > W - 0.1 and r[0] > W / 2:
+        elif r[1] > S1 - 0.1 and r[0] > (S0 + S1) / 2:
             if ends['b'] is None or r[0] < ends['b']: ends['b'], seal['b'] = r[0], oid
         else:
             raise SystemExit('shutter %s: %s crosses the curtain plane mid-bay (%.2f..%.2f)' % (bay['id'], oid, r[0], r[1]))
-    u0 = ends['a'] - SH_SEAL if ends['a'] is not None else SH_FREE
-    u1 = ends['b'] + SH_SEAL if ends['b'] is not None else W - SH_FREE
+    u0 = ends['a'] - SH_SEAL if ends['a'] is not None else S0 + SH_FREE
+    u1 = ends['b'] + SH_SEAL if ends['b'] is not None else S1 - SH_FREE
+    guide_u = {k: round(v, 3) for k, v in (('a', S0), ('b', S1)) if seal[k] == 'guide'}
     vy = bay['vision_y1']
     sm = (SH_PLANE[0] + SH_PLANE[1]) / 2
     pa = (a[0] + d[0] * u0 + n[0] * sm, a[1] + d[1] * u0 + n[1] * sm); pb = (a[0] + d[0] * u1 + n[0] * sm, a[1] + d[1] * u1 + n[1] * sm)
     nslat = int(math.ceil((vy - SH_SLAT) / (SH_SLAT - SH_OVERLAP) - 1e-9)) + 1
-    covers = [l['type'] for l in bay['lites']] or ['portal']
+    covers = [l['type'] for l in keep_]
     shutters.append({
         'id': bay['id'], 'bay': bay['id'], 'floor': bay['floor'], 'face': bay['face'], 'room': bay['room'], 'site': SITE_OF_ROOM.get(bay['room']),
-        'double_height': bay['double_height'], 'covers': covers, 'entry': any(l.get('opening') for l in bay['lites']) or bool(bay.get('opening')),
+        'double_height': bay['double_height'], 'covers': covers, 'entry': any(l.get('opening') for l in keep_),
+        'door_side': door_side, 'span': [round(S0, 3), round(S1, 3)],
         'u0': round(u0, 3), 'u1': round(u1, 3), 'width': round(u1 - u0, 3), 'a': [round(pa[0], 3), round(pa[1], 3)], 'b': [round(pb[0], 3), round(pb[1], 3)],
-        'plane': list(SH_PLANE), 'seal': seal, 'guides': [k for k in ('a', 'b') if seal[k] == 'guide'],
+        'plane': list(SH_PLANE), 'seal': seal, 'guides': [k for k in ('a', 'b') if seal[k] == 'guide'], 'guide_u': guide_u,
         'y_closed': [0.0, vy], 'y_open': vy, 'travel_m': vy, 'travel_s': SH_TRAVEL_S, 'slats': nslat,
         'housing': {'y0': vy, 'y1': round(vy + SH_HOUSING[2], 3), 's0': SH_HOUSING[0], 's1': SH_HOUSING[1], 'where': 'plenum above the ceiling'},
         'default': 'open', 'node': 'SHUTTER_' + bay['id'], 'collider': 'COL_SHUTTER_' + bay['id'],
     })
+# Chamfer corners beside a facade door (Bath Door, Garden side door, gantry door): the next bay's curtain and corner guide
+# sit 0.3..0.4 m inside the glass, and at a 135-degree corner that depth lands inside the door's clear width (about
+# 0.25 m in from the jamb), so the shutter system would stand in the doorway. There, the neighbour's curtain stops short
+# of the door's jamb plane and seals in a REVEAL PLATE instead of a guide: a static steel plate on the door's jamb plane
+# (2 mm back from the jamb face, so never in the doorway), from the back of the corner mullion to past the curtain and
+# housing, floor to slab. The curtain end and the housing end sit inside the plate; the plate, the corner mullion and
+# the curtain close the corner pocket, so the closed shutter still seals.
+SH_JAMB = 0.03               # door clear opening starts 0.03 in from the mullion line (the jamb face)
+SH_REVEAL_GAP = 0.003        # reveal plate face this far back from the jamb face (out of the doorway, no z-fight)
+SH_REVEAL_FRONT = 0.24       # reveal plate front (depth inside the glass, door frame), 2 cm into the mullion back
+_bay_by_id = {b['id']: b for b in bays}
+_bfr = lambda b: (b['a'], ((b['b'][0] - b['a'][0]) / b['width'], (b['b'][1] - b['a'][1]) / b['width']))
+for sh in shutters:
+    nb = _bay_by_id[sh['bay']]; na, nd = _bfr(nb); nn = (-nd[1], nd[0])
+    for k in ('a', 'b'):
+        if sh['seal'][k] != 'guide' or abs(sh['guide_u'][k] - (0.0 if k == 'a' else nb['width'])) > 1e-6: continue
+        P = nb['a'] if k == 'a' else nb['b']
+        for db in bays:
+            if db['floor'] != nb['floor'] or db['id'] == nb['id']: continue
+            for dl in db['lites']:
+                if dl['type'] not in SH_DOOR_LITES: continue
+                if dl['u0'] < 1e-6 and tuple(db['a']) == tuple(P): jf, sg = SH_JAMB, 1.0           # door at the a end
+                elif dl['u1'] > db['width'] - 1e-6 and tuple(db['b']) == tuple(P): jf, sg = db['width'] - SH_JAMB, -1.0
+                else: continue
+                da, dd = _bfr(db); dn = (-dd[1], dd[0])
+                def to_d(u, s):   # neighbour (u, depth) -> door bay (u, depth)
+                    x = na[0] + nd[0] * u + nn[0] * s - da[0]; z = na[1] + nd[1] * u + nn[1] * s - da[1]
+                    return x * dd[0] + z * dd[1], x * dn[0] + z * dn[1]
+                into = lambda u, s: sg * (to_d(u, s)[0] - jf)   # > 0: inside the door's clear width
+                # does anything of this end (guide back corner) reach into the doorway? if not, keep the guide
+                ge = nb['width'] if k == 'b' else 0.0
+                if max(into(ge, SH_GUIDE_S[0]), into(ge, SH_GUIDE_S[1])) <= 0: continue
+                cu = into(1.0, 0.0) - into(0.0, 0.0)            # d(into)/du: > 0 for a b end, < 0 for an a end
+                if (k == 'b') != (cu > 0): raise SystemExit('shutter %s: reveal at %s has the wrong hand' % (sh['id'], db['id']))
+                lim = lambda s, m: (-m - into(0.0, s)) / cu        # u where the depth-s line is m back from the jamb plane
+                pick = min if k == 'b' else max
+                ue = pick(lim(s, SH_REVEAL_GAP + 0.002) for s in (SH_PLANE[0] - 0.012, SH_PLANE[1] + 0.012))   # curtain, rail included
+                hu = pick(lim(s, SH_REVEAL_GAP + 0.002) for s in (SH_HOUSING[0], SH_HOUSING[1]))
+                ue, hu = (math.floor if k == 'b' else math.ceil)(ue * 1000) / 1000, (math.floor if k == 'b' else math.ceil)(hu * 1000) / 1000
+                corners = [(ue, SH_PLANE[0] - 0.012), (ue, SH_PLANE[1] + 0.012), (hu, SH_HOUSING[0]), (hu, SH_HOUSING[1])]
+                back = max(-into(u, s) for u, s in corners) + 0.012           # plate thickness from the jamb plane
+                deep = max(to_d(u, s)[1] for u, s in corners) + 0.03
+                if k == 'a': sh['u0'] = ue
+                else: sh['u1'] = ue
+                sh['width'] = round(sh['u1'] - sh['u0'], 3)
+                sm = (SH_PLANE[0] + SH_PLANE[1]) / 2
+                for kk, uu in (('a', sh['u0']), ('b', sh['u1'])):
+                    sh[kk] = [round(na[0] + nd[0] * uu + nn[0] * sm, 3), round(na[1] + nd[1] * uu + nn[1] * sm, 3)]
+                sh['seal'][k] = 'reveal'
+                sh['guides'] = [g for g in sh['guides'] if g != k]; del sh['guide_u'][k]
+                v0 = jf - sg * SH_REVEAL_GAP; v1 = v0 - sg * (back - SH_REVEAL_GAP)
+                sh.setdefault('reveal', {})[k] = {
+                    'door_bay': db['id'], 'housing_u': hu, 'u': [round(min(v0, v1), 3), round(max(v0, v1), 3)], 's': [SH_REVEAL_FRONT, round(deep, 3)],
+                    'y': [0.0, round(nb['vision_y1'] + SH_HOUSING[2], 3)],
+                    'note': 'static steel reveal plate on the door jamb plane of %s (door bay frame u/s): this curtain end and its housing end sit inside it; never in the doorway' % db['id'],
+                }
+# a guide with no partner guide on its mullion line (the door side of a door bay, or a line whose other bay is a door
+# without a shutter) stands alone and carries that line's status dot itself
+_guided_pts = {}
+for sh in shutters:
+    bb = _bay_by_id[sh['bay']]; W = bb['width']; dd = ((bb['b'][0] - bb['a'][0]) / W, (bb['b'][1] - bb['a'][1]) / W)
+    sh['_pts'] = {}
+    for k, gu in sh['guide_u'].items():
+        pt = (round(bb['a'][0] + dd[0] * gu, 2), round(bb['a'][1] + dd[1] * gu, 2), sh['floor']); sh['_pts'][k] = pt; _guided_pts[pt] = _guided_pts.get(pt, 0) + 1
+for sh in shutters:
+    sh['guides_solo'] = [k for k in sh['guides'] if _guided_pts.get(sh['_pts'][k], 0) < 2]
+    del sh['_pts']
 
 # ---------------------------------------------------------------- surface types and node naming
 surface_types = {
@@ -1325,7 +1412,8 @@ layout = {
         'thickness': THICK, 'core_thickness': {'outer': 0.6, 'inner': 0.3},
         'shutters': {'plane': list(SH_PLANE), 'guide': SH_GUIDE, 'guide_s': list(SH_GUIDE_S), 'housing': list(SH_HOUSING), 'slat': SH_SLAT,
                      'overlap': SH_OVERLAP, 'rail': SH_RAIL, 'travel_s': SH_TRAVEL_S, 'seal': SH_SEAL, 'free_end': SH_FREE, 'default': 'open',
-                     'rule': 'every facade bay with glass (entry windows, facade doors, the skybridge portal) has one; inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible',
+                     'rule': 'every facade bay with glass has one (entry windows included) except a bay with a door: door openings are exempt (a bay with a facade door, a door across the bay, or the skybridge portal gets no shutter at all, glass beside the door included); inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible',
+                     'door_lites': list(SH_DOOR_LITES), 'exempt': shutter_exempt,
                      'barricade_clear': round(SH_GUIDE_S[0] - 0.1, 3)},
         'curtain_wall': {'bay': 3.0, 'lites_per_bay': 2, 'chamfer_bay': round(seg_len((21, -26), (26, -21)) / 2, 3),
                          'vision': [0.0, CEIL], 'spandrel': [CEIL, FTF]},

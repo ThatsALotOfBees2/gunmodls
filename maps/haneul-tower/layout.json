@@ -88,7 +88,36 @@
    "seal": 0.04,
    "free_end": 0.03,
    "default": "open",
-   "rule": "every facade bay with glass (entry windows, facade doors, the skybridge portal) has one; inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible",
+   "rule": "every facade bay with glass has one (entry windows included) except a bay with a door: door openings are exempt (a bay with a facade door, a door across the bay, or the skybridge portal gets no shutter at all, glass beside the door included); inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible",
+   "door_lites": [
+    "door_barricadable"
+   ],
+   "exempt": [
+    {
+     "bay": "F1_SE00",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    },
+    {
+     "bay": "F1_S11",
+     "reason": "door across the bay middle (double_door): the glass left is two 0.47 m strips beside it and a transom, too narrow for a clean curtain"
+    },
+    {
+     "bay": "F1_SW00",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    },
+    {
+     "bay": "F1_W08",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    },
+    {
+     "bay": "F2_E11",
+     "reason": "skybridge portal: a door, no glass"
+    },
+    {
+     "bay": "F3_NW01",
+     "reason": "facade door bay: no shutter on a wall with a door (glass beside the door included)"
+    }
+   ],
    "barricade_clear": 0.16
   },
   "curtain_wall": {
@@ -13365,6 +13394,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13388,6 +13422,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13405,7 +13443,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N00",
-   "collider": "COL_SHUTTER_F1_N00"
+   "collider": "COL_SHUTTER_F1_N00",
+   "guides_solo": []
   },
   {
    "id": "F1_N01",
@@ -13420,6 +13459,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13443,6 +13487,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13460,7 +13508,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N01",
-   "collider": "COL_SHUTTER_F1_N01"
+   "collider": "COL_SHUTTER_F1_N01",
+   "guides_solo": []
   },
   {
    "id": "F1_N02",
@@ -13475,6 +13524,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13498,6 +13552,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13515,7 +13573,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N02",
-   "collider": "COL_SHUTTER_F1_N02"
+   "collider": "COL_SHUTTER_F1_N02",
+   "guides_solo": []
   },
   {
    "id": "F1_N03",
@@ -13530,6 +13589,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -13552,6 +13616,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13569,7 +13636,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N03",
-   "collider": "COL_SHUTTER_F1_N03"
+   "collider": "COL_SHUTTER_F1_N03",
+   "guides_solo": []
   },
   {
    "id": "F1_N06",
@@ -13584,6 +13652,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -13606,6 +13679,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13623,7 +13699,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N06",
-   "collider": "COL_SHUTTER_F1_N06"
+   "collider": "COL_SHUTTER_F1_N06",
+   "guides_solo": []
   },
   {
    "id": "F1_N07",
@@ -13638,6 +13715,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13661,6 +13743,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13678,7 +13764,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N07",
-   "collider": "COL_SHUTTER_F1_N07"
+   "collider": "COL_SHUTTER_F1_N07",
+   "guides_solo": []
   },
   {
    "id": "F1_N08",
@@ -13693,6 +13780,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13716,6 +13808,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13733,7 +13829,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N08",
-   "collider": "COL_SHUTTER_F1_N08"
+   "collider": "COL_SHUTTER_F1_N08",
+   "guides_solo": []
   },
   {
    "id": "F1_N09",
@@ -13748,6 +13845,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -13770,6 +13872,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13787,7 +13892,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N09",
-   "collider": "COL_SHUTTER_F1_N09"
+   "collider": "COL_SHUTTER_F1_N09",
+   "guides_solo": []
   },
   {
    "id": "F1_N10",
@@ -13802,6 +13908,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.94,
    "width": 2.18,
@@ -13822,6 +13933,7 @@
     "b": "F1_W55"
    },
    "guides": [],
+   "guide_u": {},
    "y_closed": [
     0.0,
     3.1
@@ -13839,7 +13951,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N10",
-   "collider": "COL_SHUTTER_F1_N10"
+   "collider": "COL_SHUTTER_F1_N10",
+   "guides_solo": []
   },
   {
    "id": "F1_N11",
@@ -13854,6 +13967,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.06,
    "u1": 2.97,
    "width": 2.91,
@@ -13876,6 +13994,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13893,7 +14014,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N11",
-   "collider": "COL_SHUTTER_F1_N11"
+   "collider": "COL_SHUTTER_F1_N11",
+   "guides_solo": []
   },
   {
    "id": "F1_N12",
@@ -13908,6 +14030,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13931,6 +14058,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -13948,7 +14079,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N12",
-   "collider": "COL_SHUTTER_F1_N12"
+   "collider": "COL_SHUTTER_F1_N12",
+   "guides_solo": []
   },
   {
    "id": "F1_N13",
@@ -13963,6 +14095,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -13986,6 +14123,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14003,7 +14144,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_N13",
-   "collider": "COL_SHUTTER_F1_N13"
+   "collider": "COL_SHUTTER_F1_N13",
+   "guides_solo": []
   },
   {
    "id": "F1_NE00",
@@ -14018,6 +14160,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -14040,6 +14187,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14057,7 +14207,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_NE00",
-   "collider": "COL_SHUTTER_F1_NE00"
+   "collider": "COL_SHUTTER_F1_NE00",
+   "guides_solo": []
   },
   {
    "id": "F1_NE01",
@@ -14072,6 +14223,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -14094,6 +14250,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14111,7 +14270,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_NE01",
-   "collider": "COL_SHUTTER_F1_NE01"
+   "collider": "COL_SHUTTER_F1_NE01",
+   "guides_solo": []
   },
   {
    "id": "F1_E00",
@@ -14126,6 +14286,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -14149,6 +14314,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14166,7 +14335,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E00",
-   "collider": "COL_SHUTTER_F1_E00"
+   "collider": "COL_SHUTTER_F1_E00",
+   "guides_solo": []
   },
   {
    "id": "F1_E01",
@@ -14181,6 +14351,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -14204,6 +14379,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14221,7 +14400,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E01",
-   "collider": "COL_SHUTTER_F1_E01"
+   "collider": "COL_SHUTTER_F1_E01",
+   "guides_solo": []
   },
   {
    "id": "F1_E02",
@@ -14236,6 +14416,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.94,
    "width": 2.91,
@@ -14258,6 +14443,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14275,7 +14463,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E02",
-   "collider": "COL_SHUTTER_F1_E02"
+   "collider": "COL_SHUTTER_F1_E02",
+   "guides_solo": []
   },
   {
    "id": "F1_E03",
@@ -14290,6 +14479,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.06,
    "u1": 2.24,
    "width": 2.18,
@@ -14310,6 +14504,7 @@
     "b": "C_E-9"
    },
    "guides": [],
+   "guide_u": {},
    "y_closed": [
     0.0,
     3.1
@@ -14327,7 +14522,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E03",
-   "collider": "COL_SHUTTER_F1_E03"
+   "collider": "COL_SHUTTER_F1_E03",
+   "guides_solo": []
   },
   {
    "id": "F1_E04",
@@ -14342,6 +14538,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -14364,6 +14565,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14381,7 +14585,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E04",
-   "collider": "COL_SHUTTER_F1_E04"
+   "collider": "COL_SHUTTER_F1_E04",
+   "guides_solo": []
   },
   {
    "id": "F1_E05",
@@ -14396,6 +14601,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -14419,6 +14629,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14436,7 +14650,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E05",
-   "collider": "COL_SHUTTER_F1_E05"
+   "collider": "COL_SHUTTER_F1_E05",
+   "guides_solo": []
   },
   {
    "id": "F1_E06",
@@ -14451,6 +14666,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -14473,6 +14693,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14490,7 +14713,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E06",
-   "collider": "COL_SHUTTER_F1_E06"
+   "collider": "COL_SHUTTER_F1_E06",
+   "guides_solo": []
   },
   {
    "id": "F1_E07",
@@ -14505,6 +14729,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -14527,6 +14756,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14544,7 +14776,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E07",
-   "collider": "COL_SHUTTER_F1_E07"
+   "collider": "COL_SHUTTER_F1_E07",
+   "guides_solo": []
   },
   {
    "id": "F1_E08",
@@ -14559,6 +14792,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -14582,6 +14820,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14599,7 +14841,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E08",
-   "collider": "COL_SHUTTER_F1_E08"
+   "collider": "COL_SHUTTER_F1_E08",
+   "guides_solo": []
   },
   {
    "id": "F1_E09",
@@ -14614,6 +14857,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -14636,6 +14884,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14653,7 +14904,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E09",
-   "collider": "COL_SHUTTER_F1_E09"
+   "collider": "COL_SHUTTER_F1_E09",
+   "guides_solo": []
   },
   {
    "id": "F1_E10",
@@ -14668,6 +14920,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -14690,6 +14947,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14707,7 +14967,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E10",
-   "collider": "COL_SHUTTER_F1_E10"
+   "collider": "COL_SHUTTER_F1_E10",
+   "guides_solo": []
   },
   {
    "id": "F1_E11",
@@ -14722,6 +14983,11 @@
     "glass_breakable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -14745,6 +15011,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14762,7 +15032,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E11",
-   "collider": "COL_SHUTTER_F1_E11"
+   "collider": "COL_SHUTTER_F1_E11",
+   "guides_solo": []
   },
   {
    "id": "F1_E12",
@@ -14777,6 +15048,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -14800,6 +15076,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14817,7 +15097,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E12",
-   "collider": "COL_SHUTTER_F1_E12"
+   "collider": "COL_SHUTTER_F1_E12",
+   "guides_solo": []
   },
   {
    "id": "F1_E13",
@@ -14832,16 +15113,21 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
-   "u1": 2.97,
-   "width": 2.94,
+   "u1": 2.653,
+   "width": 2.623,
    "a": [
     25.665,
     18.03
    ],
    "b": [
     25.665,
-    20.97
+    20.653
    ],
    "plane": [
     0.3,
@@ -14849,12 +15135,14 @@
    ],
    "seal": {
     "a": "guide",
-    "b": "guide"
+    "b": "reveal"
    },
    "guides": [
-    "a",
-    "b"
+    "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14872,61 +15160,27 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_E13",
-   "collider": "COL_SHUTTER_F1_E13"
-  },
-  {
-   "id": "F1_SE00",
-   "bay": "F1_SE00",
-   "floor": "F1",
-   "face": "SE",
-   "room": "F1_bathhouse",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "door_barricadable",
-    "glass_tempered"
-   ],
-   "entry": true,
-   "u0": 0.03,
-   "u1": 3.205,
-   "width": 3.175,
-   "a": [
-    25.742,
-    20.784
-   ],
-   "b": [
-    23.497,
-    23.029
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "C_corner_SE"
+   "collider": "COL_SHUTTER_F1_E13",
+   "reveal": {
+    "b": {
+     "door_bay": "F1_SE00",
+     "housing_u": 2.595,
+     "u": [
+      -0.115,
+      0.027
+     ],
+     "s": [
+      0.24,
+      0.627
+     ],
+     "y": [
+      0.0,
+      3.9
+     ],
+     "note": "static steel reveal plate on the door jamb plane of F1_SE00 (door bay frame u/s): this curtain end and its housing end sit inside it; never in the doorway"
+    }
    },
-   "guides": [
-    "a"
-   ],
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_SE00",
-   "collider": "COL_SHUTTER_F1_SE00"
+   "guides_solo": []
   },
   {
    "id": "F1_SE01",
@@ -14941,6 +15195,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -14963,6 +15222,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -14980,7 +15242,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_SE01",
-   "collider": "COL_SHUTTER_F1_SE01"
+   "collider": "COL_SHUTTER_F1_SE01",
+   "guides_solo": []
   },
   {
    "id": "F1_S00",
@@ -14995,6 +15258,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15018,6 +15286,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15035,7 +15307,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S00",
-   "collider": "COL_SHUTTER_F1_S00"
+   "collider": "COL_SHUTTER_F1_S00",
+   "guides_solo": []
   },
   {
    "id": "F1_S01",
@@ -15050,6 +15323,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15073,6 +15351,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15090,7 +15372,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S01",
-   "collider": "COL_SHUTTER_F1_S01"
+   "collider": "COL_SHUTTER_F1_S01",
+   "guides_solo": []
   },
   {
    "id": "F1_S02",
@@ -15105,6 +15388,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15128,6 +15416,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15145,7 +15437,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S02",
-   "collider": "COL_SHUTTER_F1_S02"
+   "collider": "COL_SHUTTER_F1_S02",
+   "guides_solo": []
   },
   {
    "id": "F1_S03",
@@ -15160,6 +15453,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -15182,6 +15480,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15199,7 +15500,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S03",
-   "collider": "COL_SHUTTER_F1_S03"
+   "collider": "COL_SHUTTER_F1_S03",
+   "guides_solo": []
   },
   {
    "id": "F1_S04",
@@ -15214,6 +15516,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -15236,6 +15543,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15253,7 +15563,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S04",
-   "collider": "COL_SHUTTER_F1_S04"
+   "collider": "COL_SHUTTER_F1_S04",
+   "guides_solo": []
   },
   {
    "id": "F1_S05",
@@ -15268,6 +15579,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15291,6 +15607,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15308,7 +15628,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S05",
-   "collider": "COL_SHUTTER_F1_S05"
+   "collider": "COL_SHUTTER_F1_S05",
+   "guides_solo": []
   },
   {
    "id": "F1_S06",
@@ -15323,6 +15644,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15346,6 +15672,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15363,7 +15693,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S06",
-   "collider": "COL_SHUTTER_F1_S06"
+   "collider": "COL_SHUTTER_F1_S06",
+   "guides_solo": []
   },
   {
    "id": "F1_S07",
@@ -15378,6 +15709,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15401,6 +15737,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15418,7 +15758,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S07",
-   "collider": "COL_SHUTTER_F1_S07"
+   "collider": "COL_SHUTTER_F1_S07",
+   "guides_solo": []
   },
   {
    "id": "F1_S08",
@@ -15433,6 +15774,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15456,6 +15802,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15473,7 +15823,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S08",
-   "collider": "COL_SHUTTER_F1_S08"
+   "collider": "COL_SHUTTER_F1_S08",
+   "guides_solo": []
   },
   {
    "id": "F1_S09",
@@ -15488,6 +15839,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -15510,6 +15866,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15527,7 +15886,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S09",
-   "collider": "COL_SHUTTER_F1_S09"
+   "collider": "COL_SHUTTER_F1_S09",
+   "guides_solo": []
   },
   {
    "id": "F1_S10",
@@ -15542,6 +15902,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -15564,6 +15929,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -15581,62 +15949,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S10",
-   "collider": "COL_SHUTTER_F1_S10"
-  },
-  {
-   "id": "F1_S11",
-   "bay": "F1_S11",
-   "floor": "F1",
-   "face": "S",
-   "room": "F1_garden",
-   "site": null,
-   "double_height": true,
-   "covers": [
-    "glass_tempered",
-    "glass_tempered"
-   ],
-   "entry": true,
-   "u0": 0.03,
-   "u1": 2.97,
-   "width": 2.94,
-   "a": [
-    -12.03,
-    25.665
-   ],
-   "b": [
-    -14.97,
-    25.665
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "guide"
-   },
-   "guides": [
-    "a",
+   "collider": "COL_SHUTTER_F1_S10",
+   "guides_solo": [
     "b"
-   ],
-   "y_closed": [
-    0.0,
-    7.3
-   ],
-   "y_open": 7.3,
-   "travel_m": 7.3,
-   "travel_s": 2.0,
-   "slats": 34,
-   "housing": {
-    "y0": 7.3,
-    "y1": 8.1,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_S11",
-   "collider": "COL_SHUTTER_F1_S11"
+   ]
   },
   {
    "id": "F1_S12",
@@ -15651,6 +15967,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15674,6 +15995,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -15691,7 +16016,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S12",
-   "collider": "COL_SHUTTER_F1_S12"
+   "collider": "COL_SHUTTER_F1_S12",
+   "guides_solo": [
+    "a"
+   ]
   },
   {
    "id": "F1_S13",
@@ -15706,15 +16034,20 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
-   "u1": 2.97,
-   "width": 2.94,
+   "u1": 2.653,
+   "width": 2.623,
    "a": [
     -18.03,
     25.665
    ],
    "b": [
-    -20.97,
+    -20.653,
     25.665
    ],
    "plane": [
@@ -15723,12 +16056,14 @@
    ],
    "seal": {
     "a": "guide",
-    "b": "guide"
+    "b": "reveal"
    },
    "guides": [
-    "a",
-    "b"
+    "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -15746,61 +16081,27 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_S13",
-   "collider": "COL_SHUTTER_F1_S13"
-  },
-  {
-   "id": "F1_SW00",
-   "bay": "F1_SW00",
-   "floor": "F1",
-   "face": "SW",
-   "room": "F1_garden",
-   "site": null,
-   "double_height": true,
-   "covers": [
-    "door_barricadable",
-    "glass_tempered"
-   ],
-   "entry": true,
-   "u0": 0.03,
-   "u1": 3.205,
-   "width": 3.175,
-   "a": [
-    -20.784,
-    25.742
-   ],
-   "b": [
-    -23.029,
-    23.497
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "C_corner_SW"
+   "collider": "COL_SHUTTER_F1_S13",
+   "reveal": {
+    "b": {
+     "door_bay": "F1_SW00",
+     "housing_u": 2.595,
+     "u": [
+      -0.115,
+      0.027
+     ],
+     "s": [
+      0.24,
+      0.627
+     ],
+     "y": [
+      0.0,
+      8.1
+     ],
+     "note": "static steel reveal plate on the door jamb plane of F1_SW00 (door bay frame u/s): this curtain end and its housing end sit inside it; never in the doorway"
+    }
    },
-   "guides": [
-    "a"
-   ],
-   "y_closed": [
-    0.0,
-    7.3
-   ],
-   "y_open": 7.3,
-   "travel_m": 7.3,
-   "travel_s": 2.0,
-   "slats": 34,
-   "housing": {
-    "y0": 7.3,
-    "y1": 8.1,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_SW00",
-   "collider": "COL_SHUTTER_F1_SW00"
+   "guides_solo": []
   },
   {
    "id": "F1_SW01",
@@ -15815,6 +16116,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -15837,6 +16143,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     7.3
@@ -15854,7 +16163,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_SW01",
-   "collider": "COL_SHUTTER_F1_SW01"
+   "collider": "COL_SHUTTER_F1_SW01",
+   "guides_solo": []
   },
   {
    "id": "F1_W00",
@@ -15869,6 +16179,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15892,6 +16207,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -15909,7 +16228,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W00",
-   "collider": "COL_SHUTTER_F1_W00"
+   "collider": "COL_SHUTTER_F1_W00",
+   "guides_solo": []
   },
   {
    "id": "F1_W01",
@@ -15924,6 +16244,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -15947,6 +16272,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -15964,7 +16293,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W01",
-   "collider": "COL_SHUTTER_F1_W01"
+   "collider": "COL_SHUTTER_F1_W01",
+   "guides_solo": []
   },
   {
    "id": "F1_W02",
@@ -15979,6 +16309,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -16002,6 +16337,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -16019,7 +16358,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W02",
-   "collider": "COL_SHUTTER_F1_W02"
+   "collider": "COL_SHUTTER_F1_W02",
+   "guides_solo": []
   },
   {
    "id": "F1_W03",
@@ -16034,6 +16374,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -16056,6 +16401,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16073,7 +16421,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W03",
-   "collider": "COL_SHUTTER_F1_W03"
+   "collider": "COL_SHUTTER_F1_W03",
+   "guides_solo": []
   },
   {
    "id": "F1_W04",
@@ -16088,6 +16437,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -16110,6 +16464,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16127,7 +16484,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W04",
-   "collider": "COL_SHUTTER_F1_W04"
+   "collider": "COL_SHUTTER_F1_W04",
+   "guides_solo": []
   },
   {
    "id": "F1_W05",
@@ -16142,6 +16500,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -16165,6 +16528,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16182,7 +16549,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W05",
-   "collider": "COL_SHUTTER_F1_W05"
+   "collider": "COL_SHUTTER_F1_W05",
+   "guides_solo": []
   },
   {
    "id": "F1_W06",
@@ -16197,6 +16565,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -16219,6 +16592,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16236,7 +16612,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W06",
-   "collider": "COL_SHUTTER_F1_W06"
+   "collider": "COL_SHUTTER_F1_W06",
+   "guides_solo": []
   },
   {
    "id": "F1_W07",
@@ -16251,6 +16628,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -16273,6 +16655,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16290,62 +16675,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W07",
-   "collider": "COL_SHUTTER_F1_W07"
-  },
-  {
-   "id": "F1_W08",
-   "bay": "F1_W08",
-   "floor": "F1",
-   "face": "W",
-   "room": "F1_staff_entry",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "glass_tempered",
-    "door_barricadable"
-   ],
-   "entry": true,
-   "u0": 0.03,
-   "u1": 2.97,
-   "width": 2.94,
-   "a": [
-    -25.665,
-    -3.03
-   ],
-   "b": [
-    -25.665,
-    -5.97
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "guide"
-   },
-   "guides": [
-    "a",
+   "collider": "COL_SHUTTER_F1_W07",
+   "guides_solo": [
     "b"
-   ],
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F1_W08",
-   "collider": "COL_SHUTTER_F1_W08"
+   ]
   },
   {
    "id": "F1_W09",
@@ -16360,6 +16693,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -16382,6 +16720,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16399,7 +16740,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W09",
-   "collider": "COL_SHUTTER_F1_W09"
+   "collider": "COL_SHUTTER_F1_W09",
+   "guides_solo": [
+    "a"
+   ]
   },
   {
    "id": "F1_W10",
@@ -16414,6 +16758,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.965,
    "width": 2.205,
@@ -16434,6 +16783,7 @@
     "b": "F1_W67"
    },
    "guides": [],
+   "guide_u": {},
    "y_closed": [
     0.0,
     3.1
@@ -16451,7 +16801,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W10",
-   "collider": "COL_SHUTTER_F1_W10"
+   "collider": "COL_SHUTTER_F1_W10",
+   "guides_solo": []
   },
   {
    "id": "F1_W11",
@@ -16466,6 +16817,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.035,
    "u1": 2.97,
    "width": 2.935,
@@ -16488,6 +16844,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16505,7 +16864,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W11",
-   "collider": "COL_SHUTTER_F1_W11"
+   "collider": "COL_SHUTTER_F1_W11",
+   "guides_solo": []
   },
   {
    "id": "F1_W12",
@@ -16520,6 +16880,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -16543,6 +16908,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16560,7 +16929,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W12",
-   "collider": "COL_SHUTTER_F1_W12"
+   "collider": "COL_SHUTTER_F1_W12",
+   "guides_solo": []
   },
   {
    "id": "F1_W13",
@@ -16575,6 +16945,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -16598,6 +16973,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16615,7 +16994,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_W13",
-   "collider": "COL_SHUTTER_F1_W13"
+   "collider": "COL_SHUTTER_F1_W13",
+   "guides_solo": []
   },
   {
    "id": "F1_NW00",
@@ -16630,6 +17010,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -16652,6 +17037,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16669,7 +17057,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_NW00",
-   "collider": "COL_SHUTTER_F1_NW00"
+   "collider": "COL_SHUTTER_F1_NW00",
+   "guides_solo": []
   },
   {
    "id": "F1_NW01",
@@ -16684,6 +17073,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -16706,6 +17100,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16723,7 +17120,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F1_NW01",
-   "collider": "COL_SHUTTER_F1_NW01"
+   "collider": "COL_SHUTTER_F1_NW01",
+   "guides_solo": []
   },
   {
    "id": "F2_N00",
@@ -16738,6 +17136,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -16760,6 +17163,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16777,7 +17183,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N00",
-   "collider": "COL_SHUTTER_F2_N00"
+   "collider": "COL_SHUTTER_F2_N00",
+   "guides_solo": []
   },
   {
    "id": "F2_N01",
@@ -16792,6 +17199,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -16814,6 +17226,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16831,7 +17246,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N01",
-   "collider": "COL_SHUTTER_F2_N01"
+   "collider": "COL_SHUTTER_F2_N01",
+   "guides_solo": []
   },
   {
    "id": "F2_N02",
@@ -16846,6 +17262,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -16869,6 +17290,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16886,7 +17311,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N02",
-   "collider": "COL_SHUTTER_F2_N02"
+   "collider": "COL_SHUTTER_F2_N02",
+   "guides_solo": []
   },
   {
    "id": "F2_N03",
@@ -16901,6 +17327,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -16923,6 +17354,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16940,7 +17374,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N03",
-   "collider": "COL_SHUTTER_F2_N03"
+   "collider": "COL_SHUTTER_F2_N03",
+   "guides_solo": []
   },
   {
    "id": "F2_N04",
@@ -16955,6 +17390,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -16977,6 +17417,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -16994,7 +17437,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N04",
-   "collider": "COL_SHUTTER_F2_N04"
+   "collider": "COL_SHUTTER_F2_N04",
+   "guides_solo": []
   },
   {
    "id": "F2_N05",
@@ -17009,6 +17453,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17032,6 +17481,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17049,7 +17502,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N05",
-   "collider": "COL_SHUTTER_F2_N05"
+   "collider": "COL_SHUTTER_F2_N05",
+   "guides_solo": []
   },
   {
    "id": "F2_N06",
@@ -17064,6 +17518,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -17086,6 +17545,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17103,7 +17565,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N06",
-   "collider": "COL_SHUTTER_F2_N06"
+   "collider": "COL_SHUTTER_F2_N06",
+   "guides_solo": []
   },
   {
    "id": "F2_N07",
@@ -17118,6 +17581,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -17140,6 +17608,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17157,7 +17628,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N07",
-   "collider": "COL_SHUTTER_F2_N07"
+   "collider": "COL_SHUTTER_F2_N07",
+   "guides_solo": []
   },
   {
    "id": "F2_N08",
@@ -17172,6 +17644,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17195,6 +17672,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17212,7 +17693,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N08",
-   "collider": "COL_SHUTTER_F2_N08"
+   "collider": "COL_SHUTTER_F2_N08",
+   "guides_solo": []
   },
   {
    "id": "F2_N09",
@@ -17227,6 +17709,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -17249,6 +17736,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17266,7 +17756,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N09",
-   "collider": "COL_SHUTTER_F2_N09"
+   "collider": "COL_SHUTTER_F2_N09",
+   "guides_solo": []
   },
   {
    "id": "F2_N10",
@@ -17281,6 +17772,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -17303,6 +17799,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17320,7 +17819,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N10",
-   "collider": "COL_SHUTTER_F2_N10"
+   "collider": "COL_SHUTTER_F2_N10",
+   "guides_solo": []
   },
   {
    "id": "F2_N11",
@@ -17335,6 +17835,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17358,6 +17863,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17375,7 +17884,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N11",
-   "collider": "COL_SHUTTER_F2_N11"
+   "collider": "COL_SHUTTER_F2_N11",
+   "guides_solo": []
   },
   {
    "id": "F2_N12",
@@ -17390,6 +17900,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17413,6 +17928,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17430,7 +17949,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N12",
-   "collider": "COL_SHUTTER_F2_N12"
+   "collider": "COL_SHUTTER_F2_N12",
+   "guides_solo": []
   },
   {
    "id": "F2_N13",
@@ -17445,6 +17965,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17468,6 +17993,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17485,7 +18014,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_N13",
-   "collider": "COL_SHUTTER_F2_N13"
+   "collider": "COL_SHUTTER_F2_N13",
+   "guides_solo": []
   },
   {
    "id": "F2_NE00",
@@ -17500,6 +18030,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -17522,6 +18057,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17539,7 +18077,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_NE00",
-   "collider": "COL_SHUTTER_F2_NE00"
+   "collider": "COL_SHUTTER_F2_NE00",
+   "guides_solo": []
   },
   {
    "id": "F2_NE01",
@@ -17554,6 +18093,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -17576,6 +18120,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17593,7 +18140,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_NE01",
-   "collider": "COL_SHUTTER_F2_NE01"
+   "collider": "COL_SHUTTER_F2_NE01",
+   "guides_solo": []
   },
   {
    "id": "F2_E00",
@@ -17608,6 +18156,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17631,6 +18184,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17648,7 +18205,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E00",
-   "collider": "COL_SHUTTER_F2_E00"
+   "collider": "COL_SHUTTER_F2_E00",
+   "guides_solo": []
   },
   {
    "id": "F2_E01",
@@ -17663,6 +18221,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17686,6 +18249,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17703,7 +18270,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E01",
-   "collider": "COL_SHUTTER_F2_E01"
+   "collider": "COL_SHUTTER_F2_E01",
+   "guides_solo": []
   },
   {
    "id": "F2_E02",
@@ -17718,6 +18286,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17741,6 +18314,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17758,7 +18335,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E02",
-   "collider": "COL_SHUTTER_F2_E02"
+   "collider": "COL_SHUTTER_F2_E02",
+   "guides_solo": []
   },
   {
    "id": "F2_E03",
@@ -17773,6 +18351,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -17795,6 +18378,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     7.3
@@ -17812,7 +18398,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E03",
-   "collider": "COL_SHUTTER_F2_E03"
+   "collider": "COL_SHUTTER_F2_E03",
+   "guides_solo": []
   },
   {
    "id": "F2_E04",
@@ -17827,6 +18414,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -17849,6 +18441,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17866,7 +18461,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E04",
-   "collider": "COL_SHUTTER_F2_E04"
+   "collider": "COL_SHUTTER_F2_E04",
+   "guides_solo": []
   },
   {
    "id": "F2_E05",
@@ -17881,6 +18477,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -17904,6 +18505,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17921,7 +18526,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E05",
-   "collider": "COL_SHUTTER_F2_E05"
+   "collider": "COL_SHUTTER_F2_E05",
+   "guides_solo": []
   },
   {
    "id": "F2_E06",
@@ -17936,6 +18542,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -17958,6 +18569,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -17975,7 +18589,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E06",
-   "collider": "COL_SHUTTER_F2_E06"
+   "collider": "COL_SHUTTER_F2_E06",
+   "guides_solo": []
   },
   {
    "id": "F2_E07",
@@ -17990,6 +18605,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -18012,6 +18632,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18029,7 +18652,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E07",
-   "collider": "COL_SHUTTER_F2_E07"
+   "collider": "COL_SHUTTER_F2_E07",
+   "guides_solo": []
   },
   {
    "id": "F2_E08",
@@ -18044,6 +18668,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -18067,6 +18696,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18084,7 +18717,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E08",
-   "collider": "COL_SHUTTER_F2_E08"
+   "collider": "COL_SHUTTER_F2_E08",
+   "guides_solo": []
   },
   {
    "id": "F2_E09",
@@ -18099,6 +18733,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -18121,6 +18760,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18138,7 +18780,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E09",
-   "collider": "COL_SHUTTER_F2_E09"
+   "collider": "COL_SHUTTER_F2_E09",
+   "guides_solo": []
   },
   {
    "id": "F2_E10",
@@ -18153,6 +18796,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -18175,6 +18823,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18192,61 +18843,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E10",
-   "collider": "COL_SHUTTER_F2_E10"
-  },
-  {
-   "id": "F2_E11",
-   "bay": "F2_E11",
-   "floor": "F2",
-   "face": "E",
-   "room": "F2_bridge_lobby",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "portal"
-   ],
-   "entry": true,
-   "u0": 0.03,
-   "u1": 2.97,
-   "width": 2.94,
-   "a": [
-    25.665,
-    12.03
-   ],
-   "b": [
-    25.665,
-    14.97
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "guide",
-    "b": "guide"
-   },
-   "guides": [
-    "a",
+   "collider": "COL_SHUTTER_F2_E10",
+   "guides_solo": [
     "b"
-   ],
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F2_E11",
-   "collider": "COL_SHUTTER_F2_E11"
+   ]
   },
   {
    "id": "F2_E12",
@@ -18261,6 +18861,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -18283,6 +18888,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18300,7 +18908,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E12",
-   "collider": "COL_SHUTTER_F2_E12"
+   "collider": "COL_SHUTTER_F2_E12",
+   "guides_solo": [
+    "a"
+   ]
   },
   {
    "id": "F2_E13",
@@ -18315,6 +18926,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -18337,6 +18953,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18354,7 +18973,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_E13",
-   "collider": "COL_SHUTTER_F2_E13"
+   "collider": "COL_SHUTTER_F2_E13",
+   "guides_solo": []
   },
   {
    "id": "F2_SE00",
@@ -18369,6 +18989,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -18391,6 +19016,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18408,7 +19036,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_SE00",
-   "collider": "COL_SHUTTER_F2_SE00"
+   "collider": "COL_SHUTTER_F2_SE00",
+   "guides_solo": []
   },
   {
    "id": "F2_SE01",
@@ -18423,6 +19052,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -18445,6 +19079,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18462,7 +19099,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_SE01",
-   "collider": "COL_SHUTTER_F2_SE01"
+   "collider": "COL_SHUTTER_F2_SE01",
+   "guides_solo": []
   },
   {
    "id": "F2_S00",
@@ -18477,6 +19115,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -18500,6 +19143,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18517,7 +19164,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S00",
-   "collider": "COL_SHUTTER_F2_S00"
+   "collider": "COL_SHUTTER_F2_S00",
+   "guides_solo": []
   },
   {
    "id": "F2_S01",
@@ -18532,6 +19180,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.94,
    "width": 2.91,
@@ -18554,6 +19207,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18571,7 +19227,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S01",
-   "collider": "COL_SHUTTER_F2_S01"
+   "collider": "COL_SHUTTER_F2_S01",
+   "guides_solo": []
   },
   {
    "id": "F2_S02",
@@ -18586,6 +19243,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.06,
    "u1": 2.97,
    "width": 2.91,
@@ -18608,6 +19270,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18625,7 +19290,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S02",
-   "collider": "COL_SHUTTER_F2_S02"
+   "collider": "COL_SHUTTER_F2_S02",
+   "guides_solo": []
   },
   {
    "id": "F2_S03",
@@ -18640,6 +19306,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -18662,6 +19333,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18679,7 +19353,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S03",
-   "collider": "COL_SHUTTER_F2_S03"
+   "collider": "COL_SHUTTER_F2_S03",
+   "guides_solo": []
   },
   {
    "id": "F2_S04",
@@ -18694,6 +19369,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -18716,6 +19396,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18733,7 +19416,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S04",
-   "collider": "COL_SHUTTER_F2_S04"
+   "collider": "COL_SHUTTER_F2_S04",
+   "guides_solo": []
   },
   {
    "id": "F2_S05",
@@ -18748,6 +19432,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -18771,6 +19460,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18788,7 +19481,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S05",
-   "collider": "COL_SHUTTER_F2_S05"
+   "collider": "COL_SHUTTER_F2_S05",
+   "guides_solo": []
   },
   {
    "id": "F2_S06",
@@ -18803,6 +19497,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -18826,6 +19525,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18843,7 +19546,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S06",
-   "collider": "COL_SHUTTER_F2_S06"
+   "collider": "COL_SHUTTER_F2_S06",
+   "guides_solo": []
   },
   {
    "id": "F2_S07",
@@ -18858,6 +19562,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -18881,6 +19590,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18898,7 +19611,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S07",
-   "collider": "COL_SHUTTER_F2_S07"
+   "collider": "COL_SHUTTER_F2_S07",
+   "guides_solo": []
   },
   {
    "id": "F2_S08",
@@ -18913,6 +19627,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -18936,6 +19655,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -18953,7 +19676,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S08",
-   "collider": "COL_SHUTTER_F2_S08"
+   "collider": "COL_SHUTTER_F2_S08",
+   "guides_solo": []
   },
   {
    "id": "F2_S09",
@@ -18968,6 +19692,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -18990,6 +19719,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19007,7 +19739,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S09",
-   "collider": "COL_SHUTTER_F2_S09"
+   "collider": "COL_SHUTTER_F2_S09",
+   "guides_solo": []
   },
   {
    "id": "F2_S10",
@@ -19022,6 +19755,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -19044,6 +19782,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19061,7 +19802,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_S10",
-   "collider": "COL_SHUTTER_F2_S10"
+   "collider": "COL_SHUTTER_F2_S10",
+   "guides_solo": [
+    "b"
+   ]
   },
   {
    "id": "F2_W03",
@@ -19076,6 +19820,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -19098,6 +19847,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19115,7 +19867,10 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W03",
-   "collider": "COL_SHUTTER_F2_W03"
+   "collider": "COL_SHUTTER_F2_W03",
+   "guides_solo": [
+    "a"
+   ]
   },
   {
    "id": "F2_W04",
@@ -19130,6 +19885,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -19152,6 +19912,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19169,7 +19932,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W04",
-   "collider": "COL_SHUTTER_F2_W04"
+   "collider": "COL_SHUTTER_F2_W04",
+   "guides_solo": []
   },
   {
    "id": "F2_W05",
@@ -19184,6 +19948,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -19207,6 +19976,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19224,7 +19997,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W05",
-   "collider": "COL_SHUTTER_F2_W05"
+   "collider": "COL_SHUTTER_F2_W05",
+   "guides_solo": []
   },
   {
    "id": "F2_W06",
@@ -19239,6 +20013,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -19261,6 +20040,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19278,7 +20060,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W06",
-   "collider": "COL_SHUTTER_F2_W06"
+   "collider": "COL_SHUTTER_F2_W06",
+   "guides_solo": []
   },
   {
    "id": "F2_W07",
@@ -19293,6 +20076,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -19315,6 +20103,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19332,7 +20123,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W07",
-   "collider": "COL_SHUTTER_F2_W07"
+   "collider": "COL_SHUTTER_F2_W07",
+   "guides_solo": []
   },
   {
    "id": "F2_W08",
@@ -19347,6 +20139,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -19370,6 +20167,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19387,7 +20188,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W08",
-   "collider": "COL_SHUTTER_F2_W08"
+   "collider": "COL_SHUTTER_F2_W08",
+   "guides_solo": []
   },
   {
    "id": "F2_W09",
@@ -19402,6 +20204,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -19424,6 +20231,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19441,7 +20251,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W09",
-   "collider": "COL_SHUTTER_F2_W09"
+   "collider": "COL_SHUTTER_F2_W09",
+   "guides_solo": []
   },
   {
    "id": "F2_W10",
@@ -19456,6 +20267,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.965,
    "width": 2.205,
@@ -19476,6 +20292,7 @@
     "b": "F2_W33"
    },
    "guides": [],
+   "guide_u": {},
    "y_closed": [
     0.0,
     3.1
@@ -19493,7 +20310,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W10",
-   "collider": "COL_SHUTTER_F2_W10"
+   "collider": "COL_SHUTTER_F2_W10",
+   "guides_solo": []
   },
   {
    "id": "F2_W11",
@@ -19508,6 +20326,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.035,
    "u1": 2.97,
    "width": 2.935,
@@ -19530,6 +20353,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19547,7 +20373,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W11",
-   "collider": "COL_SHUTTER_F2_W11"
+   "collider": "COL_SHUTTER_F2_W11",
+   "guides_solo": []
   },
   {
    "id": "F2_W12",
@@ -19562,6 +20389,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -19584,6 +20416,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19601,7 +20436,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W12",
-   "collider": "COL_SHUTTER_F2_W12"
+   "collider": "COL_SHUTTER_F2_W12",
+   "guides_solo": []
   },
   {
    "id": "F2_W13",
@@ -19616,6 +20452,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -19638,6 +20479,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19655,7 +20499,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_W13",
-   "collider": "COL_SHUTTER_F2_W13"
+   "collider": "COL_SHUTTER_F2_W13",
+   "guides_solo": []
   },
   {
    "id": "F2_NW00",
@@ -19670,6 +20515,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -19692,6 +20542,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19709,7 +20562,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_NW00",
-   "collider": "COL_SHUTTER_F2_NW00"
+   "collider": "COL_SHUTTER_F2_NW00",
+   "guides_solo": []
   },
   {
    "id": "F2_NW01",
@@ -19724,6 +20578,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -19746,6 +20605,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19763,7 +20625,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F2_NW01",
-   "collider": "COL_SHUTTER_F2_NW01"
+   "collider": "COL_SHUTTER_F2_NW01",
+   "guides_solo": []
   },
   {
    "id": "F3_N00",
@@ -19778,11 +20641,16 @@
     "glass_tempered"
    ],
    "entry": false,
-   "u0": 0.03,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
+   "u0": 0.348,
    "u1": 2.97,
-   "width": 2.94,
+   "width": 2.622,
    "a": [
-    -20.97,
+    -20.652,
     -25.665
    ],
    "b": [
@@ -19794,13 +20662,15 @@
     0.37
    ],
    "seal": {
-    "a": "guide",
+    "a": "reveal",
     "b": "guide"
    },
    "guides": [
-    "a",
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19818,7 +20688,27 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N00",
-   "collider": "COL_SHUTTER_F3_N00"
+   "collider": "COL_SHUTTER_F3_N00",
+   "reveal": {
+    "a": {
+     "door_bay": "F3_NW01",
+     "housing_u": 0.406,
+     "u": [
+      3.509,
+      3.65
+     ],
+     "s": [
+      0.24,
+      0.628
+     ],
+     "y": [
+      0.0,
+      3.9
+     ],
+     "note": "static steel reveal plate on the door jamb plane of F3_NW01 (door bay frame u/s): this curtain end and its housing end sit inside it; never in the doorway"
+    }
+   },
+   "guides_solo": []
   },
   {
    "id": "F3_N01",
@@ -19833,6 +20723,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.965,
    "width": 2.935,
@@ -19855,6 +20750,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19872,7 +20770,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N01",
-   "collider": "COL_SHUTTER_F3_N01"
+   "collider": "COL_SHUTTER_F3_N01",
+   "guides_solo": []
   },
   {
    "id": "F3_N02",
@@ -19887,6 +20786,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.035,
    "u1": 2.97,
    "width": 2.935,
@@ -19909,6 +20813,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19926,7 +20833,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N02",
-   "collider": "COL_SHUTTER_F3_N02"
+   "collider": "COL_SHUTTER_F3_N02",
+   "guides_solo": []
   },
   {
    "id": "F3_N03",
@@ -19941,6 +20849,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -19963,6 +20876,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -19980,7 +20896,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N03",
-   "collider": "COL_SHUTTER_F3_N03"
+   "collider": "COL_SHUTTER_F3_N03",
+   "guides_solo": []
   },
   {
    "id": "F3_N04",
@@ -19995,6 +20912,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -20017,6 +20939,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20034,7 +20959,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N04",
-   "collider": "COL_SHUTTER_F3_N04"
+   "collider": "COL_SHUTTER_F3_N04",
+   "guides_solo": []
   },
   {
    "id": "F3_N05",
@@ -20049,6 +20975,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20072,6 +21003,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20089,7 +21024,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N05",
-   "collider": "COL_SHUTTER_F3_N05"
+   "collider": "COL_SHUTTER_F3_N05",
+   "guides_solo": []
   },
   {
    "id": "F3_N06",
@@ -20104,6 +21040,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -20126,6 +21067,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20143,7 +21087,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N06",
-   "collider": "COL_SHUTTER_F3_N06"
+   "collider": "COL_SHUTTER_F3_N06",
+   "guides_solo": []
   },
   {
    "id": "F3_N07",
@@ -20158,6 +21103,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -20180,6 +21130,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20197,7 +21150,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N07",
-   "collider": "COL_SHUTTER_F3_N07"
+   "collider": "COL_SHUTTER_F3_N07",
+   "guides_solo": []
   },
   {
    "id": "F3_N08",
@@ -20212,6 +21166,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20235,6 +21194,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20252,7 +21215,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N08",
-   "collider": "COL_SHUTTER_F3_N08"
+   "collider": "COL_SHUTTER_F3_N08",
+   "guides_solo": []
   },
   {
    "id": "F3_N09",
@@ -20267,6 +21231,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -20289,6 +21258,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20306,7 +21278,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_N09",
-   "collider": "COL_SHUTTER_F3_N09"
+   "collider": "COL_SHUTTER_F3_N09",
+   "guides_solo": []
   },
   {
    "id": "F3_E04",
@@ -20321,6 +21294,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -20343,6 +21321,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20360,7 +21341,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E04",
-   "collider": "COL_SHUTTER_F3_E04"
+   "collider": "COL_SHUTTER_F3_E04",
+   "guides_solo": []
   },
   {
    "id": "F3_E05",
@@ -20375,6 +21357,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20398,6 +21385,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20415,7 +21406,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E05",
-   "collider": "COL_SHUTTER_F3_E05"
+   "collider": "COL_SHUTTER_F3_E05",
+   "guides_solo": []
   },
   {
    "id": "F3_E06",
@@ -20430,6 +21422,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -20452,6 +21449,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20469,7 +21469,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E06",
-   "collider": "COL_SHUTTER_F3_E06"
+   "collider": "COL_SHUTTER_F3_E06",
+   "guides_solo": []
   },
   {
    "id": "F3_E07",
@@ -20484,6 +21485,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -20506,6 +21512,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20523,7 +21532,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E07",
-   "collider": "COL_SHUTTER_F3_E07"
+   "collider": "COL_SHUTTER_F3_E07",
+   "guides_solo": []
   },
   {
    "id": "F3_E08",
@@ -20538,6 +21548,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20561,6 +21576,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20578,7 +21597,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E08",
-   "collider": "COL_SHUTTER_F3_E08"
+   "collider": "COL_SHUTTER_F3_E08",
+   "guides_solo": []
   },
   {
    "id": "F3_E09",
@@ -20593,6 +21613,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -20615,6 +21640,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20632,7 +21660,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E09",
-   "collider": "COL_SHUTTER_F3_E09"
+   "collider": "COL_SHUTTER_F3_E09",
+   "guides_solo": []
   },
   {
    "id": "F3_E10",
@@ -20647,6 +21676,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -20669,6 +21703,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20686,7 +21723,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E10",
-   "collider": "COL_SHUTTER_F3_E10"
+   "collider": "COL_SHUTTER_F3_E10",
+   "guides_solo": []
   },
   {
    "id": "F3_E11",
@@ -20701,6 +21739,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20724,6 +21767,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20741,7 +21788,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E11",
-   "collider": "COL_SHUTTER_F3_E11"
+   "collider": "COL_SHUTTER_F3_E11",
+   "guides_solo": []
   },
   {
    "id": "F3_E12",
@@ -20756,6 +21804,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20779,6 +21832,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20796,7 +21853,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E12",
-   "collider": "COL_SHUTTER_F3_E12"
+   "collider": "COL_SHUTTER_F3_E12",
+   "guides_solo": []
   },
   {
    "id": "F3_E13",
@@ -20811,6 +21869,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20834,6 +21897,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20851,7 +21918,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_E13",
-   "collider": "COL_SHUTTER_F3_E13"
+   "collider": "COL_SHUTTER_F3_E13",
+   "guides_solo": []
   },
   {
    "id": "F3_SE00",
@@ -20866,6 +21934,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -20888,6 +21961,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20905,7 +21981,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_SE00",
-   "collider": "COL_SHUTTER_F3_SE00"
+   "collider": "COL_SHUTTER_F3_SE00",
+   "guides_solo": []
   },
   {
    "id": "F3_SE01",
@@ -20920,6 +21997,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -20942,6 +22024,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -20959,7 +22044,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_SE01",
-   "collider": "COL_SHUTTER_F3_SE01"
+   "collider": "COL_SHUTTER_F3_SE01",
+   "guides_solo": []
   },
   {
    "id": "F3_S00",
@@ -20974,6 +22060,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -20997,6 +22088,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21014,7 +22109,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S00",
-   "collider": "COL_SHUTTER_F3_S00"
+   "collider": "COL_SHUTTER_F3_S00",
+   "guides_solo": []
   },
   {
    "id": "F3_S01",
@@ -21029,6 +22125,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.94,
    "width": 2.91,
@@ -21051,6 +22152,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21068,7 +22172,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S01",
-   "collider": "COL_SHUTTER_F3_S01"
+   "collider": "COL_SHUTTER_F3_S01",
+   "guides_solo": []
   },
   {
    "id": "F3_S02",
@@ -21083,6 +22188,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.06,
    "u1": 2.97,
    "width": 2.91,
@@ -21105,6 +22215,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21122,7 +22235,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S02",
-   "collider": "COL_SHUTTER_F3_S02"
+   "collider": "COL_SHUTTER_F3_S02",
+   "guides_solo": []
   },
   {
    "id": "F3_S03",
@@ -21137,6 +22251,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -21159,6 +22278,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21176,7 +22298,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S03",
-   "collider": "COL_SHUTTER_F3_S03"
+   "collider": "COL_SHUTTER_F3_S03",
+   "guides_solo": []
   },
   {
    "id": "F3_S04",
@@ -21191,6 +22314,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -21213,6 +22341,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21230,7 +22361,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S04",
-   "collider": "COL_SHUTTER_F3_S04"
+   "collider": "COL_SHUTTER_F3_S04",
+   "guides_solo": []
   },
   {
    "id": "F3_S05",
@@ -21245,6 +22377,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21268,6 +22405,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21285,7 +22426,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S05",
-   "collider": "COL_SHUTTER_F3_S05"
+   "collider": "COL_SHUTTER_F3_S05",
+   "guides_solo": []
   },
   {
    "id": "F3_S06",
@@ -21300,6 +22442,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.84,
    "width": 2.81,
@@ -21322,6 +22469,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21339,7 +22489,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S06",
-   "collider": "COL_SHUTTER_F3_S06"
+   "collider": "COL_SHUTTER_F3_S06",
+   "guides_solo": []
   },
   {
    "id": "F3_S07",
@@ -21354,6 +22505,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.16,
    "u1": 2.97,
    "width": 2.81,
@@ -21376,6 +22532,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21393,7 +22552,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S07",
-   "collider": "COL_SHUTTER_F3_S07"
+   "collider": "COL_SHUTTER_F3_S07",
+   "guides_solo": []
   },
   {
    "id": "F3_S08",
@@ -21408,6 +22568,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21431,6 +22596,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21448,7 +22617,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S08",
-   "collider": "COL_SHUTTER_F3_S08"
+   "collider": "COL_SHUTTER_F3_S08",
+   "guides_solo": []
   },
   {
    "id": "F3_S09",
@@ -21463,6 +22633,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -21485,6 +22660,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21502,7 +22680,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S09",
-   "collider": "COL_SHUTTER_F3_S09"
+   "collider": "COL_SHUTTER_F3_S09",
+   "guides_solo": []
   },
   {
    "id": "F3_S10",
@@ -21517,6 +22696,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.94,
    "width": 2.18,
@@ -21537,6 +22721,7 @@
     "b": "F3_W49"
    },
    "guides": [],
+   "guide_u": {},
    "y_closed": [
     0.0,
     3.1
@@ -21554,7 +22739,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S10",
-   "collider": "COL_SHUTTER_F3_S10"
+   "collider": "COL_SHUTTER_F3_S10",
+   "guides_solo": []
   },
   {
    "id": "F3_S11",
@@ -21569,6 +22755,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.06,
    "u1": 2.97,
    "width": 2.91,
@@ -21591,6 +22782,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21608,7 +22802,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S11",
-   "collider": "COL_SHUTTER_F3_S11"
+   "collider": "COL_SHUTTER_F3_S11",
+   "guides_solo": []
   },
   {
    "id": "F3_S12",
@@ -21623,6 +22818,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21646,6 +22846,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21663,7 +22867,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S12",
-   "collider": "COL_SHUTTER_F3_S12"
+   "collider": "COL_SHUTTER_F3_S12",
+   "guides_solo": []
   },
   {
    "id": "F3_S13",
@@ -21678,6 +22883,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21701,6 +22911,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21718,7 +22932,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_S13",
-   "collider": "COL_SHUTTER_F3_S13"
+   "collider": "COL_SHUTTER_F3_S13",
+   "guides_solo": []
   },
   {
    "id": "F3_SW00",
@@ -21733,6 +22948,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -21755,6 +22975,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21772,7 +22995,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_SW00",
-   "collider": "COL_SHUTTER_F3_SW00"
+   "collider": "COL_SHUTTER_F3_SW00",
+   "guides_solo": []
   },
   {
    "id": "F3_SW01",
@@ -21787,6 +23011,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.33,
    "u1": 3.506,
    "width": 3.176,
@@ -21809,6 +23038,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.536
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21826,7 +23058,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_SW01",
-   "collider": "COL_SHUTTER_F3_SW01"
+   "collider": "COL_SHUTTER_F3_SW01",
+   "guides_solo": []
   },
   {
    "id": "F3_W00",
@@ -21841,6 +23074,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21864,6 +23102,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21881,7 +23123,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W00",
-   "collider": "COL_SHUTTER_F3_W00"
+   "collider": "COL_SHUTTER_F3_W00",
+   "guides_solo": []
   },
   {
    "id": "F3_W01",
@@ -21896,6 +23139,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21919,6 +23167,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21936,7 +23188,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W01",
-   "collider": "COL_SHUTTER_F3_W01"
+   "collider": "COL_SHUTTER_F3_W01",
+   "guides_solo": []
   },
   {
    "id": "F3_W02",
@@ -21951,6 +23204,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -21974,6 +23232,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -21991,7 +23253,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W02",
-   "collider": "COL_SHUTTER_F3_W02"
+   "collider": "COL_SHUTTER_F3_W02",
+   "guides_solo": []
   },
   {
    "id": "F3_W03",
@@ -22006,6 +23269,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -22028,6 +23296,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22045,7 +23316,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W03",
-   "collider": "COL_SHUTTER_F3_W03"
+   "collider": "COL_SHUTTER_F3_W03",
+   "guides_solo": []
   },
   {
    "id": "F3_W04",
@@ -22060,6 +23332,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.97,
    "width": 2.21,
@@ -22082,6 +23359,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22099,7 +23379,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W04",
-   "collider": "COL_SHUTTER_F3_W04"
+   "collider": "COL_SHUTTER_F3_W04",
+   "guides_solo": []
   },
   {
    "id": "F3_W05",
@@ -22114,6 +23395,11 @@
     "glass_breakable"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -22137,6 +23423,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22154,7 +23444,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W05",
-   "collider": "COL_SHUTTER_F3_W05"
+   "collider": "COL_SHUTTER_F3_W05",
+   "guides_solo": []
   },
   {
    "id": "F3_W06",
@@ -22169,6 +23460,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -22192,6 +23488,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22209,7 +23509,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W06",
-   "collider": "COL_SHUTTER_F3_W06"
+   "collider": "COL_SHUTTER_F3_W06",
+   "guides_solo": []
   },
   {
    "id": "F3_W07",
@@ -22224,6 +23525,11 @@
     "window_barricadable"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -22247,6 +23553,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22264,7 +23574,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W07",
-   "collider": "COL_SHUTTER_F3_W07"
+   "collider": "COL_SHUTTER_F3_W07",
+   "guides_solo": []
   },
   {
    "id": "F3_W08",
@@ -22279,6 +23590,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -22302,6 +23618,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22319,7 +23639,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W08",
-   "collider": "COL_SHUTTER_F3_W08"
+   "collider": "COL_SHUTTER_F3_W08",
+   "guides_solo": []
   },
   {
    "id": "F3_W09",
@@ -22334,6 +23655,11 @@
     "glass_tempered"
    ],
    "entry": true,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.24,
    "width": 2.21,
@@ -22356,6 +23682,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22373,7 +23702,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W09",
-   "collider": "COL_SHUTTER_F3_W09"
+   "collider": "COL_SHUTTER_F3_W09",
+   "guides_solo": []
   },
   {
    "id": "F3_W10",
@@ -22388,6 +23718,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.76,
    "u1": 2.94,
    "width": 2.18,
@@ -22408,6 +23743,7 @@
     "b": "F3_W37"
    },
    "guides": [],
+   "guide_u": {},
    "y_closed": [
     0.0,
     3.1
@@ -22425,7 +23761,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W10",
-   "collider": "COL_SHUTTER_F3_W10"
+   "collider": "COL_SHUTTER_F3_W10",
+   "guides_solo": []
   },
   {
    "id": "F3_W11",
@@ -22440,6 +23777,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.06,
    "u1": 2.97,
    "width": 2.91,
@@ -22462,6 +23804,9 @@
    "guides": [
     "b"
    ],
+   "guide_u": {
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22479,7 +23824,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W11",
-   "collider": "COL_SHUTTER_F3_W11"
+   "collider": "COL_SHUTTER_F3_W11",
+   "guides_solo": []
   },
   {
    "id": "F3_W12",
@@ -22494,6 +23840,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -22517,6 +23868,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22534,7 +23889,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W12",
-   "collider": "COL_SHUTTER_F3_W12"
+   "collider": "COL_SHUTTER_F3_W12",
+   "guides_solo": []
   },
   {
    "id": "F3_W13",
@@ -22549,6 +23905,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.0
+   ],
    "u0": 0.03,
    "u1": 2.97,
    "width": 2.94,
@@ -22572,6 +23933,10 @@
     "a",
     "b"
    ],
+   "guide_u": {
+    "a": 0.0,
+    "b": 3.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22589,7 +23954,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_W13",
-   "collider": "COL_SHUTTER_F3_W13"
+   "collider": "COL_SHUTTER_F3_W13",
+   "guides_solo": []
   },
   {
    "id": "F3_NW00",
@@ -22604,6 +23970,11 @@
     "glass_tempered"
    ],
    "entry": false,
+   "door_side": null,
+   "span": [
+    0.0,
+    3.536
+   ],
    "u0": 0.03,
    "u1": 3.205,
    "width": 3.175,
@@ -22626,6 +23997,9 @@
    "guides": [
     "a"
    ],
+   "guide_u": {
+    "a": 0.0
+   },
    "y_closed": [
     0.0,
     3.1
@@ -22643,61 +24017,8 @@
    },
    "default": "open",
    "node": "SHUTTER_F3_NW00",
-   "collider": "COL_SHUTTER_F3_NW00"
-  },
-  {
-   "id": "F3_NW01",
-   "bay": "F3_NW01",
-   "floor": "F3",
-   "face": "NW",
-   "room": "F3_edit_bay",
-   "site": null,
-   "double_height": false,
-   "covers": [
-    "glass_tempered",
-    "door_barricadable"
-   ],
-   "entry": true,
-   "u0": 0.33,
-   "u1": 3.506,
-   "width": 3.176,
-   "a": [
-    -23.03,
-    -23.496
-   ],
-   "b": [
-    -20.784,
-    -25.742
-   ],
-   "plane": [
-    0.3,
-    0.37
-   ],
-   "seal": {
-    "a": "C_corner_NW",
-    "b": "guide"
-   },
-   "guides": [
-    "b"
-   ],
-   "y_closed": [
-    0.0,
-    3.1
-   ],
-   "y_open": 3.1,
-   "travel_m": 3.1,
-   "travel_s": 2.0,
-   "slats": 14,
-   "housing": {
-    "y0": 3.1,
-    "y1": 3.9,
-    "s0": 0.26,
-    "s1": 0.44,
-    "where": "plenum above the ceiling"
-   },
-   "default": "open",
-   "node": "SHUTTER_F3_NW01",
-   "collider": "COL_SHUTTER_F3_NW01"
+   "collider": "COL_SHUTTER_F3_NW00",
+   "guides_solo": []
   }
  ],
  "facade": {
