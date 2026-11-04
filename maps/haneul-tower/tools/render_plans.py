@@ -32,7 +32,7 @@ C = {
     'balustrade': (150, 200, 255), 'open': (90, 92, 110),
     'door_b': (255, 70, 100), 'door_o': (150, 150, 160), 'win_b': (255, 70, 210), 'vault': (200, 200, 120),
     'glass_tempered': (96, 112, 140), 'glass_breakable': (60, 230, 255), 'window_barricadable': (255, 70, 210),
-    'door_barricadable': (255, 70, 100), 'spandrel': (60, 60, 66), 'portal': (176, 108, 255),
+    'door_barricadable': (255, 70, 100), 'spandrel': (60, 60, 66), 'portal': (176, 108, 255), 'shutter': (194, 24, 91),
     'hatch': (60, 230, 120), 'soft_floor': (200, 240, 80), 'column': (200, 204, 210),
     'text': (232, 234, 240), 'dim': (140, 144, 160), 'obj': (255, 214, 60), 'def': (80, 170, 255), 'atk': (255, 80, 80),
     'cover': (240, 240, 240), 'walk': (120, 128, 150), 'route_attack': (255, 90, 90), 'route_rotation': (80, 170, 255),
@@ -210,6 +210,9 @@ def draw_facade(cv, fl, scale_k=1.0):
             cv.line((a[0] - nx * 0.45, a[1] - nz * 0.45), (bb[0] - nx * 0.45, bb[1] - nz * 0.45), (110, 90, 160), 1.5 * scale_k, dash=(4, 3))
         for q in (a, bb):
             cv.circle(q, 1.6 * scale_k, fill=(170, 175, 190))
+    # blast shutters: a thin line on the curtain plane inside the glass (open by default)
+    for sh in L.get('shutters', []):
+        if sh['floor'] == fl: cv.line(T(sh['a']), T(sh['b']), C['shutter'], 2.2 * scale_k)
 
 
 def room_fill(r):
@@ -530,12 +533,14 @@ def draw_legend(cv, x, y, fl):
         ('wall', 'glass_tempered', 'facade: tempered glass (unbreakable)'), ('wall', 'glass_breakable', 'facade: breakable glass'),
         ('wall', 'window_barricadable', 'facade: barricadable entry window'), ('wall', 'door_barricadable', 'facade: barricadable door'),
         ('wall', 'spandrel', 'facade: opaque spandrel'), ('wall', 'portal', 'bridge portal'),
+        ('thin', 'shutter', 'blast shutter inside the glass (open by default; closed: no sight or bullets)'),
         ('sq', 'hatch', 'hatch 1.2 m (dashed = in ceiling; R = reinforced from that side)'), ('sq', 'soft_floor', 'soft floor patch 2.4 m'),
         ('col', 'column', 'structural column (hard)'),
     ]
     for kind, key, label in items:
         col = C[key]
         if kind == 'wall': cv.linepx((x, y + 8), (x + 46, y + 8), col, 7)
+        elif kind == 'thin': cv.linepx((x, y + 8), (x + 46, y + 8), col, 2)
         elif kind == 'dash':
             for k in range(0, 46, 9): cv.linepx((x + k, y + 8), (x + k + 5, y + 8), col, 3)
         elif kind == 'gap':
@@ -592,6 +597,7 @@ def draw_legend(cv, x, y, fl):
             for lt in b['lites']: lites[lt['type']] = lites.get(lt['type'], 0) + 1
     cv.textpx((x, y), 'lites: tempered %d, breakable %d, entry windows %d, doors %d' % (
         lites.get('glass_tempered', 0), lites.get('glass_breakable', 0), lites.get('window_barricadable', 0), lites.get('door_barricadable', 0)), font(12), C['text']); y += 20
+    cv.textpx((x, y), 'blast shutters: %d (open by default)' % sum(1 for sh in L.get('shutters', []) if sh['floor'] == fl), font(12), C['shutter']); y += 20
     nh = sum(1 for h in L['hatches'] if h['floor'] == fl); npch = sum(1 for h in L['floor_patches'] if h['floor'] == fl)
     cv.textpx((x, y), 'hatches in this floor: %d, soft floor patches: %d' % (nh, npch), font(12), C['text']); y += 30
     sites = [s for s in L['sites'] if s['floor'] == fl]

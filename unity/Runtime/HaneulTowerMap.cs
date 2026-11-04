@@ -28,19 +28,27 @@
 // IsReinforceable true) and its junction ends, jambs, trims and header are hard (HARD_<wallId>_hdr). Every corner and
 // T-junction is hard for 1.0 m. SOFT_ nodes are destructible props only; hatches stay reinforceable, soft floor
 // patches are destructible but not reinforceable.
+// Blast shutters (SHUTTER_<bayId>, one per facade bay with glass, open by default): each is a mesh with one blend
+// shape, "closed" (weight 100 = closed), on a SkinnedMeshRenderer (glTFast imports morph targets that way). They move,
+// so they get no static flags and no mesh collider: their closed-state box COL_SHUTTER_<bayId> gets a BoxCollider that
+// is enabled only while the shutter is fully closed. SetShutters / SetShutter animate them (Update, travel_s from
+// layout.json) and raise ShutterMoveStarted / ShutterMoveFinished (also as UnityEvents). The glb's shared clips
+// shutters_close / shutters_open drive the same blend shapes; use either the clips or these methods, not both at once.
 // Directions: REINF_ units face transform.forward (the defender room); hatches face transform.up (every hatch is
 // reinforced from above, face-up on the slab); BARR_ slots face transform.forward (the wall normal). A Wall Fortification prefab placed as
 // a child at the identity pose of a REINF_ or HATCH_ node sits exactly on its mount.
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public enum HaneulSurfaceType
 {
     Unknown, Hard, Soft, Reinforceable, Hatch, SoftFloor, SoftCeiling, InteriorGlass, FacadeGlassBreakable,
     FacadeGlassTempered, GlassFloor, Rail, BarricadeDoor, BarricadeWindow, Opening, Stair, Ladder, Walkway, Ledge,
     Bridge, Terrace, Hologram, RevealZone, AttackerSpawn, DefenderSpawn, Objective, Cover, Callout, PropMarker,
-    Collider, Deco, Env, Backdrop
+    Collider, Deco, Env, Backdrop,
+    Shutter     // appended (enum values are serialized as numbers: never insert before the end)
 }
 
 public enum FortificationSize { None, Small, Standard, Large, XL, Hatch }
@@ -60,6 +68,14 @@ public class HaneulTowerMap : MonoBehaviour
     public int markerLayer = -1;                 // empties (spawns, slots, objectives ...)
     [Header("Markers")]
     public bool hideColliderMeshes = true;       // COL_ nodes are empties; any renderer on them is switched off
+    [Header("Blast shutters")]
+    public bool shuttersClosedOnStart = false;   // the map ships with every shutter open
+    public float shutterTravelOverride = 0f;     // > 0 replaces layout travel_s (seconds for the full travel)
+    [Serializable] public class ShutterEvent : UnityEvent<HaneulSurface, bool> { }
+    public ShutterEvent onShutterStarted = new ShutterEvent();    // (shutter, closing)
+    public ShutterEvent onShutterFinished = new ShutterEvent();   // (shutter, closed)
+    public event Action<HaneulSurface, bool> ShutterMoveStarted;  // (shutter, closing)
+    public event Action<HaneulSurface, bool> ShutterMoveFinished; // (shutter, closed)
 
     public static HaneulTowerMap Instance { get; private set; }
     public bool IsSetUp { get; private set; }
@@ -78,6 +94,7 @@ public class HaneulTowerMap : MonoBehaviour
     public readonly List<HaneulSurface> Callouts = new List<HaneulSurface>();
     public readonly List<HaneulSurface> PropMarkers = new List<HaneulSurface>();
     public readonly List<HaneulSurface> RevealZones = new List<HaneulSurface>();
+    public readonly List<HaneulSurface> Shutters = new List<HaneulSurface>();
     public readonly Dictionary<string, Site> Sites = new Dictionary<string, Site>();
     public int ReinforceBudget { get; private set; } = 8;    // per defending team per round (layout rules)
 
@@ -106,7 +123,7 @@ public class HaneulTowerMap : MonoBehaviour
         P("SPAWN_ATK_", HaneulSurfaceType.AttackerSpawn), P("SPAWN_DEF_", HaneulSurfaceType.DefenderSpawn),
         P("OBJ_", HaneulSurfaceType.Objective), P("COVER_", HaneulSurfaceType.Cover), P("CALLOUT_", HaneulSurfaceType.Callout),
         P("PROP_", HaneulSurfaceType.PropMarker), P("COL_", HaneulSurfaceType.Collider), P("DECO_", HaneulSurfaceType.Deco),
-        P("ENV_", HaneulSurfaceType.Env), P("BACKDROP_", HaneulSurfaceType.Backdrop),
+        P("ENV_", HaneulSurfaceType.Env), P("BACKDROP_", HaneulSurfaceType.Backdrop), P("SHUTTER_", HaneulSurfaceType.Shutter),
     };
     static KeyValuePair<string, HaneulSurfaceType> P(string p, HaneulSurfaceType t) { return new KeyValuePair<string, HaneulSurfaceType>(p, t); }
 
@@ -141,13 +158,15 @@ public class HaneulTowerMap : MonoBehaviour
     [Serializable] class LReinfRules { public int budget; }
     [Serializable] class LRules { public LReinfRules reinforce; }
     [Serializable] class LRoom { public string id, floor, name; }
-    [Serializable] class LLayout { public LRules rules; public LWall[] walls; public LHatch[] hatches; public LSite[] sites; public LSpawns spawns; public LRoom[] rooms; }
+    [Serializable] class LShutter { public string id, bay, floor, face, room, site, @default; public float travel_s, travel_m, y_open; public bool double_height; }
+    [Serializable] class LLayout { public LRules rules; public LWall[] walls; public LHatch[] hatches; public LSite[] sites; public LSpawns spawns; public LRoom[] rooms; public LShutter[] shutters; }
 
     LLayout layout;
     readonly Dictionary<string, LWall> walls = new Dictionary<string, LWall>();
     readonly Dictionary<string, LHatch> hatchData = new Dictionary<string, LHatch>();
     readonly Dictionary<string, string> defSpawnSite = new Dictionary<string, string>();
     readonly Dictionary<string, string> roomNames = new Dictionary<string, string>();
+    readonly Dictionary<string, LShutter> shutterData = new Dictionary<string, LShutter>();
 
     public static Vector3 FromLayout(float x, float y, float z) { return new Vector3(-x, y, z); }
     public string RoomName(string roomId) { string n; return roomId != null && roomNames.TryGetValue(roomId, out n) ? n : roomId; }
@@ -187,7 +206,8 @@ public class HaneulTowerMap : MonoBehaviour
     {
         if (layout == null) ReadLayout();
         byName.Clear(); byCollider.Clear(); Sites.Clear();
-        foreach (var l in new[] { ReinforceUnits, Hatches, BarricadeDoors, BarricadeWindows, AttackerSpawns, DefenderSpawns, Objectives, CoverSpots, Callouts, PropMarkers, RevealZones }) l.Clear();
+        foreach (var l in new[] { ReinforceUnits, Hatches, BarricadeDoors, BarricadeWindows, AttackerSpawns, DefenderSpawns, Objectives, CoverSpots, Callouts, PropMarkers, RevealZones, Shutters }) l.Clear();
+        moving.Clear();
         if (layout != null && layout.sites != null)
             foreach (var ls in layout.sites) Sites[ls.id] = new Site { id = ls.id, name = ls.name, floor = ls.floor, rooms = ls.rooms ?? new string[0] };
         foreach (var s in GetComponentsInChildren<HaneulSurface>(true))
@@ -209,8 +229,12 @@ public class HaneulTowerMap : MonoBehaviour
                 case HaneulSurfaceType.RevealZone:   // one entry per zone: the ZONE_EXT_<id> parent, not its box children
                     if (s.transform.parent == null || !s.transform.parent.name.StartsWith("ZONE_EXT_", StringComparison.Ordinal)) RevealZones.Add(s);
                     break;
+                case HaneulSurfaceType.Shutter: Shutters.Add(s); break;
             }
         }
+        foreach (var s in Shutters) LinkShutter(s);
+        // every shutter starts open (layout default) unless shuttersClosedOnStart; colliders follow the state
+        foreach (var s in Shutters) ApplyShutter(s, shuttersClosedOnStart ? 1f : 0f, shuttersClosedOnStart);
     }
 
     void SiteOf(string id, Action<Site> add)
@@ -223,7 +247,7 @@ public class HaneulTowerMap : MonoBehaviour
 
     void ReadLayout()
     {
-        walls.Clear(); hatchData.Clear(); defSpawnSite.Clear(); roomNames.Clear();
+        walls.Clear(); hatchData.Clear(); defSpawnSite.Clear(); roomNames.Clear(); shutterData.Clear();
         layout = null;
         if (layoutJson == null) return;
         try { layout = JsonUtility.FromJson<LLayout>(layoutJson.text); }
@@ -233,6 +257,7 @@ public class HaneulTowerMap : MonoBehaviour
         if (layout.hatches != null) foreach (var h in layout.hatches) if (h != null && h.id != null) hatchData[h.id] = h;
         if (layout.spawns != null && layout.spawns.defenders != null) foreach (var d in layout.spawns.defenders) if (d != null && d.id != null) defSpawnSite[d.id] = d.site;
         if (layout.rooms != null) foreach (var r in layout.rooms) if (r != null && r.id != null) roomNames[r.id] = r.name;
+        if (layout.shutters != null) foreach (var sh in layout.shutters) if (sh != null && sh.id != null) shutterData[sh.id] = sh;
         if (layout.rules != null && layout.rules.reinforce != null && layout.rules.reinforce.budget > 0) ReinforceBudget = layout.rules.reinforce.budget;
     }
 
@@ -276,6 +301,19 @@ public class HaneulTowerMap : MonoBehaviour
                 // HOLO_stage blocks vision only; HOLO_stage_emitter is the destructible projector
                 if (id.EndsWith("_emitter", StringComparison.Ordinal)) { s.destructible = true; s.stopsBullets = true; } else s.blocksVision = true;
                 break;
+            case HaneulSurfaceType.Shutter:
+                {
+                    // flags follow the state (ApplyShutter): open = no collider, sees and shoots through the bay
+                    LShutter sh;
+                    s.shutterTravel = 2f;
+                    if (shutterData.TryGetValue(id, out sh))
+                    {
+                        s.defenderRoom = sh.room ?? ""; s.site = sh.site ?? ""; s.floor = sh.floor ?? s.floor;
+                        if (sh.travel_s > 0f) s.shutterTravel = sh.travel_s;
+                        s.shutterHeight = sh.travel_m;
+                    }
+                    break;
+                }
             case HaneulSurfaceType.Objective:
                 s.site = id.Length >= 2 ? id.Substring(0, 2) : id; break;     // OBJ_S1A -> S1
             case HaneulSurfaceType.DefenderSpawn:
@@ -408,6 +446,8 @@ public class HaneulTowerMap : MonoBehaviour
         {
             // COL_ empty: position, rotation, scale = size; ladder volumes are climb triggers
             if (go.GetComponent<Collider>() == null) { var bc = go.AddComponent<BoxCollider>(); bc.size = Vector3.one; bc.isTrigger = s.id.StartsWith("LD_", StringComparison.Ordinal); }
+            // COL_SHUTTER_<bayId>: the closed-state box of a blast shutter, off while the shutter is open
+            if (s.id.StartsWith("SHUTTER_", StringComparison.Ordinal)) { var bc = go.GetComponent<BoxCollider>(); if (bc != null) bc.enabled = shuttersClosedOnStart; }
             if (hideColliderMeshes) { var r = go.GetComponent<Renderer>(); if (r != null) r.enabled = false; }
             return;
         }
@@ -418,6 +458,7 @@ public class HaneulTowerMap : MonoBehaviour
             { var bc = go.AddComponent<BoxCollider>(); bc.size = Vector3.one; bc.isTrigger = true; }
             return;
         }
+        if (s.type == HaneulSurfaceType.Shutter) return;    // moving blend-shape mesh: it collides through COL_SHUTTER_<id> only
         if (s.type == HaneulSurfaceType.Deco && !decoColliders) return;
         if (!Solid(s.type) && !(s.type == HaneulSurfaceType.Hologram && s.destructible) && !(s.type == HaneulSurfaceType.Deco)) return;
         var mf = go.GetComponent<MeshFilter>();
@@ -465,6 +506,8 @@ public class HaneulTowerMap : MonoBehaviour
             case HaneulSurfaceType.Walkway: case HaneulSurfaceType.Ledge: case HaneulSurfaceType.Bridge: case HaneulSurfaceType.Terrace:
                 layer = hardLayer; break;
             case HaneulSurfaceType.RevealZone: layer = triggerLayer; break;
+            case HaneulSurfaceType.Shutter: layer = hardLayer; break;
+            case HaneulSurfaceType.Collider: if (s.id.StartsWith("SHUTTER_", StringComparison.Ordinal)) layer = hardLayer; break;
             case HaneulSurfaceType.BarricadeDoor: case HaneulSurfaceType.BarricadeWindow: case HaneulSurfaceType.Opening:
             case HaneulSurfaceType.AttackerSpawn: case HaneulSurfaceType.DefenderSpawn: case HaneulSurfaceType.Objective:
             case HaneulSurfaceType.Cover: case HaneulSurfaceType.Callout: case HaneulSurfaceType.PropMarker:
@@ -553,6 +596,104 @@ public class HaneulTowerMap : MonoBehaviour
         return "F3";
     }
 
+    // ---------------------------------------------------------------- blast shutters
+    readonly List<HaneulSurface> moving = new List<HaneulSurface>();
+
+    // finds the shutter's renderer, its "closed" blend shape and its COL_SHUTTER_ box; widens the renderer bounds to the
+    // closed curtain (the imported bounds only hold the open stack in the housing, so a closed shutter could be culled)
+    void LinkShutter(HaneulSurface s)
+    {
+        s.shutterRenderer = s.GetComponent<SkinnedMeshRenderer>();
+        if (s.shutterRenderer == null) s.shutterRenderer = s.GetComponentInChildren<SkinnedMeshRenderer>(true);
+        s.shutterBlendShape = -1;
+        var smr = s.shutterRenderer;
+        if (smr != null && smr.sharedMesh != null && smr.sharedMesh.blendShapeCount > 0)
+        {
+            var i = smr.sharedMesh.GetBlendShapeIndex("closed");
+            s.shutterBlendShape = i >= 0 ? i : 0;
+            // node origin = closed curtain bottom centre (local y 0 is the floor), local +Y up
+            var b = smr.sharedMesh.bounds;
+            var lo = smr.transform == s.transform ? 0f : s.transform.InverseTransformPoint(smr.transform.position).y;
+            b.Encapsulate(new Vector3(b.center.x, -lo - 0.05f, b.center.z));
+            smr.localBounds = b;
+        }
+        else Debug.LogWarning("HaneulTowerMap: shutter " + s.name + " has no blend shape \"closed\" (re-import the glb with glTFast)", this);
+        var col = Get("COL_" + s.name);
+        s.shutterCollider = col != null ? col.GetComponent<Collider>() : null;
+        if (s.shutterCollider != null) byCollider[s.shutterCollider] = s;   // a hit on the closed box reports the shutter
+        if (shutterTravelOverride > 0f) s.shutterTravel = shutterTravelOverride;
+    }
+
+    // weight 0 = open .. 1 = closed (eased weight goes to the blend shape); the collider and flags are on only when closed
+    void ApplyShutter(HaneulSurface s, float t, bool closedTarget)
+    {
+        s.shutterT = Mathf.Clamp01(t); s.shutterClosed = closedTarget;
+        if (s.shutterRenderer != null && s.shutterBlendShape >= 0) s.shutterRenderer.SetBlendShapeWeight(s.shutterBlendShape, Mathf.SmoothStep(0f, 100f, s.shutterT));
+        var closed = closedTarget && s.shutterT >= 1f;   // opening switches the collider off at once
+        if (s.shutterCollider != null) s.shutterCollider.enabled = closed;
+        s.stopsBullets = closed; s.blocksVision = closed;
+    }
+
+    public bool IsShutterClosed(HaneulSurface s) { return s != null && s.type == HaneulSurfaceType.Shutter && s.shutterT >= 1f; }
+    public HaneulSurface Shutter(string bayId) { return Get("SHUTTER_" + bayId); }
+
+    // close (true) or open (false) one shutter; instant skips the travel
+    public void SetShutter(HaneulSurface s, bool closed, bool instant = false)
+    {
+        if (s == null || s.type != HaneulSurfaceType.Shutter) return;
+        var target = closed ? 1f : 0f;
+        if (instant || !Application.isPlaying)
+        {
+            moving.Remove(s); ApplyShutter(s, target, closed);
+            RaiseFinished(s, closed); return;
+        }
+        if (Mathf.Approximately(s.shutterT, target) && s.shutterClosed == closed) return;
+        // opening: the collider goes off at once (the curtain lifts); closing: it comes on when the curtain lands
+        ApplyShutter(s, s.shutterT, closed);
+        if (!moving.Contains(s)) moving.Add(s);
+        if (ShutterMoveStarted != null) ShutterMoveStarted(s, closed);
+        onShutterStarted.Invoke(s, closed);
+    }
+
+    // all shutters, or only those on a floor (F1..F3), in a room (F2_concierge) or at a site (S1..S4); null = any
+    public int SetShutters(bool closed, string floor = null, string room = null, string site = null, bool instant = false)
+    {
+        var n = 0;
+        foreach (var s in Shutters)
+        {
+            if (floor != null && s.floor != floor) continue;
+            if (room != null && s.defenderRoom != room) continue;
+            if (site != null && s.site != site) continue;
+            SetShutter(s, closed, instant); n++;
+        }
+        return n;
+    }
+    public int CloseAllShutters(bool instant = false) { return SetShutters(true, null, null, null, instant); }
+    public int OpenAllShutters(bool instant = false) { return SetShutters(false, null, null, null, instant); }
+    public int SetFloorShutters(string floor, bool closed, bool instant = false) { return SetShutters(closed, floor, null, null, instant); }
+    public int SetRoomShutters(string roomId, bool closed, bool instant = false) { return SetShutters(closed, null, roomId, null, instant); }
+
+    void RaiseFinished(HaneulSurface s, bool closed)
+    {
+        if (ShutterMoveFinished != null) ShutterMoveFinished(s, closed);
+        onShutterFinished.Invoke(s, closed);
+    }
+
+    void Update()
+    {
+        if (moving.Count == 0) return;
+        var dt = Time.deltaTime;
+        for (var i = moving.Count - 1; i >= 0; i--)
+        {
+            var s = moving[i];
+            if (s == null) { moving.RemoveAt(i); continue; }
+            var target = s.shutterClosed ? 1f : 0f;
+            var t = Mathf.MoveTowards(s.shutterT, target, dt / Mathf.Max(0.05f, s.shutterTravel));
+            ApplyShutter(s, t, s.shutterClosed);
+            if (Mathf.Approximately(t, target)) { moving.RemoveAt(i); RaiseFinished(s, s.shutterClosed); }
+        }
+    }
+
 #if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
@@ -564,6 +705,9 @@ public class HaneulTowerMap : MonoBehaviour
         Gizmos.color = Color.red; foreach (var s in AttackerSpawns) if (s != null) Gizmos.DrawSphere(s.transform.position + Vector3.up * 0.2f, 0.25f);
         Gizmos.color = Color.cyan; foreach (var s in DefenderSpawns) if (s != null) Gizmos.DrawSphere(s.transform.position + Vector3.up * 0.2f, 0.25f);
         Gizmos.color = Color.yellow; foreach (var s in Objectives) if (s != null) Gizmos.DrawWireSphere(s.transform.position + Vector3.up * 0.5f, 0.5f);
+        Gizmos.color = new Color(0.76f, 0.09f, 0.36f, 0.9f);
+        foreach (var s in Shutters) if (s != null && s.shutterCollider is BoxCollider) { var c = s.shutterCollider.transform; Gizmos.matrix = c.localToWorldMatrix; Gizmos.DrawWireCube(Vector3.zero, Vector3.one); }
+        Gizmos.matrix = Matrix4x4.identity;
     }
 #endif
 }

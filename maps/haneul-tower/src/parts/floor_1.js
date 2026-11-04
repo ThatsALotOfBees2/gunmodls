@@ -171,13 +171,19 @@ PARTS.floor_1 = function (K) {
   // a face of a layout wall: side +1 is the +n side (side_pos room), -1 the other
   function face(id, side) {
     const w = K.wall(id); if (!w) { K.warn('missing wall ' + id); return null; }
-    const F = K.wallFrame(w); return { w, F, side, s: (side * F.t) / 2, room: side > 0 ? w.side_pos : w.side_neg };
+    const F = K.wallFrame(w), fa = K.outlineDist(w.a) < 0.05, fb = K.outlineDist(w.b) < 0.05;
+    // uLo/uHi: dressing on a face stays 0.46 m clear of a wall end on the glass (blast shutter curtain and housing)
+    return { w, F, side, s: (side * F.t) / 2, room: side > 0 ? w.side_pos : w.side_neg, uLo: fa ? SHUT_CLEAR : -1e9, uHi: fb ? F.len - SHUT_CLEAR : 1e9 };
   }
+  const SHUT_CLEAR = 0.46, FAC_INSET = 0.64;
+  // plan limit of the shutter zone: a run along one axis at cross coordinate c stays 0.46 m inside the glass
+  const inPlate = (c) => { const lim = Math.min(26 - SHUT_CLEAR, 47 - SHUT_CLEAR * Math.SQRT2 - Math.abs(c)); return [-lim, lim]; };
   // u ranges of the openings on a wall, padded
   const holesOf = (w, pad = 0.05) => (w.openings || []).map((o) => [o.u0 - pad, o.u1 + pad]);
   const hitsHole = (fc, u0, u1) => holesOf(fc.w).some(([a, b]) => u0 < b && u1 > a);
   // box on a wall face: u along the wall, y relative to the floor, d0..d1 out from the face
   function fbox(g, mk, fc, u0, u1, y0, y1, d0, d1, skip = '') {
+    if (fc.uLo != null) { u0 = Math.max(u0, fc.uLo); u1 = Math.min(u1, fc.uHi); if (u1 - u0 < 0.02) return; }
     const s0 = fc.s + fc.side * d0, s1 = fc.s + fc.side * d1;
     K.wbox(g(mk), fc.F, u0, u1, y0, y1, Math.min(s0, s1), Math.max(s0, s1), skip);
   }
@@ -189,6 +195,7 @@ PARTS.floor_1 = function (K) {
   // changsal lattice panelling on a wall face with a glowing hanji back
   function flattice(g, fc, u0, u1, y0, y1, o = {}) {
     if (hitsHole(fc, u0, u1)) { LOG.skipped.push('lattice on ' + fc.w.id + ': opening'); return false; }
+    if (fc.uLo != null) { u0 = Math.max(u0, fc.uLo); u1 = Math.min(u1, fc.uHi); if (u1 - u0 < 0.3) return false; }
     const mk = o.mk || 'wood_dark', back = o.back === undefined ? 'dz_lamp' : o.back, cell = o.cell || 0.22, d = o.d || 0.05, f = 0.06;
     if (back) fbox(g, back, fc, u0 + f, u1 - f, y0 + f, y1 - f, 0.0, 0.012);
     fbox(g, mk, fc, u0, u0 + f, y0, y1, 0, d); fbox(g, mk, fc, u1 - f, u1, y0, y1, 0, d);
@@ -201,6 +208,7 @@ PARTS.floor_1 = function (K) {
   // vertical timber slat panelling (built-in), optional glow reveal behind the slats
   function fslats(g, fc, u0, u1, y0, y1, o = {}) {
     if (hitsHole(fc, u0, u1)) { LOG.skipped.push('slats on ' + fc.w.id + ': opening'); return false; }
+    if (fc.uLo != null) { u0 = Math.max(u0, fc.uLo); u1 = Math.min(u1, fc.uHi); if (u1 - u0 < 0.3) return false; }
     const mk = o.mk || 'wood', pitch = o.pitch || 0.12, sw = o.sw || 0.06;
     fbox(g, o.back || 'dz_wood_black', fc, u0, u1, y0, y1, 0, 0.01);
     if (o.glow) fbox(g, o.glow, fc, u0 + 0.05, u1 - 0.05, y1 - 0.06, y1 - 0.04, 0.01, 0.014);
@@ -239,7 +247,10 @@ PARTS.floor_1 = function (K) {
       const a = P[i], b = P[(i + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz);
       if (L < 1.4) continue;
       const d = [dx / L, dz / L], nn = [-d[1] * sg, d[0] * sg];   // inward normal
-      const q0 = [a[0] + d[0] * inset + nn[0] * inset, a[1] + d[1] * inset + nn[1] * inset], q1 = [b[0] - d[0] * inset + nn[0] * inset, b[1] - d[1] * inset + nn[1] * inset];
+      // edges on the glass sit behind the blast shutter zone (curtain and housing to 0.45 m inside the glass)
+      const ins = (k) => { const p = P[(k + n) % n], q = P[(k + 1 + n) % n]; return K.outlineDist([(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]) < 0.05 ? FAC_INSET : inset; };
+      const iA = ins(i - 1), iS = ins(i), iB = ins(i + 1);
+      const q0 = [a[0] + d[0] * iA + nn[0] * iS, a[1] + d[1] * iA + nn[1] * iS], q1 = [b[0] - d[0] * iB + nn[0] * iS, b[1] - d[1] * iB + nn[1] * iS];
       const bx = [Math.min(q0[0], q1[0]) - 0.1, Math.min(q0[1], q1[1]) - 0.1, Math.max(q0[0], q1[0]) + 0.1, Math.max(q0[1], q1[1]) + 0.1];
       if (!freeHigh(bx, 'cove ' + roomId)) continue;
       const m = [(q0[0] + q1[0]) / 2, (q0[1] + q1[1]) / 2], len = Math.hypot(q1[0] - q0[0], q1[1] - q0[1]), D3 = [d[0], 0, d[1]], N3 = [nn[0], 0, nn[1]];
@@ -267,7 +278,8 @@ PARTS.floor_1 = function (K) {
     for (let c = (X ? z0 : x0) + pitch / 2; c < (X ? z1 : x1); c += pitch) {
       const ivs = cuts.filter((k) => (X ? c + 0.05 > k[1] && c - 0.05 < k[3] : c + 0.05 > k[0] && c - 0.05 < k[2])).map((k) => (X ? [k[0], k[2]] : [k[1], k[3]])).sort((p, q) => p[0] - q[0]);
       let a = A0;
-      const run = (u0, u1) => { u0 = Math.max(u0, A0); u1 = Math.min(u1, A1); if (u1 - u0 > 0.2) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
+      const [lo, hi] = inPlate(c);
+      const run = (u0, u1) => { u0 = Math.max(u0, A0, lo + 0.05); u1 = Math.min(u1, A1, hi - 0.05); if (u1 - u0 > 0.2 && Math.abs(c) + 0.05 < 26 - SHUT_CLEAR) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
       for (const [c0, c1] of ivs) { if (c0 > a) run(a, c0); a = Math.max(a, c1); }
       run(a, A1);
     }
@@ -459,7 +471,7 @@ PARTS.floor_1 = function (K) {
       [[-24.7, 12.7, -22.6, 15.0], [-25.2, 12.6, -23.4, 14.6]],
       [[-17.4, 22.0, -15.3, 24.0], [-17.2, 21.6, -15.6, 23.4]],
       [[-14.7, 18.4, -12.6, 21.6], [-14.4, 12.8, -12.6, 15.6]],
-      [[-25.3, 22.0, -23.6, 23.8]],
+      [[-24.6, 19.9, -23.4, 21.3]],
     ];
     const plants = [(c) => { pine(g, c[0] + 0.9, c[1], 0.1, 3.6, 21, [0.5, 0.3]); maple(c[0] - 0.4, c[1] + 0.6, 2.8, 22); },
       (c) => { maple(c[0], c[1], 3.2, 23); shrub(g, c[0] + 0.6, c[1] + 0.5, 0.1, 0.4, 0.5, 'dz_pine', 4, 24); },
@@ -478,7 +490,15 @@ PARTS.floor_1 = function (K) {
       const t = K.asTex(c, true, 'dz_mist', false), m = new T.MeshStandardMaterial({ color: '#000000', map: t, emissive: new T.Color('#c9a0ff'), emissiveMap: t, emissiveIntensity: 0.18, transparent: true, depthWrite: false, side: T.DoubleSide, roughness: 1 });
       m.name = 'dz_mist'; K.material('dz_mist', m, { tile: 1, env: 'in' });
     }
-    for (const [yy, s2] of [[3.6, 11], [6.2, 12]]) { const pl = new T.PlaneGeometry(s2, s2); pl.rotateX(-PI / 2); GE(g, 'dz_mist', pl, MX(-19.0, yy, 19.0), true); }
+    // the square sheets would cross the SW chamfer glass at their corner: vertices past a line 0.46 m inside the chamfer
+    // (x - z = -47, blast shutter zone) are pulled back onto it (the mist is ~1 % alpha there, so the look is unchanged)
+    const MIST_CX = -19.0, MIST_CZ = 19.0, MIST_LIM = -47 + SHUT_CLEAR * Math.SQRT2 - (MIST_CX - MIST_CZ);
+    for (const [yy, s2] of [[3.6, 11], [6.2, 12]]) {
+      const pl = new T.PlaneGeometry(s2, s2, 16, 16); pl.rotateX(-PI / 2);
+      const pa = pl.attributes.position;
+      for (let i = 0; i < pa.count; i++) { const k = pa.getX(i) - pa.getZ(i); if (k < MIST_LIM) { const t = (MIST_LIM - k) / 2; pa.setX(i, pa.getX(i) + t); pa.setZ(i, pa.getZ(i) - t); } }
+      GE(g, 'dz_mist', pl, MX(MIST_CX, yy, MIST_CZ), true);
+    }
 
     // stepping stones from the garden doors toward the pavilion (flush with the paving)
     for (let k = 0; k < 9; k++) { const x = -13.6 - k * 0.45 + Math.sin(k * 1.3) * 0.25, z = 25.2 - k * 0.62; if (free([x - 0.3, z - 0.25, x + 0.3, z + 0.25], 'stepping stone')) { const st = new T.CylinderGeometry(0.3 - (k % 3) * 0.03, 0.3, 0.02, 9); GE(g, 'dz_basalt', st, MX(x, 0.01, z, k)); } }
@@ -586,7 +606,7 @@ PARTS.floor_1 = function (K) {
     for (const [x, z] of [[15.5, 4.5], [19.5, 4.5], [23.0, 2.0], [23.0, 7.6]]) if (freeHigh([x - 0.3, z - 0.3, x + 0.3, z + 0.3], 'lockers pendant')) pendant(g, x, z, 2.55, 0.18, 0.3);
     // salt room: a glowing salt-brick ceiling and salt cladding on its hard wall stub
     const sb = [];
-    for (let x = 20.45; x < 25.5; x += 0.42) for (let z = -11.55; z < -0.5; z += 0.42) if (freeHigh([x, z, x + 0.38, z + 0.38], 'salt ceiling')) sb.push([x, z]);
+    for (let x = 20.45; x + 0.38 < 25.5; x += 0.42) for (let z = -11.55; z < -0.5; z += 0.42) if (freeHigh([x, z, x + 0.38, z + 0.38], 'salt ceiling')) sb.push([x, z]);
     for (const [x, z] of sb) B(g, 'dz_salt', x, x + 0.38, CE - 0.06, CE - 0.01, z, z + 0.38, '+y');
     const sw = face('F1_W50', 1), sf = sw && (sw.room === 'F1_salt_room' ? sw : face('F1_W50', -1));
     if (sf) for (let y = 0; y < 2.9; y += 0.14) for (let u = (y * 7) % 0.3 - 0.3; u < sf.F.len; u += 0.3) { const a = Math.max(0, u), b = Math.min(sf.F.len, u + 0.28); if (b - a > 0.05) fbox(g, 'dz_salt', sf, a, b, y, y + 0.12, 0, 0.04); }
@@ -595,7 +615,7 @@ PARTS.floor_1 = function (K) {
   // ---------------- Laundry ----------------
   {
     const g = D('laundry');
-    if (freeHigh([13.0, -25.0, 25.0, -24.2], 'laundry duct')) { B(g, 'alloy', 13.0, 25.0, 2.55, 2.95, -25.0, -24.3); for (let x = 13.4; x < 25; x += 1.2) B(g, 'steel_dark', x, x + 0.06, 2.52, 2.98, -25.05, -24.25); }
+    if (freeHigh([13.0, -25.0, 21.0, -24.2], 'laundry duct')) { B(g, 'alloy', 13.0, 21.0, 2.55, 2.95, -25.0, -24.3); for (let x = 13.4; x < 21; x += 1.2) B(g, 'steel_dark', x, x + 0.06, 2.52, 2.98, -25.05, -24.25); }
     cove('F1_laundry', 'glow_cool');
   }
 
