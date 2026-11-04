@@ -22,7 +22,7 @@
   <ul id="legend-list"></ul>
 </aside>
 
-<div class="hint" id="hint">Drag to orbit · scroll to zoom · V to walk · X for x-ray</div>
+<div class="hint" id="hint">Drag to orbit · scroll to zoom · V to walk · G for freecam · X for x-ray</div>
 <div id="loading">Raising the tower…</div>
 <div id="crosshair" hidden></div>
 
@@ -43,6 +43,7 @@
         <button type="button" id="t-skyline" aria-pressed="true" title="City backdrop">Skyline</button>
       </div>
       <button type="button" id="walk" class="primary" aria-pressed="false" title="Walk at eye height: WASD, mouse to look, Shift to sprint, F to fly (V)">Walk <kbd>V</kbd></button>
+      <button type="button" id="freecam" aria-pressed="false" title="Free camera, no collision: WASD, mouse to look, Space/E up, C/Q down, Shift fast, wheel or [ ] to change speed, H hides the UI (G)">Freecam <kbd>G</kbd></button>
     </div>
     <div class="row">
       <div class="group" role="group" aria-label="Views">
@@ -333,7 +334,7 @@ function goView(name, instant = false) {
 
 /* ------------------------------------------------------------------ walk mode: eye height 1.7 m, WASD and mouse look */
 
-const walk = { on: false, fly: false, yaw: 0, pitch: 0, feet: new THREE.Vector3(), vy: 0, keys: new Set(), colliders: null, drag: null };
+const walk = { on: false, fly: false, free: false, speed: 8, yaw: 0, pitch: 0, feet: new THREE.Vector3(), vy: 0, keys: new Set(), colliders: null, drag: null };
 const ray = new THREE.Raycaster(); ray.firstHitOnly = true;
 function walkColliders() {
   if (walk.colliders) return walk.colliders;
@@ -344,8 +345,18 @@ function walkColliders() {
 function visibleColliders() { return walkColliders().filter((m) => m.visible); }
 function groundAt(x, y, z, cols) { ray.set(_g.set(x, y + 0.65, z), _dn); ray.far = 60; const h = ray.intersectObjects(cols, false)[0]; return h ? h.point.y : null; }
 const _g = new THREE.Vector3(), _dn = new THREE.Vector3(0, -1, 0), _fw = new THREE.Vector3();
-function setWalk(on, at = null) {
-  walk.on = on; $('walk').setAttribute('aria-pressed', String(on)); $('st-mode').textContent = on ? (walk.fly ? 'Fly' : 'Walk') : 'Orbit';
+function modeName() { return !walk.on ? 'Orbit' : walk.free ? `Freecam ${walk.speed.toFixed(1)} m/s` : walk.fly ? 'Fly' : 'Walk'; }
+function setFree(on) {
+  if (on) {
+    walk.free = true; walk.fly = true;
+    const d = camera.getWorldDirection(new THREE.Vector3());
+    const at = { pos: [camera.position.x, camera.position.y - 1.7, camera.position.z], yaw: Math.atan2(-d.x, -d.z), pitch: Math.asin(Math.max(-1, Math.min(1, d.y))) };
+    setWalk(true, at, true);
+  } else { walk.free = false; walk.fly = false; setWalk(false); }
+}
+function setWalk(on, at = null, free = false) {
+  if (!free) walk.free = false;
+  walk.on = on; $('walk').setAttribute('aria-pressed', String(on && !walk.free)); $('freecam').setAttribute('aria-pressed', String(on && walk.free)); $('st-mode').textContent = modeName();
   $('crosshair').hidden = !on; controls.enabled = !on;
   if (on) {
     camTween = null;
@@ -354,7 +365,8 @@ function setWalk(on, at = null) {
       const a = L.spawns.attackers[0], c = centroid3(a.points); walk.feet.set(c[0], c[1], c[2] - 3);
       const tg = PRESETS.A1.target; walk.yaw = Math.atan2(-(tg[0] - c[0]), -(tg[2] - c[2])); walk.pitch = 0;
     }
-    camera.fov = 70; camera.updateProjectionMatrix(); placeWalkCam();
+    if (!walk.free) { camera.fov = 70; camera.updateProjectionMatrix(); }
+    placeWalkCam();
   } else if (document.pointerLockElement) document.exitPointerLock();
 }
 function placeWalkCam() {
@@ -365,7 +377,13 @@ function walkStep(dt) {
   const k = walk.keys, sp = (k.has('shift') ? 6.0 : 3.2) * dt, f = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0), s = (k.has('d') || k.has('arrowright') ? 1 : 0) - (k.has('a') || k.has('arrowleft') ? 1 : 0);
   const cols = visibleColliders();
   const dir = new THREE.Vector3(-Math.sin(walk.yaw) * f + Math.cos(walk.yaw) * s, 0, -Math.cos(walk.yaw) * f - Math.sin(walk.yaw) * s);
-  if (walk.fly) {
+  if (walk.free) {
+    const v = walk.speed * (k.has('shift') ? 4 : 1) * dt, up = (k.has(' ') || k.has('e') ? 1 : 0) - (k.has('c') || k.has('q') ? 1 : 0);
+    const fw = new THREE.Vector3(-Math.sin(walk.yaw) * Math.cos(walk.pitch), Math.sin(walk.pitch), -Math.cos(walk.yaw) * Math.cos(walk.pitch));
+    const rt = new THREE.Vector3(Math.cos(walk.yaw), 0, -Math.sin(walk.yaw));
+    const mv = fw.multiplyScalar(f).addScaledVector(rt, s); mv.y += up;
+    if (mv.lengthSq()) walk.feet.addScaledVector(mv.normalize(), v);
+  } else if (walk.fly) {
     const up = (k.has(' ') ? 1 : 0) - (k.has('c') ? 1 : 0);
     if (dir.lengthSq()) walk.feet.addScaledVector(dir.normalize(), sp * 2);
     walk.feet.y += up * sp * 2;
@@ -407,15 +425,21 @@ $('t-labels').addEventListener('click', () => toggle('labels'));
 $('t-markers').addEventListener('click', () => toggle('markers'));
 $('t-rain').addEventListener('click', () => toggle('rain'));
 $('t-skyline').addEventListener('click', () => toggle('skyline'));
-$('walk').addEventListener('click', () => setWalk(!walk.on));
+$('walk').addEventListener('click', () => setWalk(!(walk.on && !walk.free)));
+$('freecam').addEventListener('click', () => setFree(!walk.free));
+function freeSpeed(m) { walk.speed = Math.max(0.5, Math.min(120, walk.speed * m)); $('st-mode').textContent = modeName(); }
+renderer.domElement.addEventListener('wheel', (e) => { if (!walk.free) return; e.preventDefault(); freeSpeed(e.deltaY < 0 ? 1.25 : 0.8); }, { passive: false });
 controls.addEventListener('start', () => { camTween = null; });
 window.addEventListener('keydown', (e) => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key.toLowerCase();
-  if (walk.on && ['w', 'a', 's', 'd', 'c', ' ', 'shift', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { e.preventDefault(); walk.keys.add(k); return; }
+  if (walk.on && ['w', 'a', 's', 'd', 'c', ' ', 'shift', ...(walk.free ? ['q', 'e'] : []), 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) { e.preventDefault(); walk.keys.add(k); return; }
   if (e.repeat) return;
-  if (k === 'v') setWalk(!walk.on);
-  else if (k === 'f' && walk.on) { walk.fly = !walk.fly; walk.vy = 0; $('st-mode').textContent = walk.fly ? 'Fly' : 'Walk'; }
+  if (k === 'v') setWalk(!(walk.on && !walk.free));
+  else if (k === 'g') setFree(!walk.free);
+  else if (k === 'h') document.body.classList.toggle('hide-ui');
+  else if (walk.free && (k === '[' || k === ']')) freeSpeed(k === ']' ? 1.25 : 0.8);
+  else if (k === 'f' && walk.on && !walk.free) { walk.fly = !walk.fly; walk.vy = 0; $('st-mode').textContent = walk.fly ? 'Fly' : 'Walk'; }
   else if (k === 'x') toggle('overlay'); else if (k === 'l') toggle('labels'); else if (k === 'm' || k === 'p') toggle('markers');
   else if (k >= '0' && k <= String(FIDS.length)) setFloor(+k);
 });
