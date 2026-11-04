@@ -9,7 +9,7 @@ public class HaneulSurface : MonoBehaviour
     public string id = "";               // the name without its prefix (wall, opening, hatch, site, spawn id ...)
     public string floor = "";            // F1, F2, F3, or empty for the exterior
     public bool destructible;            // shoot and breach through it
-    public bool reinforceable;           // takes a Wall Fortification unit (REINF_, HATCH_)
+    public bool reinforceable;           // takes a Wall Fortification unit (REINF_ = every breakable wall, HATCH_)
     public bool stopsBullets;            // hard surfaces, tempered glass, rails' glass panels do not
     public bool blocksVision;
     public bool walkable;

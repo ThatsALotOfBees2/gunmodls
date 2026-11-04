@@ -51,7 +51,10 @@ public static class HaneulTowerMapSetup
         map.setupOnAwake = false;
         // static flags by surface type (the cradle moves and gets none):
         // - hard structure, decks, stairs: batching + occluder + occludee static
-        // - dressing and backdrop: batching + occludee (thin or far, never an occluder)
+        // - dressing (DECO_) and scenery bodies (ENV_): batching + occludee (thin or far, never an occluder)
+        // - the backdrop (BACKDROP_city, BACKDROP_sky): no static flags at all. Each is one mesh and one draw call that
+        //   surrounds the map, always drawn (no culling tiles any more): batching cannot merge anything further, it can
+        //   never occlude, and occlusion culling cannot hide it; Setup has already switched its shadows and probes off
         // - glass, rails, holograms: occludee only (see-through: never occluders, never batched)
         // - destructible soft walls, units, hatches, floor/ceiling patches: no static flags, so their meshes stay
         //   their own (holes can be cut at runtime) and nothing stays culled behind a wall after it is blown open
@@ -59,7 +62,7 @@ public static class HaneulTowerMapSetup
         foreach (var s in root.GetComponentsInChildren<HaneulSurface>(true))
         {
             var flags = StaticFlagsFor(s);
-            if (flags == 0) continue;
+            if (flags == 0 && s.type != HaneulSurfaceType.Backdrop) continue;   // the backdrop is cleared explicitly
             foreach (var r in s.GetComponentsInChildren<MeshRenderer>(true))
                 if (r.GetComponentInParent<HaneulSurface>() == s) GameObjectUtility.SetStaticEditorFlags(r.gameObject, flags);
         }
@@ -78,6 +81,8 @@ public static class HaneulTowerMapSetup
                 return solid;
             case HaneulSurfaceType.Deco: case HaneulSurfaceType.Env:
                 return StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccludeeStatic;
+            case HaneulSurfaceType.Backdrop:
+                return 0;
             case HaneulSurfaceType.FacadeGlassBreakable: case HaneulSurfaceType.FacadeGlassTempered: case HaneulSurfaceType.InteriorGlass:
             case HaneulSurfaceType.GlassFloor: case HaneulSurfaceType.Rail: case HaneulSurfaceType.Hologram:
                 return StaticEditorFlags.OccludeeStatic;

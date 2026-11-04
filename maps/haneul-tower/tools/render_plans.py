@@ -149,22 +149,26 @@ def draw_walls(cv, fl, scale_k=1.0):
             u = u1
         if u < Lw: segs.append((u, Lw))
         for (u0, u1) in segs:
-            cv.line(seg_point(a, b, u0), seg_point(a, b, u1), C[t], px)
+            # a reinforceable wall is hard except its units (junction ends, jambs and trims stay white)
+            cv.line(seg_point(a, b, u0), seg_point(a, b, u1), C['hard'] if t == 'reinforceable' else C[t], px if t != 'reinforceable' else 6 * scale_k)
         if t == 'reinforceable':
-            # hard trims at the ends, unit joints (ticks) and a centre stripe over the units
+            # breakable + reinforceable units in blue, unit joints (ticks) and a centre stripe
             ps = w['reinforce']['panels']
-            for (u0, u1) in ((0.0, ps[0]['u0']), (ps[-1]['u1'], Lw)):
-                if u1 - u0 > 0.01: cv.line(seg_point(a, b, u0), seg_point(a, b, u1), C['hard'], px)
             nx, nz = -(b[1] - a[1]) / Lw, (b[0] - a[0]) / Lw
+            for p in ps:
+                cv.line(seg_point(a, b, p['u0']), seg_point(a, b, p['u1']), C['reinforceable'], px)
             for p in ps:
                 for uu in (p['u0'], p['u1']):
                     q = seg_point(a, b, uu)
                     cv.line((q[0] - nx * 0.28, q[1] - nz * 0.28), (q[0] + nx * 0.28, q[1] + nz * 0.28), (220, 235, 255), 2 * scale_k)
-            cv.line(seg_point(a, b, ps[0]['u0'] + 0.05), seg_point(a, b, ps[-1]['u1'] - 0.05), (150, 200, 255), 1.4 * scale_k)
-            # defender side marker: small dot on the defender face at the run centre
-            sg = 1 if w['reinforce'].get('defender_side') == 'pos' else -1
-            m = seg_point(a, b, (ps[0]['u0'] + ps[-1]['u1']) / 2)
-            cv.circle((m[0] + sg * nx * 0.45, m[1] + sg * nz * 0.45), 2.2 * scale_k, fill=(150, 200, 255))
+                cv.line(seg_point(a, b, p['u0'] + 0.05), seg_point(a, b, p['u1'] - 0.05), (150, 200, 255), 1.4 * scale_k)
+            # defender side marker (site walls only): small dot on the defender face of each unit
+            ds = w['reinforce'].get('defender_side')
+            if ds in ('pos', 'neg'):
+                sg = 1 if ds == 'pos' else -1
+                for p in ps:
+                    m = seg_point(a, b, (p['u0'] + p['u1']) / 2)
+                    cv.circle((m[0] + sg * nx * 0.45, m[1] + sg * nz * 0.45), 2.2 * scale_k, fill=(150, 200, 255))
         for (u0, u1, o) in cuts:
             p0, p1 = seg_point(a, b, u0), seg_point(a, b, u1)
             nx, nz = -(b[1] - a[1]) / Lw, (b[0] - a[0]) / Lw
@@ -518,8 +522,8 @@ def draw_legend(cv, x, y, fl):
     f = font(12); fb = font(13, 'Bold')
     cv.textpx((x, y), 'SURFACE TYPES', fb, (200, 160, 255)); y += 26
     items = [
-        ('wall', 'hard', 'hard wall (indestructible)'), ('wall', 'soft', 'soft wall (destructible)'),
-        ('wall', 'reinforceable', 'reinforceable: units (ticks), dot = defender side, white = hard trim'), ('wall', 'glass', 'interior glass (breakable)'),
+        ('wall', 'hard', 'hard wall (indestructible); every corner / T is hard for 1.0 m'),
+        ('wall', 'reinforceable', 'breakable + reinforceable: Wall Fortification units (ticks), dot = site side'), ('wall', 'glass', 'interior glass (breakable)'),
         ('dash', 'balustrade', 'glass balustrade / rail'), ('dash', 'open', 'callout boundary (no wall)'),
         ('gap', 'door_b', 'barricadable door'), ('gap', 'door_o', 'open archway / pried lift door'),
         ('dash', 'win_b', 'barricadable interior window'), ('dash', 'vault', 'vault counter (no barricade)'),
@@ -535,7 +539,7 @@ def draw_legend(cv, x, y, fl):
         elif kind == 'dash':
             for k in range(0, 46, 9): cv.linepx((x + k, y + 8), (x + k + 5, y + 8), col, 3)
         elif kind == 'gap':
-            cv.linepx((x, y + 8), (x + 14, y + 8), C['soft'], 5); cv.linepx((x + 32, y + 8), (x + 46, y + 8), C['soft'], 5)
+            cv.linepx((x, y + 8), (x + 14, y + 8), C['hard'], 5); cv.linepx((x + 32, y + 8), (x + 46, y + 8), C['hard'], 5)
             cv.linepx((x + 14, y + 8), (x + 32, y + 8), col, 3)
         elif kind == 'sq':
             cv.rectpx(x + 14, y, x + 30, y + 16, fill=tuple(int(c * 0.45) for c in col), outline=col, width=2)
@@ -572,8 +576,11 @@ def draw_legend(cv, x, y, fl):
         if w['floor'] == fl and w['type'] != 'open':
             cnt[w['type']] = cnt.get(w['type'], 0) + w['length']
     cv.textpx((x, y), 'THIS FLOOR', fb, (200, 160, 255)); y += 24
-    for k in ('hard', 'soft', 'reinforceable', 'glass'):
-        cv.textpx((x, y), '%-14s %6.1f m' % (k, cnt.get(k, 0)), font(12, 'Medium'), C[k]); y += 20
+    brk = sum(p['u1'] - p['u0'] for w in walls if w['floor'] == fl and w['type'] == 'reinforceable' for p in w['reinforce']['panels'])
+    nbw = sum(1 for w in walls if w['floor'] == fl and w['type'] == 'reinforceable')
+    cv.textpx((x, y), '%-14s %6.1f m' % ('hard', cnt.get('hard', 0) + cnt.get('reinforceable', 0) - brk), font(12, 'Medium'), C['hard']); y += 20
+    cv.textpx((x, y), 'breakable      %6.1f m in %d walls (all reinforceable)' % (brk, nbw), font(12, 'Medium'), C['reinforceable']); y += 20
+    cv.textpx((x, y), '%-14s %6.1f m' % ('glass', cnt.get('glass', 0)), font(12, 'Medium'), C['glass']); y += 20
     units = {}
     for w in walls:
         if w['floor'] == fl and w['type'] == 'reinforceable':

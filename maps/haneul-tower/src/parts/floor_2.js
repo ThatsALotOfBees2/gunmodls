@@ -410,6 +410,9 @@ PARTS.floor_2 = function (K) {
     // bridge lobby: art screen on the hard bridge screen's west face, a light ring, floor guide lines to the portal
     const sw = face('F2_W77', 1), sw2 = face('F2_W77', -1);
     if (sw && sw2) { const west = sw.F.n[0] * sw.side < 0 ? sw : sw2, L = sw.F.len; fbox(g, 'black', west, 0.2, L - 0.2, 0.35, 2.7, 0, 0.05); fscreen(g, SCR_ART, west, L / 2, 1.52, L - 0.6, 2.2, 0.056); }
+    // its east face is what the skybridge looks at through the portal: a lit arrival wall (teal-violet art panel in a
+    // bronze frame, a warm wash above and below) so the portal reads as a doorway into a lit lobby, not a dead end
+    if (sw && sw2) { const east = sw.F.n[0] * sw.side > 0 ? sw : sw2, L = sw.F.len; fbox(g, 'bronze', east, 0.15, L - 0.15, 0.3, 2.75, 0, 0.04); fbox(g, 'black', east, 0.22, L - 0.22, 0.37, 2.68, 0.04, 0.05); fscreen(g, SCR_TEAL, east, L / 2, 1.52, L - 0.6, 2.2, 0.056); fbox(g, 'glow_warm', east, 0.15, L - 0.15, 2.95, 2.98, 0, 0.03); fbox(g, 'glow_warm', east, 0.15, L - 0.15, 0.02, 0.04, 0, 0.03); }
     if (freeHigh([17.6, 11.2, 20.8, 14.4], 'arrival ring')) { const tor = new T.TorusGeometry(1.6, 0.03, 6, 48); tor.rotateX(PI / 2); GE(g, 'glow_purple', tor, MX(19.2, 3.0, 12.8)); }
     for (const z of [13.1, 13.9]) B(g, 'glow_purple', 23.0, 25.9, 0, 0.002, z - 0.01, z + 0.01, '-y');
     // VIP: pendants and a cove; cloakroom cove

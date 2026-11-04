@@ -329,7 +329,7 @@ PARTS.floor_3 = function (K) {
 
   // ---- finishes and ceilings (before the engine lays the slabs) ----
   mat('f3_raised', 'epoxy', { color: '#3a3c44', rough: 0.55, tile: 1.2, ns: 0.3 });      // raised access floor (S1, matches P01 / P02)
-  mat('f3_felt', 'carpet', { color: '#26262e', rough: 0.97, tile: 0.6, ns: 0.9 });       // acoustic felt
+  mat('f3_felt', K.TX.acoustic ? 'acoustic' : 'carpet', { color: '#5a5670', rough: 0.97, tile: 1.2, ns: 1.0 });       // acoustic felt, fluted
   mat('f3_felt_indigo', 'carpet', { color: '#2c2f5c', rough: 0.97, tile: 0.6, ns: 0.9 });
   mat('f3_felt_ochre', 'carpet', { color: '#a87a36', rough: 0.97, tile: 0.6, ns: 0.9 });
   mat('f3_felt_cinnabar', 'carpet', { color: '#8e2e22', rough: 0.97, tile: 0.6, ns: 0.9 });
@@ -750,6 +750,42 @@ PARTS.floor_3 = function (K) {
     for (const z of [-23.25, -19.9]) for (const x of [-7.2, -4.8, -2.4]) K.pool(FID, x, z, 1.2, 'pool_blue');
     const rf = roomFace('F3_W25', 'F3_render_farm');
     if (rf) { const L = rf.F.len; fbox(g, 'black', rf, 0.1, L - 0.1, 1.15, 2.45, 0, 0.05); for (let k = 0; k < 3; k++) fscreen(g, SCR_RACK, rf, 0.25 + (L - 0.5) * (k + 0.5) / 3, 1.8, (L - 0.6) / 3, 1.2, 0.056); }
+    // wall light: floor grazers and ceiling-slot washes on every S1 wall face (blue in the Render Farm, purple in the
+    // Control Room), so the acoustic soft walls read lit and soft, not as black voids (emissive alpha decals, exported)
+    const washMat = (key, col) => {
+      if (K.M[key]) return key;
+      const c = K.img(8, 256, (i, j, o) => { const v = 1 - (j + 0.5) / 256, a = Math.min(1, 0.85 * Math.exp(-v / 0.16) + 0.5 * Math.exp(-(1 - v) / 0.09)); o[0] = o[1] = o[2] = 255; o[3] = 255 * a; });
+      const t = K.asTex(c, true, key, false);
+      const m = new T.MeshStandardMaterial({ color: '#000000', map: t, emissive: new T.Color(col), emissiveMap: t, emissiveIntensity: 0.6, transparent: true, depthWrite: false, roughness: 1 });
+      m.name = key; m.polygonOffset = true; m.polygonOffsetFactor = -2; K.material(key, m, { tile: 1, env: 'in' }); return key;
+    };
+    const WB = washMat('f3_wash_blue', '#4f7dff'), WP = washMat('f3_wash_purple', '#9a5cff');
+    const wash = (fc, mk, d) => {
+      const Lw = fc.F.len, cuts = holesOf(fc.w, 0.08).sort((a, b) => a[0] - b[0]); let u = 0.08;
+      for (const [a, b] of [...cuts, [Lw - 0.08, Lw]]) { if (a - u > 0.4) fscreen(g, mk, fc, (u + a) / 2, 1.55, a - u, 3.08, d); u = Math.max(u, b); }
+    };
+    for (const wid of ['F3_W23', 'F3_W20', 'F3_W21', 'F3_W22', 'F3_W27', 'F3_W28', 'F3_W29']) { const f = roomFace(wid, 'F3_render_farm'); if (f) wash(f, WB, 0.012); }
+    for (const wid of ['F3_W23', 'F3_W17', 'F3_W18', 'F3_W19', 'F3_W15', 'F3_W16', 'F3_W13', 'F3_W24']) { const f = roomFace(wid, 'F3_control_room'); if (f) wash(f, WP, wid === 'F3_W13' || wid === 'F3_W24' ? 0.05 : 0.012); }
+    // Render Farm: glowing vent tiles and blue underglow along the cold aisles, a cold-air duct with a diffuser slot over each
+    mat('f3_vent', 'grating', { color: '#1a2440', rough: 0.4, metal: 0.6, tile: 0.6, em: '#4f86ff', ei: 1.4 });
+    for (const [z0, z1] of [[-24.05, -22.45], [-21.55, -18.25]]) {
+      const zc = (z0 + z1) / 2;
+      for (const [a, b] of runsAvoid('x', -8.0, -1.5, zc, (z1 - z0) / 2)) {
+        for (let x = a + 0.6; x + 0.6 < b; x += 1.8) B(g, 'f3_vent', x + 0.03, x + 0.57, 0.0021, 0.0026, zc - 0.27, zc + 0.27, '-y');
+        for (const zz of [z0 + 0.1, z1 - 0.1]) B(g, 'glow_cool', a, b, 0.0021, 0.0028, zz - 0.012, zz + 0.012, '-y');
+        if (freeHigh([a, zc - 0.32, b, zc + 0.32], 'cold duct')) {
+          B(g, 'alloy', a, b, 2.86, 3.08, zc - 0.3, zc + 0.3);
+          B(g, 'f3_vent', a + 0.1, b - 0.1, 2.855, 2.86, zc - 0.12, zc + 0.12, '+y');
+        }
+      }
+    }
+    // Control Room: a row of monitors hung over the director window (above eye height, the stage sightline stays open)
+    if (freeHigh([8.35, -21.9, 8.75, -17.1], 'monitor row')) {
+      B(g, 'black', 8.6, 8.66, 2.3, 3.0, -21.85, -17.15);
+      for (let k = 0; k < 4; k++) screen(g, k % 2 ? SCR_FEED : SCR_WAVE, 8.595, 2.65, -21.25 + k * 1.2, 1.12, 0.6, [-1, 0]);
+      B(g, 'glow_purple', 8.58, 8.6, 2.28, 2.3, -21.85, -17.15);
+      C(g, 'black', 'black', 8.63, -21.6, 0.008, 3.0, CE, 4, false); C(g, 'black', 'black', 8.63, -17.4, 0.008, 3.0, CE, 4, false);
+    }
   }
   skirtings((id) => (typeof FINISH !== 'undefined' ? FINISH.get(id) : ''));
   propMarkers(BUILTIN);

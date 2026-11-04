@@ -58,10 +58,10 @@ PARTS.floor_1 = function (K) {
   };
   // the dressing palette
   mat('dz_fab_indigo', 'carpet', { color: '#353c78', rough: 0.95, tile: 0.7, ns: 0.8 });
-  mat('dz_lacquer', 'wood', { color: '#9a2e20', rough: 0.3, tile: 1.2, ns: 0.3 });
+  mat('dz_lacquer', 'plaster', { color: '#9a2e20', rough: 0.3, tile: 1.2, ns: 0.2 });   // smooth lacquer (no plank bands on the posts)
   mat('dz_wood_mid', 'wood', { color: '#9a6a44', rough: 0.55, tile: 1.2 });
   mat('dz_wood_black', 'wood', { color: '#2a1d17', rough: 0.4, tile: 1.2 });
-  mat('dz_wood_ceil', 'wood', { color: '#3b2a20', rough: 0.7, tile: 1.6 });
+  mat('dz_wood_ceil', 'wood', { color: '#3b2a20', rough: 0.7, tile: 3.6, ns: 0.4 });   // broad boards: no moire at a distance
   mat('dz_celadon', 'polished', { color: '#97c2a8', rough: 0.12, tile: 0.6, ns: 0.2 });
   mat('dz_foliage', 'carpet', { color: '#2a4a26', rough: 0.85, tile: 0.4, ns: 1.0 });
   mat('dz_pine', 'carpet', { color: '#4a7a42', rough: 0.85, tile: 0.35, ns: 1.0 });
@@ -133,17 +133,17 @@ PARTS.floor_1 = function (K) {
     if (back) { if (along === 'x') B(g, back, a0 + f, a1 - f, y0 + f, y1 - f, c - 0.008, c + 0.008); else B(g, back, c - 0.008, c + 0.008, y0 + f, y1 - f, a0 + f, a1 - f); }
   }
   // shrub / plant mass from a few squashed icosahedra
-  const ICO = new T.IcosahedronGeometry(1, 1), ICO0 = new T.IcosahedronGeometry(1, 0);
+  const ICO = new T.IcosahedronGeometry(1, 1), ICO0 = new T.IcosahedronGeometry(1, 0), SPH = new T.SphereGeometry(1, 9, 6), SPH0 = new T.SphereGeometry(1, 7, 5);
   function shrub(g, x, z, y0, r, h, mk = 'dz_foliage', n = 4, seed = 1) {
     const R = K.rng(seed);
-    for (let k = 0; k < n; k++) { const a = R() * PI * 2, d = R() * r * 0.5; GE(g, mk, FAST ? ICO0 : ICO, MX(x + Math.cos(a) * d, y0 + h * (0.35 + R() * 0.3), z + Math.sin(a) * d, R() * 3, r * (0.55 + R() * 0.3), h * (0.35 + R() * 0.2), r * (0.55 + R() * 0.3))); }
+    for (let k = 0; k < n; k++) { const a = R() * PI * 2, d = R() * r * 0.5; GE(g, mk, FAST ? SPH0 : SPH, MX(x + Math.cos(a) * d, y0 + h * (0.35 + R() * 0.3), z + Math.sin(a) * d, R() * 3, r * (0.55 + R() * 0.3), h * (0.35 + R() * 0.2), r * (0.55 + R() * 0.3))); }
   }
   // a sculpted pine: leaning trunk and flat cloud pads
   function pine(g, x, z, y0, h, seed = 3, lean = [0.5, 0.2]) {
     const R = K.rng(seed); let p = [x, y0, z];
     for (let k = 0; k < 4; k++) { const q = [p[0] + lean[0] * (0.25 + R() * 0.2), p[1] + h / 4.6, p[2] + lean[1] * (0.25 + R() * 0.2)]; BM(g, 'dz_wood_black', p, q, 0.16 - k * 0.025); p = q; }
     for (let k = 0; k < 6; k++) { const yy = y0 + h * (0.5 + k * 0.085), a = R() * PI * 2, d = 0.25 + R() * 0.45, px = p[0] + Math.cos(a) * d - lean[0] * (1 - k * 0.2), pz = p[2] + Math.sin(a) * d;
-      for (let j = 0; j < 3; j++) GE(g, 'dz_pine', ICO0, MX(px + (R() - 0.5) * 0.4, yy + (k === 5 ? 0.1 : 0), pz + (R() - 0.5) * 0.4, R() * 3, 0.16 + R() * 0.1, 0.09, 0.14 + R() * 0.08)); }
+      for (let j = 0; j < 6; j++) GE(g, j % 3 ? 'dz_pine' : 'dz_foliage', SPH0, MX(px + (R() - 0.5) * 0.55, yy + (k === 5 ? 0.1 : 0) + (R() - 0.5) * 0.05, pz + (R() - 0.5) * 0.55, R() * 3, 0.2 + R() * 0.12, 0.07 + R() * 0.03, 0.17 + R() * 0.1)); }
   }
   // wall-hung abstract screen with a dark bezel; n = facing
   function wallScreen(g, mk, cx, cy, cz, w, h, n, bezel = 'black') {
@@ -358,7 +358,14 @@ PARTS.floor_1 = function (K) {
     for (const x of px) for (const z of pz) { C(g, 'dz_lacquer', 'stone_dark', x, z, 0.11, h, ty, 10); C(g, 'stone_dark', 'stone_dark', x, z, 0.17, h, h + 0.12, 10); }
     for (const z of pz) B(g, 'dz_lacquer', px[0] - 0.12, px[1] + 0.12, ty - 0.3, ty, z - 0.08, z + 0.08);
     for (const x of px) B(g, 'dz_lacquer', x - 0.08, x + 0.08, ty - 0.3, ty, pz[0] - 0.12, pz[1] + 0.12);
-    for (const x of px) for (const z of pz) B(g, 'wood_dark', x - 0.2, x + 0.2, ty, ty + 0.14, z - 0.2, z + 0.2);   // brackets
+    for (const x of px) for (const z of pz) {   // ikgong brackets: a capital block and stepped wing arms along both beams
+      B(g, 'wood_dark', x - 0.2, x + 0.2, ty, ty + 0.14, z - 0.2, z + 0.2);
+      B(g, 'dz_wood_mid', x - 0.55, x + 0.55, ty - 0.24, ty - 0.06, z - 0.06, z + 0.06); B(g, 'dz_wood_mid', x - 0.06, x + 0.06, ty - 0.24, ty - 0.06, z - 0.55, z + 0.55);
+      B(g, 'dz_celadon', x - 0.4, x + 0.4, ty - 0.3, ty - 0.24, z - 0.065, z + 0.065); B(g, 'dz_celadon', x - 0.065, x + 0.065, ty - 0.3, ty - 0.24, z - 0.4, z + 0.4);
+      B(g, 'wood_dark', x - 0.14, x + 0.14, ty - 0.06, ty, z - 0.14, z + 0.14);
+    }
+    for (const x of px) B(g, 'dz_wood_mid', x - 0.09, x + 0.09, ty + 0.14, ty + 0.26, eb[1] + 0.3, eb[3] - 0.3);   // purlins under the rafters
+    for (const z of pz) B(g, 'dz_celadon', px[0] - 0.12, px[1] + 0.12, ty - 0.2, ty - 0.17, z - 0.085, z + 0.085);
     lattice(g, 'x', px[0] + 0.12, px[1] - 0.12, pz[0], h + 1.6, ty - 0.32, 0.03, 0.26, 'wood_dark', 'dz_lamp_dim');   // rear lattice, softly lit
     // roof: concave sweep with upturned eaves, extruded along z
     const cx = (eb[0] + eb[2]) / 2, hw = (eb[2] - eb[0]) / 2, ey = r.eave_y, ry = r.ridge_y, N = 10, top = [];
@@ -435,13 +442,14 @@ PARTS.floor_1 = function (K) {
     const g = D('garden_plant'), R = K.rng(77);
     // maple: a short dark trunk and clusters of small leaf masses in deep red and amber
     const maple = (x, z, h, seed) => { const Q = K.rng(seed); BM(g, 'dz_wood_black', [x, 0, z], [x + 0.15, h * 0.55, z + 0.1], 0.1);
-      for (let k = 0; k < 9; k++) { const a = Q() * PI * 2, d = 0.3 + Q() * 0.7; GE(g, Q() < 0.6 ? 'dz_maple' : 'dz_maple2', ICO0, MX(x + Math.cos(a) * d, h * (0.6 + Q() * 0.35), z + Math.sin(a) * d, Q() * 3, 0.35 + Q() * 0.25, 0.22 + Q() * 0.1, 0.35 + Q() * 0.25)); } };
+      for (const [ty, tr, nn] of [[0.55, 1.0, 18], [0.7, 0.85, 15], [0.84, 0.6, 11], [0.95, 0.3, 5]]) for (let k = 0; k < nn; k++) { const a = (k / nn) * PI * 2 + Q(), d = tr * (0.25 + Q() * 0.75); GE(g, Q() < 0.55 ? 'dz_maple' : 'dz_maple2', SPH0, MX(x + 0.15 + Math.cos(a) * d, h * ty + (Q() - 0.5) * 0.14, z + 0.1 + Math.sin(a) * d, Q() * 3, 0.15 + Q() * 0.1, 0.06 + Q() * 0.04, 0.14 + Q() * 0.09)); }
+      for (let k = 0; k < 4; k++) BM(g, 'dz_wood_black', [x + 0.1, h * 0.45, z + 0.07], [x + 0.15 + Math.cos(k * 1.7) * 0.7, h * (0.62 + k * 0.06), z + 0.1 + Math.sin(k * 1.7) * 0.7], 0.035); };
     const bed = (x0, z0, x1, z1, plant) => {
       if (!free([x0, z0, x1, z1], 'garden bed')) return false;
       B(g, 'dz_basalt', x0, x1, 0, 0.14, z0, z0 + 0.12); B(g, 'dz_basalt', x0, x1, 0, 0.14, z1 - 0.12, z1);
       B(g, 'dz_basalt', x0, x0 + 0.12, 0, 0.14, z0 + 0.12, z1 - 0.12); B(g, 'dz_basalt', x1 - 0.12, x1, 0, 0.14, z0 + 0.12, z1 - 0.12);
       B(g, 'dz_earth', x0 + 0.12, x1 - 0.12, 0, 0.1, z0 + 0.12, z1 - 0.12, '-y');
-      for (let k = 0; k < Math.round((x1 - x0) * (z1 - z0) * 1.4); k++) shrub(g, x0 + 0.3 + R() * (x1 - x0 - 0.6), z0 + 0.3 + R() * (z1 - z0 - 0.6), 0.08, 0.22 + R() * 0.18, 0.14 + R() * 0.12, R() < 0.7 ? 'dz_moss' : 'dz_foliage', 3, 100 + k);
+      for (let k = 0; k < Math.round((x1 - x0) * (z1 - z0) * (FAST ? 1.6 : 3.2)); k++) shrub(g, x0 + 0.22 + R() * (x1 - x0 - 0.44), z0 + 0.22 + R() * (z1 - z0 - 0.44), 0.06, 0.16 + R() * 0.2, 0.1 + R() * 0.16, R() < 0.55 ? 'dz_moss' : R() < 0.7 ? 'dz_foliage' : 'dz_pine', 3, 100 + k);
       plant(); K.pool(FID, (x0 + x1) / 2, (z0 + z1) / 2, Math.max(x1 - x0, z1 - z0) * 0.6, 'pool_warm', 0.11);
       B(g, 'glow_warm', x0 + 0.14, x1 - 0.14, 0.14, 0.15, z0 + 0.1, z0 + 0.12, '-y');   // low uplight line in the edging
       return true;
@@ -457,6 +465,21 @@ PARTS.floor_1 = function (K) {
       (c) => { maple(c[0], c[1], 3.2, 23); shrub(g, c[0] + 0.6, c[1] + 0.5, 0.1, 0.4, 0.5, 'dz_pine', 4, 24); },
       (c) => { pine(g, c[0], c[1], 0.1, 2.8, 25, [-0.4, 0.3]); }, (c) => { maple(c[0], c[1], 2.4, 26); }];
     beds.forEach((opts, k) => { for (const [x0, z0, x1, z1] of opts) if (bed(x0, z0, x1, z1, () => plants[k]([(x0 + x1) / 2, (z0 + z1) / 2]))) break; });
+    // more planting: small moss beds along the glass and round the pavilion and pool wherever free() allows
+    let extra = 0;
+    for (const [x0, z0, x1, z1] of [[-22.4, 24.3, -20.4, 25.4], [-19.8, 24.3, -18.0, 25.4], [-25.5, 15.6, -24.4, 17.6], [-25.5, 18.2, -24.4, 20.2], [-20.8, 12.7, -19.0, 13.8], [-15.8, 12.7, -14.0, 13.8], [-12.9, 16.0, -12.2, 18.0], [-21.0, 22.2, -19.2, 23.4], [-19.4, 15.0, -18.2, 16.6], [-24.0, 21.0, -22.6, 21.9]]) {
+      if (extra >= 8) break;
+      if (bed(x0, z0, x1, z1, () => { if ((x1 - x0) * (z1 - z0) > 1.6) maple((x0 + x1) / 2, (z0 + z1) / 2, 1.8, 30 + extra); else shrub(g, (x0 + x1) / 2, (z0 + z1) / 2, 0.08, 0.35, 0.45, 'dz_pine', 4, 40 + extra); })) extra++;
+    }
+    LOG.garden_extra_beds = extra;
+    // soft warm mist in the void (two faint additive glow layers, export as emissive alpha)
+    if (!K.M.dz_mist) {
+      const c = K.img(64, 64, (i, j, o) => { const u = (i + 0.5) / 64 - 0.5, v = (j + 0.5) / 64 - 0.5, a = Math.exp(-(u * u + v * v) * 9); o[0] = o[1] = o[2] = 255; o[3] = 255 * a * 0.6; });
+      const t = K.asTex(c, true, 'dz_mist', false), m = new T.MeshStandardMaterial({ color: '#000000', map: t, emissive: new T.Color('#c9a0ff'), emissiveMap: t, emissiveIntensity: 0.18, transparent: true, depthWrite: false, side: T.DoubleSide, roughness: 1 });
+      m.name = 'dz_mist'; K.material('dz_mist', m, { tile: 1, env: 'in' });
+    }
+    for (const [yy, s2] of [[3.6, 11], [6.2, 12]]) { const pl = new T.PlaneGeometry(s2, s2); pl.rotateX(-PI / 2); GE(g, 'dz_mist', pl, MX(-19.0, yy, 19.0), true); }
+
     // stepping stones from the garden doors toward the pavilion (flush with the paving)
     for (let k = 0; k < 9; k++) { const x = -13.6 - k * 0.45 + Math.sin(k * 1.3) * 0.25, z = 25.2 - k * 0.62; if (free([x - 0.3, z - 0.25, x + 0.3, z + 0.25], 'stepping stone')) { const st = new T.CylinderGeometry(0.3 - (k % 3) * 0.03, 0.3, 0.02, 9); GE(g, 'dz_basalt', st, MX(x, 0.01, z, k)); } }
     // rain on the 7 m glass reads from inside: soft purple uplight pools along the south and west glass
@@ -487,8 +510,9 @@ PARTS.floor_1 = function (K) {
     rafters([-8.8, 12.2, -0.2, 20.8], 'z', 0.9);
     for (const [x, z] of [[-6.6, 16.3], [-4.4, 16.6], [-6.0, 19.0]]) if (freeHigh([x - 0.3, z - 0.3, x + 0.3, z + 0.3], 'tea pendant')) pendant(g, x, z, 2.45, 0.24, 0.42);
     // ondol lounge: glowing floor seams on a 2.4 m grid, a lattice canopy over the bench, pendants
-    for (let x = 2.4; x < 9; x += 2.4) B(g, 'dz_seam', x - 0.005, x + 0.005, 0, 0.002, 12.4, 20.6, '-y');
-    for (let z = 14.4; z < 21; z += 2.4) B(g, 'dz_seam', 0.4, 8.6, 0, 0.002, z - 0.005, z + 0.005, '-y');
+    for (let x = 2.4; x < 9; x += 2.4) B(g, 'black', x - 0.004, x + 0.004, 0, 0.0015, 12.4, 20.6, '-y');
+    for (let z = 14.4; z < 21; z += 2.4) B(g, 'black', 0.4, 8.6, 0, 0.0015, z - 0.004, z + 0.004, '-y');
+    K.pool(FID, 4.6, 16.6, 4.2, 'pool_warm', 0.003);   // heated stone: a broad warm glow
     if (freeHigh([5.1, 17.1, 7.9, 19.9], 'ondol canopy')) {
       for (let k = 0; k <= 6; k++) { B(g, 'wood_dark', 5.1 + k * 0.467 - 0.015, 5.1 + k * 0.467 + 0.015, 2.62, 2.68, 17.1, 19.9); B(g, 'wood_dark', 5.1, 7.9, 2.6, 2.64, 17.1 + k * 0.467 - 0.015, 17.1 + k * 0.467 + 0.015); }
       B(g, 'dz_lamp', 5.15, 7.85, 2.69, 2.7, 17.15, 19.85, '+y');

@@ -48,7 +48,11 @@
    "band": 0.26,
    "trim": 0.05,
    "pilaster": 0.3,
-   "placement": "units sit on the clear defender face, centred in reinforce.clear, with >= trim of hard jamb at each end"
+   "junction_hard": 1.0,
+   "min_run": 2.4,
+   "jamb": 0.15,
+   "rule": "every breakable wall is reinforceable; corners and T-junctions are hard for junction_hard m on each arm; runs under min_run are hard",
+   "placement": "units sit on the clear defender face, centred in each run of reinforce.clear, with >= trim of hard jamb at each end"
   },
   "thickness": {
    "hard": 0.4,
@@ -87,13 +91,13 @@
    "destructible": true,
    "reinforceable": false,
    "node_prefix": "SOFT_",
-   "desc": "drywall partition, floor to ceiling; bullets and charges make holes"
+   "desc": "not used for walls (user rule: every breakable wall is reinforceable); soft props only"
   },
   "reinforceable": {
    "destructible": true,
    "reinforceable": true,
    "node_prefix": "REINF_",
-   "desc": "soft panel zone 0..2.0 m sized for Wall Fortification units; hard transom/header above 2.0 m"
+   "desc": "the only breakable wall type: Wall Fortification-sized panels 0..2.0 m in the straight runs between hard ends (corners and T-junctions hard for 1.0 m); hard trims, jambs and header"
   },
   "glass": {
    "destructible": true,
@@ -171,7 +175,7 @@
    "destructible": false,
    "reinforceable": false,
    "node_prefix": "HARD_",
-   "desc": "0.3 m hard pilaster where two reinforceable walls of one room meet"
+   "desc": "hard jamb (none since the junction rule: corners are hard for 1.0 m)"
   },
   "glass_floor": {
    "destructible": false,
@@ -3826,8 +3830,8 @@
     9.0
    ],
    "length": 12.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -3850,6 +3854,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 2.825,
+      "u1": 5.825
+     },
+     {
+      "size": "standard",
+      "u0": 5.825,
+      "u1": 7.325
+     }
+    ],
+    "clear": [
+     [
+      2.6,
+      7.55
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
+    ],
+    "trim": [
+     2.825,
+     4.875
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -3895,7 +3934,7 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -3910,6 +3949,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -3929,7 +3970,7 @@
     12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -3945,6 +3986,8 @@
     }
    ],
    "note": "Garden Lobby door into the garden arcade",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -3964,11 +4007,13 @@
     12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -3988,7 +4033,7 @@
     12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4004,6 +4049,8 @@
     }
    ],
    "note": "offset from the lobby door to kill the long E-W line",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -4058,7 +4105,7 @@
     24.2
    ],
    "length": 3.2,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4073,6 +4120,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -4118,7 +4167,7 @@
     12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4133,6 +4182,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -4157,36 +4208,38 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl",
-     "standard"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S4",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.212,
-      "u1": 4.212
+      "size": "large",
+      "u0": 0.25,
+      "u1": 3.25
      },
      {
       "size": "standard",
-      "u0": 4.212,
-      "u1": 5.712
+      "u0": 3.25,
+      "u1": 4.75
      }
     ],
     "clear": [
-     0.0,
-     5.925
+     [
+      0.0,
+      5.0
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
     ],
     "trim": [
-     0.212,
-     0.288
+     0.25,
+     1.25
     ],
     "far_side_z": -0.2
    },
@@ -4214,30 +4267,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S4",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.287,
-      "u1": 4.287
+      "size": "large",
+      "u0": 1.25,
+      "u1": 4.25
      }
     ],
     "clear": [
-     0.075,
-     4.5
+     [
+      1.0,
+      4.5
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
-     0.287,
-     0.213
+     1.25,
+     0.25
     ],
     "far_side_z": -0.2
    },
@@ -4260,7 +4315,7 @@
     12.0
    ],
    "length": 4.5,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4275,6 +4330,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -4299,30 +4356,44 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S4",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.4,
-      "u1": 4.4
+      "size": "standard",
+      "u0": 1.05,
+      "u1": 2.55
+     },
+     {
+      "size": "small",
+      "u0": 2.55,
+      "u1": 3.55
+     },
+     {
+      "size": "small",
+      "u0": 3.55,
+      "u1": 4.55
      }
     ],
     "clear": [
-     0.2,
-     4.6
+     [
+      1.0,
+      4.6
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
     ],
     "trim": [
-     0.4,
-     0.2
+     1.05,
+     0.05
     ],
     "far_side_z": -0.2
    },
@@ -4345,7 +4416,7 @@
     21.0
    ],
    "length": 1.2,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4360,6 +4431,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -4379,38 +4452,13 @@
     21.0
    ],
    "length": 3.2,
-   "type": "reinforceable",
+   "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
-    "defender_side": "neg",
-    "site": "S4",
-    "panels": [
-     {
-      "size": "large",
-      "u0": 0.062,
-      "u1": 3.062
-     }
-    ],
-    "clear": [
-     0.0,
-     3.125
-    ],
-    "trim": [
-     0.062,
-     0.138
-    ],
-    "far_side_z": -0.2
-   },
+   "was": "reinforceable",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -4426,39 +4474,48 @@
     21.0
    ],
    "b": [
-    3.2,
+    6.0,
     21.0
    ],
-   "length": 3.2,
+   "length": 6.0,
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "note": "Ondol veranda wall (junction rule: door moved east)",
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S4",
     "panels": [
      {
       "size": "large",
-      "u0": 0.138,
-      "u1": 3.138
+      "u0": 1.25,
+      "u1": 4.25
+     },
+     {
+      "size": "standard",
+      "u0": 4.25,
+      "u1": 5.75
      }
     ],
     "clear": [
-     0.075,
-     3.2
+     [
+      1.0,
+      6.0
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
     ],
     "trim": [
-     0.138,
-     0.062
+     1.25,
+     0.25
     ],
     "far_side_z": -0.2
    },
@@ -4473,15 +4530,15 @@
    "id": "F1_W29",
    "floor": "F1",
    "a": [
-    3.2,
+    6.0,
     21.0
    ],
    "b": [
-    5.8,
+    9.0,
     21.0
    ],
-   "length": 2.6,
-   "type": "soft",
+   "length": 3.0,
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4489,13 +4546,15 @@
     {
      "id": "F1_O18",
      "kind": "double_door",
-     "u0": 0.3,
-     "u1": 2.3,
+     "u0": 0.4,
+     "u1": 2.4,
      "y0": 0.0,
      "y1": 2.0,
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -4507,57 +4566,6 @@
    "id": "F1_W30",
    "floor": "F1",
    "a": [
-    5.8,
-    21.0
-   ],
-   "b": [
-    9.0,
-    21.0
-   ],
-   "length": 3.2,
-   "type": "reinforceable",
-   "thickness": 0.2,
-   "y0": 0.0,
-   "y1": 3.9,
-   "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
-    "defender_side": "neg",
-    "site": "S4",
-    "panels": [
-     {
-      "size": "large",
-      "u0": 0.05,
-      "u1": 3.05
-     }
-    ],
-    "clear": [
-     0.0,
-     3.1
-    ],
-    "trim": [
-     0.05,
-     0.15
-    ],
-    "far_side_z": -0.2
-   },
-   "n": [
-    -0.0,
-    1.0
-   ],
-   "side_pos": "F1_veranda",
-   "side_neg": "F1_ondol_lounge"
-  },
-  {
-   "id": "F1_W31",
-   "floor": "F1",
-   "a": [
     0.0,
     12.0
    ],
@@ -4566,8 +4574,8 @@
     21.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -4582,6 +4590,41 @@
     }
    ],
    "note": "shared hanji screen wall",
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": "S4",
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 1.075,
+      "u1": 5.075
+     },
+     {
+      "size": "standard",
+      "u0": 5.075,
+      "u1": 6.575
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      6.65
+     ]
+    ],
+    "units": [
+     "xl",
+     "standard"
+    ],
+    "trim": [
+     1.075,
+     2.425
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -4590,7 +4633,7 @@
    "side_neg": "F1_ondol_lounge"
   },
   {
-   "id": "F1_W32",
+   "id": "F1_W31",
    "floor": "F1",
    "a": [
     9.0,
@@ -4598,38 +4641,83 @@
    ],
    "b": [
     9.0,
-    13.75
+    14.0
    ],
-   "length": 1.75,
+   "length": 2.0,
+   "type": "hard",
+   "thickness": 0.15,
+   "y0": 0.0,
+   "y1": 3.9,
+   "openings": [
+    {
+     "id": "F1_O20",
+     "kind": "door",
+     "u0": 0.9,
+     "u1": 1.9,
+     "y0": 0.0,
+     "y1": 2.0,
+     "barricadable": true
+    }
+   ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
+   "n": [
+    -1.0,
+    0.0
+   ],
+   "side_pos": "F1_ondol_lounge",
+   "side_neg": "F1_changing"
+  },
+  {
+   "id": "F1_W32",
+   "floor": "F1",
+   "a": [
+    9.0,
+    14.0
+   ],
+   "b": [
+    9.0,
+    18.0
+   ],
+   "length": 4.0,
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "note": "Ondol / Changing wall (junction rule: door moved north)",
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "standard"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S4",
     "panels": [
      {
       "size": "standard",
-      "u0": 0.162,
-      "u1": 1.662
+      "u0": 0.25,
+      "u1": 1.75
+     },
+     {
+      "size": "small",
+      "u0": 1.75,
+      "u1": 2.75
      }
     ],
     "clear": [
-     0.075,
-     1.75
+     [
+      0.0,
+      3.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
     ],
     "trim": [
-     0.162,
-     0.088
+     0.25,
+     1.25
     ],
     "far_side_z": -0.2
    },
@@ -4645,40 +4733,6 @@
    "floor": "F1",
    "a": [
     9.0,
-    13.75
-   ],
-   "b": [
-    9.0,
-    18.0
-   ],
-   "length": 4.25,
-   "type": "soft",
-   "thickness": 0.15,
-   "y0": 0.0,
-   "y1": 3.9,
-   "openings": [
-    {
-     "id": "F1_O20",
-     "kind": "door",
-     "u0": 1.25,
-     "u1": 2.25,
-     "y0": 0.0,
-     "y1": 2.0,
-     "barricadable": true
-    }
-   ],
-   "n": [
-    -1.0,
-    0.0
-   ],
-   "side_pos": "F1_ondol_lounge",
-   "side_neg": "F1_changing"
-  },
-  {
-   "id": "F1_W34",
-   "floor": "F1",
-   "a": [
-    9.0,
     18.0
    ],
    "b": [
@@ -4686,46 +4740,13 @@
     21.0
    ],
    "length": 3.0,
-   "type": "reinforceable",
+   "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "standard",
-     "small"
-    ],
-    "yields": [
-     "b"
-    ],
-    "defender_side": "pos",
-    "site": "S4",
-    "panels": [
-     {
-      "size": "standard",
-      "u0": 0.05,
-      "u1": 1.55
-     },
-     {
-      "size": "small",
-      "u0": 1.55,
-      "u1": 2.55
-     }
-    ],
-    "clear": [
-     0.0,
-     2.6
-    ],
-    "trim": [
-     0.05,
-     0.45
-    ],
-    "far_side_z": -0.2
-   },
+   "was": "reinforceable",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -4734,7 +4755,7 @@
    "side_neg": "F1_steam_room"
   },
   {
-   "id": "F1_W35",
+   "id": "F1_W34",
    "floor": "F1",
    "a": [
     9.0,
@@ -4745,7 +4766,7 @@
     24.2
    ],
    "length": 3.2,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4760,6 +4781,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -4768,7 +4791,7 @@
    "side_neg": "F1_steam_room"
   },
   {
-   "id": "F1_W36",
+   "id": "F1_W35",
    "floor": "F1",
    "a": [
     9.0,
@@ -4794,7 +4817,7 @@
    "side_neg": "F1_steam_room"
   },
   {
-   "id": "F1_W37",
+   "id": "F1_W36",
    "floor": "F1",
    "a": [
     9.0,
@@ -4805,8 +4828,8 @@
     12.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -4820,6 +4843,35 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.075,
+      "u1": 4.075
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      4.15
+     ]
+    ],
+    "units": [
+     "large"
+    ],
+    "trim": [
+     1.075,
+     1.925
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -4828,7 +4880,7 @@
    "side_neg": "F1_spa_hall"
   },
   {
-   "id": "F1_W38",
+   "id": "F1_W37",
    "floor": "F1",
    "a": [
     9.0,
@@ -4839,8 +4891,8 @@
     18.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -4854,6 +4906,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 2.375,
+      "u1": 3.875
+     },
+     {
+      "size": "small",
+      "u0": 3.875,
+      "u1": 4.875
+     }
+    ],
+    "clear": [
+     [
+      2.25,
+      5.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
+    ],
+    "trim": [
+     2.375,
+     1.125
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -4862,7 +4949,7 @@
    "side_neg": "F1_changing"
   },
   {
-   "id": "F1_W39",
+   "id": "F1_W38",
    "floor": "F1",
    "a": [
     15.0,
@@ -4873,7 +4960,7 @@
     12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -4888,6 +4975,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -4896,7 +4985,7 @@
    "side_neg": "F1_bathhouse"
   },
   {
-   "id": "F1_W40",
+   "id": "F1_W39",
    "floor": "F1",
    "a": [
     15.0,
@@ -4907,8 +4996,8 @@
     18.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -4922,6 +5011,35 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.925,
+      "u1": 4.925
+     }
+    ],
+    "clear": [
+     [
+      1.85,
+      5.0
+     ]
+    ],
+    "units": [
+     "large"
+    ],
+    "trim": [
+     1.925,
+     1.075
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -4930,7 +5048,7 @@
    "side_neg": "F1_bathhouse"
   },
   {
-   "id": "F1_W41",
+   "id": "F1_W40",
    "floor": "F1",
    "a": [
     15.0,
@@ -4964,7 +5082,7 @@
    "side_neg": "F1_bathhouse"
   },
   {
-   "id": "F1_W42",
+   "id": "F1_W41",
    "floor": "F1",
    "a": [
     9.0,
@@ -4988,7 +5106,7 @@
    "side_neg": "F1_locker_hall"
   },
   {
-   "id": "F1_W43",
+   "id": "F1_W42",
    "floor": "F1",
    "a": [
     12.0,
@@ -4999,7 +5117,7 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5014,6 +5132,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5022,7 +5142,7 @@
    "side_neg": "F1_lockers"
   },
   {
-   "id": "F1_W44",
+   "id": "F1_W43",
    "floor": "F1",
    "a": [
     15.0,
@@ -5033,8 +5153,8 @@
     9.0
    ],
    "length": 9.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5048,6 +5168,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.175,
+      "u1": 4.175
+     },
+     {
+      "size": "standard",
+      "u0": 4.175,
+      "u1": 5.675
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      5.85
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
+    ],
+    "trim": [
+     1.175,
+     3.525
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -5056,7 +5211,7 @@
    "side_neg": "F1_lockers"
   },
   {
-   "id": "F1_W45",
+   "id": "F1_W44",
    "floor": "F1",
    "a": [
     24.2,
@@ -5082,7 +5237,7 @@
    "side_neg": "F1_lockers"
   },
   {
-   "id": "F1_W46",
+   "id": "F1_W45",
    "floor": "F1",
    "a": [
     12.0,
@@ -5093,8 +5248,8 @@
     9.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5108,6 +5263,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5116,7 +5322,7 @@
    "side_neg": "F1_lockers"
   },
   {
-   "id": "F1_W47",
+   "id": "F1_W46",
    "floor": "F1",
    "a": [
     12.0,
@@ -5127,8 +5333,8 @@
     0.0
    ],
    "length": 12.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5142,6 +5348,63 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "small",
+      "u0": 3.675,
+      "u1": 4.675
+     },
+     {
+      "size": "large",
+      "u0": 6.325,
+      "u1": 9.325
+     },
+     {
+      "size": "standard",
+      "u0": 9.325,
+      "u1": 10.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      4.85
+     ],
+     [
+      6.15,
+      11.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small",
+     "large",
+     "standard"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5150,7 +5413,7 @@
    "side_neg": "F1_treatment"
   },
   {
-   "id": "F1_W48",
+   "id": "F1_W47",
    "floor": "F1",
    "a": [
     12.0,
@@ -5161,7 +5424,7 @@
     0.0
    ],
    "length": 8.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5176,6 +5439,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5184,7 +5449,7 @@
    "side_neg": "F1_treatment"
   },
   {
-   "id": "F1_W49",
+   "id": "F1_W48",
    "floor": "F1",
    "a": [
     20.0,
@@ -5195,7 +5460,7 @@
     0.0
    ],
    "length": 4.5,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5210,6 +5475,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5218,7 +5485,7 @@
    "side_neg": "F1_salt_room"
   },
   {
-   "id": "F1_W50",
+   "id": "F1_W49",
    "floor": "F1",
    "a": [
     24.5,
@@ -5244,7 +5511,7 @@
    "side_neg": "F1_salt_room"
   },
   {
-   "id": "F1_W51",
+   "id": "F1_W50",
    "floor": "F1",
    "a": [
     20.0,
@@ -5278,7 +5545,7 @@
    "side_neg": "F1_salt_room"
   },
   {
-   "id": "F1_W52",
+   "id": "F1_W51",
    "floor": "F1",
    "a": [
     12.0,
@@ -5289,7 +5556,7 @@
     -12.0
    ],
    "length": 8.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5304,6 +5571,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5312,7 +5581,7 @@
    "side_neg": "F1_laundry"
   },
   {
-   "id": "F1_W53",
+   "id": "F1_W52",
    "floor": "F1",
    "a": [
     20.0,
@@ -5323,11 +5592,52 @@
     -12.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.25,
+      "u1": 2.75
+     },
+     {
+      "size": "small",
+      "u0": 2.75,
+      "u1": 3.75
+     },
+     {
+      "size": "small",
+      "u0": 3.75,
+      "u1": 4.75
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      5.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     1.25,
+     1.25
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -5336,7 +5646,7 @@
    "side_neg": "F1_laundry"
   },
   {
-   "id": "F1_W54",
+   "id": "F1_W53",
    "floor": "F1",
    "a": [
     9.0,
@@ -5347,7 +5657,7 @@
     -12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5362,6 +5672,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5370,7 +5682,7 @@
    "side_neg": "F1_kitchen"
   },
   {
-   "id": "F1_W55",
+   "id": "F1_W54",
    "floor": "F1",
    "a": [
     9.0,
@@ -5394,7 +5706,7 @@
    "side_neg": "F1_locker_hall"
   },
   {
-   "id": "F1_W56",
+   "id": "F1_W55",
    "floor": "F1",
    "a": [
     12.0,
@@ -5405,8 +5717,8 @@
     -12.0
    ],
    "length": 14.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5420,6 +5732,47 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 4.325,
+      "u1": 8.325
+     },
+     {
+      "size": "large",
+      "u0": 8.325,
+      "u1": 11.325
+     },
+     {
+      "size": "standard",
+      "u0": 11.325,
+      "u1": 12.825
+     }
+    ],
+    "clear": [
+     [
+      4.15,
+      13.0
+     ]
+    ],
+    "units": [
+     "xl",
+     "large",
+     "standard"
+    ],
+    "trim": [
+     4.325,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5428,7 +5781,7 @@
    "side_neg": "F1_laundry"
   },
   {
-   "id": "F1_W57",
+   "id": "F1_W56",
    "floor": "F1",
    "a": [
     -3.0,
@@ -5439,8 +5792,8 @@
     -12.0
    ],
    "length": 12.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5463,6 +5816,47 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 8.325,
+      "u1": 9.825
+     },
+     {
+      "size": "small",
+      "u0": 9.825,
+      "u1": 10.825
+     },
+     {
+      "size": "small",
+      "u0": 10.825,
+      "u1": 11.825
+     }
+    ],
+    "clear": [
+     [
+      8.15,
+      12.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     8.325,
+     0.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -5471,7 +5865,7 @@
    "side_neg": "F1_kitchen"
   },
   {
-   "id": "F1_W58",
+   "id": "F1_W57",
    "floor": "F1",
    "a": [
     -9.0,
@@ -5482,7 +5876,7 @@
     -12.0
    ],
    "length": 6.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5497,6 +5891,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5505,7 +5901,7 @@
    "side_neg": "F1_servery"
   },
   {
-   "id": "F1_W59",
+   "id": "F1_W58",
    "floor": "F1",
    "a": [
     -3.0,
@@ -5516,7 +5912,7 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5540,6 +5936,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -5548,7 +5946,7 @@
    "side_neg": "F1_kitchen"
   },
   {
-   "id": "F1_W60",
+   "id": "F1_W59",
    "floor": "F1",
    "a": [
     -3.0,
@@ -5573,7 +5971,7 @@
    "side_neg": "F1_kitchen"
   },
   {
-   "id": "F1_W61",
+   "id": "F1_W60",
    "floor": "F1",
    "a": [
     -9.0,
@@ -5598,7 +5996,7 @@
    "side_neg": "F1_cold_store"
   },
   {
-   "id": "F1_W62",
+   "id": "F1_W61",
    "floor": "F1",
    "a": [
     -9.0,
@@ -5623,7 +6021,7 @@
    "side_neg": "F1_cold_store"
   },
   {
-   "id": "F1_W63",
+   "id": "F1_W62",
    "floor": "F1",
    "a": [
     -9.0,
@@ -5649,7 +6047,7 @@
    "side_neg": "F1_dining_room"
   },
   {
-   "id": "F1_W64",
+   "id": "F1_W63",
    "floor": "F1",
    "a": [
     -9.0,
@@ -5660,8 +6058,8 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5675,6 +6073,47 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 2.425,
+      "u1": 3.925
+     },
+     {
+      "size": "small",
+      "u0": 3.925,
+      "u1": 4.925
+     },
+     {
+      "size": "small",
+      "u0": 4.925,
+      "u1": 5.925
+     }
+    ],
+    "clear": [
+     [
+      2.35,
+      6.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     2.425,
+     1.075
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5683,7 +6122,7 @@
    "side_neg": "F1_servery"
   },
   {
-   "id": "F1_W65",
+   "id": "F1_W64",
    "floor": "F1",
    "a": [
     -9.0,
@@ -5707,7 +6146,7 @@
    "side_neg": "F1_kitchen_pass"
   },
   {
-   "id": "F1_W66",
+   "id": "F1_W65",
    "floor": "F1",
    "a": [
     -12.0,
@@ -5718,7 +6157,7 @@
     -12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5733,6 +6172,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5741,7 +6182,7 @@
    "side_neg": "F1_dining_room"
   },
   {
-   "id": "F1_W67",
+   "id": "F1_W66",
    "floor": "F1",
    "a": [
     -19.0,
@@ -5752,11 +6193,46 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.25,
+      "u1": 4.25
+     },
+     {
+      "size": "standard",
+      "u0": 4.25,
+      "u1": 5.75
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      6.0
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
+    ],
+    "trim": [
+     1.25,
+     1.25
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -5765,7 +6241,7 @@
    "side_neg": "F1_dining_room"
   },
   {
-   "id": "F1_W68",
+   "id": "F1_W67",
    "floor": "F1",
    "a": [
     -26.0,
@@ -5776,7 +6252,7 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -5791,6 +6267,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -5799,7 +6277,7 @@
    "side_neg": "F1_dining_room"
   },
   {
-   "id": "F1_W69",
+   "id": "F1_W68",
    "floor": "F1",
    "a": [
     -12.0,
@@ -5810,8 +6288,8 @@
     0.0
    ],
    "length": 12.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5825,6 +6303,45 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 1.175,
+      "u1": 5.175
+     },
+     {
+      "size": "xl",
+      "u0": 6.825,
+      "u1": 10.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      5.35
+     ],
+     [
+      6.65,
+      11.0
+     ]
+    ],
+    "units": [
+     "xl",
+     "xl"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5833,7 +6350,7 @@
    "side_neg": "F1_service_hall"
   },
   {
-   "id": "F1_W70",
+   "id": "F1_W69",
    "floor": "F1",
    "a": [
     -12.0,
@@ -5844,8 +6361,8 @@
     9.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5859,6 +6376,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5867,7 +6435,7 @@
    "side_neg": "F1_service_hall"
   },
   {
-   "id": "F1_W71",
+   "id": "F1_W70",
    "floor": "F1",
    "a": [
     -19.0,
@@ -5878,8 +6446,8 @@
     0.0
    ],
    "length": 12.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5893,6 +6461,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 1.175,
+      "u1": 5.175
+     },
+     {
+      "size": "large",
+      "u0": 5.175,
+      "u1": 8.175
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      8.35
+     ]
+    ],
+    "units": [
+     "xl",
+     "large"
+    ],
+    "trim": [
+     1.175,
+     3.825
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -5901,7 +6504,7 @@
    "side_neg": "F1_plant_room"
   },
   {
-   "id": "F1_W72",
+   "id": "F1_W71",
    "floor": "F1",
    "a": [
     -24.5,
@@ -5912,8 +6515,8 @@
     0.0
    ],
    "length": 5.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -5927,6 +6530,47 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 0.075,
+      "u1": 1.575
+     },
+     {
+      "size": "small",
+      "u0": 1.575,
+      "u1": 2.575
+     },
+     {
+      "size": "small",
+      "u0": 2.575,
+      "u1": 3.575
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      3.65
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     0.075,
+     1.925
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -5935,7 +6579,7 @@
    "side_neg": "F1_staff_entry"
   },
   {
-   "id": "F1_W73",
+   "id": "F1_W72",
    "floor": "F1",
    "a": [
     -24.5,
@@ -5961,7 +6605,7 @@
    "side_neg": "F1_canteen"
   },
   {
-   "id": "F1_W74",
+   "id": "F1_W73",
    "floor": "F1",
    "a": [
     -19.0,
@@ -5972,11 +6616,46 @@
     0.0
    ],
    "length": 7.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.25,
+      "u1": 4.25
+     },
+     {
+      "size": "standard",
+      "u0": 4.25,
+      "u1": 5.75
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      6.0
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
+    ],
+    "trim": [
+     1.25,
+     1.25
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -6401,14 +7080,11 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S3",
     "panels": [
@@ -6419,8 +7095,13 @@
      }
     ],
     "clear": [
-     0.0,
-     3.1
+     [
+      0.0,
+      3.1
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
      0.05,
@@ -6478,14 +7159,12 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "note": "faces the Garden Stair head",
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S3",
     "panels": [
@@ -6496,8 +7175,13 @@
      }
     ],
     "clear": [
-     0.0,
-     4.1
+     [
+      0.0,
+      4.1
+     ]
+    ],
+    "units": [
+     "xl"
     ],
     "trim": [
      0.05,
@@ -6505,7 +7189,6 @@
     ],
     "far_side_z": -0.2
    },
-   "note": "faces the Garden Stair head",
    "n": [
     -0.0,
     1.0
@@ -6525,7 +7208,7 @@
     9.0
    ],
    "length": 2.3,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -6540,6 +7223,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -6584,7 +7269,7 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -6599,6 +7284,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -6623,30 +7310,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S3",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.12,
-      "u1": 4.12
+      "size": "large",
+      "u0": 1.1,
+      "u1": 4.1
      }
     ],
     "clear": [
-     0.04,
-     4.2
+     [
+      1.0,
+      4.2
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
-     0.12,
-     0.08
+     1.1,
+     0.1
     ],
     "far_side_z": -0.2
    },
@@ -6669,7 +7358,7 @@
     9.0
    ],
    "length": 4.8,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -6684,6 +7373,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -6708,30 +7399,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S3",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.25,
-      "u1": 4.25
+      "size": "large",
+      "u0": 1.15,
+      "u1": 4.15
      }
     ],
     "clear": [
-     0.2,
-     4.3
+     [
+      1.0,
+      4.3
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
-     0.25,
-     0.05
+     1.15,
+     0.15
     ],
     "far_side_z": -0.2
    },
@@ -6754,7 +7447,7 @@
     -5.2
    ],
    "length": 2.5,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -6769,6 +7462,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -6793,36 +7488,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl",
-     "small"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S3",
     "panels": [
      {
       "size": "xl",
-      "u0": 0.08,
-      "u1": 4.08
-     },
-     {
-      "size": "small",
-      "u0": 4.08,
-      "u1": 5.08
+      "u0": 0.1,
+      "u1": 4.1
      }
     ],
     "clear": [
-     0.0,
-     5.16
+     [
+      0.0,
+      4.2
+     ]
+    ],
+    "units": [
+     "xl"
     ],
     "trim": [
-     0.08,
-     0.12
+     0.1,
+     1.1
     ],
     "far_side_z": -0.2
    },
@@ -6880,7 +7571,7 @@
     0.0
    ],
    "length": 1.4,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -6895,6 +7586,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -6940,38 +7633,13 @@
     0.0
    ],
    "length": 3.1,
-   "type": "reinforceable",
+   "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
-    "defender_side": "pos",
-    "site": "S3",
-    "panels": [
-     {
-      "size": "large",
-      "u0": 0.05,
-      "u1": 3.05
-     }
-    ],
-    "clear": [
-     0.0,
-     3.1
-    ],
-    "trim": [
-     0.05,
-     0.05
-    ],
-    "far_side_z": -0.2
-   },
+   "was": "reinforceable",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -6996,30 +7664,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S3",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.35,
-      "u1": 4.35
+      "size": "large",
+      "u0": 1.25,
+      "u1": 4.25
      }
     ],
     "clear": [
-     0.2,
-     4.5
+     [
+      1.0,
+      4.5
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
-     0.35,
-     0.15
+     1.25,
+     0.25
     ],
     "far_side_z": -0.2
    },
@@ -7042,8 +7712,8 @@
     0.0
    ],
    "length": 7.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -7057,6 +7727,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "neg",
+    "site": "S3",
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 3.825,
+      "u1": 5.325
+     },
+     {
+      "size": "small",
+      "u0": 5.325,
+      "u1": 6.325
+     }
+    ],
+    "clear": [
+     [
+      3.65,
+      6.5
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
+    ],
+    "trim": [
+     3.825,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -7125,7 +7830,7 @@
     -12.0
    ],
    "length": 6.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7140,6 +7845,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -7159,7 +7866,7 @@
     -12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7174,6 +7881,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -7217,7 +7926,7 @@
     -12.0
    ],
    "length": 6.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7232,6 +7941,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -7251,7 +7962,7 @@
     -18.0
    ],
    "length": 6.5,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7266,6 +7977,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -7311,11 +8024,46 @@
     -18.0
    ],
    "length": 6.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 0.25,
+      "u1": 4.25
+     },
+     {
+      "size": "small",
+      "u0": 4.25,
+      "u1": 5.25
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      5.5
+     ]
+    ],
+    "units": [
+     "xl",
+     "small"
+    ],
+    "trim": [
+     0.25,
+     1.25
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -7361,8 +8109,8 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -7376,6 +8124,35 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 1.075,
+      "u1": 5.075
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      5.15
+     ]
+    ],
+    "units": [
+     "xl"
+    ],
+    "trim": [
+     1.075,
+     1.925
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -7395,11 +8172,40 @@
     -19.0
    ],
    "length": 5.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 0.1,
+      "u1": 4.1
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      4.2
+     ]
+    ],
+    "units": [
+     "xl"
+    ],
+    "trim": [
+     0.1,
+     1.1
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -7445,8 +8251,8 @@
     -12.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -7460,6 +8266,47 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "small",
+      "u0": 3.675,
+      "u1": 4.675
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      4.85
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     4.325
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -7479,8 +8326,8 @@
     -12.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -7494,6 +8341,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -7513,7 +8411,7 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7528,6 +8426,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -7547,7 +8447,7 @@
     -19.0
    ],
    "length": 5.5,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7562,6 +8462,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -7607,8 +8509,8 @@
     -19.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -7622,6 +8524,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -7641,8 +8594,8 @@
     -12.0
    ],
    "length": 12.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -7657,6 +8610,63 @@
     }
    ],
    "to_slab": true,
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 0.275,
+      "u1": 1.775
+     },
+     {
+      "size": "small",
+      "u0": 1.775,
+      "u1": 2.775
+     },
+     {
+      "size": "small",
+      "u0": 2.775,
+      "u1": 3.775
+     },
+     {
+      "size": "xl",
+      "u0": 5.525,
+      "u1": 9.525
+     },
+     {
+      "size": "standard",
+      "u0": 9.525,
+      "u1": 11.025
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      4.05
+     ],
+     [
+      5.35,
+      11.2
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small",
+     "xl",
+     "standard"
+    ],
+    "trim": [
+     0.275,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -7702,7 +8712,7 @@
     -9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7718,6 +8728,8 @@
     }
    ],
    "to_slab": true,
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -7737,7 +8749,7 @@
     -9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7753,6 +8765,8 @@
     }
    ],
    "to_slab": true,
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -7803,14 +8817,12 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "to_slab": true,
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S2",
     "panels": [
@@ -7821,8 +8833,13 @@
      }
     ],
     "clear": [
-     0.0,
-     3.1
+     [
+      0.0,
+      3.1
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
      0.05,
@@ -7830,7 +8847,6 @@
     ],
     "far_side_z": -0.2
    },
-   "to_slab": true,
    "n": [
     -0.0,
     1.0
@@ -7850,7 +8866,7 @@
     -9.0
    ],
    "length": 2.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7867,6 +8883,8 @@
    ],
    "to_slab": true,
    "note": "studio window",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -7891,14 +8909,12 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "to_slab": true,
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "pos",
     "site": "S2",
     "panels": [
@@ -7909,8 +8925,13 @@
      }
     ],
     "clear": [
-     0.0,
-     3.1
+     [
+      0.0,
+      3.1
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
      0.05,
@@ -7918,7 +8939,6 @@
     ],
     "far_side_z": -0.2
    },
-   "to_slab": true,
    "n": [
     -0.0,
     1.0
@@ -7964,7 +8984,7 @@
     -5.3
    ],
    "length": 3.7,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -7979,6 +8999,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -8003,36 +9025,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl",
-     "small"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S2",
     "panels": [
      {
       "size": "xl",
-      "u0": 0.112,
-      "u1": 4.112
-     },
-     {
-      "size": "small",
-      "u0": 4.112,
-      "u1": 5.112
+      "u0": 0.15,
+      "u1": 4.15
      }
     ],
     "clear": [
-     0.0,
-     5.225
+     [
+      0.0,
+      4.3
+     ]
+    ],
+    "units": [
+     "xl"
     ],
     "trim": [
-     0.112,
-     0.188
+     0.15,
+     1.15
     ],
     "far_side_z": -0.2
    },
@@ -8060,36 +9078,44 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large",
-     "standard"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S2",
     "panels": [
      {
-      "size": "large",
-      "u0": 0.138,
-      "u1": 3.138
+      "size": "standard",
+      "u0": 1.1,
+      "u1": 2.6
      },
      {
-      "size": "standard",
-      "u0": 3.138,
-      "u1": 4.638
+      "size": "small",
+      "u0": 2.6,
+      "u1": 3.6
+     },
+     {
+      "size": "small",
+      "u0": 3.6,
+      "u1": 4.6
      }
     ],
     "clear": [
-     0.075,
-     4.7
+     [
+      1.0,
+      4.7
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
     ],
     "trim": [
-     0.138,
-     0.062
+     1.1,
+     0.1
     ],
     "far_side_z": -0.2
    },
@@ -8112,7 +9138,7 @@
     9.0
    ],
    "length": 4.3,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -8127,6 +9153,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -8146,8 +9174,8 @@
     0.0
    ],
    "length": 7.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -8161,6 +9189,35 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": "S2",
+    "panels": [
+     {
+      "size": "large",
+      "u0": 3.825,
+      "u1": 6.825
+     }
+    ],
+    "clear": [
+     [
+      3.65,
+      7.0
+     ]
+    ],
+    "units": [
+     "large"
+    ],
+    "trim": [
+     3.825,
+     0.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -8231,7 +9288,7 @@
     9.0
    ],
    "length": 2.8,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -8246,6 +9303,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -8270,30 +9329,38 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S2",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.05,
-      "u1": 4.05
+      "size": "standard",
+      "u0": 1.4,
+      "u1": 2.9
+     },
+     {
+      "size": "small",
+      "u0": 2.9,
+      "u1": 3.9
      }
     ],
     "clear": [
-     0.0,
-     4.1
+     [
+      1.2,
+      4.1
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
     ],
     "trim": [
-     0.05,
-     0.05
+     1.4,
+     0.2
     ],
     "far_side_z": -0.2
    },
@@ -8316,7 +9383,7 @@
     9.0
    ],
    "length": 2.2,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -8331,6 +9398,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -8355,14 +9424,11 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S2",
     "panels": [
@@ -8373,8 +9439,13 @@
      }
     ],
     "clear": [
-     0.0,
-     3.1
+     [
+      0.0,
+      3.1
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
      0.05,
@@ -8427,7 +9498,7 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -8442,6 +9513,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -8496,11 +9569,52 @@
     18.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.25,
+      "u1": 2.75
+     },
+     {
+      "size": "small",
+      "u0": 2.75,
+      "u1": 3.75
+     },
+     {
+      "size": "small",
+      "u0": 3.75,
+      "u1": 4.75
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      5.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     1.25,
+     1.25
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -8520,8 +9634,8 @@
     26.0
    ],
    "length": 8.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -8535,6 +9649,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 4.325,
+      "u1": 5.825
+     },
+     {
+      "size": "small",
+      "u0": 5.825,
+      "u1": 6.825
+     }
+    ],
+    "clear": [
+     [
+      4.15,
+      7.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
+    ],
+    "trim": [
+     4.325,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -8554,8 +9703,8 @@
     18.0
    ],
    "length": 9.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -8569,6 +9718,47 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 2.825,
+      "u1": 6.825
+     },
+     {
+      "size": "standard",
+      "u0": 6.825,
+      "u1": 8.325
+     },
+     {
+      "size": "small",
+      "u0": 8.325,
+      "u1": 9.325
+     }
+    ],
+    "clear": [
+     [
+      2.65,
+      9.5
+     ]
+    ],
+    "units": [
+     "xl",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     2.825,
+     0.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -8640,8 +9830,8 @@
     19.0
    ],
    "length": 10.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "hard",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -8655,12 +9845,14 @@
      "barricadable": false
     }
    ],
+   "was": "soft",
    "n": [
     -1.0,
     0.0
    ],
    "side_pos": "F2_gallery",
-   "side_neg": "F2_reception"
+   "side_neg": "F2_reception",
+   "hardened": "junction rule: run blocked by a neighbour"
   },
   {
    "id": "F2_W79",
@@ -8674,7 +9866,7 @@
     24.2
    ],
    "length": 5.2,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -8689,6 +9881,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -8734,8 +9928,8 @@
     19.0
    ],
    "length": 18.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -8750,6 +9944,57 @@
     }
    ],
    "note": "hanji screen wall between Reception and the River Lounge",
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.175,
+      "u1": 4.175
+     },
+     {
+      "size": "large",
+      "u0": 4.175,
+      "u1": 7.175
+     },
+     {
+      "size": "large",
+      "u0": 10.825,
+      "u1": 13.825
+     },
+     {
+      "size": "large",
+      "u0": 13.825,
+      "u1": 16.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      7.35
+     ],
+     [
+      10.65,
+      17.0
+     ]
+    ],
+    "units": [
+     "large",
+     "large",
+     "large",
+     "large"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -8769,8 +10014,8 @@
     18.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -8784,6 +10029,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 1.175,
+      "u1": 5.175
+     },
+     {
+      "size": "small",
+      "u0": 5.175,
+      "u1": 6.175
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      6.35
+     ]
+    ],
+    "units": [
+     "xl",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     2.825
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -8803,11 +10083,13 @@
     19.0
    ],
    "length": 1.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -8853,7 +10135,7 @@
     24.2
    ],
    "length": 5.2,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -8868,6 +10150,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -9331,7 +10615,7 @@
     -15.0
    ],
    "length": 2.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -9347,6 +10631,8 @@
     }
    ],
    "note": "grid door onto catwalk A",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -9366,47 +10652,14 @@
     -12.0
    ],
    "length": 3.0,
-   "type": "reinforceable",
+   "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "standard",
-     "small"
-    ],
-    "yields": [
-     "b"
-    ],
-    "defender_side": "pos",
-    "site": "S1",
-    "panels": [
-     {
-      "size": "standard",
-      "u0": 0.05,
-      "u1": 1.55
-     },
-     {
-      "size": "small",
-      "u0": 1.55,
-      "u1": 2.55
-     }
-    ],
-    "clear": [
-     0.0,
-     2.6
-    ],
-    "trim": [
-     0.05,
-     0.45
-    ],
-    "far_side_z": -0.2
-   },
    "note": "faces Grid C",
+   "was": "reinforceable",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -9422,42 +10675,28 @@
     -12.0
    ],
    "b": [
-    4.2,
+    2.3,
     -12.0
    ],
-   "length": 4.2,
-   "type": "reinforceable",
-   "thickness": 0.2,
+   "length": 2.3,
+   "type": "hard",
+   "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
-   "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
-    "defender_side": "neg",
-    "site": "S1",
-    "panels": [
-     {
-      "size": "xl",
-      "u0": 0.138,
-      "u1": 4.138
-     }
-    ],
-    "clear": [
-     0.075,
-     4.2
-    ],
-    "trim": [
-     0.138,
-     0.062
-    ],
-    "far_side_z": -0.2
-   },
+   "openings": [
+    {
+     "id": "F3_O09",
+     "kind": "door",
+     "u0": 1.1,
+     "u1": 2.1,
+     "y0": 0.0,
+     "y1": 2.0,
+     "barricadable": true
+    }
+   ],
+   "note": "Control door next to the hard junction (junction rule)",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -9469,29 +10708,54 @@
    "id": "F3_W18",
    "floor": "F3",
    "a": [
-    4.2,
+    2.3,
     -12.0
    ],
    "b": [
-    5.7,
+    9.0,
     -12.0
    ],
-   "length": 1.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "length": 6.7,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
-   "openings": [
-    {
-     "id": "F3_O09",
-     "kind": "door",
-     "u0": 0.25,
-     "u1": 1.25,
-     "y0": 0.0,
-     "y1": 2.0,
-     "barricadable": true
-    }
-   ],
+   "openings": [],
+   "was": "reinforceable",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "neg",
+    "site": "S1",
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 0.1,
+      "u1": 4.1
+     },
+     {
+      "size": "standard",
+      "u0": 4.1,
+      "u1": 5.6
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      5.7
+     ]
+    ],
+    "units": [
+     "xl",
+     "standard"
+    ],
+    "trim": [
+     0.1,
+     1.1
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -9503,43 +10767,51 @@
    "id": "F3_W19",
    "floor": "F3",
    "a": [
-    5.7,
+    -6.9,
     -12.0
    ],
    "b": [
-    9.0,
+    0.0,
     -12.0
    ],
-   "length": 3.3,
+   "length": 6.9,
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S1",
     "panels": [
      {
-      "size": "large",
-      "u0": 0.1,
-      "u1": 3.1
+      "size": "xl",
+      "u0": 0.2,
+      "u1": 4.2
+     },
+     {
+      "size": "standard",
+      "u0": 4.2,
+      "u1": 5.7
      }
     ],
     "clear": [
-     0.0,
-     3.2
+     [
+      0.0,
+      5.9
+     ]
+    ],
+    "units": [
+     "xl",
+     "standard"
     ],
     "trim": [
-     0.1,
-     0.2
+     0.2,
+     1.2
     ],
     "far_side_z": -0.2
    },
@@ -9548,52 +10820,38 @@
     1.0
    ],
    "side_pos": "F3_media_hall",
-   "side_neg": "F3_control_room"
+   "side_neg": "F3_render_farm"
   },
   {
    "id": "F3_W20",
    "floor": "F3",
    "a": [
-    -3.2,
+    -9.0,
     -12.0
    ],
    "b": [
-    0.0,
+    -6.9,
     -12.0
    ],
-   "length": 3.2,
-   "type": "reinforceable",
-   "thickness": 0.2,
+   "length": 2.1,
+   "type": "hard",
+   "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
-   "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
-    "defender_side": "neg",
-    "site": "S1",
-    "panels": [
-     {
-      "size": "large",
-      "u0": 0.062,
-      "u1": 3.062
-     }
-    ],
-    "clear": [
-     0.0,
-     3.125
-    ],
-    "trim": [
-     0.062,
-     0.138
-    ],
-    "far_side_z": -0.2
-   },
+   "openings": [
+    {
+     "id": "F3_O10",
+     "kind": "door",
+     "u0": 0.9,
+     "u1": 1.9,
+     "y0": 0.0,
+     "y1": 2.0,
+     "barricadable": true
+    }
+   ],
+   "note": "Render door next to the hard junction (junction rule)",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -9605,93 +10863,6 @@
    "id": "F3_W21",
    "floor": "F3",
    "a": [
-    -4.5,
-    -12.0
-   ],
-   "b": [
-    -3.2,
-    -12.0
-   ],
-   "length": 1.3,
-   "type": "soft",
-   "thickness": 0.15,
-   "y0": 0.0,
-   "y1": 3.9,
-   "openings": [
-    {
-     "id": "F3_O10",
-     "kind": "door",
-     "u0": 0.15,
-     "u1": 1.15,
-     "y0": 0.0,
-     "y1": 2.0,
-     "barricadable": true
-    }
-   ],
-   "n": [
-    -0.0,
-    1.0
-   ],
-   "side_pos": "F3_media_hall",
-   "side_neg": "F3_render_farm"
-  },
-  {
-   "id": "F3_W22",
-   "floor": "F3",
-   "a": [
-    -9.0,
-    -12.0
-   ],
-   "b": [
-    -4.5,
-    -12.0
-   ],
-   "length": 4.5,
-   "type": "reinforceable",
-   "thickness": 0.2,
-   "y0": 0.0,
-   "y1": 3.9,
-   "openings": [],
-   "reinforce": {
-    "y0": 0.0,
-    "y1": 2.0,
-    "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [
-     "a"
-    ],
-    "defender_side": "neg",
-    "site": "S1",
-    "panels": [
-     {
-      "size": "xl",
-      "u0": 0.45,
-      "u1": 4.45
-     }
-    ],
-    "clear": [
-     0.4,
-     4.5
-    ],
-    "trim": [
-     0.45,
-     0.05
-    ],
-    "far_side_z": -0.2
-   },
-   "n": [
-    -0.0,
-    1.0
-   ],
-   "side_pos": "F3_media_hall",
-   "side_neg": "F3_render_farm"
-  },
-  {
-   "id": "F3_W23",
-   "floor": "F3",
-   "a": [
     0.0,
     -24.5
    ],
@@ -9700,8 +10871,8 @@
     -12.0
    ],
    "length": 12.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -9724,6 +10895,45 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": "S1",
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 0.175,
+      "u1": 4.175
+     },
+     {
+      "size": "xl",
+      "u0": 5.825,
+      "u1": 9.825
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      4.35
+     ],
+     [
+      5.65,
+      10.0
+     ]
+    ],
+    "units": [
+     "xl",
+     "xl"
+    ],
+    "trim": [
+     0.175,
+     2.675
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -9732,7 +10942,7 @@
    "side_neg": "F3_control_room"
   },
   {
-   "id": "F3_W24",
+   "id": "F3_W22",
    "floor": "F3",
    "a": [
     0.0,
@@ -9758,7 +10968,7 @@
    "side_neg": "F3_render_farm"
   },
   {
-   "id": "F3_W25",
+   "id": "F3_W23",
    "floor": "F3",
    "a": [
     -9.0,
@@ -9766,9 +10976,9 @@
    ],
    "b": [
     -9.0,
-    -22.1
+    -22.6
    ],
-   "length": 2.1,
+   "length": 1.6,
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
@@ -9783,7 +10993,7 @@
    "side_neg": "F3_render_farm"
   },
   {
-   "id": "F3_W26",
+   "id": "F3_W24",
    "floor": "F3",
    "a": [
     -9.0,
@@ -9809,46 +11019,54 @@
    "side_neg": "F3_edit_1"
   },
   {
-   "id": "F3_W27",
+   "id": "F3_W25",
    "floor": "F3",
    "a": [
     -9.0,
-    -22.1
+    -22.6
    ],
    "b": [
     -9.0,
     -19.0
    ],
-   "length": 3.1,
+   "length": 3.6,
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "large"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S1",
     "panels": [
      {
-      "size": "large",
+      "size": "standard",
       "u0": 0.05,
-      "u1": 3.05
+      "u1": 1.55
+     },
+     {
+      "size": "small",
+      "u0": 1.55,
+      "u1": 2.55
      }
     ],
     "clear": [
-     0.0,
-     3.1
+     [
+      0.0,
+      2.6
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
     ],
     "trim": [
      0.05,
-     0.05
+     1.05
     ],
     "far_side_z": -0.2
    },
@@ -9860,7 +11078,7 @@
    "side_neg": "F3_render_farm"
   },
   {
-   "id": "F3_W28",
+   "id": "F3_W26",
    "floor": "F3",
    "a": [
     -9.0,
@@ -9871,7 +11089,7 @@
     -16.2
    ],
    "length": 2.8,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -9886,6 +11104,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -9894,7 +11114,7 @@
    "side_neg": "F3_render_farm"
   },
   {
-   "id": "F3_W29",
+   "id": "F3_W27",
    "floor": "F3",
    "a": [
     -9.0,
@@ -9910,30 +11130,32 @@
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
     "y1": 2.0,
     "header": "hard",
-    "units": [
-     "xl"
-    ],
-    "yields": [],
     "defender_side": "neg",
     "site": "S1",
     "panels": [
      {
-      "size": "xl",
-      "u0": 0.05,
-      "u1": 4.05
+      "size": "large",
+      "u0": 0.1,
+      "u1": 3.1
      }
     ],
     "clear": [
-     0.0,
-     4.1
+     [
+      0.0,
+      3.2
+     ]
+    ],
+    "units": [
+     "large"
     ],
     "trim": [
-     0.05,
-     0.15
+     0.1,
+     1.1
     ],
     "far_side_z": -0.2
    },
@@ -9945,7 +11167,7 @@
    "side_neg": "F3_render_farm"
   },
   {
-   "id": "F3_W30",
+   "id": "F3_W28",
    "floor": "F3",
    "a": [
     9.0,
@@ -9980,7 +11202,7 @@
    "side_neg": "F3_studio_void"
   },
   {
-   "id": "F3_W31",
+   "id": "F3_W29",
    "floor": "F3",
    "a": [
     9.0,
@@ -10015,7 +11237,7 @@
    "side_neg": "F3_studio_void"
   },
   {
-   "id": "F3_W32",
+   "id": "F3_W30",
    "floor": "F3",
    "a": [
     12.0,
@@ -10039,7 +11261,7 @@
    "side_neg": "F3_studio_void"
   },
   {
-   "id": "F3_W33",
+   "id": "F3_W31",
    "floor": "F3",
    "a": [
     16.5,
@@ -10050,7 +11272,7 @@
     -9.0
    ],
    "length": 2.5,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10066,6 +11288,8 @@
     }
    ],
    "note": "door onto catwalk B",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -10074,7 +11298,7 @@
    "side_neg": "F3_studio_void"
   },
   {
-   "id": "F3_W34",
+   "id": "F3_W32",
    "floor": "F3",
    "a": [
     19.0,
@@ -10085,11 +11309,46 @@
     -9.0
    ],
    "length": 5.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 0.1,
+      "u1": 4.1
+     },
+     {
+      "size": "small",
+      "u0": 4.1,
+      "u1": 5.1
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      5.2
+     ]
+    ],
+    "units": [
+     "xl",
+     "small"
+    ],
+    "trim": [
+     0.1,
+     0.1
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -10098,7 +11357,7 @@
    "side_neg": "F3_studio_void"
   },
   {
-   "id": "F3_W35",
+   "id": "F3_W33",
    "floor": "F3",
    "a": [
     24.2,
@@ -10124,7 +11383,7 @@
    "side_neg": "F3_studio_void"
   },
   {
-   "id": "F3_W36",
+   "id": "F3_W34",
    "floor": "F3",
    "a": [
     -9.0,
@@ -10148,7 +11407,7 @@
    "side_neg": "F3_media_hall"
   },
   {
-   "id": "F3_W37",
+   "id": "F3_W35",
    "floor": "F3",
    "a": [
     -12.0,
@@ -10159,7 +11418,7 @@
     -12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10174,6 +11433,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -10182,7 +11443,7 @@
    "side_neg": "F3_edit_2"
   },
   {
-   "id": "F3_W38",
+   "id": "F3_W36",
    "floor": "F3",
    "a": [
     -15.0,
@@ -10193,11 +11454,13 @@
     -12.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -10206,7 +11469,7 @@
    "side_neg": "F3_edit_2"
   },
   {
-   "id": "F3_W39",
+   "id": "F3_W37",
    "floor": "F3",
    "a": [
     -26.0,
@@ -10217,8 +11480,8 @@
     -12.0
    ],
    "length": 11.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10232,6 +11495,45 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.175,
+      "u1": 4.175
+     },
+     {
+      "size": "xl",
+      "u0": 5.825,
+      "u1": 9.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      4.35
+     ],
+     [
+      5.65,
+      10.0
+     ]
+    ],
+    "units": [
+     "large",
+     "xl"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -10240,7 +11542,7 @@
    "side_neg": "F3_edit_bay"
   },
   {
-   "id": "F3_W40",
+   "id": "F3_W38",
    "floor": "F3",
    "a": [
     -15.0,
@@ -10251,7 +11553,7 @@
     -19.0
    ],
    "length": 7.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10266,6 +11568,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -10274,7 +11578,7 @@
    "side_neg": "F3_edit_1"
   },
   {
-   "id": "F3_W41",
+   "id": "F3_W39",
    "floor": "F3",
    "a": [
     -15.0,
@@ -10285,7 +11589,7 @@
     -12.0
    ],
    "length": 7.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10300,6 +11604,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -10308,7 +11614,7 @@
    "side_neg": "F3_edit_2"
   },
   {
-   "id": "F3_W42",
+   "id": "F3_W40",
    "floor": "F3",
    "a": [
     -15.0,
@@ -10319,7 +11625,7 @@
     -19.0
    ],
    "length": 6.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10334,6 +11640,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -10342,7 +11650,7 @@
    "side_neg": "F3_edit_1"
   },
   {
-   "id": "F3_W43",
+   "id": "F3_W41",
    "floor": "F3",
    "a": [
     -12.0,
@@ -10353,8 +11661,8 @@
     -3.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10368,6 +11676,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10376,7 +11735,7 @@
    "side_neg": "F3_news_hall"
   },
   {
-   "id": "F3_W44",
+   "id": "F3_W42",
    "floor": "F3",
    "a": [
     -12.0,
@@ -10387,8 +11746,8 @@
     9.0
    ],
    "length": 12.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10402,6 +11761,69 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "small",
+      "u0": 3.675,
+      "u1": 4.675
+     },
+     {
+      "size": "standard",
+      "u0": 7.325,
+      "u1": 8.825
+     },
+     {
+      "size": "small",
+      "u0": 8.825,
+      "u1": 9.825
+     },
+     {
+      "size": "small",
+      "u0": 9.825,
+      "u1": 10.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      4.85
+     ],
+     [
+      7.15,
+      11.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small",
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10410,7 +11832,7 @@
    "side_neg": "F3_news_hall"
   },
   {
-   "id": "F3_W45",
+   "id": "F3_W43",
    "floor": "F3",
    "a": [
     -26.0,
@@ -10444,7 +11866,7 @@
    "side_neg": "F3_podcast"
   },
   {
-   "id": "F3_W46",
+   "id": "F3_W44",
    "floor": "F3",
    "a": [
     -24.2,
@@ -10455,8 +11877,8 @@
     9.0
    ],
    "length": 12.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10470,6 +11892,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 0.275,
+      "u1": 4.275
+     },
+     {
+      "size": "large",
+      "u0": 4.275,
+      "u1": 7.275
+     }
+    ],
+    "clear": [
+     [
+      0.0,
+      7.55
+     ]
+    ],
+    "units": [
+     "xl",
+     "large"
+    ],
+    "trim": [
+     0.275,
+     4.925
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -10478,7 +11935,7 @@
    "side_neg": "F3_newsroom"
   },
   {
-   "id": "F3_W47",
+   "id": "F3_W45",
    "floor": "F3",
    "a": [
     -24.2,
@@ -10504,7 +11961,7 @@
    "side_neg": "F3_exec_office"
   },
   {
-   "id": "F3_W48",
+   "id": "F3_W46",
    "floor": "F3",
    "a": [
     -12.0,
@@ -10515,7 +11972,7 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10531,6 +11988,8 @@
     }
    ],
    "note": "offset from the Edit 2 door: breaks the 45 m x=-10.5 line",
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -10539,7 +11998,7 @@
    "side_neg": "F3_news_hall"
   },
   {
-   "id": "F3_W49",
+   "id": "F3_W47",
    "floor": "F3",
    "a": [
     -26.0,
@@ -10573,7 +12032,7 @@
    "side_neg": "F3_exec_office"
   },
   {
-   "id": "F3_W50",
+   "id": "F3_W48",
    "floor": "F3",
    "a": [
     -12.0,
@@ -10584,8 +12043,8 @@
     15.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10599,6 +12058,35 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.925,
+      "u1": 4.925
+     }
+    ],
+    "clear": [
+     [
+      1.85,
+      5.0
+     ]
+    ],
+    "units": [
+     "large"
+    ],
+    "trim": [
+     1.925,
+     1.075
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10607,7 +12095,7 @@
    "side_neg": "F3_exec_hall"
   },
   {
-   "id": "F3_W51",
+   "id": "F3_W49",
    "floor": "F3",
    "a": [
     -12.0,
@@ -10618,8 +12106,8 @@
     26.0
    ],
    "length": 11.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10633,6 +12121,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 5.325,
+      "u1": 8.325
+     },
+     {
+      "size": "standard",
+      "u0": 8.325,
+      "u1": 9.825
+     }
+    ],
+    "clear": [
+     [
+      5.15,
+      10.0
+     ]
+    ],
+    "units": [
+     "large",
+     "standard"
+    ],
+    "trim": [
+     5.325,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10641,7 +12164,7 @@
    "side_neg": "F3_exec_hall"
   },
   {
-   "id": "F3_W52",
+   "id": "F3_W50",
    "floor": "F3",
    "a": [
     -9.0,
@@ -10652,7 +12175,7 @@
     17.0
    ],
    "length": 8.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10667,6 +12190,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -10675,7 +12200,7 @@
    "side_neg": "F3_suite_lounge"
   },
   {
-   "id": "F3_W53",
+   "id": "F3_W51",
    "floor": "F3",
    "a": [
     -9.0,
@@ -10686,11 +12211,46 @@
     24.2
    ],
    "length": 7.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.1,
+      "u1": 4.1
+     },
+     {
+      "size": "large",
+      "u0": 4.1,
+      "u1": 7.1
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      7.2
+     ]
+    ],
+    "units": [
+     "large",
+     "large"
+    ],
+    "trim": [
+     1.1,
+     0.1
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10699,7 +12259,7 @@
    "side_neg": "F3_suite_bath"
   },
   {
-   "id": "F3_W54",
+   "id": "F3_W52",
    "floor": "F3",
    "a": [
     -9.0,
@@ -10725,7 +12285,7 @@
    "side_neg": "F3_suite_bath"
   },
   {
-   "id": "F3_W55",
+   "id": "F3_W53",
    "floor": "F3",
    "a": [
     -9.0,
@@ -10736,8 +12296,8 @@
     17.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10751,6 +12311,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -10759,7 +12370,7 @@
    "side_neg": "F3_suite_lounge"
   },
   {
-   "id": "F3_W56",
+   "id": "F3_W54",
    "floor": "F3",
    "a": [
     0.0,
@@ -10770,8 +12381,8 @@
     17.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10785,6 +12396,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -10793,7 +12455,7 @@
    "side_neg": "F3_suite_lounge"
   },
   {
-   "id": "F3_W57",
+   "id": "F3_W55",
    "floor": "F3",
    "a": [
     0.0,
@@ -10804,8 +12466,8 @@
     24.5
    ],
    "length": 7.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -10819,6 +12481,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ]
+    ],
+    "units": [
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     3.825
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10827,7 +12524,7 @@
    "side_neg": "F3_bedroom"
   },
   {
-   "id": "F3_W58",
+   "id": "F3_W56",
    "floor": "F3",
    "a": [
     0.0,
@@ -10853,7 +12550,7 @@
    "side_neg": "F3_bedroom"
   },
   {
-   "id": "F3_W59",
+   "id": "F3_W57",
    "floor": "F3",
    "a": [
     9.0,
@@ -10864,11 +12561,52 @@
     15.0
    ],
    "length": 6.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.25,
+      "u1": 2.75
+     },
+     {
+      "size": "small",
+      "u0": 2.75,
+      "u1": 3.75
+     },
+     {
+      "size": "small",
+      "u0": 3.75,
+      "u1": 4.75
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      5.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "small"
+    ],
+    "trim": [
+     1.25,
+     1.25
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10877,7 +12615,7 @@
    "side_neg": "F3_projection"
   },
   {
-   "id": "F3_W60",
+   "id": "F3_W58",
    "floor": "F3",
    "a": [
     9.0,
@@ -10888,7 +12626,7 @@
     17.0
    ],
    "length": 2.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10903,6 +12641,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -10911,7 +12651,7 @@
    "side_neg": "F3_foyer"
   },
   {
-   "id": "F3_W61",
+   "id": "F3_W59",
    "floor": "F3",
    "a": [
     9.0,
@@ -10922,11 +12662,46 @@
     24.2
    ],
    "length": 7.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.1,
+      "u1": 4.1
+     },
+     {
+      "size": "large",
+      "u0": 4.1,
+      "u1": 7.1
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      7.2
+     ]
+    ],
+    "units": [
+     "large",
+     "large"
+    ],
+    "trim": [
+     1.1,
+     0.1
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -10935,7 +12710,7 @@
    "side_neg": "F3_foyer"
   },
   {
-   "id": "F3_W62",
+   "id": "F3_W60",
    "floor": "F3",
    "a": [
     9.0,
@@ -10961,7 +12736,7 @@
    "side_neg": "F3_foyer"
   },
   {
-   "id": "F3_W63",
+   "id": "F3_W61",
    "floor": "F3",
    "a": [
     9.0,
@@ -10972,7 +12747,7 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -10987,6 +12762,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -10995,7 +12772,7 @@
    "side_neg": "F3_archive_hall"
   },
   {
-   "id": "F3_W64",
+   "id": "F3_W62",
    "floor": "F3",
    "a": [
     12.0,
@@ -11006,11 +12783,13 @@
     9.0
    ],
    "length": 3.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -11019,7 +12798,7 @@
    "side_neg": "F3_writers_room"
   },
   {
-   "id": "F3_W65",
+   "id": "F3_W63",
    "floor": "F3",
    "a": [
     15.0,
@@ -11030,8 +12809,8 @@
     9.0
    ],
    "length": 9.2,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -11045,6 +12824,41 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 2.925,
+      "u1": 5.925
+     },
+     {
+      "size": "large",
+      "u0": 5.925,
+      "u1": 8.925
+     }
+    ],
+    "clear": [
+     [
+      2.65,
+      9.2
+     ]
+    ],
+    "units": [
+     "large",
+     "large"
+    ],
+    "trim": [
+     2.925,
+     0.275
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -11053,7 +12867,7 @@
    "side_neg": "F3_writers_room"
   },
   {
-   "id": "F3_W66",
+   "id": "F3_W64",
    "floor": "F3",
    "a": [
     24.2,
@@ -11079,7 +12893,7 @@
    "side_neg": "F3_writers_room"
   },
   {
-   "id": "F3_W67",
+   "id": "F3_W65",
    "floor": "F3",
    "a": [
     15.0,
@@ -11090,7 +12904,7 @@
     15.0
    ],
    "length": 6.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -11105,6 +12919,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -1.0,
     0.0
@@ -11113,7 +12929,7 @@
    "side_neg": "F3_screening"
   },
   {
-   "id": "F3_W68",
+   "id": "F3_W66",
    "floor": "F3",
    "a": [
     15.0,
@@ -11124,8 +12940,8 @@
     26.0
    ],
    "length": 11.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -11139,6 +12955,45 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "large",
+      "u0": 1.175,
+      "u1": 4.175
+     },
+     {
+      "size": "large",
+      "u0": 6.825,
+      "u1": 9.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      4.35
+     ],
+     [
+      6.65,
+      10.0
+     ]
+    ],
+    "units": [
+     "large",
+     "large"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -11147,7 +13002,7 @@
    "side_neg": "F3_screening"
   },
   {
-   "id": "F3_W69",
+   "id": "F3_W67",
    "floor": "F3",
    "a": [
     9.0,
@@ -11158,7 +13013,7 @@
     15.0
    ],
    "length": 6.0,
-   "type": "soft",
+   "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
    "y1": 3.9,
@@ -11173,6 +13028,8 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "hardened": "junction rule: no straight run of 2.4 m between hard ends",
    "n": [
     -0.0,
     1.0
@@ -11181,7 +13038,7 @@
    "side_neg": "F3_projection"
   },
   {
-   "id": "F3_W70",
+   "id": "F3_W68",
    "floor": "F3",
    "a": [
     12.0,
@@ -11192,8 +13049,8 @@
     9.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -11207,6 +13064,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -11215,7 +13123,7 @@
    "side_neg": "F3_writers_room"
   },
   {
-   "id": "F3_W71",
+   "id": "F3_W69",
    "floor": "F3",
    "a": [
     12.0,
@@ -11226,8 +13134,8 @@
     0.0
    ],
    "length": 9.0,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -11241,6 +13149,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "standard",
+      "u0": 1.175,
+      "u1": 2.675
+     },
+     {
+      "size": "small",
+      "u0": 2.675,
+      "u1": 3.675
+     },
+     {
+      "size": "standard",
+      "u0": 5.325,
+      "u1": 6.825
+     },
+     {
+      "size": "small",
+      "u0": 6.825,
+      "u1": 7.825
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      3.85
+     ],
+     [
+      5.15,
+      8.0
+     ]
+    ],
+    "units": [
+     "standard",
+     "small",
+     "standard",
+     "small"
+    ],
+    "trim": [
+     1.175,
+     1.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -1.0,
     0.0
@@ -11249,7 +13208,7 @@
    "side_neg": "F3_archive"
   },
   {
-   "id": "F3_W72",
+   "id": "F3_W70",
    "floor": "F3",
    "a": [
     12.0,
@@ -11260,8 +13219,8 @@
     0.0
    ],
    "length": 12.5,
-   "type": "soft",
-   "thickness": 0.15,
+   "type": "reinforceable",
+   "thickness": 0.2,
    "y0": 0.0,
    "y1": 3.9,
    "openings": [
@@ -11275,6 +13234,57 @@
      "barricadable": true
     }
    ],
+   "was": "soft",
+   "reinforce": {
+    "y0": 0.0,
+    "y1": 2.0,
+    "header": "hard",
+    "defender_side": "either",
+    "site": null,
+    "panels": [
+     {
+      "size": "xl",
+      "u0": 1.175,
+      "u1": 5.175
+     },
+     {
+      "size": "small",
+      "u0": 5.175,
+      "u1": 6.175
+     },
+     {
+      "size": "large",
+      "u0": 7.825,
+      "u1": 10.825
+     },
+     {
+      "size": "standard",
+      "u0": 10.825,
+      "u1": 12.325
+     }
+    ],
+    "clear": [
+     [
+      1.0,
+      6.35
+     ],
+     [
+      7.65,
+      12.5
+     ]
+    ],
+    "units": [
+     "xl",
+     "small",
+     "large",
+     "standard"
+    ],
+    "trim": [
+     1.175,
+     0.175
+    ],
+    "far_side_z": -0.2
+   },
    "n": [
     -0.0,
     1.0
@@ -11283,7 +13293,7 @@
    "side_neg": "F3_archive"
   },
   {
-   "id": "F3_W73",
+   "id": "F3_W71",
    "floor": "F3",
    "a": [
     24.5,
@@ -11309,44 +13319,7 @@
    "side_neg": "F3_archive"
   }
  ],
- "pilasters": [
-  {
-   "id": "PL01",
-   "floor": "F1",
-   "x": 9.0,
-   "z": 20.75,
-   "w": 0.2,
-   "d": 0.3,
-   "wall": "F1_W34",
-   "type": "hard",
-   "kind": "jamb",
-   "note": "flush hard jamb in the wall: the other wall's units run into this corner"
-  },
-  {
-   "id": "PL02",
-   "floor": "F3",
-   "x": 9.0,
-   "z": -12.25,
-   "w": 0.2,
-   "d": 0.3,
-   "wall": "F3_W16",
-   "type": "hard",
-   "kind": "jamb",
-   "note": "flush hard jamb in the wall: the other wall's units run into this corner"
-  },
-  {
-   "id": "PL03",
-   "floor": "F3",
-   "x": -8.75,
-   "z": -12.0,
-   "w": 0.3,
-   "d": 0.2,
-   "wall": "F3_W22",
-   "type": "hard",
-   "kind": "jamb",
-   "note": "flush hard jamb in the wall: the other wall's units run into this corner"
-  }
- ],
+ "pilasters": [],
  "facade": {
   "faces": [
    {
@@ -22271,12 +24244,12 @@
      -10.5
     ],
     [
-     4.95,
+     1.6,
      8.4,
      -10.5
     ],
     [
-     4.95,
+     1.6,
      8.4,
      -13
     ]

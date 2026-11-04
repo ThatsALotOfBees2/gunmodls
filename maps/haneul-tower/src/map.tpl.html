@@ -119,6 +119,15 @@ controls.minDistance = 0.4; controls.maxDistance = 900;
 controls.minAzimuthAngle = -Infinity; controls.maxAzimuthAngle = Infinity; controls.maxPolarAngle = Math.PI * 0.62;
 ao.updateGtaoMaterial({ radius: 0.7, distanceExponent: 1.4, thickness: 1.5, scale: 1.0, samples: 12 });
 ao.blendIntensity = 0.85; ao.enabled = !FAST;
+// transparent surfaces (glass, the stage hologram, decals, mist) and haze sprites must not occlude: keep them out of the AO g-buffer
+{
+  const base = ao._overrideVisibility.bind(ao);
+  ao._overrideVisibility = function () {
+    base();
+    const cache = this._visibilityCache;
+    this.scene.traverse((o) => { if (o.visible && (o.isSprite || (o.isMesh && o.material && !Array.isArray(o.material) && o.material.transparent))) { o.visible = false; cache.push(o); } });
+  };
+}
 bloom.strength = 0.55; bloom.radius = 0.5; bloom.threshold = 0.85;
 // a stray NaN or huge HDR value (a grazing specular hit) blows up into a white square through the bloom mips:
 // clamp the scene colour before the bloom
@@ -186,12 +195,16 @@ const RAIN = (() => {
   const mat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: { uT: { value: 0 }, uCam: { value: new THREE.Vector3() } },
-    vertexShader: `attribute float aEnd; uniform float uT; uniform vec3 uCam; varying float vA;
-      void main() { vec3 p = position; float W = ${W.toFixed(1)}, H = ${H.toFixed(1)};
-        p.y = mod(p.y - uT * 11.0, H); p.x = mod(p.x - uCam.x + uT * 1.4, W); p.z = mod(p.z - uCam.z, W);
-        p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5); p += aEnd * vec3(0.03, 0.55, 0.0); vA = aEnd;
+    // radial fade inside the box (no box corners show); nothing falls inside the tower outline
+    vertexShader: `attribute float aEnd; uniform float uT; uniform vec3 uCam; varying float vA; varying float vF;
+      void main() { vec3 p = position; float W = ${W.toFixed(1)}, H = ${H.toFixed(1)}, j = fract(sin(dot(position, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+        p.y = mod(p.y - uT * 11.0 * (0.85 + 0.3 * j), H); p.x = mod(p.x + j * 7.3 - uCam.x + uT * (1.2 + 0.6 * j), W); p.z = mod(p.z + j * 3.1 - uCam.z, W);
+        p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5);
+        vec2 a = abs(p.xz); float ins = step(a.x, 26.15) * step(a.y, 26.15) * step(a.x + a.y, 47.3);
+        vec3 r = p - uCam; vF = (1.0 - ins) * smoothstep(0.8, 3.0, length(r.xz)) * (1.0 - smoothstep(20.0, 33.0, length(r.xz))) * (1.0 - smoothstep(15.0, 22.0, abs(r.y)));
+        p += aEnd * vec3(0.03, 0.55, 0.0); vA = aEnd;
         gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0); }`,
-    fragmentShader: `varying float vA; void main() { gl_FragColor = vec4(0.62, 0.68, 0.86, 0.13 * (1.0 - vA * 0.7)); }`,
+    fragmentShader: `varying float vA; varying float vF; void main() { if (vF < 0.002) discard; gl_FragColor = vec4(0.62, 0.68, 0.86, 0.13 * vF * (1.0 - vA * 0.7)); }`,
   });
   const l = new THREE.LineSegments(g, mat); l.frustumCulled = false; l.userData = { fk: 'X', layer: 'rain', kind: 'display' }; scene.add(l);
   return { l, mat };
@@ -243,7 +256,7 @@ function applyVis() {
 function setFloor(n) { VIS.floor = n; applyVis(); }
 {
   const ul = $('legend-list');
-  for (const k of ['hard', 'slab', 'soft', 'reinforceable', 'hatch', 'soft_floor', 'glass', 'glass_breakable', 'glass_tempered', 'glass_floor', 'door_barricadable', 'window_barricadable', 'opening', 'balustrade', 'circ', 'prop_hard', 'prop_soft', 'holo']) {
+  for (const k of ['hard', 'slab', 'reinforceable', 'hatch', 'soft_floor', 'glass', 'glass_breakable', 'glass_tempered', 'glass_floor', 'door_barricadable', 'window_barricadable', 'opening', 'balustrade', 'circ', 'prop_hard', 'prop_soft', 'holo']) {
     const v = MAP.OVERLAY[k], li = document.createElement('li'), sw = document.createElement('i');
     sw.style.background = v.color; if (v.opacity != null) sw.style.opacity = String(Math.max(0.55, v.opacity));
     li.append(sw, document.createTextNode(v.label)); ul.append(li);
@@ -266,9 +279,21 @@ function updateLabels() {
       _v.copy(l.v); if (n > 0) _v.y = FY(FIDS[n - 1]) + 0.3;
       _v.project(camera);
       show = _v.z < 1 && _v.x > -1.05 && _v.x < 1.05 && _v.y > -1.05 && _v.y < 1.05 && camera.position.distanceTo(l.v) < 420;
-      if (show) l.el.style.transform = `translate(${((_v.x + 1) / 2) * w}px, ${((1 - _v.y) / 2) * h}px) translate(-50%, -100%)`;
+      if (show) { l.sx = ((_v.x + 1) / 2) * w; l.sy = ((1 - _v.y) / 2) * h; }
     }
-    l.el.hidden = !show;
+    l.el.hidden = !show; l.shown = show;
+  }
+  // simple collision avoidance: sites and spawns first, then rooms; a label that overlaps a placed one steps up or
+  // down by its own height (up to 4 tries each way) and is dropped if it still collides
+  const rank = { site: 0, spawn: 1, ext: 2 }, placed = [];
+  for (const l of LBL.filter((q) => q.shown).sort((a, b) => (rank[a.kind] ?? 3) - (rank[b.kind] ?? 3))) {
+    const bw = l.el.offsetWidth || l.text.length * 7 + 12, bh = (l.el.offsetHeight || 18) + 2;
+    const hit = (y) => placed.some((r) => Math.abs(r.x - l.sx) < (r.w + bw) / 2 && Math.abs(r.y - y) < (r.h + bh) / 2);
+    let y = l.sy, ok = !hit(y);
+    for (let k = 1; k <= 4 && !ok; k++) for (const sg of [-1, 1]) { const yy = l.sy + sg * k * bh; if (!hit(yy)) { y = yy; ok = true; break; } }
+    if (!ok) { l.el.hidden = true; continue; }
+    placed.push({ x: l.sx, y, w: bw, h: bh });
+    l.el.style.transform = `translate(${l.sx}px, ${y}px) translate(-50%, -100%)`;
   }
 }
 
@@ -471,10 +496,11 @@ function preview() {
   setLoop(false); setWalk(false);
   document.querySelectorAll('.plate, .bar, .hint, .legend').forEach((e) => { e.hidden = true; });
   VIS.floor = 0; VIS.overlay = false; VIS.labels = false; VIS.markers = false; applyVis();
-  // hero: outside the south-west corner just above 98F, the three lit floors and the Sky Terrace on the left, the river
-  // with its lit bridges and light trails falling away below, the south bank city and ridges behind
-  camera.fov = 70; camera.updateProjectionMatrix();
-  camera.position.set(-42, 19, 2); controls.target.set(12, -60, 200); controls.update();
+  // hero: from the river side (south-west), level with the playable band: the diagrid tower and its lit F1-F3 floors in
+  // the middle, the Sky Terrace below them, the East Tower holo wall on the right, the hill broadcast tower on the skyline
+  camera.fov = 45; camera.updateProjectionMatrix();
+  camera.position.set(-90, 16, 105); controls.target.set(8, 6, 0); controls.update();
+  if (K.rain) K.rain.mat.uniforms.uOp.value = 0.5;   // half-strength rain in the still
   tick(0); composer.render();
 }
 window.__model = { id: 'haneul-tower', exportScenes, exportGLB, preview, stats: MAP.STATS, partErrors: window.__partErrors };

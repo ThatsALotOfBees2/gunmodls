@@ -5,12 +5,12 @@
 // The Haneul Tower viewer then:
 //   - keeps every typed node (HARD_, SOFT_, REINF_, HATCH_, GLASS_*, BARR_*, ...) separate, with its name and extras;
 //   - keeps the COL_ box empties (position, rotation, scale = size) for the Unity script to turn into BoxColliders;
-//   - cuts the city backdrop (BACKDROP group) into 2 km plan tiles (<node>_t<i>_<j>) so Unity can frustum-cull it,
-//     the sky dome stays whole;
+//   - keeps the city backdrop as ONE node (BACKDROP_city: one mesh, one baked material, always drawn as one draw call;
+//     no culling tiles) next to the sky dome (BACKDROP_sky);
 //   - bakes emissive strengths up to 1 into emissiveFactor (glTFast ignores KHR_materials_emissive_strength).
 // The file goes into a unity/ folder next to the viewer (or --out dir), with the same name as the main .glb.
 //
-//   node tools/unity-export-map.js maps/haneul-tower/viewer.html [--tile 2000] [--out dir]
+//   node tools/unity-export-map.js maps/haneul-tower/viewer.html [--out dir]
 const fs = require('fs');
 const path = require('path');
 const { openViewer } = require('./lib/open-viewer');
@@ -18,16 +18,16 @@ const { openViewer } = require('./lib/open-viewer');
 async function main() {
   const args = process.argv.slice(2);
   const opt = (k) => (args.includes(k) ? args[args.indexOf(k) + 1] : null);
-  const outArg = opt('--out'), tile = opt('--tile') ? +opt('--tile') : 2000;
+  const outArg = opt('--out');
   const viewers = args.filter((a, i) => a.endsWith('.html') && args[i - 1] !== '--out');
   if (!viewers.length) {
-    console.error('usage: node tools/unity-export-map.js <maps/name/viewer.html> [--tile 2000] [--out dir]');
+    console.error('usage: node tools/unity-export-map.js <maps/name/viewer.html> [--out dir]');
     process.exit(1);
   }
   for (const viewer of viewers) {
     const { browser, page } = await openViewer(viewer);
     try {
-      const files = await page.evaluate((o) => window.__model.exportGLB(o), { unity: true, tile });
+      const files = await page.evaluate((o) => window.__model.exportGLB(o), { unity: true });
       const dir = outArg ? path.resolve(outArg) : path.join(path.dirname(path.resolve(viewer)), 'unity');
       fs.mkdirSync(dir, { recursive: true });
       for (const f of files) {

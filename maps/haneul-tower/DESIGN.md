@@ -688,3 +688,31 @@ Hatches stay reinforceable. Hard walls, glass and barricadable openings are unch
   layers; rain haze rings, ridge rim light, a rounded forested hill; soft wet patches instead of puddle decals;
   denser, thinner rain; dark wet skybridge and crane decks, a lit site hut, corten planters, a dark timber canopy.
 - **Viewer:** furniture footprints show only with the markers (M or P). New hero/preview camera over the river.
+
+**Fewer destructible walls (user, overrides anything above).** Every corner and T-junction of walls is
+non-destructible: each wall arm meeting a corner or T is hard for at least 1.0 m from the junction. A
+breakable panel only exists in the straight run between two hard ends; a run with less than 2.4 m left between
+its hard ends becomes fully hard. Breakable walls are then all reinforceable (rule above). Aim for clearly
+fewer breakable walls overall, keeping the important ones per site (attack walls, rotation holes).
+
+*Applied (tools/build_layout.py, junction pass):* junctions are found from wall geometry (an end on another wall or on
+the facade; a wall stopped by a perimeter column counts from the glass, so the column wrap is its hard end); door,
+window and vault jambs are 0.15 m hard; walls with no run left are hard (`hardened` in layout.json); runs are filled
+with the widest flush row of units (`fill_panels`). Before: 140 breakable walls (112 soft + 28 reinforceable), 679 m.
+After: 72 reinforceable walls, 169 units, 337.5 m. Site tweaks to keep attack walls: S1 Media Hall doors moved next to
+the centre and west junctions (Control door x 1.6, Render door x -7.6), render fire wall ends at z -22.6; S4 Ondol
+veranda double door moved to x 7.4 and the Ondol/Changing door to z 13.4. Candidates per site: S1 11, S2 12, S3 10, S4 14
+(budget 8). The validator checks the 1.0 m rule independently and rejects any soft wall.
+
+**Backdrop as one mesh (user, overrides anything above).** The whole city skyline backdrop (all BACKDROP /
+neighbour scenery that is not gameplay geometry) is merged into ONE mesh with ONE material (bake/atlas its
+textures and window emissive into one texture set), in the viewer glb and the Unity copy. No 2 km tiles.
+Gameplay neighbours (spawn roofs, crane, skybridge, anything with colliders or typed nodes) stay separate.
+
+*Applied (core.js `buildBackdrop`, parts/exterior.js):* every `skyline` piece is baked into `BACKDROP_city`, one mesh
+(132k triangles; the sky dome is another 4.6k) with one material `backdrop_city` (baseColor and emissive atlases 4096², metallic-roughness 2048²),
+always one draw call, in both glbs; the Unity copy has no tiles. The sky dome carries the baked cloud deck as
+`BACKDROP_sky`. To get there without alpha or blending: the far city bands are building silhouettes in geometry, the
+river sheen and light streaks are painted into one opaque water strip cut out of the water sheet, the holo screens
+are opaque emissive, ridge crests stay under the cloud deck, and the mist, rain haze rings and hill halo are
+viewer-only. The `ENV_NB_*` neighbour bodies and Haneul's own `ENV_` parts stay separate (seen at arm's length).

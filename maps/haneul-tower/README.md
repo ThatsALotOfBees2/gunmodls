@@ -1,6 +1,6 @@
 # Haneul Tower
 
-![Haneul Tower from the Sky Terrace](preview.png)
+![Haneul Tower from the river side: the diagrid tower, the lit F1–F3 band and the Sky Terrace, the East Tower holo wall and the hill broadcast tower](preview.png)
 
 A Siege-style 5v5 attack/defend map: three consecutive upper floors (96F to 98F) of **Haneul Tower** (*haneul* means
 *sky*), a fictional mixed-use supertall on the north bank of the river in Seoul, in 2111. It is a rainy night
@@ -85,18 +85,25 @@ The floor plans below show every surface by type. In the viewer, press X for the
 
 | Type | Meaning | Count (layout) |
 | --- | --- | --- |
-| **hard** | indestructible: concrete core, shear and stone walls, columns and column wraps, slabs, exterior structure | 74 wall segments, 519.6 m (33 core, 30 column wraps) |
-| **soft** | destructible drywall: bullets and charges make holes | 112 walls, 706.3 m |
-| **reinforceable** | a soft wall zone 0–2.0 m high, sized for Wall Fortification units, with a hard transom above | 28 walls, 106.8 m, 34 units: XL ×13, large ×12, standard ×5, small ×4 |
+| **hard** | indestructible: concrete core, shear and stone walls, columns and column wraps, slabs, exterior structure, and every wall corner and T-junction (1.0 m along each arm) | 139 wall segments, 778.1 m (33 core, 30 column wraps, 65 former partitions made hard by the junction rule), plus the hard ends, jambs, trims and headers of the reinforceable walls |
+| **breakable + reinforceable** | the only destructible wall type: Wall Fortification-sized panels (0–2.0 m high) in the straight runs between hard ends, with hard trims and a hard header above | 72 walls with 169 units, 337.5 m of panel: XL ×22, large ×38, standard ×53, small ×56 |
 | **hatch** | 1.2 × 1.2 m breakable floor panel; takes the gadget's hatch unit | 15 (all reinforced from above, face-up, as in Siege) |
 | **soft floor** | 2.4 m destructible floor/ceiling patch for vertical play | 9 |
-| **barricadable door / window** | openings that take a barricade | 121 interior doors, 4 interior windows, 39 facade entry windows, 4 facade doors |
-| **open** | archway, counter or pried lift door: never barricaded | 7 |
+| **barricadable door / window** | openings that take a barricade | 121 interior doors, 4 interior windows, 39 facade entry windows, 4 facade doors + 2 facade double doors (127 `BARR_D_`, 43 `BARR_W_`) |
+| **open** | archway, counter or pried lift door: never barricaded | 7 in the building + 4 exterior (skybridge north/south ends, bridge ladder, NB east truss): 11 `OPEN_` slots |
 | **glass, interior** | breakable | 12 walls |
 | **facade glass** | breakable (entry or sightline) or tempered (unbreakable) | 44 breakable, 255 tempered lites |
 | **glass floor** | walkable tempered panel in the skybridge | 1 |
 | **rail** | glass balustrades and rails: shoot and vault over | 2 balustrades plus every ledge, catwalk and stair rail |
 | **hologram** | the stage hologram blocks vision, not bullets; its emitter is destructible and switched from a Control Room console | 1 |
+
+> **User rules applied: hard corners, fewer breakable walls, every breakable wall reinforceable.** At every wall
+> corner and T-junction (and where a wall meets the facade) each wall arm is hard for at least 1.0 m. Breakable
+> panels exist only in the straight run between hard ends and door/window jambs (0.15 m); a run under 2.4 m is
+> hard. Every breakable wall is reinforceable: there are no soft walls left. Before: 140 breakable walls (112 soft,
+> 28 reinforceable), 679 m. After: 72 walls, 337.5 m of panel (-49 % of the walls, -50 % of the length, and the
+> panels stop at 2.0 m, so the breakable area is roughly a quarter of what it was). Soft floor patches stay breakable
+> but not reinforceable; hatches stay reinforceable.
 
 There are also 19 deployable-cover spots and 8 objective markers. Wall Fortification sizes are XL 4.0, large 3.0,
 standard 1.5 and small 1.0 m wide, all 2.0 m high, and the hatch unit is 1.2 m
@@ -104,11 +111,16 @@ standard 1.5 and small 1.0 m wide, all 2.0 m high, and the hatch unit is 1.2 m
 each end.
 
 **How to read them in the world.** Every hard surface (core, shear walls, column wraps) is clad in one family:
-dark honed granite panels with deep reveals and a metal base. Soft and reinforceable partitions are thin and
-change with the programme: hanji changsal (tti-sal lattice) in the hotel and spa rooms, dark acoustic fabric on
-the media floor, painted gypsum in back of house. Reinforceable bays add visible unit seams, a steel transom at
-2.0 m and a bronze bulkhead. All walls rise to the slab above (3.9 m), so nothing shoots through the plenum over
-the 3.1 m ceilings; interior glass has a soft bulkhead over its head.
+dark honed granite panels with deep reveals and a metal base. Breakable panels are thin and
+change with the programme: backlit hanji on a regular timber lattice in three patterns (fine square sal in the
+hotel rooms, tti-sal with even bands in the spa, lozenge bit-sal in the bar wing), fluted acoustic fabric washed by
+wall grazers on the media floor, painted gypsum in back of house. Hatches are brushed-steel plates in a raised angle
+frame with two lift slots, with a lit framed hanji tile on the ceiling below; soft floor patches are screwed timber
+boards in a steel angle, with a dark framed board below. Entry windows have a heavy dark sash frame, a tinted lite and
+a rappel anchor plate under the sill outside. Each breakable panel has visible unit seams; around it the hard
+ends, jambs and trims are dark steel, with a steel transom at 2.0 m and a bronze bulkhead above, so the hard
+junction ends read as hard in the normal view; former partitions that are now fully hard are clad like the core. All walls rise to the slab above (3.9 m), so nothing shoots through the plenum over
+the 3.1 m ceilings; interior glass has a hard bulkhead over its head.
 
 ## Floor plans
 
@@ -134,8 +146,8 @@ steam bench, the shower block, the holo stage, the screening tiers and the stone
 | File | What it is |
 | --- | --- |
 | `viewer.html` | interactive viewer and the procedural source the `.glb` files are exported from |
-| `haneul-tower.glb` | the map: 319k triangles, 28.8 MB, 1,906 nodes, one node per typed surface with extras |
-| `unity/haneul-tower.glb` | the Unity copy: the same typed nodes, with the city backdrop cut into 2 km tiles for culling (29.3 MB) |
+| `haneul-tower.glb` | the map: 467k triangles, 38.3 MB, 1,997 nodes, one node per typed surface with extras; the whole city skyline backdrop is one node, `BACKDROP_city` (one mesh, one baked material, one draw call; 132k triangles) |
+| `unity/haneul-tower.glb` | the Unity copy: the same 1,997 nodes (38.3 MB); the backdrop is the same single `BACKDROP_city` node (no culling tiles) |
 | `layout.json` | the layout: the single source of truth for floors, rooms, walls, openings, hatches, sites, spawns and routes |
 | `floorplans/` | one plan per floor plus an overview, each with a legend |
 | `shots/` | viewer screenshots |

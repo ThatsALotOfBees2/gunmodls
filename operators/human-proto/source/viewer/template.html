@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Human Operator Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Chivo+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
+/*STYLE*/
+<style>
+  body { margin: 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="stage" aria-label="Interactive 3D model of a human tactical operator in a dark plate carrier, combat shirt and trousers"></div>
+
+<header class="plate">
+  <div class="eyebrow">Operator · prototype</div>
+  <h1>Human <span>Proto</span></h1>
+  <dl class="specs">
+    <dt>Height</dt><dd>1.79 m</dd>
+    <dt>Kit</dt><dd>Plate carrier, combat shirt, knee and elbow pads</dd>
+    <dt class="wide">Base</dt><dd class="wide">MakeHuman CC0 mesh and rig, Humanoid bone names</dd>
+    <dt class="wide">Triangles</dt><dd class="wide">/*TRIS*/</dd>
+  </dl>
+  <div class="state" aria-live="polite">
+    <span class="chip">Clip <b id="st-clip">Idle</b></span>
+    <span class="chip"><b id="st-lod">LOD0</b></span>
+    <span class="chip">Light <b id="st-light">Studio</b></span>
+  </div>
+</header>
+
+<div class="hint">Drag to orbit · scroll to zoom</div>
+<div id="loading">Loading operator…</div>
+
+<nav class="bar" aria-label="Model controls">
+  <div class="controls">
+    <div class="row">
+      <div class="group" role="group" aria-label="Clip" id="clips"></div>
+    </div>
+    <div class="row">
+      <div class="group" role="group" aria-label="Lighting">
+        <button type="button" data-light="studio" aria-pressed="true">Studio</button>
+        <button type="button" data-light="overcast">Overcast</button>
+        <button type="button" data-light="night">Night</button>
+      </div>
+      <div class="group" role="group" aria-label="Level of detail">
+        <button type="button" data-lod="auto" aria-pressed="true">Auto</button>
+        <button type="button" data-lod="0">LOD0</button>
+        <button type="button" data-lod="1">LOD1</button>
+        <button type="button" data-lod="2">LOD2</button>
+      </div>
+      <div class="group" role="group" aria-label="View">
+        <button type="button" data-view="full">Full</button>
+        <button type="button" data-view="face">Face</button>
+        <button type="button" data-view="armour">Armour</button>
+        <button type="button" data-view="back">Back</button>
+      </div>
+      <button type="button" class="toggle" id="wire" aria-pressed="false" title="Show the triangle wireframe">Wireframe</button>
+      <button type="button" class="toggle" id="spin" aria-pressed="true" title="Turn slowly on the plinth">Orbit</button>
+    </div>
+  </div>
+</nav>
+<script type="application/octet-stream" id="glb-data">/*GLB*/</script>
+<script type="module">/*APP*/</script>
+</body>
+</html>

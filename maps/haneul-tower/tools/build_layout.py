@@ -157,10 +157,7 @@ def W(fl, a, b, typ, *ops, **kw):
     w['openings'] = opl
     units = kw.pop('units', None)
     yields = kw.pop('yields', ())
-    if typ == 'reinforceable':
-        assert not opl, 'reinforceable walls carry no openings'
-        assert units, 'reinforceable wall needs units'
-        w['reinforce'] = {'y0': 0.0, 'y1': REINF_H, 'header': 'hard', 'units': list(units), 'yields': list(yields)}
+    # units/yields are ignored since the junction rule: fill_panels() sizes every breakable run
     for k, v in kw.items():
         w[k] = v
     walls.append(w)
@@ -231,12 +228,11 @@ def floor1():
     W(f, (-9, 21), (-4.4, 21), 'reinforceable', units=['xl'])
     W(f, (-4.4, 21), (-3.2, 21), 'soft', door(-3.8))
     W(f, (-3.2, 21), (0, 21), 'reinforceable', units=['large'])
-    W(f, (0, 21), (3.2, 21), 'reinforceable', units=['large'])
-    W(f, (3.2, 21), (5.8, 21), 'soft', dd(4.5))
-    W(f, (5.8, 21), (9, 21), 'reinforceable', units=['large'])
+    W(f, (0, 21), (6.0, 21), 'reinforceable', note='Ondol veranda wall (junction rule: door moved east)')
+    W(f, (6.0, 21), (9, 21), 'soft', dd(7.4))
     W(f, (0, 12), (0, 21), 'soft', door(19.3), note='shared hanji screen wall')
-    W(f, (9, 12), (9, 13.75), 'reinforceable', units=['standard'])
-    W(f, (9, 13.75), (9, 18), 'soft', door(15.5))
+    W(f, (9, 12), (9, 14.0), 'soft', door(13.4))
+    W(f, (9, 14.0), (9, 18), 'reinforceable', note='Ondol / Changing wall (junction rule: door moved north)')
     W(f, (9, 18), (9, 21), 'reinforceable', units=['standard', 'small'], yields=('b',))
     W(f, (9, 21), (9, 26), 'soft', door(23.5))
     # spa
@@ -412,15 +408,13 @@ def floor3():
     W(f, (9, -22), (9, -17), 'glass', note='director window over the stage')
     W(f, (9, -17), (9, -15), 'soft', door(-15.75), note='grid door onto catwalk A')
     W(f, (9, -15), (9, -12), 'reinforceable', units=['standard', 'small'], yields=('b',), note='faces Grid C')
-    W(f, (0, -12), (4.2, -12), 'reinforceable', units=['xl'])
-    W(f, (4.2, -12), (5.7, -12), 'soft', door(4.95))
-    W(f, (5.7, -12), (9, -12), 'reinforceable', units=['large'])
-    W(f, (-3.2, -12), (0, -12), 'reinforceable', units=['large'])
-    W(f, (-4.5, -12), (-3.2, -12), 'soft', door(-3.85))
-    W(f, (-9, -12), (-4.5, -12), 'reinforceable', units=['xl'], yields=('a',))
+    W(f, (0, -12), (2.3, -12), 'soft', door(1.6), note='Control door next to the hard junction (junction rule)')
+    W(f, (2.3, -12), (9, -12), 'reinforceable')
+    W(f, (-6.9, -12), (0, -12), 'reinforceable')
+    W(f, (-9, -12), (-6.9, -12), 'soft', door(-7.6), note='Render door next to the hard junction (junction rule)')
     W(f, (0, -26), (0, -12), 'soft', door(-19.5), win(-13.6))
-    W(f, (-9, -26), (-9, -22.1), 'hard', note='render vault fire wall (hard anchor of S1)')
-    W(f, (-9, -22.1), (-9, -19), 'reinforceable', units=['large'])
+    W(f, (-9, -26), (-9, -22.6), 'hard', note='render vault fire wall (hard anchor of S1)')
+    W(f, (-9, -22.6), (-9, -19), 'reinforceable')
     W(f, (-9, -19), (-9, -16.2), 'soft', door(-17.6))
     W(f, (-9, -16.2), (-9, -12), 'reinforceable', units=['xl'])
     # void edges (Grid C runs along x 9..10.6 from Grid A to the Media Hall and Archive Hall doors)
@@ -469,6 +463,78 @@ def floor3():
 
 
 floor1(); floor2(); floor3()
+
+# ---------------------------------------------------------------- user rule: hard corners and T-junctions
+# Every wall arm that meets a corner or T is hard for JUNCTION_HARD from the junction. Breakable panels only sit in
+# the straight run between hard ends (and door/window jambs); a run under MIN_RUN becomes hard. Every breakable
+# wall is reinforceable: soft walls no longer exist, a wall is either fully hard or reinforceable (panels + hard trims).
+JUNCTION_HARD = 1.0
+MIN_RUN = 2.4
+JAMB = 0.15           # hard jamb beside a door, window or vault
+BREAKABLE = ('soft', 'reinforceable')
+before_rule = {'walls': sum(1 for w in walls if w['type'] in BREAKABLE),
+               'metres': round(sum(w['length'] - sum(o['u1'] - o['u0'] for o in w['openings']) for w in walls if w['type'] in BREAKABLE), 1)}
+
+
+def _dir(w):
+    return ((w['b'][0] - w['a'][0]) / w['length'], (w['b'][1] - w['a'][1]) / w['length'])
+
+
+def _on(p, w, tol=0.03):
+    from geom import dist_point_seg
+    return dist_point_seg(p, tuple(w['a']), tuple(w['b']))[0] <= tol
+
+
+def junction_points(fl):
+    ws = [w for w in walls if w['floor'] == fl and w['type'] != 'open' and w['length'] > 1e-6]
+    J = []
+    for w in ws:
+        dw = _dir(w)
+        for p in (tuple(w['a']), tuple(w['b'])):
+            # the facade is the junction; a wall stopped by a perimeter column is already hard from the column
+            # face to the glass (column wrap), so the column face itself is not a junction
+            if on_outline(p): J.append(p); continue
+            if col_at(p): continue
+            for o in ws:
+                if o is w: continue
+                do = _dir(o)
+                if abs(dw[0] * do[0] + dw[1] * do[1]) > 0.99: continue   # collinear pieces of one wall
+                if _on(p, o): J.append(p)
+    return J
+
+
+hard_rule_report = []
+for fl in FY:
+    J = junction_points(fl)
+    for w in walls:
+        if w['floor'] != fl or w['type'] not in BREAKABLE: continue
+        L = w['length']; a = w['a']; d = _dir(w)
+        zones = []
+        for p in J:
+            # junction on this wall's line, within reach of the wall
+            t = (p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1]
+            off = abs((p[0] - a[0]) * d[1] - (p[1] - a[1]) * d[0])
+            if off < 0.03 and -JUNCTION_HARD - 0.01 < t < L + JUNCTION_HARD + 0.01:
+                zones.append((t - JUNCTION_HARD, t + JUNCTION_HARD))
+        for o in w['openings']:
+            zones.append((o['u0'] - JAMB, o['u1'] + JAMB))
+        zones.sort()
+        runs, u = [], 0.0
+        for (z0, z1) in zones + [(L, L)]:
+            if z0 > u + 1e-6: runs.append([round(u, 3), round(min(z0, L), 3)])
+            u = max(u, z1)
+        runs = [r for r in runs if r[1] - r[0] >= MIN_RUN - 1e-6]
+        was = w['type']
+        w['was'] = was
+        if runs:
+            w['type'] = 'reinforceable'
+            w['thickness'] = THICK['reinforceable']
+            w['reinforce'] = {'y0': 0.0, 'y1': REINF_H, 'header': 'hard', 'runs': runs}
+        else:
+            w['type'] = 'hard'
+            w['hardened'] = 'junction rule: no straight run of %.1f m between hard ends' % MIN_RUN
+            w.pop('reinforce', None)
+        hard_rule_report.append((w['id'], was, w['type'], L, runs))
 
 # ---------------------------------------------------------------- wall sides (normal n = (-dz, dx) of a->b, unit)
 SITE_ROOMS = {}
@@ -519,52 +585,59 @@ def u_of(w, x, z):
     return ((x - a[0]) * (b[0] - a[0]) + (z - a[1]) * (b[1] - a[1])) / L
 
 
-pilasters = []
+pilasters = []        # none since the junction rule: every corner is hard for 1.0 m
 reinf_report = []
-for w in walls:
-    if w['type'] != 'reinforceable': continue
-    rf = w['reinforce']; L = w['length']
-    br = band_rect(w, 0, L)
-    blocked = []
-    obst = [wall_rect(o) for o in walls if o is not w and o['floor'] == w['floor'] and o['type'] != 'open']
-    obst += [[c['x'] - c['w'] / 2, c['z'] - c['d'] / 2, c['x'] + c['w'] / 2, c['z'] + c['d'] / 2] for c in columns]
-    for r in obst:
-        ix0, iz0, ix1, iz1 = max(br[0], r[0]), max(br[1], r[1]), min(br[2], r[2]), min(br[3], r[3])
-        if ix1 - ix0 > 1e-4 and iz1 - iz0 > 1e-4:
-            us = sorted((u_of(w, ix0, iz0), u_of(w, ix1, iz1)))
-            blocked.append(us)
-    # clear interval: the longest free run along the face
-    cuts = sorted(blocked) + [[L, L]]
-    free, u = [], 0.0
-    for (b0, b1) in cuts:
-        if b0 > u + 1e-6: free.append([u, b0])
-        u = max(u, b1)
-    c0, c1 = max(free, key=lambda f: f[1] - f[0])
-    for end in rf['yields']:  # corner with another reinforceable wall of the same room: 0.3 m flush hard jamb
-        if end == 'a': c0 += PILASTER
-        else: c1 -= PILASTER
-        uu = c0 - PILASTER / 2 if end == 'a' else c1 + PILASTER / 2
-        a, b = w['a'], w['b']
-        px, pz = a[0] + (b[0] - a[0]) * uu / L, a[1] + (b[1] - a[1]) * uu / L
-        hz = abs(a[1] - b[1]) < 1e-6
-        pilasters.append({'id': 'PL%02d' % (len(pilasters) + 1), 'floor': w['floor'], 'x': round(px, 3), 'z': round(pz, 3),
-                          'w': PILASTER if hz else w['thickness'], 'd': w['thickness'] if hz else PILASTER, 'wall': w['id'], 'type': 'hard',
-                          'kind': 'jamb', 'note': 'flush hard jamb in the wall: the other wall\'s units run into this corner'})
-    need = sum(SIZES[s] for s in rf['units'])
-    slack = (c1 - c0) - 2 * TRIM - need
-    start = round(c0 + (c1 - c0 - need) / 2, 3)
-    panels, uu = [], start
-    for s in rf['units']:
-        panels.append({'size': s, 'u0': round(uu, 3), 'u1': round(uu + SIZES[s], 3)}); uu = round(uu + SIZES[s], 3)
-    rf['panels'] = panels
-    rf['clear'] = [round(c0, 3), round(c1, 3)]
-    rf['trim'] = [round(start, 3), round(L - uu, 3)]
-    rf['far_side_z'] = -w['thickness']
-    reinf_report.append((w['id'], w['floor'], rf['site'], round(L, 2), round(c1 - c0, 2), '+'.join(rf['units']), round(slack, 3)))
-    if slack < -1e-6:
-        print('REINF DOES NOT FIT', w['id'], w['a'], w['b'], 'clear %.3f need %.2f + trims' % (c1 - c0, need))
-if '-v' in sys.argv:
-    for r in reinf_report: print('reinf %-7s %s %s len %.2f clear %.2f units %-14s slack %.3f' % r)
+UNIT_ORDER = ('xl', 'large', 'standard', 'small')
+
+
+def best_units(avail):
+    # widest flush row of units that fits avail (0.5 m steps); ties -> fewer units
+    best = (0.0, 0, [])
+    def rec(rem, used, i):
+        nonlocal best
+        tot = sum(SIZES[x] for x in used)
+        if (tot, -len(used)) > (best[0], -best[1]): best = (tot, len(used), list(used))
+        for k in range(i, len(UNIT_ORDER)):
+            sz = UNIT_ORDER[k]
+            if SIZES[sz] <= rem + 1e-6 and len(used) < 4: rec(rem - SIZES[sz], used + [sz], k)
+    rec(avail, [], 0)
+    return best[2]
+
+
+def fill_panels():
+    for w in walls:
+        if w['type'] != 'reinforceable': continue
+        rf = w['reinforce']; L = w['length']
+        obst = [wall_rect(o) for o in walls if o is not w and o['floor'] == w['floor'] and o['type'] != 'open']
+        obst += [[c['x'] - c['w'] / 2, c['z'] - c['d'] / 2, c['x'] + c['w'] / 2, c['z'] + c['d'] / 2] for c in columns]
+        obst += [p['box'] for p in prop_list if p['floor'] == w['floor'] and p['h'] > 0]
+        panels, clear = [], []
+        for (r0, r1) in rf['runs']:
+            # shrink the run off anything standing in the deployed band (either face for walls with no site side)
+            for ds in ((rf['defender_side'],) if rf['defender_side'] in ('pos', 'neg') else ('pos', 'neg')):
+                save = rf['defender_side']; rf['defender_side'] = ds
+                br = band_rect(w, r0, r1); rf['defender_side'] = save
+                for r in obst:
+                    ix0, iz0, ix1, iz1 = max(br[0], r[0]), max(br[1], r[1]), min(br[2], r[2]), min(br[3], r[3])
+                    if ix1 - ix0 > 1e-4 and iz1 - iz0 > 1e-4:
+                        b0, b1 = sorted((u_of(w, ix0, iz0), u_of(w, ix1, iz1)))
+                        if b0 - r0 > r1 - b1: r1 = min(r1, b0)
+                        else: r0 = max(r0, b1)
+            if r1 - r0 < MIN_RUN - 1e-6: continue
+            units = best_units(r1 - r0 - 2 * TRIM)
+            need = sum(SIZES[x] for x in units)
+            uu = round(r0 + (r1 - r0 - need) / 2, 3)
+            for x in units:
+                panels.append({'size': x, 'u0': uu, 'u1': round(uu + SIZES[x], 3)}); uu = round(uu + SIZES[x], 3)
+            clear.append([round(r0, 3), round(r1, 3)])
+        if not panels:
+            w['type'] = 'hard'; w['hardened'] = 'junction rule: run blocked by a neighbour'; w.pop('reinforce'); continue
+        rf['panels'] = panels; rf['clear'] = clear; rf['units'] = [p_['size'] for p_ in panels]
+        rf['trim'] = [panels[0]['u0'], round(L - panels[-1]['u1'], 3)]
+        rf['far_side_z'] = -w['thickness']
+        del rf['runs']
+        reinf_report.append((w['id'], w['floor'], rf['site'], round(L, 2), '+'.join(rf['units']), clear))
+
 
 # ---------------------------------------------------------------- voids and slab openings
 voids = [
@@ -863,6 +936,10 @@ for p in prop_list:
         p['roof'] = {'eave_y': 3.6, 'ridge_y': 6.0, 'eaves_box': [-18.3, 15.7, -13.0, 22.3], 'pitch_deg': 40, 'walkable': False,
                      'note': 'steep sweeping eaves, slide-off collider; eaves 1.0 m clear of the Gallery edge and below its floor'}
 
+fill_panels()
+if '-v' in sys.argv:
+    for r in reinf_report: print('reinf %-7s %s %s len %5.2f units %-26s clear %s' % r)
+
 # ---------------------------------------------------------------- stairs, ladders, walkways
 stairs = [
     {'id': 'ST_A', 'name': 'Stair A', 'kind': 'switchback', 'floors': ['F1', 'F2', 'F3'], 'box': [3, -9, 9, -2],
@@ -1095,7 +1172,7 @@ routes = [
     {'id': 'RT_crane_ramp', 'kind': 'attack', 'from': 'A4', 'to': 'S3', 'points': [[-46, 8.4, -53], [-38, 8.4, -47], [-30.5, 8.4, -42.5], [-11.25, 4.2, -26.8], [-11.25, 4.2, -24], [-10.5, 4.2, -13], [-10.5, 4.2, -7]], 'note': 'Hoist Ramp -> Noraebang window -> Cellar Hall -> Wine Room east wall'},
     {'id': 'RT_crane_rappel', 'kind': 'attack', 'from': 'A4', 'to': 'S3', 'points': [[-46, 8.4, -53], [-38.8, 8.4, -42.5], [-22.2, 8.4, -25.9], [-26.4, 8.4, -19], [-26.4, 4.2, -5.25], [-24, 4.2, -5.25]], 'note': 'gantry -> rappel down the west face -> Cigar Room window'},
     {'id': 'RT_rot_core', 'kind': 'rotation', 'from': 'S2', 'to': 'S3', 'points': [[12, 4.2, 0], [9, 4.2, 0], [-9, 4.2, 0], [-12, 4.2, 0]], 'note': 'Sky Lifts straight through the core'},
-    {'id': 'RT_rot_stairA', 'kind': 'rotation', 'from': 'S2', 'to': 'S1', 'points': [[10.5, 4.2, -3], [6, 4.2, -3], [6, 8.4, -3], [10.5, 8.4, -3], [10.5, 8.4, -8], [9.75, 8.4, -9.5], [9.75, 8.4, -10.5], [8, 8.4, -10.5], [4.95, 8.4, -10.5], [4.95, 8.4, -13]], 'note': 'Stair A -> Archive Hall -> Grid C -> Media Hall -> Control Room door (bypasses the core)'},
+    {'id': 'RT_rot_stairA', 'kind': 'rotation', 'from': 'S2', 'to': 'S1', 'points': [[10.5, 4.2, -3], [6, 4.2, -3], [6, 8.4, -3], [10.5, 8.4, -3], [10.5, 8.4, -8], [9.75, 8.4, -9.5], [9.75, 8.4, -10.5], [8, 8.4, -10.5], [1.6, 8.4, -10.5], [1.6, 8.4, -13]], 'note': 'Stair A -> Archive Hall -> Grid C -> Media Hall -> Control Room door (bypasses the core)'},
     {'id': 'RT_rot_stairB', 'kind': 'rotation', 'from': 'S3', 'to': 'S4', 'points': [[-10.5, 4.2, 3], [-6, 4.2, 3], [-6, 0, 3], [-10.5, 0, 3], [-10.5, 0, 9], [-10.5, 0, 10.4], [-9, 0, 9.9], [-7.5, 0, 10.5], [-7.5, 0, 12.5]], 'note': 'Stair B -> Service Hall -> Garden Lobby -> Spa Hall -> Tea Room door'},
     {'id': 'RT_flank_shaft', 'kind': 'flank', 'from': 'S4', 'to': 'S1', 'points': [[-7.5, 0, -1], [-7.5, 0, -3.5], [-7.5, 8.4, -3.5], [-7.5, 8.4, -1]], 'note': 'Shaft ladder through all three floors'},
 ]
@@ -1116,8 +1193,8 @@ sightlines = [
 # ---------------------------------------------------------------- surface types and node naming
 surface_types = {
     'hard': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'indestructible: core, columns, shear/stone walls, slabs, spandrels'},
-    'soft': {'destructible': True, 'reinforceable': False, 'node_prefix': 'SOFT_', 'desc': 'drywall partition, floor to ceiling; bullets and charges make holes'},
-    'reinforceable': {'destructible': True, 'reinforceable': True, 'node_prefix': 'REINF_', 'desc': 'soft panel zone 0..2.0 m sized for Wall Fortification units; hard transom/header above 2.0 m'},
+    'soft': {'destructible': True, 'reinforceable': False, 'node_prefix': 'SOFT_', 'desc': 'not used for walls (user rule: every breakable wall is reinforceable); soft props only'},
+    'reinforceable': {'destructible': True, 'reinforceable': True, 'node_prefix': 'REINF_', 'desc': 'the only breakable wall type: Wall Fortification-sized panels 0..2.0 m in the straight runs between hard ends (corners and T-junctions hard for 1.0 m); hard trims, jambs and header'},
     'glass': {'destructible': True, 'reinforceable': False, 'node_prefix': 'GLASSI_', 'desc': 'interior glazing, breakable'},
     'balustrade': {'destructible': False, 'reinforceable': False, 'node_prefix': 'RAIL_', 'desc': '1.1 m tempered glass rail at void edges and walkways; shoot and vault over'},
     'open': {'destructible': False, 'reinforceable': False, 'node_prefix': None, 'desc': 'callout boundary only, no geometry'},
@@ -1130,7 +1207,7 @@ surface_types = {
     'glass_tempered': {'destructible': False, 'reinforceable': False, 'node_prefix': 'GLASS_T_', 'desc': 'unbreakable, bulletproof curtain-wall lite'},
     'spandrel': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'opaque curtain-wall panel'},
     'portal': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'bridge portal frame with a barricadable double door'},
-    'pilaster': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': '0.3 m hard pilaster where two reinforceable walls of one room meet'},
+    'pilaster': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'hard jamb (none since the junction rule: corners are hard for 1.0 m)'},
     'glass_floor': {'destructible': False, 'reinforceable': False, 'node_prefix': 'GLASS_TF_', 'desc': 'walkable tempered glass floor (unbreakable)'},
     'holo': {'destructible': True, 'reinforceable': False, 'node_prefix': 'HOLO_', 'desc': 'hologram volume: blocks vision, not bullets; its emitter ring is destructible'},
     'zone_ext': {'destructible': False, 'reinforceable': False, 'node_prefix': 'ZONE_EXT_', 'desc': 'exterior defender reveal zone (trigger volume, no geometry)'},
@@ -1152,8 +1229,9 @@ layout = {
         'reinforce': {'height': REINF_H, 'header': 'hard steel transom from 2.0 m to the ceiling', 'sizes': SIZES, 'hatch': 1.2,
                       'gadget': '/home/user/gunmodls/gadgets/wall-fortification', 'far_side': 'set far_side z to -thickness (0.2 m)',
                       'budget': BUDGET, 'budget_rule': 'per defending team per round; any wall unit or hatch counts 1',
-                      'band': BAND, 'trim': TRIM, 'pilaster': PILASTER,
-                      'placement': 'units sit on the clear defender face, centred in reinforce.clear, with >= trim of hard jamb at each end'},
+                      'band': BAND, 'trim': TRIM, 'pilaster': PILASTER, 'junction_hard': JUNCTION_HARD, 'min_run': MIN_RUN, 'jamb': JAMB,
+                      'rule': 'every breakable wall is reinforceable; corners and T-junctions are hard for junction_hard m on each arm; runs under min_run are hard',
+                      'placement': 'units sit on the clear defender face, centred in each run of reinforce.clear, with >= trim of hard jamb at each end'},
         'thickness': THICK, 'core_thickness': {'outer': 0.6, 'inner': 0.3},
         'curtain_wall': {'bay': 3.0, 'lites_per_bay': 2, 'chamfer_bay': round(seg_len((21, -26), (26, -21)) / 2, 3),
                          'vision': [0.0, CEIL], 'spandrel': [CEIL, FTF]},

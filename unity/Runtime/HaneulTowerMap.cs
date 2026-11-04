@@ -14,12 +14,20 @@
 //     a BoxCollider (size 1, the node's scale is the box size) on every COL_ empty, trigger boxes on the
 //     ZONE_EXT_ reveal volumes; DECO_, ENV_, STAIR_ meshes (walk on the COL_STAIR_ ramps, landings and spiral treads)
 //     and HOLO_ get none;
+//   - the backdrop (BACKDROP_city: the whole city skyline as one mesh with one baked material; BACKDROP_sky: the sky
+//     dome): no collider, no shadow casting or receiving, no light or reflection probes, never an occluder and not
+//     culled by occlusion; it is one draw call each and always on screen, so there is nothing to cull or batch;
 //   - optional layers per class (soft, hard, trigger, marker; breakable glass is on the soft layer, tempered on hard);
 //   - fills the registry: lookups by node name or collider, reinforce units, hatches, barricade slots,
 //     attacker and defender spawns, objectives and sites, cover spots, callouts, prop markers.
 //
 // Coordinates: glTFast negates X on import (glTF +X is Unity -X). Node transforms are already converted, so use the
 // transforms. Positions read from layout.json go through FromLayout() (x -> -x).
+// Walls (user rule): every breakable wall is reinforceable. A wall is either fully hard (HARD_<wallId>) or a
+// reinforceable wall: its Wall Fortification units are the only breakable parts (REINF_<wallId>_<k>, reinforceable,
+// IsReinforceable true) and its junction ends, jambs, trims and header are hard (HARD_<wallId>_hdr). Every corner and
+// T-junction is hard for 1.0 m. SOFT_ nodes are destructible props only; hatches stay reinforceable, soft floor
+// patches are destructible but not reinforceable.
 // Directions: REINF_ units face transform.forward (the defender room); hatches face transform.up (every hatch is
 // reinforced from above, face-up on the slab); BARR_ slots face transform.forward (the wall normal). A Wall Fortification prefab placed as
 // a child at the identity pose of a REINF_ or HATCH_ node sits exactly on its mount.
@@ -32,7 +40,7 @@ public enum HaneulSurfaceType
     Unknown, Hard, Soft, Reinforceable, Hatch, SoftFloor, SoftCeiling, InteriorGlass, FacadeGlassBreakable,
     FacadeGlassTempered, GlassFloor, Rail, BarricadeDoor, BarricadeWindow, Opening, Stair, Ladder, Walkway, Ledge,
     Bridge, Terrace, Hologram, RevealZone, AttackerSpawn, DefenderSpawn, Objective, Cover, Callout, PropMarker,
-    Collider, Deco, Env
+    Collider, Deco, Env, Backdrop
 }
 
 public enum FortificationSize { None, Small, Standard, Large, XL, Hatch }
@@ -98,7 +106,7 @@ public class HaneulTowerMap : MonoBehaviour
         P("SPAWN_ATK_", HaneulSurfaceType.AttackerSpawn), P("SPAWN_DEF_", HaneulSurfaceType.DefenderSpawn),
         P("OBJ_", HaneulSurfaceType.Objective), P("COVER_", HaneulSurfaceType.Cover), P("CALLOUT_", HaneulSurfaceType.Callout),
         P("PROP_", HaneulSurfaceType.PropMarker), P("COL_", HaneulSurfaceType.Collider), P("DECO_", HaneulSurfaceType.Deco),
-        P("ENV_", HaneulSurfaceType.Env),
+        P("ENV_", HaneulSurfaceType.Env), P("BACKDROP_", HaneulSurfaceType.Backdrop),
     };
     static KeyValuePair<string, HaneulSurfaceType> P(string p, HaneulSurfaceType t) { return new KeyValuePair<string, HaneulSurfaceType>(p, t); }
 
@@ -166,6 +174,7 @@ public class HaneulTowerMap : MonoBehaviour
             var s = t.GetComponent<HaneulSurface>();
             if (s == null) s = t.gameObject.AddComponent<HaneulSurface>();
             Describe(s, type, id, t);
+            if (type == HaneulSurfaceType.Backdrop) { ConfigureBackdrop(t.gameObject); continue; }
             if (addColliders) AddCollider(s);
             ApplyLayer(s);
         }
@@ -238,7 +247,14 @@ public class HaneulTowerMap : MonoBehaviour
             case HaneulSurfaceType.Hard: case HaneulSurfaceType.FacadeGlassTempered:
                 s.stopsBullets = true; s.blocksVision = type == HaneulSurfaceType.Hard; break;
             case HaneulSurfaceType.Soft:
-                s.destructible = true; s.blocksVision = true; break;
+                s.destructible = true; s.blocksVision = true;
+                // a SOFT_ wall only comes from a layout older than the reinforce rule: it still counts as reinforceable
+                if (walls.ContainsKey(id))
+                {
+                    s.reinforceable = true; s.wallId = id;
+                    Debug.LogWarning("HaneulTowerMap: soft wall " + id + " found; current layouts have none (every breakable wall is REINF_ units). Re-export the map.", this);
+                }
+                break;
             case HaneulSurfaceType.Reinforceable:
                 s.destructible = true; s.reinforceable = true; s.blocksVision = true; DescribeUnit(s, id, t); break;
             case HaneulSurfaceType.Hatch:
@@ -420,6 +436,21 @@ public class HaneulTowerMap : MonoBehaviour
         // (or move the character controller by the cradle's per-frame delta)
         if (s.type == HaneulSurfaceType.Bridge && s.id.StartsWith("CR_", StringComparison.Ordinal) && go.GetComponent<Rigidbody>() == null)
         { var rb = go.AddComponent<Rigidbody>(); rb.isKinematic = true; rb.useGravity = false; }
+    }
+
+    // BACKDROP_ nodes: pure scenery kilometres wide, lit by its emissive map. One renderer each, always drawn: no shadows,
+    // no probes, no occlusion culling (an occlusion bake would only cost time on a mesh that surrounds the map)
+    public static void ConfigureBackdrop(GameObject go)
+    {
+        foreach (var c in go.GetComponents<Collider>()) { if (Application.isPlaying) Destroy(c); else DestroyImmediate(c); }
+        foreach (var r in go.GetComponentsInChildren<Renderer>(true))
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+            r.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+            r.allowOcclusionWhenDynamic = false;
+        }
     }
 
     void ApplyLayer(HaneulSurface s)

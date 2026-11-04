@@ -32,6 +32,7 @@ PARTS.exterior = function (K) {
 
   /* ---------------------------------------------------------------- haze and material helpers */
   const HZ = { value: new THREE.Color('#252033') }, HZ0 = HZ.value.clone();
+  K.backdropHaze = HZ;   // the engine's merged backdrop material shares the haze colour (lightning tints it)
   // distance haze on the fog chunk (only when the scene has fog, so the x-ray view and the export are unaffected)
   function haze(m, scale = 1, add = false) {
     const d = (0.00045 * scale).toFixed(7);
@@ -112,6 +113,8 @@ PARTS.exterior = function (K) {
     },
   });
   const addUV = (kind, geo, mk, layer = 'skyline', fid = 'X') => { K.add(fid, geo, mk, { kind, layer, keepUV: true }); geo.dispose(); };
+  // soft transparent layers (mist, rain haze, the hill halo) are viewer-only: the exported backdrop is one opaque mesh
+  const viewOnly = (geo, mk) => { const m = new THREE.Mesh(geo, K.M[mk]); m.frustumCulled = false; m.matrixAutoUpdate = false; K.view(m, 'skyline'); return m; };
   const area = (P) => { let s = 0; for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; s += a[0] * b[1] - b[0] * a[1]; } return s; };
   const sgo = (P) => (area(P) > 0 ? 1 : -1);   // outward normal of edge direction d is [d1, -d0] * sgo
 
@@ -163,7 +166,7 @@ PARTS.exterior = function (K) {
   const facadeMat = (key, tx, o) => std(key, { map: tx.map, emissiveMap: tx.emissiveMap, emissive: '#ffffff', emissiveIntensity: o.ei ?? 1, roughnessMap: tx.orm, metalnessMap: tx.orm, roughness: 1, metalness: 1 }, { tile: o.tile, haze: o.haze ?? 1, envI: o.envI ?? 1.2 });
   const rowHotel = (R) => ({ occ: R() < 0.15 ? 0.04 : 0.12 + R() * 0.22, kind: 'warm', b: 0.72, acc: 0.04 });
   const rowOffice = (R) => { const r = R(); return r < 0.08 ? { occ: 0.85, kind: 'mix', b: 0.75, office: true } : r < 0.3 ? { occ: 0.18, kind: 'warm', b: 0.7, office: true } : { occ: 0.03, kind: 'mix', b: 0.6, office: true }; };
-  const rowMixed = (R) => { const r = R(); return r < 0.07 ? { occ: 0.8, kind: 'warm', b: 0.75, office: true } : r < 0.1 ? { occ: 0.35, kind: 'acc', b: 0.55 } : { occ: 0.03 + R() * 0.13, kind: 'warm', b: 0.68 }; };
+  const rowMixed = (R) => { const r = R(); return r < 0.06 ? { occ: 0.85, kind: 'cool', b: 0.8, office: true } : r < 0.1 ? { occ: 0.7, kind: 'mix', b: 0.7, office: true } : r < 0.13 ? { occ: 0.35, kind: 'acc', b: 0.55 } : r < 0.3 ? { occ: 0.0, kind: 'warm', b: 0.5 } : { occ: 0.03 + R() * 0.13, kind: R() < 0.5 ? 'warm' : 'mix', b: 0.6 + R() * 0.15 }; };
   const rowApt = (R) => ({ occ: 0.08 + R() * 0.16, kind: 'warm', b: 0.66 });
   // Haneul above and below the map (hotel residences, fins every 3 m, purple on every third fin)
   facadeMat('tower_facade', facadeTex('haneul', { cols: 16, floors: 6, tu: 24, tv: 25.2, seed: 185, band: 'top', bandFrac: 0.262, glass: [16, 19, 28], frame: '#0b0c10', bandCol: '#15161b', rows: rowHotel, fins: 2, glowEvery: 6 }), { tile: [24, 25.2], ei: 0.75, envI: 1.4 });
@@ -202,22 +205,56 @@ PARTS.exterior = function (K) {
   std('ext_asphalt', { color: '#141418', roughness: 0.22, metalness: 0.0 }, { haze: 1, envI: 1.3 });
   tq = mark('facades', tq);
 
-  /* ---------------------------------------------------------------- sky dome and cloud deck */
+  /* ---------------------------------------------------------------- sky dome with the cloud deck baked in */
+  // One dome, one emissive texture: the low cloud deck (175 m above the map, lit from below by the city) is ray-cast from
+  // the map centre into the dome texture, with the viewer's old fade and second-scale break-up. The dome is pinned to the
+  // far plane in the viewer, so the clouds never parallax-slide against it.
   {
-    const W = FAST ? 512 : 1024, H = W / 2, N = K.noise(256, 5, 5, 401, 5), N2 = K.noise(256, 12, 12, 402, 4), eMin = -0.32;
+    const W = FAST ? 768 : 1536, H = W / 2, N = K.noise(256, 5, 5, 401, 5), N2 = K.noise(256, 12, 12, 402, 4), eMin = -0.32;
     const hz = [0.145, 0.125, 0.2], hor = [0.25, 0.21, 0.31], mid = [0.12, 0.105, 0.155], zen = [0.045, 0.042, 0.06];
+    // the cloud texture (tiles every TL metres) and a box mip chain for the far, foreshortened deck
+    const n = FAST ? 256 : 512, NC = K.noise(n, 4, 4, 411, 6, 0.55), NC2 = K.noise(n, 9, 9, 412, 3), yc = 175 - 6, RC = 7200, TL = 1700;
+    const LUT = new Float32Array(256); for (let k = 0; k < 256; k++) { const v = k / 255; LUT[k] = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+    const mips = [];
+    { const c0 = new Float32Array(n * n * 4);
+      for (let k = 0; k < n * n; k++) { const v = NC[k] * 0.8 + NC2[k] * 0.2, a = sst(0.36, 0.7, v), m = 0.75 + 0.25 * a;
+        c0[k * 4] = LUT[Math.round((78 + 64 * v) * m)]; c0[k * 4 + 1] = LUT[Math.round((68 + 52 * v) * m)]; c0[k * 4 + 2] = LUT[Math.round((100 + 66 * v) * m)]; c0[k * 4 + 3] = Math.round(a * 215) / 255; }
+      mips.push({ s: n, d: c0 });
+      while (mips[mips.length - 1].s > 4) { const p = mips[mips.length - 1], s2 = p.s / 2, d = new Float32Array(s2 * s2 * 4);
+        for (let j = 0; j < s2; j++) for (let i = 0; i < s2; i++) for (let c = 0; c < 4; c++) d[(j * s2 + i) * 4 + c] = (p.d[((2 * j) * p.s + 2 * i) * 4 + c] + p.d[((2 * j) * p.s + 2 * i + 1) * 4 + c] + p.d[((2 * j + 1) * p.s + 2 * i) * 4 + c] + p.d[((2 * j + 1) * p.s + 2 * i + 1) * 4 + c]) / 4;
+        mips.push({ s: s2, d }); } }
+    const cloud = (u, v, lod, out) => {   // bilinear, repeat; u, v in texture repeats (flipY: v = 0 is the bottom row)
+      const L = mips[Math.max(0, Math.min(mips.length - 1, Math.round(lod)))], sz = L.s, x = (((u % 1) + 1) % 1) * sz - 0.5, y = (((1 - v) % 1 + 1) % 1) * sz - 0.5;
+      const x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0, X0 = (x0 + sz) % sz, X1 = (x0 + 1 + sz) % sz, Y0 = (y0 + sz) % sz, Y1 = (y0 + 1 + sz) % sz;
+      for (let c = 0; c < 4; c++) out[c] = lin(lin(L.d[(Y0 * sz + X0) * 4 + c], L.d[(Y0 * sz + X1) * 4 + c], fx), lin(L.d[(Y1 * sz + X0) * 4 + c], L.d[(Y1 * sz + X1) * 4 + c], fx), fy);
+    };
+    const q = [0, 0, 0, 0], q2 = [0, 0, 0, 0], dEl = (Math.PI / 2 - eMin) / H;
     const c = K.img(W, H, (i, j, o) => {
       const v = 1 - (j + 0.5) / H, el = eMin + v * (Math.PI / 2 - eMin), e = el * 180 / Math.PI, az = (i / W) * Math.PI * 2;
       let col;
-      if (e < 0) col = hz.map((h, q) => lin(h, hor[q], Math.exp(e / 1.5)));
+      if (e < 0) col = hz.map((h, k) => lin(h, hor[k], Math.exp(e / 1.5)));
       else {
         const g = Math.exp(-e / 7) * (0.85 + 0.25 * Math.cos(az - Math.PI) + 0.12 * Math.exp(-(((az - 0.7) / 0.5) ** 2)));
-        const base = mid.map((m, q) => lin(m, zen[q], sst(12, 75, e)));
-        const cl = samp(N, 256, az / (Math.PI * 2) * 3, v * 1.6 + samp(N2, 256, az, v) * 0.15), cloud = sst(0.38, 0.72, cl) * (1 - g * 0.6);
-        col = base.map((b2, q) => lin(b2, hor[q], clamp(g, 0, 1)) * (0.72 + 0.62 * cloud));
+        const base = mid.map((m, k) => lin(m, zen[k], sst(12, 75, e)));
+        const cl = 0.65 * samp(N, 256, az / (Math.PI * 2) * 2 + 0.3 * samp(N2, 256, az * 0.5, v), v * 2.2) + 0.35 * samp(N2, 256, az / (Math.PI * 2) * 5 + 0.37, v * 4.1), cloudy = sst(0.4, 0.75, cl) * (1 - g * 0.6) * sst(1, 12, e);
+        col = base.map((b2, k) => lin(b2, hor[k], clamp(g, 0, 1)) * (0.8 + 0.45 * cloudy));
         col[0] += 0.05 * Math.exp(-(((az - 0.7) / 0.45) ** 2)) * Math.exp(-e / 9); col[2] += 0.02 * Math.exp(-e / 9);
       }
-      o[0] = clamp(col[0], 0, 1) * 255; o[1] = clamp(col[1], 0, 1) * 255; o[2] = clamp(col[2], 0, 1) * 255;
+      for (let k = 0; k < 3; k++) col[k] = LUT[Math.round(clamp(col[k], 0, 1) * 255)];
+      // the cloud deck along this direction (seen from the map centre)
+      const se = Math.sin(el);
+      if (se > 0.004) {
+        const t = yc / se, ce = Math.cos(el), x = Math.sin(az) * ce * t, z = Math.cos(az) * ce * t, r = Math.hypot(x, z);
+        if (r < RC) {
+          const foot = Math.max(t * dEl / se, t * (2 * Math.PI / W) * ce) / TL * n, lod = Math.log2(Math.max(1, foot));
+          cloud(x / TL, z / TL, lod, q);
+          const u2 = (0.8 * x / TL + 0.6 * z / TL) * 0.37 + 0.17, v2 = (-0.6 * x / TL + 0.8 * z / TL) * 0.37 + 0.41;
+          cloud(u2, v2, lod + Math.log2(0.37), q2);
+          const al = clamp(q[3] * (1 - sst(2600, 6400, r)) * lin(0.45, 1.3, q2[3]), 0, 1);
+          for (let k = 0; k < 3; k++) col[k] = col[k] * (1 - al) + 0.9 * q[k] * al;
+        }
+      }
+      for (let k = 0; k < 3; k++) { const L2 = clamp(col[k], 0, 1); o[k] = 255 * (L2 <= 0.0031308 ? L2 * 12.92 : 1.055 * Math.pow(L2, 1 / 2.4) - 0.055); }
     });
     const t = tex(c, true, 'sky_emissive');
     const skm = std('ext_sky', { color: '#000000', emissiveMap: t, emissive: '#ffffff', emissiveIntensity: 1, side: THREE.DoubleSide }, { envI: 0 });
@@ -227,16 +264,6 @@ PARTS.exterior = function (K) {
     skm.customProgramCacheKey = () => 'skyfar';
     const Rs = 8800;
     addUV('sky', grid(96, 24, (u, v) => { const el = eMin + v * (Math.PI / 2 - eMin), a = u * Math.PI * 2; return [Math.sin(a) * Math.cos(el) * Rs, Math.sin(el) * Rs, Math.cos(a) * Math.cos(el) * Rs, u, v]; }, true), 'ext_sky');
-    // low cloud deck 175 m above the map, lit from below by the city
-    const n = FAST ? 256 : 512, NC = K.noise(n, 4, 4, 411, 6, 0.55), NC2 = K.noise(n, 9, 9, 412, 3);
-    const cc = K.img(n, n, (i, j, o, k) => {
-      const v = NC[k] * 0.8 + NC2[k] * 0.2, a = sst(0.36, 0.7, v);
-      o[0] = (78 + 64 * v) * (0.75 + 0.25 * a); o[1] = (68 + 52 * v) * (0.75 + 0.25 * a); o[2] = (100 + 66 * v) * (0.75 + 0.25 * a); o[3] = a * 215;
-    });
-    const ct = tex(cc, true, 'cloud', false);
-    std('ext_cloud', { color: '#000000', map: ct, emissiveMap: ct, emissive: '#ffffff', emissiveIntensity: 0.9, transparent: true, depthWrite: false, side: THREE.DoubleSide }, { envI: 0 }).fog = false;
-    const yc = 175, RC = 7200, TL = 1700;
-    addUV('clouds', grid(64, 14, (u, v) => { const a = u * Math.PI * 2, r = RC * Math.pow(v, 1.6), x = Math.sin(a) * r, z = Math.cos(a) * r; return [x, yc + 10 * Math.sin(x / 900) * Math.cos(z / 700), z, x / TL, z / TL]; }), 'ext_cloud');
   }
   tq = mark('sky', tq);
 
@@ -419,6 +446,13 @@ PARTS.exterior = function (K) {
     og.face([[-F, G, -F], [F, G, -F], [F, G, -RANGE], [-F, G, -RANGE]], [0, 1, 0]); og.face([[-F, G, RANGE], [F, G, RANGE], [F, G, F], [-F, G, F]], [0, 1, 0]);
     for (const [x0, x1] of [[-F, -RANGE], [RANGE, F]]) { const xe = x0 < 0 ? x1 : x0; og.face([[x0, G, -RANGE], [x1, G, -RANGE], [x1, G, bankN(xe)], [x0, G, bankN(xe)]], [0, 1, 0]); og.face([[x0, G, bankS(xe)], [x1, G, bankS(xe)], [x1, G, RANGE], [x0, G, RANGE]], [0, 1, 0]); }
   }
+  // the river island park: lamp-lit paths and a promenade ring (so it reads as a park, not a hole in the water)
+  {
+    const lp = deco('island').gb('ext_gw'), pp = deco('island').gb('ext_gp'), R = K.rng(4411);
+    for (let k = 0; k < 90; k++) { const a = (k / 90) * Math.PI * 2, x = ISL.x + Math.sin(a) * ISL.a * 0.86, z = ISL.z + Math.cos(a) * ISL.b * 0.8; K.abox(lp, x - 0.8, x + 0.8, G - 1.5, G + 1.2, z - 0.8, z + 0.8); }
+    for (let k = 0; k < 140; k++) { const t = R(), x = ISL.x - ISL.a * 0.8 + t * ISL.a * 1.6, z = ISL.z + Math.sin(t * 9 + 1.3) * ISL.b * 0.4; K.abox(lp, x - 0.6, x + 0.6, G - 1.5, G + 0.8, z - 0.6, z + 0.6); }
+    for (let k = 0; k < 24; k++) { const a0 = (k / 24) * Math.PI * 2, a1 = ((k + 1) / 24) * Math.PI * 2; K.sbox(pp, [ISL.x + Math.sin(a0) * ISL.a * 0.93, ISL.z + Math.cos(a0) * ISL.b * 0.9], [ISL.x + Math.sin(a1) * ISL.a * 0.93, ISL.z + Math.cos(a1) * ISL.b * 0.9], 1.2, G - 1.45, G - 1.2); }
+  }
   tq = mark('ground', tq);
 
   /* ---------------------------------------------------------------- the river: water, embankments, expressways */
@@ -436,7 +470,7 @@ PARTS.exterior = function (K) {
     for (let k = 0; k < H.length; k++) H[k] = NH[k] * 0.6 + NR[k] * 0.4;
     const alb = K.img(64, 64, (i, j, o) => { o[0] = 8; o[1] = 10; o[2] = 16; });
     std('ext_river', { map: tex(alb, true, 'river_albedo'), normalMap: tex(nrm(H, n, 2.2), false, 'river_normal'), color: '#ffffff', emissive: '#0d0a16', emissiveIntensity: 1, roughness: 0.08, metalness: 0.6 }, { tile: 60, haze: 1, envI: 2.6, ns: 0.5 });
-    deco('river').gb('ext_river').face([[-9000, G - 5, -200], [9000, G - 5, -200], [9000, G - 5, 3200], [-9000, G - 5, 3200]], [0, 1, 0]);
+    // (the water sheet is built with the sheen below: the strip in front of the tower is cut out of it)
     // embankment walls and the promenade lamps
     const bk = deco('river').gb('ext_conc'), lamp = deco('river').gb('ext_gw');
     for (const [fn, sg] of [[bankN, 1], [bankS, -1]]) {
@@ -735,24 +769,29 @@ PARTS.exterior = function (K) {
       const A = K.canvas(W, Hpx), E = K.canvas(W, Hpx), a = A.getContext('2d'), e = E.getContext('2d'), R = K.rng(seed);
       a.clearRect(0, 0, W, Hpx); e.fillStyle = '#000'; e.fillRect(0, 0, W, Hpx);
       const gb = e.createLinearGradient(0, Hpx * 0.6, 0, Hpx); gb.addColorStop(0, 'rgba(255,170,120,0)'); gb.addColorStop(1, 'rgba(255,170,120,0.35)'); e.fillStyle = gb; e.fillRect(0, 0, W, Hpx);
-      let x = 0;
+      let x = 0; const rects = [];
       while (x < W) {
         const w = 3 + R() * 18, cl = 0.5 + 0.5 * Math.sin(x / W * Math.PI * 6 + seed) * Math.sin(x / W * Math.PI * 14), hh = Hpx * clamp(0.12 + R() * 0.35 + cl * 0.45 * R(), 0.06, 0.98) * maxH;
-        a.fillStyle = `rgb(${14 + R() * 6 | 0},${12 + R() * 5 | 0},${22 + R() * 8 | 0})`; a.fillRect(x, Hpx - hh, w, hh);
-        for (let k = 0; k < hh * w * 0.06; k++) { const px = x + R() * w, py = Hpx - R() * hh; e.fillStyle = R() < 0.4 ? 'rgba(190,210,255,0.8)' : 'rgba(255,200,140,0.85)'; e.fillRect(px | 0, py | 0, 1, 1); }
+        a.fillStyle = `rgb(${14 + R() * 6 | 0},${12 + R() * 5 | 0},${22 + R() * 8 | 0})`; a.fillRect(x, Hpx - hh, w, hh); rects.push([x / W, Math.min(W, x + w) / W, hh / Hpx]);
+        for (let k = 0; k < hh * w * 0.018; k++) { const px = x + R() * w, py = Hpx - R() * hh; e.fillStyle = R() < 0.4 ? 'rgba(190,210,255,0.45)' : 'rgba(255,200,140,0.5)'; e.fillRect(px | 0, py | 0, 1, 1); }
         if (R() < 0.12) { e.fillStyle = R() < 0.6 ? 'rgb(138,77,255)' : 'rgb(255,79,216)'; e.fillRect(x, Hpx - hh, w, 1.5); }
         if (R() < 0.05) { e.fillStyle = 'rgb(255,40,30)'; e.fillRect(x + w / 2, Hpx - hh - 1, 1, 1); }
         x += w + (R() < 0.3 ? R() * 6 : 0);
       }
-      return std(key, { color: '#ffffff', map: tex(A, true, key.slice(4) + '_albedo', false), emissiveMap: tex(E, true, key.slice(4) + '_emissive'), emissive: '#ffffff', emissiveIntensity: 1.2, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.9 }, { haze: 0.62, envI: 0.2 });
+      // opaque: the silhouette is built as geometry (ring below), so the backdrop atlas needs no alpha
+      const m = std(key, { color: '#ffffff', map: tex(A, true, key.slice(4) + '_albedo', false), emissiveMap: tex(E, true, key.slice(4) + '_emissive'), emissive: '#ffffff', emissiveIntensity: 1.2, side: THREE.DoubleSide, roughness: 0.9 }, { haze: 0.62, envI: 0.2 });
+      m.userData.rects = rects;
+      return m;
     };
+    // far city band: one quad per building of the band texture (its silhouette), repeated round the ring
     const ring = (key, Rr, Hm, tileM, gapFn) => {
-      const n = 220, pos = [], uv = [], idx = [];
-      for (let i = 0; i < n; i++) {
-        const a0 = i / n * Math.PI * 2, a1 = (i + 1) / n * Math.PI * 2, am = (a0 + a1) / 2;
+      const rects = K.M[key].userData.rects, rep = 2 * Math.PI * Rr / tileM, pos = [], uv = [], idx = [];
+      for (let k = 0; k < Math.ceil(rep); k++) for (const [r0, r1, h] of rects) {
+        const u0 = k + r0, u1 = Math.min(k + r1, rep); if (u1 <= u0) continue;
+        const a0 = u0 * tileM / Rr, a1 = u1 * tileM / Rr, am = (a0 + a1) / 2;
         if (gapFn(Math.sin(am) * Rr, Math.cos(am) * Rr)) continue;
-        const p0 = [Math.sin(a0) * Rr, Math.cos(a0) * Rr], p1 = [Math.sin(a1) * Rr, Math.cos(a1) * Rr], u0 = i * (2 * Math.PI * Rr / n) / tileM, u1 = (i + 1) * (2 * Math.PI * Rr / n) / tileM, b = pos.length / 3;
-        pos.push(p0[0], G, p0[1], p1[0], G, p1[1], p1[0], G + Hm, p1[1], p0[0], G + Hm, p0[1]); uv.push(u0, 0, u1, 0, u1, 1, u0, 1); idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
+        const p0 = [Math.sin(a0) * Rr, Math.cos(a0) * Rr], p1 = [Math.sin(a1) * Rr, Math.cos(a1) * Rr], b = pos.length / 3;
+        pos.push(p0[0], G, p0[1], p1[0], G, p1[1], p1[0], G + Hm * h, p1[1], p0[0], G + Hm * h, p0[1]); uv.push(u0, 0, u1, 0, u1, h, u0, h); idx.push(b, b + 1, b + 2, b, b + 2, b + 3);
       }
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
       addUV('far', g, key);
@@ -771,23 +810,27 @@ PARTS.exterior = function (K) {
         const v = 1 - j / H, f = samp(N, 128, i / W * 4, v), t = sst(0.0, 0.6, v);
         for (let q = 0; q < 3; q++) o[q] = lin(base[q], top[q], t) * (0.8 + 0.4 * f);
         if (v > 0.955) { const r = sst(0.955, 0.995, v); o[0] += 70 * r; o[1] += 50 * r; o[2] += 110 * r; }   // faint rim from the city glow
-        if (v < 0.45 && ((i * 7919 + j * 104729) % 1013) < 2) { o[0] = 255; o[1] = 196; o[2] = 140; }
+        if (v < 0.22 && ((i * 7919 + j * 104729) % 15013) < 2) { o[0] = 150; o[1] = 112; o[2] = 84; }
       });
       return std(key, { color: '#000000', emissiveMap: tex(c, true, key.slice(4) + '_emissive'), emissive: '#ffffff', emissiveIntensity: 1, side: THREE.DoubleSide, roughness: 1 }, { haze: 0.42, envI: 0 });
     };
-    ridgeMat('ext_ridge_near', [8, 7, 12], [34, 26, 50], 821); ridgeMat('ext_ridge_far', [13, 11, 20], [44, 34, 62], 822);
+    ridgeMat('ext_ridge_near', [5, 4, 8], [22, 17, 33], 821); ridgeMat('ext_ridge_mid', [10, 8, 15], [32, 25, 46], 823); ridgeMat('ext_ridge_far', [17, 14, 25], [46, 36, 64], 822);
     const rN = (a) => (240 + 300 * samp(RN, 256, a / (Math.PI * 2), 0.3) + 200 * Math.exp(-(((a - Math.PI) / 0.7) ** 2)) + 120 * Math.exp(-(((a - 0.4) / 0.4) ** 2))) * dip(a);
     const rF = (a) => (420 + 520 * Math.pow(samp(RF, 256, a / (Math.PI * 2), 0.5), 1.6) + 680 * Math.exp(-(((a - Math.PI - 0.15) / 0.5) ** 2)) + 380 * Math.exp(-(((a - 0.3) / 0.35) ** 2))) * (0.25 + 0.75 * dip(a));
-    addUV('ridges', grid(240, 1, (u, v) => { const a = u * Math.PI * 2, r = 5300 + 400 * Math.sin(a * 3); return [Math.sin(a) * r, G + v * rN(a), Math.cos(a) * r, u * 10, v]; }), 'ext_ridge_near');
-    addUV('ridges', grid(300, 1, (u, v) => { const a = u * Math.PI * 2, r = 7600 + 300 * Math.sin(a * 2 + 1); return [Math.sin(a) * r, G + v * rF(a), Math.cos(a) * r, u * 8, v]; }), 'ext_ridge_far');
+    // ridge crests stay under the cloud deck (175 m above the map): the deck is baked into the sky dome now, so a crest
+    // above it would show through where the live deck used to hide it
+    const HD = 175 - G, deck = (h) => HD * Math.tanh(h / HD);
+    addUV('ridges', grid(240, 1, (u, v) => { const a = u * Math.PI * 2, r = 5300 + 400 * Math.sin(a * 3); return [Math.sin(a) * r, G + v * deck(rN(a) * 1.25), Math.cos(a) * r, u * 10, v]; }), 'ext_ridge_near');
+    addUV('ridges', grid(260, 1, (u, v) => { const a = u * Math.PI * 2 + 0.21, r = 6400 + 350 * Math.sin(a * 4 + 2); return [Math.sin(a) * r, G + v * deck(rN(a + 0.5) * 0.7 + rF(a) * 0.55), Math.cos(a) * r, u * 9, v]; }), 'ext_ridge_mid');
+    addUV('ridges', grid(300, 1, (u, v) => { const a = u * Math.PI * 2, r = 7600 + 300 * Math.sin(a * 2 + 1); return [Math.sin(a) * r, G + v * deck(rF(a) * 1.3), Math.cos(a) * r, u * 8, v]; }), 'ext_ridge_far');
     // mist at the feet of the ridges
     const mt = tex(K.img(16, 128, (i, j, o) => { const v = 1 - j / 128; o[0] = 70; o[1] = 56; o[2] = 104; o[3] = 255 * 0.55 * Math.pow(1 - v, 1.6); }), true, 'mist', false);
     std('ext_mist', { color: '#000000', map: mt, emissiveMap: mt, emissive: '#ffffff', emissiveIntensity: 0.9, transparent: true, depthWrite: false, side: THREE.DoubleSide }, { envI: 0 }).fog = false;
-    addUV('ridges', grid(120, 1, (u, v) => { const a = u * Math.PI * 2, r = 4700; return [Math.sin(a) * r, G + v * 260, Math.cos(a) * r, u * 20, v]; }), 'ext_mist');
+    viewOnly(grid(120, 1, (u, v) => { const a = u * Math.PI * 2, r = 4700; return [Math.sin(a) * r, G + v * 260, Math.cos(a) * r, u * 20, v]; }), 'ext_mist');
     // purple-grey rain haze layers between the city rings (depth)
     const ht = tex(K.img(16, 128, (i, j, o) => { const v = 1 - j / 128; o[0] = 58; o[1] = 50; o[2] = 82; o[3] = 255 * 0.32 * Math.pow(1 - v, 1.2); }), true, 'rainhaze', false);
     std('ext_rainhaze', { color: '#000000', map: ht, emissiveMap: ht, emissive: '#ffffff', emissiveIntensity: 0.8, transparent: true, depthWrite: false, side: THREE.DoubleSide }, { envI: 0 }).fog = false;
-    for (const [r, hh] of [[1700, 260], [2600, 380], [3900, 480]]) addUV('ridges', grid(96, 1, (u, v) => { const a = u * Math.PI * 2; return [Math.sin(a) * r, G + v * hh, Math.cos(a) * r, u * 16, v]; }), 'ext_rainhaze');
+    for (const [r, hh] of [[1700, 260], [2600, 380], [3900, 480]]) viewOnly(grid(96, 1, (u, v) => { const a = u * Math.PI * 2; return [Math.sin(a) * r, G + v * hh, Math.cos(a) * r, u * 16, v]; }), 'ext_rainhaze');
     // the forested hill (polar texture: dark trees and a lit road winding to the top)
     const HN = K.noise(256, 12, 12, 831, 4);
     const hc = K.img(256, 256, (i, j, o, k) => { const v = 0.035 + 0.06 * HN[k] * HN[k]; o[0] = v * 95; o[1] = v * 135; o[2] = v * 110; });   // tree canopy mottling
@@ -820,11 +863,15 @@ PARTS.exterior = function (K) {
     const hg = K.img(128, 256, (i, j, o) => { const u = (i + 0.5) / 128 - 0.5, v = 1 - (j + 0.5) / 256, r2 = (u / 0.2) ** 2 + ((v - 0.42) / 0.24) ** 2, a = Math.exp(-r2) * sst(0.5, 0.3, Math.abs(u)) * sst(0, 0.1, v) * sst(1, 0.85, v); o[0] = 200 * a + 40 * a * a; o[1] = 90 * a; o[2] = 255 * a; o[3] = 255 * a; });
     additive('ext_halo', tex(hg, true, 'halo', false), '#ffffff', 1.0, 0.9, 0.3);
     const dn = P2.norm([-X, -Z]), sd = [-dn[1], dn[0]], cb = [X + dn[0] * 30, Z + dn[1] * 30], hw2 = 170;
-    addUV('hill', quadGeo([[[cb[0] - sd[0] * hw2, base - 40, cb[1] - sd[1] * hw2], [cb[0] + sd[0] * hw2, base - 40, cb[1] + sd[1] * hw2], [cb[0] + sd[0] * hw2, base + 300, cb[1] + sd[1] * hw2], [cb[0] - sd[0] * hw2, base + 300, cb[1] - sd[1] * hw2]]]), 'ext_halo');
+    viewOnly(quadGeo([[[cb[0] - sd[0] * hw2, base - 40, cb[1] - sd[1] * hw2], [cb[0] + sd[0] * hw2, base - 40, cb[1] + sd[1] * hw2], [cb[0] + sd[0] * hw2, base + 300, cb[1] + sd[1] * hw2], [cb[0] - sd[0] * hw2, base + 300, cb[1] - sd[1] * hw2]]]), 'ext_halo');
   }
   tq = mark('far', tq);
 
-  /* ---------------------------------------------------------------- reflections: build the quads */
+  /* ---------------------------------------------------------------- the river surface: sheen and light streaks baked into the water */
+  // The light streaks (REFL) and the mirror sheen are painted into one emissive texture on a polar strip centred on the
+  // tower, so from the map every streak runs straight toward the viewer. The strip is opaque water (the river's surface
+  // plus the glow), and the water sheet outside it has the strip cut out: no coplanar or blended layers in the backdrop.
+  let RT = null;
   {
     const n = 64, cR = K.canvas(n, 256), x = cR.getContext('2d'), NN = K.noise(64, 1, 24, 901, 3), im = x.createImageData(n, 256);
     for (let j = 0; j < 256; j++) for (let i = 0; i < n; i++) {
@@ -832,8 +879,91 @@ PARTS.exterior = function (K) {
       const a = clamp(ac * al, 0, 1), k = (j * n + i) * 4; im.data[k] = im.data[k + 1] = im.data[k + 2] = 255 * a; im.data[k + 3] = 255 * a;
     }
     x.putImageData(im, 0, 0);
-    const rt = tex(cR, true, 'reflection', false), cols = { w: '#ffc88a', c: '#cfe0ff', r: '#ff4030', p: '#9a5cff', k: '#ff5ad8' };
-    for (const [k, list] of Object.entries(REFL)) if (list.length) { additive('ext_rf_' + k, rt, cols[k], 1.8, 0.9, 1); addUV('river', quadGeo(list), 'ext_rf_' + k); }
+    RT = { data: im.data, n, cols: { w: '#ffc88a', c: '#cfe0ff', r: '#ff4030', p: '#9a5cff', k: '#ff5ad8' } };
+  }
+  // the river's mirror sheen: the far-bank skyline, holo walls and bridges smeared into long broken vertical streaks
+  {
+    const TW = FAST ? 512 : 1024, TH = 256, R = K.rng(4401), NB = K.noise(256, 4, 48, 4402, 3), NS = K.noise(256, 16, 3, 4403, 3);
+    const pal = [[138, 77, 255], [255, 90, 216], [255, 196, 136], [210, 224, 255], [255, 70, 52], [120, 150, 255]];
+    const colA = new Float32Array(TW * 3), amp = new Float32Array(TW), lenA = new Float32Array(TW), nearA = new Float32Array(TW);
+    for (let i = 0; i < TW;) {
+      const w = 1 + Math.floor(R() * 5), k = R(), c = pal[k < 0.32 ? 0 : k < 0.47 ? 1 : k < 0.76 ? 2 : k < 0.9 ? 3 : k < 0.95 ? 4 : 5];
+      const a = R() < 0.4 ? 0.25 + R() * 0.75 : R() * 0.14, l = 0.18 + R() * 0.55, nr = R() < 0.3 ? 0.3 + R() * 0.7 : 0;
+      for (let q = 0; q < w && i < TW; q++, i++) { colA.set(c, i * 3); amp[i] = a * (q === 0 || q === w - 1 ? 0.6 : 1); lenA[i] = l; nearA[i] = nr; }
+      i += R() < 0.45 ? Math.floor(R() * 4) : 0;
+    }
+    const sc = K.img(TW, TH, (i, j, o) => {
+      const v = 1 - (j + 0.5) / TH, u = i / TW, f = 1 - v;   // v = 1 at the far (south) bank
+      const rip = sst(0.25, 0.75, samp(NB, 256, u * 2, v * 3)) * (0.55 + 0.45 * samp(NS, 256, u * 5, v * 9));
+      let b = amp[i] * Math.exp(-f / lenA[i] * 2.2) * rip;
+      b += nearA[i] * 0.5 * Math.exp(-v / 0.07) * rip;   // the near bank's promenade and towers, short
+      const sheen = 0.07 * sst(0.0, 0.9, v) * (0.6 + 0.4 * samp(NS, 256, u * 3, v * 2));   // purple sky glow
+      const r = colA[i * 3] * b + 120 * sheen, g = colA[i * 3 + 1] * b + 70 * sheen, bl = colA[i * 3 + 2] * b + 230 * sheen;
+      const m = Math.max(r, g, bl, 1); o[0] = 255 * r / m; o[1] = 255 * g / m; o[2] = 255 * bl / m; o[3] = clamp(m / 255, 0, 1) * 255;
+    });
+    // strip outline: near and far bank radius per angle from the tower
+    const A0 = -1.3, A1 = 1.3, NA = 260, RN = [], RS = [];
+    for (let i = 0; i <= NA; i++) {
+      const a = A0 + (A1 - A0) * i / NA, sa = Math.sin(a), ca = Math.cos(a);
+      let rN = 0, rS = 0;
+      for (let r = 60; r < 4400; r += 4) { const x = r * sa, z = r * ca; if (!rN && z > bankN(x) + 3) rN = r; if (rN && z > bankS(x) - 3) { rS = r; break; } }
+      if (!rN) rN = 4000; if (!rS) rS = Math.max(rN + 10, 4400);
+      RN.push(rN); RS.push(rS);
+    }
+    // bake: u = angle across the strip (unique; the sheen pattern repeats 2.6 times across it), v = near bank (0) to far
+    // bank (1). Emissive in linear light / ES: the sheen (was additive x1.5), the streaks (additive x1.8, opacity 0.9)
+    // and the water's own glow; the material multiplies by ES.
+    const BW2 = FAST ? 1024 : 2048, BH2 = FAST ? 256 : 512, ES = 4, E = new Float32Array(BW2 * BH2 * 3);
+    const LUT = new Float32Array(256); for (let k = 0; k < 256; k++) { const v = k / 255; LUT[k] = v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+    const SD = sc.getContext('2d').getImageData(0, 0, TW, TH).data, water = new THREE.Color('#0d0a16');
+    for (let j = 0; j < BH2; j++) {
+      const sy = Math.min(TH - 1, Math.floor((j + 0.5) / BH2 * TH));
+      for (let i = 0; i < BW2; i++) {
+        const fx = ((i + 0.5) / BW2 * 2.6 % 1) * TW - 0.5, x0 = (Math.floor(fx) + TW) % TW, x1 = (x0 + 1) % TW, f = fx - Math.floor(fx), o = (j * BW2 + i) * 3;
+        const k0 = (sy * TW + x0) * 4, k1 = (sy * TW + x1) * 4, al = lin(SD[k0 + 3], SD[k1 + 3], f) / 255 * 1.5;
+        E[o] = water.r + lin(LUT[SD[k0]], LUT[SD[k1]], f) * al; E[o + 1] = water.g + lin(LUT[SD[k0 + 1]], LUT[SD[k1 + 1]], f) * al; E[o + 2] = water.b + lin(LUT[SD[k0 + 2]], LUT[SD[k1 + 2]], f) * al;
+      }
+    }
+    const radii = (a) => { const t = clamp((a - A0) / (A1 - A0) * NA, 0, NA - 1e-6), i = Math.floor(t), f = t - i; return [lin(RN[i], RN[i + 1], f), lin(RS[i], RS[i + 1], f)]; };
+    const toUV = (x, z) => { const a = Math.atan2(x, z), [rn, rs] = radii(a); return [(a - A0) / (A1 - A0), (Math.hypot(x, z) - rn) / (rs - rn)]; };
+    let painted = 0, missed = 0;
+    for (const [ck, list] of Object.entries(REFL)) {
+      const c = new THREE.Color(RT.cols[ck]), w = 1.8 * 0.9;
+      for (const q of list) {
+        const A = [q[0][0], q[0][2]], S = [q[1][0] - A[0], q[1][2] - A[1]], T = [q[3][0] - A[0], q[3][2] - A[1]], det = S[0] * T[1] - S[1] * T[0];
+        const uvs = q.map((p) => toUV(p[0], p[2])), us = uvs.map((t) => t[0]), vs = uvs.map((t) => t[1]);
+        if (Math.max(...us) < 0 || Math.min(...us) > 1 || Math.max(...vs) < 0 || Math.min(...vs) > 1 || Math.abs(det) < 1e-9) { missed++; continue; }
+        painted++;
+        const i0 = Math.max(0, Math.floor(Math.min(...us) * BW2) - 2), i1 = Math.min(BW2 - 1, Math.ceil(Math.max(...us) * BW2) + 2);
+        const j0 = Math.max(0, Math.floor((1 - Math.max(...vs)) * BH2) - 2), j1 = Math.min(BH2 - 1, Math.ceil((1 - Math.min(...vs)) * BH2) + 2);
+        for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+          const a = A0 + (i + 0.5) / BW2 * (A1 - A0), [rn, rs] = radii(a), r = lin(rn, rs, 1 - (j + 0.5) / BH2), px = r * Math.sin(a) - A[0], pz = r * Math.cos(a) - A[1];
+          const s = (px * T[1] - pz * T[0]) / det, t = (S[0] * pz - S[1] * px) / det;
+          if (s < 0 || s > 1 || t < 0 || t > 1) continue;
+          const b = RT.data[(Math.min(255, Math.floor((1 - t) * 256)) * RT.n + Math.min(RT.n - 1, Math.floor(s * RT.n))) * 4], e = LUT[b] * (b / 255) * w, o = (j * BW2 + i) * 3;
+          E[o] += c.r * e; E[o + 1] += c.g * e; E[o + 2] += c.b * e;
+        }
+      }
+    }
+    K.timings.exterior_river_streaks = { painted, outside_strip: missed };
+    const enc = (v) => { v = clamp(v / ES, 0, 1); return 255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055); };
+    const ec = K.img(BW2, BH2, (i, j, o) => { const k = (j * BW2 + i) * 3; o[0] = enc(E[k]); o[1] = enc(E[k + 1]); o[2] = enc(E[k + 2]); });
+    const rv = K.M.ext_river;
+    std('ext_river_sheen', { map: rv.map, emissiveMap: tex(ec, true, 'river_sheen'), emissive: '#ffffff', emissiveIntensity: ES, roughness: rv.roughness, metalness: rv.metalness }, { haze: 1, envI: 2.6 });
+    const pos = [], uv = [], idx = [];
+    for (let i = 0; i <= NA; i++) {
+      const a = A0 + (A1 - A0) * i / NA, sa = Math.sin(a), ca = Math.cos(a);
+      for (let q = 0; q <= 3; q++) { const r = RN[i] + (RS[i] - RN[i]) * q / 3; pos.push(r * sa, G - 5, r * ca); uv.push(i / NA, q / 3); }
+    }
+    for (let i = 0; i < NA; i++) for (let q = 0; q < 3; q++) { const a = i * 4 + q, b = (i + 1) * 4 + q; idx.push(a, a + 1, b + 1, a, b + 1, b); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+    addUV('river', g, 'ext_river_sheen');
+    // the water sheet: the whole river reach with the strip cut out (they share the strip's outline vertices)
+    const outer = [[-9000, -200], [9000, -200], [9000, 3200], [-9000, 3200]].map((p) => new THREE.Vector2(p[0], p[1])), hole = [];
+    for (let i = 0; i <= NA; i++) { const a = A0 + (A1 - A0) * i / NA; hole.push(new THREE.Vector2(RN[i] * Math.sin(a), RN[i] * Math.cos(a))); }
+    for (let i = NA; i >= 0; i--) { const a = A0 + (A1 - A0) * i / NA; hole.push(new THREE.Vector2(RS[i] * Math.sin(a), RS[i] * Math.cos(a))); }
+    const all = outer.concat(hole), wg = deco('river').gb('ext_river');
+    for (const t of THREE.ShapeUtils.triangulateShape(outer, [hole])) wg.face(t.map((k) => [all[k].x, G - 5, all[k].y]), [0, 1, 0]);
   }
 
   /* ---------------------------------------------------------------- Haneul: fins, corner lights and crown above and below the map */
@@ -849,14 +979,28 @@ PARTS.exterior = function (K) {
     };
     // above: continue the playable floors' fin lines (every bay start), purple on every third
     const finPts = L.facade.bays.filter((b) => b.floor === K.FIDS[K.FIDS.length - 1]).map((b) => [b.a, P2.norm(P2.sub(b.b, b.a)), b.index % 3 === 0]);
-    finsAlong(up.gb('alloy'), up.gb('glow_purple'), finPts, yA, yB, sgT);
+    finsAlong(up.gb('alloy'), up.gb('glow_purple'), finPts.map(([p, d]) => [p, d, false]), yA, yB, sgT);
+    const diagrid = (g, gN, P, s, y0, y1, h, off) => {
+      for (let i = 0; i < P.length; i++) {
+        const a = P[i], b = P[(i + 1) % P.length], l = P2.len(P2.sub(b, a)), d = P2.norm(P2.sub(b, a)), o = [d[1] * s * off, -d[0] * s * off], nc = Math.max(1, Math.round(l / 10.5));
+        const at = (u, y) => { const q = P2.add(P2.add(a, P2.mul(d, u)), o); return [q[0], y, q[1]]; };
+        for (let y = y0; y < y1 - 1; y += h) {
+          const yt = Math.min(y + h, y1);
+          for (let k = 0; k < nc; k++) { const u0 = l * k / nc, u1 = l * (k + 1) / nc; K.beam(g, at(u0, y), at(u1, yt), 0.16); K.beam(g, at(u1, y), at(u0, yt), 0.16); K.abox(gN, ...(() => { const c = at(u0, y); return [c[0] - 0.22, c[0] + 0.22, y - 0.22, y + 0.22, c[2] - 0.22, c[2] + 0.22]; })()); }
+        }
+      }
+    };
+    std('ext_lattice', { color: '#000000', emissive: '#c9a8ff', emissiveIntensity: 1.5, roughness: 0.5 }, { haze: 1, envI: 0 });
+    std('ext_lattice_node', { color: '#000000', emissive: '#ffd9b0', emissiveIntensity: 2.8, roughness: 0.5 }, { haze: 1, envI: 0 });
+    diagrid(up.gb('ext_lattice'), up.gb('ext_lattice_node'), L.outline, sgT, yA + 0.2, yB - 0.4, 16.8, 0.62);
     // below: the lower block (fins every 3 m along its footprint)
     const lb = EXT.neighbours.find((n) => n.id === 'NB_lowerblock'), FPl = lb ? lb.footprint : L.outline, sgL = sgo(FPl), ptsB = [];
     for (let i = 0; i < FPl.length; i++) {
       const a = FPl[i], b = FPl[(i + 1) % FPl.length], l = P2.len(P2.sub(b, a)), d = P2.norm(P2.sub(b, a)), nn = Math.max(1, Math.round(l / 3));
       for (let k = 0; k < nn; k++) ptsB.push([P2.add(a, P2.mul(d, (l * k) / nn)), d, (ptsB.length % 3) === 0]);
     }
-    finsAlong(dn.gb('alloy'), dn.gb('glow_purple'), ptsB, G, -0.5, sgL);
+    finsAlong(dn.gb('alloy'), dn.gb('glow_purple'), ptsB.map(([p, d]) => [p, d, false]), G, -0.5, sgL);
+    diagrid(dn.gb('ext_lattice'), dn.gb('ext_lattice_node'), FPl, sgL, -118.8, -1.2, 16.8, 0.62);
     // the lower block shell in Haneul's own facade (the engine block keeps its generic glass just inside), a purple band
     const sh = dn.gb('tower_facade');
     for (let i = 0; i < FPl.length; i++) {
@@ -882,7 +1026,6 @@ PARTS.exterior = function (K) {
     std('ext_lantern', { color: '#20152e', emissive: '#c49aff', emissiveIntensity: 0.7, roughness: 0.15, metalness: 0.3, transparent: true, opacity: 0.85 }, { envI: 1.2 });
     K.prism(K.region([L.outline.map((p) => P2.mul(p, 0.48))]), yB + 0.4, ta.crown_y - 0.4, null, null, up.gb('ext_lantern'));
     for (const p of L.outline.filter((_, i) => i % 2 === 0)) BEACONS.push([p[0] * 0.55, ta.crown_y + 0.6, p[1] * 0.55, 0.6]);
-    BEACONS.push([0, ta.crown_y + 15, 0, 0.8]);
     // the lattice crown: three tapering tiers of diagonal bracing round the lantern, purple on the diagonals, a mast
     const sc = [1.0, 0.84, 0.68, 0.55], ys = [yB, yB + 4, yB + 8, ta.crown_y], st = up.gb('alloy'), gl = up.gb('glow_purple');
     const ringPts = (t) => { const out = []; const P = L.outline.map((p) => P2.mul(p, sc[t])); for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length], nn = Math.max(1, Math.round(P2.len(P2.sub(b, a)) / (6 * sc[t]))); for (let k = 0; k < nn; k++) out.push(P2.lerp(a, b, k / nn)); } return out; };
@@ -897,8 +1040,33 @@ PARTS.exterior = function (K) {
         K.beam(st, [b0[0], ys[t + 1], b0[1]], [b1[0], ys[t + 1], b1[1]], 0.4);
       }
     }
-    K.beam(st, [0, ta.crown_y, 0], [0, ta.crown_y + 14.2, 0], 0.7);
-    K.beam(gl, [0.45, ta.crown_y, 0], [0.45, ta.crown_y + 13.5, 0], 0.12);
+    K.beam(st, [0, ta.crown_y, 0], [0, ta.crown_y + 52, 0], 0.9);
+    K.beam(up.gb('ext_lattice'), [0.55, ta.crown_y, 0], [0.55, ta.crown_y + 50, 0], 0.16);
+    for (let y = ta.crown_y + 8; y < ta.crown_y + 50; y += 8) K.abox(up.gb('ext_lattice_node'), -0.8, 0.8, y, y + 0.35, -0.8, 0.8);
+    BEACONS.push([0, ta.crown_y + 53, 0, 0.9]);
+  }
+
+  {
+    const n = 512, c = K.canvas(n, 64), x = c.getContext('2d'), e = K.canvas(n, 64), y = e.getContext('2d');
+    x.fillStyle = '#141018'; x.fillRect(0, 0, n, 64); y.fillStyle = '#000'; y.fillRect(0, 0, n, 64);
+    // ajeon-style lattice (abstract geometry, no marks): a running diamond with a warm core line and purple diamonds
+    y.strokeStyle = 'rgba(255,205,150,0.85)'; y.lineWidth = 2; y.beginPath(); y.moveTo(0, 32); y.lineTo(n, 32); y.stroke();
+    y.strokeStyle = 'rgba(160,110,255,0.95)'; y.lineWidth = 2.5;
+    for (let i = 0; i < n; i += 64) { y.beginPath(); y.moveTo(i, 32); y.lineTo(i + 32, 6); y.lineTo(i + 64, 32); y.lineTo(i + 32, 58); y.closePath(); y.stroke(); y.beginPath(); y.moveTo(i + 16, 32); y.lineTo(i + 32, 19); y.lineTo(i + 48, 32); y.lineTo(i + 32, 45); y.closePath(); y.stroke(); }
+    y.fillStyle = 'rgba(255,215,170,0.9)'; for (let i = 0; i < n; i += 64) y.fillRect(i - 2, 30, 4, 4);
+    x.strokeStyle = '#3a3040'; x.lineWidth = 3; for (let i = 0; i < n; i += 64) { x.beginPath(); x.moveTo(i, 32); x.lineTo(i + 32, 6); x.lineTo(i + 64, 32); x.lineTo(i + 32, 58); x.closePath(); x.stroke(); }
+    std('ext_fritband', { map: tex(c, true, 'fritband_albedo'), emissiveMap: tex(e, true, 'fritband_emissive'), emissive: '#ffffff', emissiveIntensity: 1.6, roughness: 0.35, metalness: 0.3 }, { tile: [6, 0.75], haze: 1, envI: 0.8 });
+    const sgT = sgo(L.outline);
+    for (const f of K.FIDS) {
+      const yb = K.FY(f), fb = deco('haneul_band', 'deco', f).gb('ext_fritband');
+      for (const b of L.facade.bays) {
+        if (b.floor !== f) continue;
+        const d = P2.norm(P2.sub(b.b, b.a)), o = [d[1] * sgT * 0.07, -d[0] * sgT * 0.07], A = P2.add(b.a, o), B = P2.add(b.b, o), lw = P2.len(P2.sub(b.b, b.a));
+        const y0 = yb + (b.double_height ? 7.45 : 3.25), y1 = yb + (b.double_height ? 8.2 : 3.95), u0 = (b.index * lw) / 6;
+        fb.face([[A[0], y0, A[1]], [B[0], y0, B[1]], [B[0], y1, B[1]], [A[0], y1, A[1]]], [o[0] / 0.07, 0, o[1] / 0.07]);
+        if (b.double_height) K.sbox(deco('haneul_band', 'deco', f).gb('glow_warm'), P2.add(b.a, P2.mul(o, 2)), P2.add(b.b, P2.mul(o, 2)), 0.06, yb + 7.32, yb + 7.4);
+      }
+    }
   }
 
   /* ---------------------------------------------------------------- neighbours: down to the street, construction top, edge lines */
@@ -942,12 +1110,12 @@ PARTS.exterior = function (K) {
   {
     const n = 128, NH = K.noise(n, 10, 10, 951, 3), H = new Float32Array(n * n); for (let k = 0; k < H.length; k++) H[k] = NH[k];
     std('ext_puddle', { color: '#07080b', roughness: 0.03, metalness: 0.15, normalMap: tex(nrm(H, n, 1.2), false, 'puddle_normal') }, { tile: 1.5, envI: 2.4, ns: 0.25, env: 'out' });
-    std('ext_leaf', { map: tex(K.img(128, 128, (i, j, o, k) => { const v = 0.7 + 0.6 * NH[k]; o[0] = 52 * v; o[1] = 92 * v; o[2] = 50 * v; }), true, 'leaf_albedo'), roughness: 0.45, metalness: 0 }, { tile: 0.6, envI: 0.8 });
+    std('ext_leaf', { map: tex(K.img(128, 128, (i, j, o, k) => { const v = 0.8 + 0.6 * NH[k]; o[0] = 70 * v; o[1] = 128 * v; o[2] = 60 * v; }), true, 'leaf_albedo'), roughness: 0.55, metalness: 0 }, { tile: 0.6, envI: 0.8 });
     // soft wet patches: an alpha mask with ragged, feathered edges and streaky reflections (no hard decal edges)
     {
       const W2 = 256, NW = K.noise(W2, 6, 6, 952, 4), NS = K.noise(W2, 2, 40, 953, 3);
       const wc = K.img(W2, W2, (i, j, o, k) => { const u = (i + 0.5) / W2 - 0.5, v = (j + 0.5) / W2 - 0.5, r = Math.hypot(u, v) * 2, a = sst(1.0, 0.45, r + (NW[k] - 0.5) * 0.55);
-        const st = 0.85 + 0.3 * NS[k]; o[0] = 10 * st; o[1] = 11 * st; o[2] = 16 * st; o[3] = 255 * a * 0.85; });
+        const st = 0.85 + 0.3 * NS[k]; o[0] = 10 * st; o[1] = 11 * st; o[2] = 16 * st; o[3] = 255 * a * 0.55; });
       std('ext_wet', { color: '#ffffff', map: tex(wc, true, 'wet', false), roughness: 0.04, metalness: 0.2, transparent: true, depthWrite: false, normalMap: tex(nrm(H, n, 0.6), false, 'wet_normal') }, { envI: 2.6, ns: 0.15, env: 'out' }).polygonOffset = true;
       K.M.ext_wet.polygonOffsetFactor = -2;
     }
@@ -956,8 +1124,8 @@ PARTS.exterior = function (K) {
     const clearOf = (x, z, r) => feats.every((b) => x + r < b[0] - 0.3 || x - r > b[2] + 0.3 || z + r < b[1] - 0.3 || z - r > b[3] + 0.3);
     const puddle = (g, x, y, z, rx, rz, rot) => { const c = Math.cos(rot), sn = Math.sin(rot), P = (u, v) => [x + u * rx * 1.3 * c - v * rz * 1.3 * sn, y, z + u * rx * 1.3 * sn + v * rz * 1.3 * c]; g.push([P(-1, 1), P(1, 1), P(1, -1), P(-1, -1)]); };
     const inT = (x, z) => K.inPoly([x, z], T.polygon) && !K.inPoly([x, z], L.outline) && K.polyDist([x, z], T.polygon) > 1.2 && K.polyDist([x, z], L.outline) > 1.6;
-    for (let t = 0, np = 0; t < 400 && np < 46; t++) {
-      const x = -33 + R() * 66, z = 22 + R() * 34, rx = 0.5 + R() * 2.0, rz = 0.4 + R() * 1.4;
+    for (let t = 0, np = 0; t < 400 && np < 16; t++) {
+      const x = -33 + R() * 66, z = 22 + R() * 34, rx = 1.2 + R() * 2.6, rz = 0.25 + R() * 0.5;
       if (!inT(x, z) || !clearOf(x, z, Math.max(rx, rz))) continue;
       puddle(pu, x, T.y + 0.006, z, rx, rz, R() * 3); np++;
     }
@@ -972,12 +1140,12 @@ PARTS.exterior = function (K) {
       const l = P2.len(P2.sub(bb, aa)); for (let s = 3; s < l - 1; s += 6) { const p = P2.add(P2.add(aa, P2.mul(d, s)), P2.mul(nn, ins * 0.75)); K.abox(upl, p[0] - 0.09, p[0] + 0.09, T.y, T.y + 0.008, p[1] - 0.09, p[1] + 0.09); }
     }
     // low ground cover on the planters (stays under 0.2 m so the planters' cover heights do not change)
-    const leaf = td.gb('ext_leaf'), tuft = new THREE.ConeGeometry(0.2, 0.16, 6, 1), M4 = new THREE.Matrix4(), V = new THREE.Vector3(), Q = new THREE.Quaternion(), E = new THREE.Euler(), S = new THREE.Vector3();
+    const leaf = td.gb('ext_leaf'), tuft = new THREE.SphereGeometry(0.17, 9, 5, 0, Math.PI * 2, 0, Math.PI / 2), M4 = new THREE.Matrix4(), V = new THREE.Vector3(), Q = new THREE.Quaternion(), E = new THREE.Euler(), S = new THREE.Vector3();
     for (const f of T.features) {
       if (f.kind !== 'planter') continue;
       const [x0, z0, x1, z1] = f.box, top = T.y + f.h - 0.02;
       for (let x = x0 + 0.2; x < x1 - 0.12; x += 0.27) for (let z = z0 + 0.2; z < z1 - 0.12; z += 0.27) {
-        leaf.addGeo(tuft, M4.compose(V.set(x + (R() - 0.5) * 0.1, top + 0.07, z + (R() - 0.5) * 0.1), Q.setFromEuler(E.set(0, R() * 6, 0)), S.set(1, 0.6 + R() * 0.5, 1)));
+        leaf.addGeo(tuft, M4.compose(V.set(x + (R() - 0.5) * 0.1, top - 0.01, z + (R() - 0.5) * 0.1), Q.setFromEuler(E.set(0, R() * 6, 0)), S.set(0.9 + R() * 0.5, 0.55 + R() * 0.5, 0.9 + R() * 0.5)));   // soft grass mounds, under 0.17 m
       }
     }
     tuft.dispose();
@@ -986,13 +1154,48 @@ PARTS.exterior = function (K) {
     for (const nb of EXT.neighbours) {
       if (nb.id !== 'NB_west' && nb.id !== 'NB_crane') continue;
       const [x0, z0, x1, z1] = K.polyBox(nb.footprint), boxes = nb.features.filter((f) => f.box).map((f) => f.box);
-      for (let t = 0, k = 0; t < 300 && k < 22; t++) {
-        const x = x0 + 3 + R() * (x1 - x0 - 6), z = z0 + 3 + R() * (z1 - z0 - 6), rx = 0.5 + R() * 1.8, rz = 0.4 + R() * 1.2;
+      for (let t = 0, k = 0; t < 300 && k < 9; t++) {
+        const x = x0 + 3 + R() * (x1 - x0 - 6), z = z0 + 3 + R() * (z1 - z0 - 6), rx = 1.0 + R() * 2.2, rz = 0.25 + R() * 0.45;
         if (boxes.some((b) => x + rx > b[0] - 0.4 && x - rx < b[2] + 0.4 && z + rx > b[1] - 0.4 && z - rx < b[3] + 0.4)) continue;
         puddle(rg, x, nb.top_y + 0.006, z, rx, rz, R() * 3); k++;
       }
     }
     if (WETQ.length) addUV('terrace_wet', quadGeo(WETQ), 'ext_wet', 'deco');
+    {
+      const n2 = 64, c2 = K.canvas(n2, 256), x2 = c2.getContext('2d'), NN = K.noise(64, 2, 32, 961, 3), im = x2.createImageData(n2, 256);
+      for (let j = 0; j < 256; j++) for (let i = 0; i < n2; i++) {
+        const v = 1 - j / 256, u = (i + 0.5) / n2, ac = Math.exp(-(((u - 0.5) / 0.2) ** 2)), al = Math.pow(1 - v, 1.8) * sst(0, 0.04, v) * (0.35 + 0.65 * sst(0.3, 0.75, NN[(j % 64) * 64 + i]));
+        const a = clamp(ac * al, 0, 1), k = (j * n2 + i) * 4; im.data[k] = im.data[k + 1] = im.data[k + 2] = 255; im.data[k + 3] = 255 * a;
+      }
+      x2.putImageData(im, 0, 0);
+      const wt = tex(c2, true, 'wet_streak', false), Q = { p: [], w: [], k: [] };
+      additive('ext_wetrf_p', wt, '#9a5cff', 1.6, 0.85, 1); additive('ext_wetrf_w', wt, '#ffc890', 1.0, 0.7, 1); additive('ext_wetrf_k', wt, '#ff5ad8', 1.3, 0.75, 1);
+      const streak = (list, p, d, w, len, y, ok) => {
+        const nn = [-d[1], d[0]]; let t = len; for (let s2 = 0.5; s2 <= len; s2 += 0.5) if (!ok(P2.add(p, P2.mul(d, s2)))) { t = s2 - 0.5; break; }
+        if (t < 1.5) return; const a = P2.add(p, P2.mul(nn, -w / 2)), b = P2.add(p, P2.mul(nn, w / 2)), e = P2.mul(d, t);
+        list.push([[a[0], y, a[1]], [b[0], y, b[1]], [b[0] + e[0], y, b[1] + e[1]], [a[0] + e[0], y, a[1] + e[1]]]);
+      };
+      const R5 = K.rng(962), terr = (q) => inT(q[0], q[1]) && clearOf(q[0], q[1], 0.2);
+      for (const b of L.facade.bays) {
+        if (b.floor !== 'F1' || !['S', 'SE', 'SW'].includes(b.face)) continue;
+        const d0 = P2.norm(P2.sub(b.b, b.a)), out = [d0[1] * sgo(L.outline), -d0[0] * sgo(L.outline)], base = (q) => P2.add(q, P2.mul(out, 1.7));
+        if (b.index % 3 === 0) streak(Q.p, base(b.a), out, 0.35, 9 + R5() * 5, T.y + 0.012, terr);
+        if (R5() < 0.7) streak(Q.w, base(P2.lerp(b.a, b.b, 0.5)), out, 1.6, 5 + R5() * 6, T.y + 0.011, terr);
+      }
+      for (let z = 24; z < 54; z += 2.6 + R5() * 2) streak(R5() < 0.5 ? Q.k : Q.p, [32.6, z], [-1, 0], 0.9 + R5() * 1.4, 8 + R5() * 8, T.y + 0.013, terr);
+      const wr = EXT.neighbours.find((n) => n.id === 'NB_west');
+      if (wr) {
+        const [wx0, wz0, wx1, wz1] = K.polyBox(wr.footprint), boxes = wr.features.filter((f) => f.box).map((f) => f.box);
+        const okW = (q) => q[0] > wx0 + 0.8 && q[0] < wx1 - 0.6 && q[1] > wz0 + 0.8 && q[1] < wz1 - 0.8 && !boxes.some((bx) => q[0] > bx[0] - 0.4 && q[0] < bx[2] + 0.4 && q[1] > bx[1] - 0.4 && q[1] < bx[3] + 0.4);
+        for (const b of L.facade.bays) {
+          if (b.floor !== 'F1' || b.face !== 'W') continue;
+          const zz = b.a[1]; if (zz < wz0 + 1 || zz > wz1 - 1) continue;
+          if (b.index % 3 === 0) streak(Q.p, [wx1 - 0.7, zz], [-1, 0], 0.4, 12 + R5() * 6, wr.top_y + 0.012, okW);
+          if (R5() < 0.6) streak(Q.w, [wx1 - 0.7, (b.a[1] + b.b[1]) / 2], [-1, 0], 1.5, 6 + R5() * 7, wr.top_y + 0.011, okW);
+        }
+      }
+      for (const [k, list] of Object.entries(Q)) if (list.length) addUV('terrace_wet', quadGeo(list), 'ext_wetrf_' + k, 'deco');
+    }
   }
   tq = mark('terrace', tq);
 
@@ -1004,45 +1207,39 @@ PARTS.exterior = function (K) {
   const camPos = () => { try { return camera.position; } catch (e) { return null; } };
   {
     const RR = K.rng(33);
-    // near rain: streaks in a box that follows the camera; two lengths, a little wind
+    // near rain: streaks in a box that follows the camera; two lengths, a little wind. The fade is radial and ends
+    // inside the box (no box corners show), and streaks are masked inside the tower, the skybridge and the kiosk.
     {
-      const n = FAST ? 3000 : 11000, W = 66, H = 46, pos = new Float32Array(n * 6), at = new Float32Array(n * 2), ln = new Float32Array(n * 2);
-      for (let i = 0; i < n; i++) { const x = RR() * W, y = RR() * H, z = RR() * W, l = RR() < 0.2 ? 1.3 : 0.6 + RR() * 0.3; pos.set([x, y, z, x, y, z], i * 6); at[i * 2] = 0; at[i * 2 + 1] = 1; ln[i * 2] = ln[i * 2 + 1] = l; }
-      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(at, 1)); g.setAttribute('aLen', new THREE.BufferAttribute(ln, 1));
+      const n = FAST ? 3000 : 11000, W = 66, H = 46, pos = new Float32Array(n * 6), at = new Float32Array(n * 2), ln = new Float32Array(n * 2), jr = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) { const x = RR() * W, y = RR() * H, z = RR() * W, l = RR() < 0.2 ? 1.3 : 0.6 + RR() * 0.3, j = RR(); pos.set([x, y, z, x, y, z], i * 6); at[i * 2] = 0; at[i * 2 + 1] = 1; ln[i * 2] = ln[i * 2 + 1] = l; jr[i * 2] = jr[i * 2 + 1] = j; }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(at, 1)); g.setAttribute('aLen', new THREE.BufferAttribute(ln, 1)); g.setAttribute('aJ', new THREE.BufferAttribute(jr, 1));
       const mat = new THREE.ShaderMaterial({
         transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-        uniforms: { uT: { value: 0 }, uCam: { value: new THREE.Vector3() } },
-        vertexShader: `attribute float aEnd; attribute float aLen; uniform float uT; uniform vec3 uCam; varying float vA; varying float vD;
+        uniforms: { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uOp: { value: 1 } },
+        vertexShader: `attribute float aEnd; attribute float aLen; attribute float aJ; uniform float uT; uniform vec3 uCam; varying float vA; varying float vD; varying float vM;
+          float inside(vec3 q) {
+            vec2 a = abs(q.xz);
+            float t = step(a.x, 26.15) * step(a.y, 26.15) * step(a.x + a.y, 47.3);
+            t = max(t, step(26.0, q.x) * step(q.x, 56.0) * step(abs(q.z - 13.5), 1.75) * step(4.1, q.y) * step(q.y, 7.7));
+            t = max(t, step(56.0, q.x) * step(q.x, 82.0) * step(-6.0, q.z) * step(q.z, 32.0) * step(q.y, 160.0));
+            t = max(t, step(abs(q.x), 5.1) * step(abs(q.z - 50.0), 1.6) * step(q.y, 3.3));
+            return t; }
           void main() { vec3 p = position; float W = ${W.toFixed(1)}, H = ${H.toFixed(1)};
-            p.y = mod(p.y - uT * 12.5 * (0.8 + 0.3 * aLen), H); p.x = mod(p.x - uCam.x + uT * 1.8, W); p.z = mod(p.z - uCam.z + uT * 0.6, W);
-            p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5); p += aEnd * vec3(0.07, 0.95, 0.02) * aLen; vA = aEnd;
-            vec4 mv = viewMatrix * vec4(p, 1.0); vD = -mv.z; gl_Position = projectionMatrix * mv; }`,
-        fragmentShader: `varying float vA; varying float vD; void main() { float f = smoothstep(0.8, 3.0, vD) * (1.0 - smoothstep(18.0, 33.0, vD)); gl_FragColor = vec4(0.58, 0.62, 0.7, 0.13 * f * (1.0 - vA * 0.85)); }`,
+            float sp = 0.8 + 0.3 * aLen + 0.25 * aJ, wx = 1.4 + 0.9 * aJ;
+            p.y = mod(p.y - uT * 12.5 * sp, H); p.x = mod(p.x + aJ * 7.31 - uCam.x + uT * wx, W); p.z = mod(p.z + aJ * 3.17 - uCam.z + uT * 0.6, W);
+            p = p + uCam - vec3(W * 0.5, H * 0.5, W * 0.5);
+            vM = 1.0 - inside(p);
+            vec3 rel = p - uCam; vD = length(rel.xz); vA = aEnd;
+            float fy = 1.0 - smoothstep(14.0, 21.0, abs(rel.y)); vM *= fy;
+            p += aEnd * vec3(0.07 + 0.04 * aJ, 0.95, 0.02) * aLen;
+            gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0); }`,
+        fragmentShader: `uniform float uOp; varying float vA; varying float vD; varying float vM; void main() { float f = smoothstep(0.8, 3.0, vD) * (1.0 - smoothstep(16.0, 30.0, vD)) * vM; if (f < 0.002) discard; gl_FragColor = vec4(0.58, 0.62, 0.7, 0.13 * uOp * f * (1.0 - vA * 0.85)); }`,
       });
       const l = new THREE.LineSegments(g, mat); l.frustumCulled = false; l.renderOrder = 5;
+      K.rain = { mat };
       K.view(l, 'rain'); K.onTick((dt, t) => { mat.uniforms.uT.value = t; const c = camPos(); if (c) mat.uniforms.uCam.value.copy(c); });
     }
-    // rain curtains: big soft sheets in the middle distance catching the city light
-    {
-      const c = K.canvas(128, 512), x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 128, 512);
-      for (let i = 0; i < 260; i++) { const px = RR() * 128, py = RR() * 512, l = 20 + RR() * 90, g = x.createLinearGradient(0, py, 0, py + l); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, `rgba(255,255,255,${(0.2 + RR() * 0.35).toFixed(3)})`); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(px, py, 1, l); x.fillRect(px, py - 512, 1, l); }
-      const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      // soft edges computed from the plane's own uv, so no sheet ever shows a straight border
-      const m = new THREE.ShaderMaterial({
-        transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
-        uniforms: { uMap: { value: t }, uOff: { value: t.offset }, uCol: { value: new THREE.Color('#8e86c8') }, uOp: { value: 0.07 } },
-        vertexShader: 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-        fragmentShader: `uniform sampler2D uMap; uniform vec2 uOff; uniform vec3 uCol; uniform float uOp; varying vec2 vUv;
-          void main() { float e = pow(sin(3.14159 * vUv.x), 2.0) * pow(sin(3.14159 * vUv.y), 1.5); float s = texture2D(uMap, vUv * vec2(3.0, 1.4) + uOff).r;
-            gl_FragColor = vec4(uCol * s, uOp * e); }`,
-      });
-      const grp = new THREE.Group();
-      for (let i = 0; i < (FAST ? 8 : 16); i++) {
-        const a = RR() * Math.PI * 2, d = 160 + RR() * 520, w = 140 + RR() * 220;
-        const p = new THREE.Mesh(new THREE.PlaneGeometry(w, 360), m); p.position.set(Math.sin(a) * d, -120 + RR() * 60, Math.cos(a) * d); p.lookAt(0, p.position.y, 0); grp.add(p);
-      }
-      K.view(grp, 'rain'); K.onTick((dt) => { t.offset.y += dt * 0.9; t.offset.x += dt * 0.02; });
-    }
+    // (no rain curtains: big sheets showed hard edges against the sky; the near rain and the haze rings carry the rain)
     // splashes on the terrace and the neighbour roofs
     {
       const pts = [], T = EXT.terrace, R2 = K.rng(55);
@@ -1112,11 +1309,12 @@ PARTS.exterior = function (K) {
     }
     // beacons blink; lightning brightens the sky, the clouds and the haze (in step with the viewer's sky pulse); screens flicker
     {
-      const B = K.M.ext_beacon, S = K.M.ext_sky, Cl = K.M.ext_cloud, flash = new THREE.Color('#5a4c86');
+      const S = K.M.ext_sky, flash = new THREE.Color('#5a4c86');
       K.onTick((dt, t) => {
-        B.emissiveIntensity = (t % 1.6) < 0.22 ? 4.0 : 0.25;
+        // beacons: the backdrop shader scales its beacon vertices by uBlink (beacons are baked at intensity 3)
+        if (K.backdropBlink) K.backdropBlink.value = (t % 1.6) < 0.22 ? 4.0 / 3.0 : 0.25 / 3.0;
         let f = 0; try { f = clamp((hemi.intensity - 0.45) / 1.4, 0, 1); } catch (e) { f = 0; }
-        S.emissiveIntensity = 1 + 1.4 * f; Cl.emissiveIntensity = 0.9 + 1.6 * f;
+        S.emissiveIntensity = 1 + 1.4 * f;
         HZ.value.copy(HZ0).lerp(flash, f * 0.5);
         for (const k of ['ext_holo_a', 'ext_holo_b', 'ext_holo_c', 'ext_holo_d', 'ext_holo_e']) { const m = K.M[k]; if (m) m.opacity = 0.8 + 0.06 * Math.sin(t * 2.3 + k.charCodeAt(9)) + 0.03 * Math.sin(t * 17.0 + k.charCodeAt(9)); }
       });

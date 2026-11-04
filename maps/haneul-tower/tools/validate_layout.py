@@ -263,9 +263,33 @@ for c in L['cover']:
     if not room_at(c['floor'], (c['x'], c['z'])) and not point_in_poly((c['x'], c['z']), [T(q) for q in L['exterior']['terrace']['polygon']]) and abs(c['x']) < 26:
         warn('cover %s outside rooms' % c['id'])
     if blocked_by_prop(c['floor'], (c['x'], c['z']), 0.2): err('cover %s inside a prop' % c['id'])
+# user rules: every breakable wall is reinforceable; corners and T-junctions are hard for 1.0 m
 for w in walls:
-    if w['type'] == 'reinforceable' and w['reinforce'].get('defender_side') == 'either':
-        warn('reinforceable %s has no site side' % w['id'])
+    if w['type'] == 'soft': err('%s is soft: every breakable wall must be reinforceable' % w['id'])
+JH = 1.0
+for fl in floors:
+    ws = [w for w in wallsf[fl] if w['type'] != 'open' and w['length'] > 1e-6]
+    def dirv(w): return ((w['b'][0] - w['a'][0]) / w['length'], (w['b'][1] - w['a'][1]) / w['length'])
+    J = []
+    for w in ws:
+        for p in (T(w['a']), T(w['b'])):
+            if on_polyline(p, outline, True, 0.02): J.append(p); continue
+            for o in ws:
+                if o is w: continue
+                d1, d2 = dirv(w), dirv(o)
+                if abs(d1[0] * d2[0] + d1[1] * d2[1]) > 0.99: continue
+                if dist_point_seg(p, T(o['a']), T(o['b']))[0] <= 0.03: J.append(p)
+    for w in ws:
+        if w['type'] != 'reinforceable': continue
+        a = T(w['a']); d = dirv(w)
+        for pn in w['reinforce']['panels']:
+            for p in J:
+                t = (p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1]
+                off = abs((p[0] - a[0]) * d[1] - (p[1] - a[1]) * d[0])
+                if off < 0.03 and pn['u0'] < t + JH - 1e-3 and pn['u1'] > t - JH + 1e-3:
+                    err('%s unit [%.2f, %.2f] is within %.1f m of the junction at %s' % (w['id'], pn['u0'], pn['u1'], JH, p))
+            for o in w['openings']:
+                if pn['u0'] < o['u1'] + 0.1 and pn['u1'] > o['u0'] - 0.1: err('%s unit overlaps opening %s' % (w['id'], o['id']))
 
 # ---- facade
 for b in L['facade']['bays']:
@@ -311,24 +335,24 @@ for w in walls:
     if w['type'] != 'reinforceable': continue
     rf = w['reinforce']
     if rf.get('defender_side') not in ('pos', 'neg'): continue
-    ps = rf['panels']
-    run = band(w, ps[0]['u0'] - TRIM, ps[-1]['u1'] + TRIM)
-    for o in wallsf[w['floor']]:
-        if o is w or o['type'] == 'open': continue
-        if boxhit(run, wrect(o)): err('%s units (with %.2f m trims) clash with wall %s' % (w['id'], TRIM, o['id']))
-    for c in L['columns']:
-        if boxhit(run, (c['x'] - c['w'] / 2, c['z'] - c['d'] / 2, c['x'] + c['w'] / 2, c['z'] + c['d'] / 2)): err('%s units clash with column %s' % (w['id'], c['id']))
-    for pl in L.get('pilasters', []):
-        if pl['floor'] == w['floor'] and boxhit(band(w, ps[0]['u0'], ps[-1]['u1']), (pl['x'] - pl['w'] / 2, pl['z'] - pl['d'] / 2, pl['x'] + pl['w'] / 2, pl['z'] + pl['d'] / 2)):
-            err('%s units clash with pilaster %s' % (w['id'], pl['id']))
-    for pr in L.get('props', []):
-        if pr['floor'] == w['floor'] and pr['h'] > 0 and boxhit(band(w, ps[0]['u0'], ps[-1]['u1']), tuple(pr['box'])):
-            err('%s units clash with prop %s' % (w['id'], pr['id']))
-    bands.append((w, band(w, ps[0]['u0'], ps[-1]['u1'])))
+    for pn in rf['panels']:   # each unit on its own (a wall can hold several runs between hard ends)
+        run = band(w, pn['u0'] - TRIM, pn['u1'] + TRIM)
+        for o in wallsf[w['floor']]:
+            if o is w or o['type'] == 'open': continue
+            if boxhit(run, wrect(o)): err('%s units (with %.2f m trims) clash with wall %s' % (w['id'], TRIM, o['id']))
+        for c in L['columns']:
+            if boxhit(run, (c['x'] - c['w'] / 2, c['z'] - c['d'] / 2, c['x'] + c['w'] / 2, c['z'] + c['d'] / 2)): err('%s units clash with column %s' % (w['id'], c['id']))
+        for pl in L.get('pilasters', []):
+            if pl['floor'] == w['floor'] and boxhit(band(w, pn['u0'], pn['u1']), (pl['x'] - pl['w'] / 2, pl['z'] - pl['d'] / 2, pl['x'] + pl['w'] / 2, pl['z'] + pl['d'] / 2)):
+                err('%s units clash with pilaster %s' % (w['id'], pl['id']))
+        for pr in L.get('props', []):
+            if pr['floor'] == w['floor'] and pr['h'] > 0 and boxhit(band(w, pn['u0'], pn['u1']), tuple(pr['box'])):
+                err('%s units clash with prop %s' % (w['id'], pr['id']))
+        bands.append((w, band(w, pn['u0'], pn['u1'])))
 for i in range(len(bands)):
     for j in range(i + 1, len(bands)):
         (w1, b1), (w2, b2) = bands[i], bands[j]
-        if w1['floor'] == w2['floor'] and boxhit(b1, b2): err('deployed units of %s and %s collide' % (w1['id'], w2['id']))
+        if w1 is not w2 and w1['floor'] == w2['floor'] and boxhit(b1, b2): err('deployed units of %s and %s collide' % (w1['id'], w2['id']))
 budget_report = []
 for s in L['sites']:
     units = sum(len(w['reinforce']['panels']) for w in walls if w['type'] == 'reinforceable' and w['reinforce'].get('site') == s['id'])
@@ -400,7 +424,7 @@ for s in L['sites']:
         mix.update({k: 1 for k in wall_types_by_room[rid]})
     vert = [h['id'] for h in L['hatches'] + L['floor_patches'] if h['top_room'] in s['rooms'] or h['bottom_room'] in s['rooms']]
     ext = [b['id'] for b in L['facade']['bays'] if b['room'] in s['rooms'] and any(l['type'] in ('window_barricadable', 'glass_breakable') for l in b.get('lites', []))]
-    for need in ('reinforceable', 'soft', 'hard'):
+    for need in ('reinforceable', 'hard'):
         if not mix[need]: err('site %s lacks a %s wall' % (s['id'], need))
     if not vert: err('site %s has no hatch or soft floor above/below' % s['id'])
     site_report.append('%s %-28s walls:%s vertical:%s exterior bays:%d' % (s['id'], s['name'], dict(mix), vert, len(ext)))
