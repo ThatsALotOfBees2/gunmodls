@@ -400,6 +400,99 @@ for pr in L.get('props', []):
             box = (min(pt[0], q[0]) - st['width'] / 2, min(pt[2], q[1]) - st['width'] / 2, max(pt[0], q[0]) + st['width'] / 2, max(pt[2], q[1]) + st['width'] / 2)
             if boxhit(box, tuple(pr['box'])): err('prop %s blocks the end of %s' % (pr['id'], st['id']))
 
+# ---- blast shutters: one per facade bay with glass, whole vision height, sealed at both ends, nothing in the zone
+SHR = L['rules'].get('shutters')
+shutters = L.get('shutters', [])
+if not SHR: err('rules.shutters missing')
+else:
+    SP0, SP1 = SHR['plane']; HH = SHR['housing'][2]
+    bays_by_id = {b['id']: b for b in L['facade']['bays']}
+    need = [b['id'] for b in L['facade']['bays'] if b['kind'] == 'portal' or any(l['type'] != 'spandrel' for l in b['lites'])]
+    have = Counter(sh['bay'] for sh in shutters)
+    for bid in need:
+        if have[bid] != 1: err('facade bay %s has %d blast shutters (needs 1)' % (bid, have[bid]))
+    FY_ = {f['id']: f['y'] for f in L['floors']}
+    def frame_(b):
+        a, c = b['a'], b['b']; W = b['width']; d = ((c[0] - a[0]) / W, (c[1] - a[1]) / W); return a, d, (-d[1], d[0]), W
+    def obstacles_(fl):
+        out = []
+        for c in L['columns']:
+            out.append((c['id'], [(c['x'] - c['w'] / 2, c['z'] - c['d'] / 2), (c['x'] + c['w'] / 2, c['z'] - c['d'] / 2), (c['x'] + c['w'] / 2, c['z'] + c['d'] / 2), (c['x'] - c['w'] / 2, c['z'] + c['d'] / 2)]))
+        for w in wallsf[fl]:
+            if w['type'] not in ('hard', 'reinforceable'): continue
+            a, b = w['a'], w['b']; Lw = w['length']; dx, dz = (b[0] - a[0]) / Lw, (b[1] - a[1]) / Lw; nx, nz = -dz, dx; h = w['thickness'] / 2
+            ea = 0.4 if on_polyline(T(a), outline, True, 0.02) else 0; eb = 0.4 if on_polyline(T(b), outline, True, 0.02) else 0
+            A = (a[0] - dx * ea, a[1] - dz * ea); B_ = (b[0] + dx * eb, b[1] + dz * eb)
+            out.append((w['id'], [(A[0] + nx * h, A[1] + nz * h), (B_[0] + nx * h, B_[1] + nz * h), (B_[0] - nx * h, B_[1] - nz * h), (A[0] - nx * h, A[1] - nz * h)]))
+        return out
+    OBS_ = {fl: obstacles_(fl) for fl in floors}
+    def ext_at_(poly, a, d, n, s):
+        # u extent of a convex plan polygon on the line at depth s inside the glass, or None
+        P = [((p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1], (p[0] - a[0]) * n[0] + (p[1] - a[1]) * n[1]) for p in poly]
+        us = []
+        for i in range(len(P)):
+            p, q = P[i], P[(i + 1) % len(P)]
+            if (p[1] - s) * (q[1] - s) <= 0 and abs(q[1] - p[1]) > 1e-12: us.append(p[0] + (s - p[1]) / (q[1] - p[1]) * (q[0] - p[0]))
+        return (min(us), max(us)) if us else None
+    ends_ = defaultdict(list)   # plan point of a guide end -> [(shutter, y_abs0, y_abs1)]
+    for sh in shutters:
+        b = bays_by_id.get(sh['bay'])
+        if not b: err('shutter %s: no bay %s' % (sh['id'], sh['bay'])); continue
+        if sh['floor'] != b['floor'] or sh['room'] != b['room']: err('shutter %s: floor/room differ from its bay' % sh['id'])
+        if abs(sh['y_closed'][1] - b['vision_y1']) > 1e-6 or sh['y_closed'][0] != 0: err('shutter %s does not cover the vision height 0..%.1f' % (sh['id'], b['vision_y1']))
+        if sh['default'] != 'open': err('shutter %s is not open by default' % sh['id'])
+        if not sh['travel_s'] > 0: err('shutter %s has no travel time' % sh['id'])
+        a, d, n, W = frame_(b)
+        for k, u in (('a', sh['u0']), ('b', sh['u1'])):
+            sealer = sh['seal'][k]
+            if sealer == 'guide':
+                if (k == 'a' and u > SHR['guide'] - 0.01) or (k == 'b' and u < W - SHR['guide'] + 0.01): err('shutter %s end %s is not inside its guide' % (sh['id'], k))
+                p = b['a'] if k == 'a' else b['b']; y0 = FY_[b['floor']]
+                ends_[(round(p[0], 2), round(p[1], 2))].append((sh['id'], y0, y0 + b['vision_y1'] + HH))
+                continue
+            ob = [o for o in OBS_[b['floor']] if o[0] == sealer]
+            if not ob: err('shutter %s end %s: sealing obstacle %s not found' % (sh['id'], k, sealer)); continue
+            # the curtain must overlap the obstacle by >= 2 cm at some depth inside its slab (slats are full depth)
+            best = None
+            for s_ in [SP0 + 0.004 + i * (SP1 - SP0 - 0.008) / 10 for i in range(11)]:
+                e = ext_at_(ob[0][1], a, d, n, s_)
+                if not e: continue
+                ov = (e[1] - u) if k == 'a' else (u - e[0])
+                best = ov if best is None else max(best, ov)
+            if best is None or best < 0.02 - 1e-6: err('shutter %s end %s does not seal against %s (overlap %s)' % (sh['id'], k, sealer, None if best is None else round(best, 3)))
+        # nothing that crosses the curtain plane mid-bay
+        for oid, poly in OBS_[b['floor']]:
+            for s_ in (SP0, (SP0 + SP1) / 2, SP1):
+                e = ext_at_(poly, a, d, n, s_)
+                if e and e[0] > sh['u0'] + 0.1 and e[1] < sh['u1'] - 0.1: err('shutter %s: %s crosses the curtain mid-bay' % (sh['id'], oid))
+        # props clear of the shutter zone (0.45 m from the glass along the bay)
+        for pr in L['props']:
+            if pr['floor'] != b['floor']: continue
+            x0, z0, x1, z1 = pr['box']
+            for cx, cz in ((x0, z0), (x1, z0), (x1, z1), (x0, z1)):
+                uu = (cx - a[0]) * d[0] + (cz - a[1]) * d[1]; ss = (cx - a[0]) * n[0] + (cz - a[1]) * n[1]
+                if sh['u0'] < uu < sh['u1'] and -0.05 < ss < SHR['housing'][1] + 0.01:
+                    err('prop %s is in the blast shutter zone of %s' % (pr['id'], sh['id'])); break
+    # a guide end must meet a guide of the next bay on the same mullion line over its whole height (any floor), unless
+    # the bay beyond is opaque
+    spandrel_pts = set()
+    for b in L['facade']['bays']:
+        if b['kind'] != 'portal' and all(l['type'] == 'spandrel' for l in b['lites']):
+            for p in (b['a'], b['b']): spandrel_pts.add((round(p[0], 2), round(p[1], 2), b['floor']))
+    for pt, lst in ends_.items():
+        for sid, y0, y1 in lst:
+            fl = sid[:2]
+            if (pt[0], pt[1], fl) in spandrel_pts: continue
+            # partners on this line, plus the floor slabs (y-0.3..y) that the next bay's floor stands on
+            cov = sorted([(a_, b_) for s2, a_, b_ in lst if s2 != sid] + [(FY_[f] - L['rules']['slab'], FY_[f]) for f in floors[1:] if any(s2[:2] == f for s2, _, _ in lst)])
+            y = y0
+            for a_, b_ in cov:
+                if a_ <= y + 1e-6: y = max(y, b_)
+            if y < y1 - 1e-6: err('shutter %s: guide at %s has no partner guide over %.2f..%.2f' % (sid, pt, y, y1))
+    cnt_sh = Counter(sh['floor'] for sh in shutters)
+    print('blast shutters: %d (%s), sealed ends: %d guides, %d columns/walls; all open by default' % (len(shutters), ', '.join('%s %d' % (f, cnt_sh[f]) for f in floors),
+          sum(len(sh['guides']) for sh in shutters), sum(2 - len(sh['guides']) for sh in shutters)))
+
 # ---- spawn peeks and long door chains
 import spawn_los, door_lines
 los_hits = spawn_los.check(L)
@@ -446,7 +539,7 @@ for b in L['facade']['bays']:
     if b.get('opening'): cnt['facade_double_door'] += 1
 cnt['hatch'] = len(L['hatches']); cnt['soft_floor'] = len(L['floor_patches'])
 cnt['pilaster'] = len(L.get('pilasters', [])); cnt['column_wrap'] = sum(1 for w in walls if w.get('column_wrap'))
-cnt['prop'] = len(L['props']); cnt['spawn_peeks'] = len(los_hits)
+cnt['prop'] = len(L['props']); cnt['spawn_peeks'] = len(los_hits); cnt['shutter'] = len(shutters)
 
 print('== %s' % path)
 for s in site_report: print(s)

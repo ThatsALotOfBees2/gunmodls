@@ -911,7 +911,7 @@ props = [
     ('F3', 'news_desks', [-24.0, 4.5, -19.0, 7.5], 1.0, 'half', 'soft', 'newsroom desk cluster'),
     ('F3', 'news_desks', [-24.0, -2.0, -19.0, 0.5], 1.0, 'half', 'soft', 'newsroom desk cluster'),
     ('F3', 'board_table', [-22.0, 18.5, -16.0, 21.0], 0.8, 'half', 'hard', 'boardroom table'),
-    ('F3', 'tiered_seats', [16.5, 14.0, 24.5, 22.0], 1.2, 'half', 'hard', 'screening room tiers, steps of 0.4 m'),
+    ('F3', 'tiered_seats', [16.5, 14.0, 24.2, 22.0], 1.2, 'half', 'hard', 'screening room tiers, steps of 0.4 m (east end 0.5 m clear of the SE glass: blast shutter zone)'),
     ('F3', 'bed', [3.0, 21.0, 6.5, 24.0], 0.7, 'half', 'soft', 'suite bed'),
     ('F3', 'bath', [-8.0, 22.0, -5.0, 25.0], 0.7, 'half', 'hard', 'stone bath (hatch H11 is beside it)'),
     ('F3', 'edit_desks', [-23.0, -19.0, -18.0, -17.5], 1.0, 'half', 'soft', 'edit desks'),
@@ -1190,6 +1190,95 @@ sightlines = [
     {'id': 'SL_vault_hall', 'floor': 'F2', 'a': [10.5, 5.6, -8.5], 'b': [10.5, 5.6, 8.5], 'note': 'Vault Hall behind S2'},
 ]
 
+# ---------------------------------------------------------------- blast shutters (user: every outer room, open for now)
+# Every facade bay with glass (entry windows, facade doors and the skybridge portal included) gets a heavy armoured
+# slat shutter on the INSIDE of the glass: the curtain runs in the plane s = SH_PLANE (metres inside the glass outer
+# face, behind the mullions, the door frames and the barricade slots) and retracts into a housing in the plenum above
+# the ceiling, so the facade, the ledges, the reveal zones and rappel play are untouched and the open state shows only
+# slim guide channels on the mullion lines. Closed, the curtain covers the whole vision height of the bay (0 to
+# vision_y1, 7.3 m on double-height bays) and seals at both ends: against a column or a hard wall end that crosses
+# the curtain plane (HARD_ ends; reinforceable walls are hard for 1.0 m at the facade), or in a guide channel on the
+# mullion line that it shares with the next bay's guide. Interior glass and balustrades are never used as seals (glass
+# breaks, a rail is 1.1 m high). Guides run from the floor to the slab underside, and the housing fills the plenum
+# along the bay, so nothing passes over the curtain top either. The shutter is indestructible; its collider
+# (COL_SHUTTER_<id>) is on only when closed. Slats are full depth (odd slats 4 mm inset, so closed overlaps never
+# z-fight) and overlap 3 cm; open, every slat and the bottom rail sit in the housing above the ceiling.
+SH_PLANE = (0.30, 0.37)      # curtain depth band (two interlocking slat depths)
+SH_GUIDE = 0.06              # guide channel width on each side of a mullion line (two bays share 0.12 m)
+SH_GUIDE_S = (0.26, 0.40)    # guide channel depth band (from the back of the mullion)
+SH_HOUSING = (0.26, 0.44, 0.8)    # housing depth band and height above the ceiling line (the full plenum, to the slab)
+SH_SLAT, SH_OVERLAP, SH_RAIL = 0.25, 0.03, 0.10
+SH_TRAVEL_S = 2.0            # every shutter travels its full height in 2.0 s
+SH_SEAL = 0.04               # the curtain runs this far into a sealing column or wall end
+SH_FREE = 0.03               # a free end runs this far into its guide channel
+
+
+def _sh_obstacles(fl):
+    obs = []
+    for c in columns:
+        x0, x1, z0, z1 = c['x'] - c['w'] / 2, c['x'] + c['w'] / 2, c['z'] - c['d'] / 2, c['z'] + c['d'] / 2
+        obs.append((c['id'], [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]))
+    for w in walls:
+        if w['floor'] != fl or w['type'] not in ('hard', 'reinforceable'): continue
+        a, b = w['a'], w['b']; Lw = w['length']; dx, dz = (b[0] - a[0]) / Lw, (b[1] - a[1]) / Lw; nx, nz = -dz, dx; h = w['thickness'] / 2
+        ea = 0.4 if on_outline(tuple(a)) else 0.0; eb = 0.4 if on_outline(tuple(b)) else 0.0
+        A = (a[0] - dx * ea, a[1] - dz * ea); Bp = (b[0] + dx * eb, b[1] + dz * eb)
+        obs.append((w['id'], [(A[0] + nx * h, A[1] + nz * h), (Bp[0] + nx * h, Bp[1] + nz * h), (Bp[0] - nx * h, Bp[1] - nz * h), (A[0] - nx * h, A[1] - nz * h)]))
+    return obs
+
+
+def _sh_clip(poly, lo, hi):
+    # u extent of a (u, s) polygon clipped to lo <= s <= hi, or None
+    def cut(P, f, keep):
+        out = []
+        for i in range(len(P)):
+            p, q = P[i], P[(i + 1) % len(P)]
+            if keep(p): out.append(p)
+            if keep(p) != keep(q):
+                t = (f - p[1]) / (q[1] - p[1]); out.append((p[0] + t * (q[0] - p[0]), f))
+        return out
+    P = cut(poly, lo, lambda p: p[1] >= lo - 1e-9)
+    if P: P = cut(P, hi, lambda p: p[1] <= hi + 1e-9)
+    return (min(p[0] for p in P), max(p[0] for p in P)) if P else None
+
+
+SITE_OF_ROOM = {r['id']: r.get('site') for r in rooms}
+shutters = []
+_sh_obs = {f['id']: _sh_obstacles(f['id']) for f in FLOORS}
+for bay in bays:
+    if bay['kind'] != 'portal' and all(l['type'] == 'spandrel' for l in bay['lites']):
+        continue   # opaque bay (Cold Store): nothing to shutter
+    a, b, W = bay['a'], bay['b'], bay['width']
+    d = ((b[0] - a[0]) / W, (b[1] - a[1]) / W); n = (-d[1], d[0])
+    ends = {'a': None, 'b': None}
+    seal = {'a': 'guide', 'b': 'guide'}
+    for oid, poly in _sh_obs[bay['floor']]:
+        P = [((p[0] - a[0]) * d[0] + (p[1] - a[1]) * d[1], (p[0] - a[0]) * n[0] + (p[1] - a[1]) * n[1]) for p in poly]
+        r = _sh_clip(P, SH_PLANE[0], SH_PLANE[1])
+        if not r or r[1] <= 1e-6 or r[0] >= W - 1e-6: continue
+        if r[0] < 0.1 and r[1] < W / 2:
+            if ends['a'] is None or r[1] > ends['a']: ends['a'], seal['a'] = r[1], oid
+        elif r[1] > W - 0.1 and r[0] > W / 2:
+            if ends['b'] is None or r[0] < ends['b']: ends['b'], seal['b'] = r[0], oid
+        else:
+            raise SystemExit('shutter %s: %s crosses the curtain plane mid-bay (%.2f..%.2f)' % (bay['id'], oid, r[0], r[1]))
+    u0 = ends['a'] - SH_SEAL if ends['a'] is not None else SH_FREE
+    u1 = ends['b'] + SH_SEAL if ends['b'] is not None else W - SH_FREE
+    vy = bay['vision_y1']
+    sm = (SH_PLANE[0] + SH_PLANE[1]) / 2
+    pa = (a[0] + d[0] * u0 + n[0] * sm, a[1] + d[1] * u0 + n[1] * sm); pb = (a[0] + d[0] * u1 + n[0] * sm, a[1] + d[1] * u1 + n[1] * sm)
+    nslat = int(math.ceil((vy - SH_SLAT) / (SH_SLAT - SH_OVERLAP) - 1e-9)) + 1
+    covers = [l['type'] for l in bay['lites']] or ['portal']
+    shutters.append({
+        'id': bay['id'], 'bay': bay['id'], 'floor': bay['floor'], 'face': bay['face'], 'room': bay['room'], 'site': SITE_OF_ROOM.get(bay['room']),
+        'double_height': bay['double_height'], 'covers': covers, 'entry': any(l.get('opening') for l in bay['lites']) or bool(bay.get('opening')),
+        'u0': round(u0, 3), 'u1': round(u1, 3), 'width': round(u1 - u0, 3), 'a': [round(pa[0], 3), round(pa[1], 3)], 'b': [round(pb[0], 3), round(pb[1], 3)],
+        'plane': list(SH_PLANE), 'seal': seal, 'guides': [k for k in ('a', 'b') if seal[k] == 'guide'],
+        'y_closed': [0.0, vy], 'y_open': vy, 'travel_m': vy, 'travel_s': SH_TRAVEL_S, 'slats': nslat,
+        'housing': {'y0': vy, 'y1': round(vy + SH_HOUSING[2], 3), 's0': SH_HOUSING[0], 's1': SH_HOUSING[1], 'where': 'plenum above the ceiling'},
+        'default': 'open', 'node': 'SHUTTER_' + bay['id'], 'collider': 'COL_SHUTTER_' + bay['id'],
+    })
+
 # ---------------------------------------------------------------- surface types and node naming
 surface_types = {
     'hard': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'indestructible: core, columns, shear/stone walls, slabs, spandrels'},
@@ -1210,6 +1299,7 @@ surface_types = {
     'pilaster': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'hard jamb (none since the junction rule: corners are hard for 1.0 m)'},
     'glass_floor': {'destructible': False, 'reinforceable': False, 'node_prefix': 'GLASS_TF_', 'desc': 'walkable tempered glass floor (unbreakable)'},
     'holo': {'destructible': True, 'reinforceable': False, 'node_prefix': 'HOLO_', 'desc': 'hologram volume: blocks vision, not bullets; its emitter ring is destructible'},
+    'shutter': {'destructible': False, 'reinforceable': False, 'node_prefix': 'SHUTTER_', 'desc': 'armoured blast shutter inside a facade bay (open by default): closed it blocks vision and bullets over the whole bay; collider COL_SHUTTER_<id> only when closed'},
     'zone_ext': {'destructible': False, 'reinforceable': False, 'node_prefix': 'ZONE_EXT_', 'desc': 'exterior defender reveal zone (trigger volume, no geometry)'},
 }
 
@@ -1233,6 +1323,10 @@ layout = {
                       'rule': 'every breakable wall is reinforceable; corners and T-junctions are hard for junction_hard m on each arm; runs under min_run are hard',
                       'placement': 'units sit on the clear defender face, centred in each run of reinforce.clear, with >= trim of hard jamb at each end'},
         'thickness': THICK, 'core_thickness': {'outer': 0.6, 'inner': 0.3},
+        'shutters': {'plane': list(SH_PLANE), 'guide': SH_GUIDE, 'guide_s': list(SH_GUIDE_S), 'housing': list(SH_HOUSING), 'slat': SH_SLAT,
+                     'overlap': SH_OVERLAP, 'rail': SH_RAIL, 'travel_s': SH_TRAVEL_S, 'seal': SH_SEAL, 'free_end': SH_FREE, 'default': 'open',
+                     'rule': 'every facade bay with glass (entry windows, facade doors, the skybridge portal) has one; inside the glass, housing in the plenum; closed = whole vision height, sealed at both ends; indestructible',
+                     'barricade_clear': round(SH_GUIDE_S[0] - 0.1, 3)},
         'curtain_wall': {'bay': 3.0, 'lites_per_bay': 2, 'chamfer_bay': round(seg_len((21, -26), (26, -21)) / 2, 3),
                          'vision': [0.0, CEIL], 'spandrel': [CEIL, FTF]},
     },
@@ -1246,6 +1340,7 @@ layout = {
     'rooms': rooms,
     'walls': walls,
     'pilasters': pilasters,
+    'shutters': shutters,
     'facade': {'faces': [{'name': f[0], 'a': list(f[1]), 'b': list(f[2]), 'bays': f[3]} for f in FACES], 'bays': bays},
     'hatches': hatch_list,
     'floor_patches': patch_list,
@@ -1277,4 +1372,4 @@ def rnd(o):
 
 with open(OUT, 'w') as fh:
     json.dump(rnd(layout), fh, indent=1)
-print('wrote', OUT, '%d rooms, %d walls, %d bays' % (len(rooms), len(walls), len(bays)))
+print('wrote', OUT, '%d rooms, %d walls, %d bays, %d shutters' % (len(rooms), len(walls), len(bays), len(shutters)))

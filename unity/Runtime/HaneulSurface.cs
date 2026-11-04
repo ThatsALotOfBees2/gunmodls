@@ -1,4 +1,5 @@
-// One typed node of the Haneul Tower map (maps/haneul-tower): its surface type and gameplay flags. HaneulTowerMap.Setup
+// One typed node of the Haneul Tower map (maps/haneul-tower): its surface type and gameplay flags (and, on a blast
+// shutter, its state). HaneulTowerMap.Setup
 // adds it to every node whose name carries a known prefix; the enums HaneulSurfaceType and FortificationSize live in
 // HaneulTowerMap.cs. Unity 2021 LTS to Unity 6.
 using UnityEngine;
@@ -23,5 +24,13 @@ public class HaneulSurface : MonoBehaviour
     public string defenderRoom = "";     // REINF_: the room the unit faces; HATCH_: the side it is reinforced from
     public bool mountedFromBelow;        // HATCH_: the unit hangs face-down under the slab
     public bool reinforced;              // set by gameplay code
+    // SHUTTER_ only (HaneulTowerMap.SetShutter / SetShutters drive these; defenderRoom and site hold the shutter's room and site)
+    public bool shutterClosed;           // the state it is in or travelling to
+    public float shutterT;               // 0 open .. 1 closed (the "closed" blend shape weight / 100, before easing)
+    public float shutterTravel = 2f;     // s for the full travel (layout travel_s)
+    public float shutterHeight;          // m of travel (the bay's vision height)
+    public SkinnedMeshRenderer shutterRenderer;
+    public int shutterBlendShape = -1;
+    public Collider shutterCollider;     // COL_SHUTTER_<bayId>, enabled only while closed
 }
 

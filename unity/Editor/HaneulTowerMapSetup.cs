@@ -1,7 +1,7 @@
 // Tools > Gunmodls > Set Up Haneul Tower Map: select the imported maps/haneul-tower/unity/haneul-tower.glb (or an
 // instance of it in a scene) and run it. It adds HaneulTowerMap to the root, assigns layout.json (searched by name
 // next to the .glb and in the project), runs Setup in the editor (typed components, mesh and box colliders, layers),
-// sets static flags by surface type (destructibles and glass are never occluders), and saves HaneulTowerMap.prefab next to the .glb. The saved prefab has setupOnAwake off,
+// sets static flags by surface type (destructibles and glass are never occluders; the moving blast shutters get none), and saves HaneulTowerMap.prefab next to the .glb. The saved prefab has setupOnAwake off,
 // so at runtime only the registry is rebuilt. Keep this file in an Editor folder. Unity 2021 LTS to Unity 6.
 using System.IO;
 using UnityEditor;
@@ -58,9 +58,17 @@ public static class HaneulTowerMapSetup
         // - glass, rails, holograms: occludee only (see-through: never occluders, never batched)
         // - destructible soft walls, units, hatches, floor/ceiling patches: no static flags, so their meshes stay
         //   their own (holes can be cut at runtime) and nothing stays culled behind a wall after it is blown open
+        // - blast shutters (SHUTTER_) move: never static (no batching, no occluder, no occludee bake), and their
+        //   closed-state boxes (COL_SHUTTER_) stay disabled until a shutter closes
         // Lightmap static is left to the project (the backdrop is kilometres wide and lit by emissive maps)
         foreach (var s in root.GetComponentsInChildren<HaneulSurface>(true))
         {
+            if (s.type == HaneulSurfaceType.Shutter)
+            {
+                foreach (var r in s.GetComponentsInChildren<Renderer>(true)) GameObjectUtility.SetStaticEditorFlags(r.gameObject, 0);
+                GameObjectUtility.SetStaticEditorFlags(s.gameObject, 0);
+                continue;
+            }
             var flags = StaticFlagsFor(s);
             if (flags == 0 && s.type != HaneulSurfaceType.Backdrop) continue;   // the backdrop is cleared explicitly
             foreach (var r in s.GetComponentsInChildren<MeshRenderer>(true))
@@ -81,7 +89,7 @@ public static class HaneulTowerMapSetup
                 return solid;
             case HaneulSurfaceType.Deco: case HaneulSurfaceType.Env:
                 return StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccludeeStatic;
-            case HaneulSurfaceType.Backdrop:
+            case HaneulSurfaceType.Backdrop: case HaneulSurfaceType.Shutter:
                 return 0;
             case HaneulSurfaceType.FacadeGlassBreakable: case HaneulSurfaceType.FacadeGlassTempered: case HaneulSurfaceType.InteriorGlass:
             case HaneulSurfaceType.GlassFloor: case HaneulSurfaceType.Rail: case HaneulSurfaceType.Hologram:

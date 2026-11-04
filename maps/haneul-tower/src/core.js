@@ -544,6 +544,15 @@ const GEN = {
     const cs = n / 8;
     return { alpha: true, map: img(n, n, (i, j, o) => { const dx = (i % cs) - cs / 2 + 0.5, dy = (j % cs) - cs / 2 + 0.5, d = Math.hypot(dx, dy) / cs; if (d < 0.34) { o[0] = o[1] = o[2] = 10; o[3] = 240; } else { o[0] = 26; o[1] = 30; o[2] = 42; o[3] = 88; } }) };
   },
+  slat(n = 256) {   // blast shutter slat: one slat per v repeat (v is set per slat), brushed dark plate with a pressed centre rib and rolled edges
+    const N = noise(n, 2, 160, 201, 3), N2 = noise(n, 6, 6, 202, 3), H = new Float32Array(n * n);
+    const prof = (v) => (v < 0.07 ? v / 0.07 * 0.5 : v > 0.93 ? (1 - v) / 0.07 * 0.5 : 0.5) + (Math.abs(v - 0.5) < 0.09 ? 0.35 * Math.cos(((v - 0.5) / 0.09) * Math.PI / 2) : 0);
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const k = j * n + i; H[k] = prof(j / n) + N[k] * 0.06; }
+    return {
+      map: img(n, n, (i, j, o, k) => { const v = j / n, seam = v < 0.03 || v > 0.97; grey(o, seam ? 0.1 : 0.55 + 0.1 * (N[k] - 0.5) + 0.07 * (N2[k] - 0.5)); }),
+      normal: nmap(H, n, 3.0), orm: ormMap(n, (k) => 0.4 + 0.12 * (N[k] - 0.5) + 0.1 * (N2[k] - 0.5), () => 0.9),
+    };
+  },
   louvre(n = 256) {   // horizontal louvre slats every 10 cm (1.2 m tile)
     const sp = n / 12, N = noise(n, 4, 64, 171, 2), H = new Float32Array(n * n);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) { const f = (j % sp) / sp; H[j * n + i] = f < 0.12 ? 0 : 1 - f * 0.6; }
@@ -651,6 +660,7 @@ function buildMaterials() {
   mat('bronze', S('brushed', 'brushed'), { color: '#6e4c33', tile: 0.8, ns: 0.5 });
   mat('lift_steel', S('brushed', 'brushed'), { color: '#c3c6cc', tile: 0.8, ns: 0.4 });
   mat('louvre', S('louvre', 'louvre'), { color: '#4a4e56', tile: 1.2, env: 'out' });
+  mat('shutter_armour', S('slat', 'slat'), { color: '#8c919b', tile: [1.5, 1], ns: 0.9, env: 'in', envI: 1.1 });   // blast shutter slats (v = one slat)
   // soft walls: hanji paper panels on dark battens with a warm backlight
   mat('hanji', S('hanji', 'hanji'), { tile: 1.2, emissive: '#ffffff', ei: 0.14, ns: 0.8 });
   mat('hanji_spa', S('hanji_spa', 'hanji_spa'), { tile: 1.2, emissive: '#ffffff', ei: 0.14, ns: 0.8 });
@@ -1415,6 +1425,73 @@ function buildFacade() {
     });
   }
 }
+/* ------------------------------------------------------------------ blast shutters (user: every outer room; open by default) */
+// One SHUTTER_<bayId> node per facade bay with glass (layout.json shutters[], made by tools/build_layout.py): an armoured
+// slat curtain inside the glass (plane s = rules.shutters.plane behind the mullions, door frames and barricade slots)
+// that retracts into a housing in the plenum above the ceiling. The node's mesh is the OPEN state; one morph target,
+// 'closed', drops every slat and the bottom rail to its closed place (pure vertical translations, so the linear blend is
+// exact at every weight and the curtain never opens a gap mid-travel: slat spacing shrinks, the overlap only grows).
+// Static parts (guide channels on the mullion lines, the housing) are HARD_shutters_<F>. Closed-state collider:
+// COL_SHUTTER_<id> (box), to be enabled only while the shutter is closed. Node frame: origin at the closed curtain's
+// bottom centre, +X along the bay, +Y up, +Z into the building.
+const SHUTTERS = [];
+function buildShutters() {
+  const R = RU.shutters; if (!R || !L.shutters) return;
+  const BAYS = new Map(L.facade.bays.map((b) => [b.id, b]));
+  const [P0, P1] = R.plane, [G0, G1] = R.guide_s, [H0, H1, HH] = R.housing, sm = (P0 + P1) / 2, pitch = R.slat - R.overlap, INSET = 0.004;
+  const HOUSE = {};
+  const house = (f) => HOUSE[f] || (HOUSE[f] = node('HARD_shutters_' + f, 'hard', f, { fk: f, layer: 'facade', group: 'FACADE', id: 'shutters_' + f, extras: { role: 'blast shutter guide channels (mullion lines, floor to slab) and housings (plenum, above the ceiling); hard, static' } }));
+  for (const sh of L.shutters) {
+    const bay = BAYS.get(sh.bay); if (!bay) { STATS.warnings.push('shutter without bay ' + sh.id); continue; }
+    const f = sh.floor, W = bay.width, d2 = P2.norm(P2.sub(bay.b, bay.a)), n2 = [-d2[1], d2[0]];
+    const F = { a: bay.a, len: W, d: [d2[0], 0, d2[1]], n: [n2[0], 0, n2[1]], y: FY(f), t: 0.3 };
+    const vy = sh.y_open, u0 = sh.u0, u1 = sh.u1, um = (u0 + u1) / 2, top = vy + HH;
+    // static: housing (no bottom face: the ceiling closes it and the curtain passes there) and guide channels with a
+    // small purple status lamp on the room face
+    const hs = house(f), hg = hs.gb('steel_dark');
+    const hu0 = sh.guides.includes('a') ? 0 : u0, hu1 = sh.guides.includes('b') ? W : u1;
+    wbox(hg, F, hu0, hu1, vy, top, H0, H1, '-y');
+    for (const k of sh.guides) {
+      const g0 = k === 'a' ? 0 : W - R.guide, g1 = g0 + R.guide;
+      wbox(hg, F, g0, g1, 0, top, G0, G1, '-y +y');
+      wbox(hs.gb('alloy'), F, g0 + 0.008, g1 - 0.008, 0.004, vy - 0.004, G1, G1 + 0.006, '-y +y');   // brushed face strip
+      if (k === 'a') wbox(hs.gb('glow_purple'), F, g0 - 0.011, g0 + 0.011, 2.19, 2.212, G1 + 0.006, G1 + 0.009);   // one status dot per mullion line, on its centre
+    }
+    // moving curtain, built CLOSED, then shifted into its open place (the base mesh); e.morph keeps the closed positions
+    const frame = frameZ(wp(F, um, 0, sm), n2);
+    const e = node('SHUTTER_' + sh.id, 'shutter', f, {
+      fk: f, layer: 'shutter', group: 'FACADE', id: sh.id, frame,
+      extras: {
+        bay: sh.bay, face: sh.face, room: sh.room, site: sh.site || undefined, width: sh.width, double_height: sh.double_height, covers: sh.covers,
+        y_closed: sh.y_closed, y_open: sh.y_open, travel_m: sh.travel_m, travel_s: sh.travel_s, slats: sh.slats, default: 'open', state: 'open',
+        morph_target: 'closed (weight 1 = closed, 0 = open)', collider: sh.collider, clips: 'shutters_close, shutters_open',
+        blocks: 'vision and bullets over the whole bay when closed', destructible: false, frame: 'origin = closed curtain bottom centre; +X along the bay, +Y up, +Z into the building',
+      },
+    });
+    const moves = {};
+    const add = (mk, dy, fn, vSlat = null) => {
+      const g = e.gb(mk), v0 = g.nv; fn(g);
+      if (vSlat != null) for (let i = v0; i < g.nv; i++) g.u[i * 2 + 1] = (g.p[i * 3 + 1] - F.y - vSlat) / R.slat;
+      (moves[mk] || (moves[mk] = [])).push([v0, g.nv, dy]);
+    };
+    const openY0 = vy + R.rail + 0.012;   // every slat's bottom when open (stacked in the housing)
+    for (let k = 0; k < sh.slats; k++) {
+      const y0 = R.rail - 0.02 + k * pitch, ins = k % 2 ? INSET : 0;
+      add('shutter_armour', openY0 - y0, (g) => wbox(g, F, u0, u1, y0, y0 + R.slat, P0 + ins, P1 - ins, '-x +x'), y0);
+    }
+    add('steel_dark', vy + 0.004, (g) => wbox(g, F, u0, u1, 0.002, R.rail, P0 - 0.012, P1 + 0.012, '-x +x'));   // bottom rail (floor seal)
+    add('glow_purple', vy + 0.004, (g) => wbox(g, F, u0 + 0.12, u1 - 0.12, 0.045, 0.058, P1 + 0.012, P1 + 0.015));   // thin LED line, room side
+    e.morph = {};
+    for (const [mk, list] of Object.entries(moves)) {
+      const g = e.parts[mk]; e.morph[mk] = g.p.slice();
+      for (const [v0, v1, dy] of list) for (let i = v0; i < v1; i++) g.p[i * 3 + 1] += dy;
+    }
+    const col = colBox('COL_SHUTTER_' + sh.id, wp(F, um, vy / 2, sm), [u1 - u0, vy, P1 - P0], yawOf(n2), {
+      extras: { surface: 'shutter_collider', id: sh.id, floor: f, shutter: 'SHUTTER_' + sh.id, active: 'only while the shutter is closed (disabled by default: shutters start open)' },
+    });
+    SHUTTERS.push({ e, sh, F, col });
+  }
+}
 function glassLite(e, F, u0, u1, y0, y1, tempered, GS, entry = false) {
   if (u1 - u0 < 0.02 || y1 - y0 < 0.02) return;
   if (tempered) {
@@ -2160,6 +2237,7 @@ const OVERLAY = {
   prop_hard: { color: '#6c717b', label: 'Prop, hard' },
   prop_soft: { color: '#8c6d3f', label: 'Prop, destructible' },
   holo: { color: '#b48cff', label: 'Hologram (blocks vision, not bullets)', opacity: 0.3 },
+  shutter: { color: '#c2185b', label: 'Blast shutter (open by default; closed it blocks sight and bullets)', opacity: 0.85 },
   deco: { color: '#2c2f37', label: 'Decoration' },
   env: { color: '#1a1c22', label: 'Backdrop' },
 };
@@ -2169,10 +2247,11 @@ const SURFACE_TO_OV = { pilaster: 'hard', spandrel: 'hard', portal: 'hard', stai
 
 function buildDisplay() {
   const view = new THREE.Group(); view.name = 'haneul_tower_view';
-  const buckets = new Map(), ov = new Map(), own = [];
+  const buckets = new Map(), ov = new Map(), own = [], shut = [];
   const isT = (mk) => M[mk] && M[mk].transparent;
   for (const e of REG) {
     if (!e.display) continue;
+    if (e.morph) { shut.push(e); continue; }
     if (e.own) { own.push(e); continue; }
     for (const [mk, g] of Object.entries(e.parts)) {
       if (!g.i.length) continue;
@@ -2205,11 +2284,35 @@ function buildDisplay() {
     if (e.frame) { e.frame.decompose(grp.position, grp.quaternion, grp.scale); }
     view.add(grp); meshes.push(grp);
   }
+  // blast shutters: one merged mesh per floor and material, with the 'closed' morph target (the viewer drives one weight)
+  const shutterMeshes = [], morphMesh = (list, mat, ud, withUV) => {
+    const g = new GB(1), cl = [];
+    for (const [e, mk] of list) { g.append(e.parts[mk]); for (const v of e.morph[mk]) cl.push(v); }
+    const geo = g.toGeo(); if (!withUV) geo.deleteAttribute('uv');
+    const ma = new THREE.Float32BufferAttribute(cl, 3); ma.name = 'closed'; geo.morphAttributes.position = [ma];
+    const m = new THREE.Mesh(geo, mat); m.updateMorphTargets(); m.morphTargetInfluences[0] = 0; m.userData = ud; m.matrixAutoUpdate = false; m.updateMatrix();
+    shutterMeshes.push(m); return m;
+  };
+  {
+    const byKey = new Map(), byFk = new Map();
+    for (const e of shut) for (const mk of Object.keys(e.parts)) {
+      if (!e.parts[mk].i.length) continue;
+      const k = e.fk + '|' + mk; if (!byKey.has(k)) byKey.set(k, { fk: e.fk, mk, list: [] }); byKey.get(k).list.push([e, mk]);
+      if (!byFk.has(e.fk)) byFk.set(e.fk, []); byFk.get(e.fk).push([e, mk]);
+    }
+    for (const b of byKey.values()) { const m = morphMesh(b.list, M[b.mk], { fk: b.fk, layer: 'shutter', mk: b.mk, kind: 'display', shutter: true }, true); m.name = `${b.fk}_shutter_${b.mk}`; view.add(m); meshes.push(m); tris += m.geometry.index.count / 3; }
+    D_SHUT.byFk = byFk;
+  }
+  // closed-state walk blocker (viewer only, never drawn): one box per shutter
+  const shutCol = new GB(1);
+  for (const x of SHUTTERS) wbox(shutCol, x.F, x.sh.u0, x.sh.u1, 0, x.sh.y_open, RU.shutters.plane[0], RU.shutters.plane[1]);
+  const shutterCollider = new THREE.Mesh(shutCol.toGeo(), new THREE.MeshBasicMaterial()); shutterCollider.visible = false; shutterCollider.userData = { layer: 'shutter', kind: 'collider' };
   // overlay meshes (unlit tints) and outlines
   const ovMats = {};
   const matcap = (() => { const c = cv(128, 128), x = c.getContext('2d'), g = x.createRadialGradient(48, 40, 8, 64, 64, 64); g.addColorStop(0, '#ffffff'); g.addColorStop(0.6, '#e2e2e2'); g.addColorStop(1, '#a8a8a8'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
   for (const [k, v] of Object.entries(OVERLAY)) { ovMats[k] = new THREE.MeshMatcapMaterial({ color: v.color, matcap, transparent: v.opacity != null, opacity: v.opacity ?? 1, depthWrite: v.opacity == null, side: THREE.DoubleSide }); ovMats[k].toneMapped = false; }
   const overlay = new THREE.Group(); overlay.name = 'overlay'; overlay.visible = false;
+  for (const [fk, list] of D_SHUT.byFk) { const m = morphMesh(list, ovMats.shutter, { fk, layer: 'main', ok: 'shutter', kind: 'overlay', shutter: true }, false); m.renderOrder = 2; overlay.add(m); }
   for (const b of ov.values()) {
     const g = b.g.toGeo(); g.deleteAttribute('uv');
     const m = new THREE.Mesh(g, ovMats[b.ok]); m.userData = { fk: b.fk, layer: b.layer, ok: b.ok, kind: 'overlay' }; m.matrixAutoUpdate = false; m.updateMatrix();
@@ -2244,8 +2347,9 @@ function buildDisplay() {
   // markers (viewer only): spawns, objectives, cover, routes, sightlines
   const markers = buildMarkerMeshes();
   for (const o of VIEWONLY) view.add(o);
-  return { view, meshes, overlay, markers, tris, ovMats };
+  return { view, meshes, overlay, markers, tris, ovMats, shutterMeshes, shutterCollider };
 }
+const D_SHUT = {};
 function buildMarkerMeshes() {
   const grp = new THREE.Group(); grp.name = 'markers'; grp.visible = false;
   const mk = (c, o = 0.85) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthTest: true });
@@ -2285,7 +2389,8 @@ const NAMING = {
   BRIDGE_: 'skybridge, truss, catwalks, gantry, hoist ramp, landings; BRIDGE_CR_cradle is the moving cradle (clip cradle_cycle)', TERRACE: 'sky terrace deck',
   SPAWN_ATK_: 'empty: attacker spawn point', SPAWN_DEF_: 'empty: defender spawn point', OBJ_: 'empty: objective', COVER_: 'empty: deployable cover spot (+Z faces the yaw)', CALLOUT_: 'empty: callout anchor (extras.name; never render it in the world)',
   PROP_: 'empty: layout prop marker PROP_<propId> (extras: pos, size, box, h, cover, type, breaks_sightline, built_in). built_in markers point at their HARD_/SOFT_ node; the rest are furniture slots for the separate furniture pack (no mesh, no collider here)',
-  COL_: 'empty: box collider (position, rotation, scale = size; BoxCollider size 1)',
+  SHUTTER_: 'blast shutter SHUTTER_<bayId> inside every facade bay with glass: one mesh, base = OPEN (stacked in the plenum housing), one morph target "closed"; clips shutters_close / shutters_open; node origin = closed curtain bottom centre, +Z into the building; not static (it moves)',
+  COL_: 'empty: box collider (position, rotation, scale = size; BoxCollider size 1). COL_SHUTTER_<bayId> is the closed-state box of a shutter: enable it only while that shutter is closed',
   DECO_: 'decoration merged per floor, kind and material (no gameplay meaning, no collider)', ENV_: 'scenery bodies of the tower and the gameplay neighbours below and above the map (no collider)',
   BACKDROP_: 'BACKDROP_city: the whole city skyline as ONE mesh with ONE baked material (always drawn as one draw call: no culling tiles, no collider, no shadows, never an occluder); BACKDROP_sky: the sky dome with the cloud deck baked in',
 };
@@ -2568,7 +2673,7 @@ function exportScene(opts = {}) {
     return mesh;
   };
   // typed nodes
-  const decoMerge = new Map();
+  const decoMerge = new Map(), shutterNodes = [];
   for (const e of REG) {
     if (!e.export) continue;
     if (e.layer === 'skyline' && opts.skyline === false) continue;
@@ -2585,6 +2690,17 @@ function exportScene(opts = {}) {
       if (!decoMerge.has(key)) decoMerge.set(key, { fk: e.fk, parts: {}, env: e.env, extras: e.extras, layer: e.layer });
       const dm = decoMerge.get(key);
       for (const [mk, g] of Object.entries(e.parts)) { if (!dm.parts[mk]) dm.parts[mk] = new GB(1); dm.parts[mk].append(g); }
+      continue;
+    }
+    if (e.morph) {
+      // blast shutter: base = open, one morph target 'closed' (absolute positions; the exporter writes the deltas)
+      const keys = Object.keys(e.parts).filter((k) => e.parts[k].i.length), inv = e.frame.clone().invert(), all = new GB(1), cl = [], gr = [];
+      for (const k of keys) { const st = all.i.length; all.append(e.parts[k]); for (const v of e.morph[k]) cl.push(v); gr.push({ start: st, count: e.parts[k].i.length }); }
+      const geo = all.toGeo(inv), ma = new THREE.Float32BufferAttribute(cl, 3); ma.applyMatrix4(inv); ma.name = 'closed';
+      geo.morphAttributes.position = [ma]; gr.forEach((g, i) => geo.addGroup(g.start, g.count, i));
+      const m = new THREE.Mesh(geo, keys.map((k) => M[k])); m.name = e.name; m.updateMorphTargets(); m.morphTargetInfluences[0] = 0;
+      e.frame.decompose(m.position, m.quaternion, m.scale);
+      m.userData = JSON.parse(JSON.stringify(e.extras)); grp(sub(topOf(e.fk, e.layer), e.group)).add(m); shutterNodes.push(m);
       continue;
     }
     const m = meshOf(e.name, e.parts, e.frame); if (!m) continue;
@@ -2618,6 +2734,12 @@ function exportScene(opts = {}) {
     const times = [0, 4, 4 + T, 8 + T, 8 + 2 * T], ys = [s[0], s[0], s[1], s[1], s[0]];
     animations.push(new THREE.AnimationClip('cradle_cycle', times[4], [new THREE.VectorKeyframeTrack(CRADLE.node.name + '.position', times, ys.flatMap((y) => [p.x, y, p.z]))]));
   }
+  if (shutterNodes.length) {
+    // one shared pair of clips for all shutters: eased travel over rules.shutters.travel_s (weight 0 = open, 1 = closed)
+    const T = RU.shutters.travel_s, ts = Array.from({ length: 9 }, (_, i) => r3((T * i) / 8)), ws = ts.map((t) => { const u = t / T; return r3(u * u * (3 - 2 * u)); });
+    animations.push(new THREE.AnimationClip('shutters_close', T, shutterNodes.map((m) => new THREE.NumberKeyframeTrack(m.name + '.morphTargetInfluences', ts, ws))));
+    animations.push(new THREE.AnimationClip('shutters_open', T, shutterNodes.map((m) => new THREE.NumberKeyframeTrack(m.name + '.morphTargetInfluences', ts, ws.map((w) => r3(1 - w))))));
+  }
   return { scene, animations };
 }
 
@@ -2632,7 +2754,7 @@ function buildMap(opts = {}) {
   t = tick('walls', t);
   buildColumns(); buildLiftBanks(); t = tick('columns', t);
   buildStairs(); buildLadders(); buildWalkways(); t = tick('circulation', t);
-  buildFacade(); t = tick('facade', t);
+  buildFacade(); buildShutters(); t = tick('facade', t);
   buildLedges(); buildTerrace(); buildBridges(); buildNeighbours(); buildTowerBands(); t = tick('exterior', t);
   buildProps(); buildSetPieces(); buildMarkers(); t = tick('props_markers', t);
   buildFallbackBackdrop(); t = tick('backdrop', t);
@@ -2647,7 +2769,8 @@ function buildMap(opts = {}) {
   const count = (pre) => REG.filter((e) => e.name.startsWith(pre)).length + EMPT.filter((e) => e.name.startsWith(pre)).length;
   Object.assign(STATS, {
     timings: T, partTimings: K.timings, displayTris: D.tris, displayMeshes: D.meshes.length, nodes: REG.filter((e) => e.export && !e.deco && !e.env).length, empties: EMPT.length,
-    counts: Object.fromEntries(['HARD_', 'SOFT_', 'REINF_', 'GLASSI_', 'RAIL_', 'HATCH_', 'SOFTFLOOR_', 'SOFTCEIL_', 'BARR_D_', 'BARR_W_', 'OPEN_', 'GLASS_T_', 'GLASS_B_', 'GLASS_TF_', 'HOLO_', 'ZONE_EXT_', 'STAIR_', 'LADDER_', 'WALK_', 'LEDGE_', 'BRIDGE_', 'TERRACE', 'SPAWN_ATK_', 'SPAWN_DEF_', 'OBJ_', 'COVER_', 'CALLOUT_', 'COL_', 'DECO_', 'ENV_'].map((p) => [p, count(p)])),
+    counts: Object.fromEntries(['HARD_', 'SOFT_', 'REINF_', 'GLASSI_', 'RAIL_', 'HATCH_', 'SOFTFLOOR_', 'SOFTCEIL_', 'BARR_D_', 'BARR_W_', 'OPEN_', 'GLASS_T_', 'GLASS_B_', 'GLASS_TF_', 'SHUTTER_', 'COL_SHUTTER_', 'HOLO_', 'ZONE_EXT_', 'STAIR_', 'LADDER_', 'WALK_', 'LEDGE_', 'BRIDGE_', 'TERRACE', 'SPAWN_ATK_', 'SPAWN_DEF_', 'OBJ_', 'COVER_', 'CALLOUT_', 'COL_', 'DECO_', 'ENV_'].map((p) => [p, count(p)])),
   });
-  return { K, D, STATS, LABELS, LIGHTS, TICKS, CRADLE, HOLO, FALLBACK_RAIN, exportScene, REG, EMPT, M, TX, OVERLAY };
+  STATS.shutters = { total: SHUTTERS.length, perFloor: Object.fromEntries(FIDS.map((f) => [f, SHUTTERS.filter((x) => x.sh.floor === f).length])), tris: SHUTTERS.reduce((s, x) => s + Object.values(x.e.parts).reduce((t, g) => t + g.tris, 0), 0) };
+  return { K, D, STATS, LABELS, LIGHTS, TICKS, CRADLE, HOLO, FALLBACK_RAIN, SHUTTERS, exportScene, REG, EMPT, M, TX, OVERLAY };
 }

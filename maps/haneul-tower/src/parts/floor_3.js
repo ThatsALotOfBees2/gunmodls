@@ -164,13 +164,19 @@ PARTS.floor_3 = function (K) {
   // a face of a layout wall: side +1 is the +n side (side_pos room), -1 the other
   function face(id, side) {
     const w = K.wall(id); if (!w) { K.warn('missing wall ' + id); return null; }
-    const F = K.wallFrame(w); return { w, F, side, s: (side * F.t) / 2, room: side > 0 ? w.side_pos : w.side_neg };
+    const F = K.wallFrame(w), fa = K.outlineDist(w.a) < 0.05, fb = K.outlineDist(w.b) < 0.05;
+    // uLo/uHi: dressing on a face stays 0.46 m clear of a wall end on the glass (blast shutter curtain and housing)
+    return { w, F, side, s: (side * F.t) / 2, room: side > 0 ? w.side_pos : w.side_neg, uLo: fa ? SHUT_CLEAR : -1e9, uHi: fb ? F.len - SHUT_CLEAR : 1e9 };
   }
+  const SHUT_CLEAR = 0.46, FAC_INSET = 0.64;
+  // plan limit of the shutter zone: a run along one axis at cross coordinate c stays 0.46 m inside the glass
+  const inPlate = (c) => { const lim = Math.min(26 - SHUT_CLEAR, 47 - SHUT_CLEAR * Math.SQRT2 - Math.abs(c)); return [-lim, lim]; };
   // u ranges of the openings on a wall, padded
   const holesOf = (w, pad = 0.05) => (w.openings || []).map((o) => [o.u0 - pad, o.u1 + pad]);
   const hitsHole = (fc, u0, u1) => holesOf(fc.w).some(([a, b]) => u0 < b && u1 > a);
   // box on a wall face: u along the wall, y relative to the floor, d0..d1 out from the face
   function fbox(g, mk, fc, u0, u1, y0, y1, d0, d1, skip = '') {
+    if (fc.uLo != null) { u0 = Math.max(u0, fc.uLo); u1 = Math.min(u1, fc.uHi); if (u1 - u0 < 0.02) return; }
     const s0 = fc.s + fc.side * d0, s1 = fc.s + fc.side * d1;
     K.wbox(g(mk), fc.F, u0, u1, y0, y1, Math.min(s0, s1), Math.max(s0, s1), skip);
   }
@@ -182,6 +188,7 @@ PARTS.floor_3 = function (K) {
   // changsal lattice panelling on a wall face with a glowing hanji back
   function flattice(g, fc, u0, u1, y0, y1, o = {}) {
     if (hitsHole(fc, u0, u1)) { LOG.skipped.push('lattice on ' + fc.w.id + ': opening'); return false; }
+    if (fc.uLo != null) { u0 = Math.max(u0, fc.uLo); u1 = Math.min(u1, fc.uHi); if (u1 - u0 < 0.3) return false; }
     const mk = o.mk || 'wood_dark', back = o.back === undefined ? 'dz_lamp' : o.back, cell = o.cell || 0.22, d = o.d || 0.05, f = 0.06;
     if (back) fbox(g, back, fc, u0 + f, u1 - f, y0 + f, y1 - f, 0.0, 0.012);
     fbox(g, mk, fc, u0, u0 + f, y0, y1, 0, d); fbox(g, mk, fc, u1 - f, u1, y0, y1, 0, d);
@@ -194,6 +201,7 @@ PARTS.floor_3 = function (K) {
   // vertical timber slat panelling (built-in), optional glow reveal behind the slats
   function fslats(g, fc, u0, u1, y0, y1, o = {}) {
     if (hitsHole(fc, u0, u1)) { LOG.skipped.push('slats on ' + fc.w.id + ': opening'); return false; }
+    if (fc.uLo != null) { u0 = Math.max(u0, fc.uLo); u1 = Math.min(u1, fc.uHi); if (u1 - u0 < 0.3) return false; }
     const mk = o.mk || 'wood', pitch = o.pitch || 0.12, sw = o.sw || 0.06;
     fbox(g, o.back || 'dz_wood_black', fc, u0, u1, y0, y1, 0, 0.01);
     if (o.glow) fbox(g, o.glow, fc, u0 + 0.05, u1 - 0.05, y1 - 0.06, y1 - 0.04, 0.01, 0.014);
@@ -232,7 +240,10 @@ PARTS.floor_3 = function (K) {
       const a = P[i], b = P[(i + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], L = Math.hypot(dx, dz);
       if (L < 1.4) continue;
       const d = [dx / L, dz / L], nn = [-d[1] * sg, d[0] * sg];   // inward normal
-      const q0 = [a[0] + d[0] * inset + nn[0] * inset, a[1] + d[1] * inset + nn[1] * inset], q1 = [b[0] - d[0] * inset + nn[0] * inset, b[1] - d[1] * inset + nn[1] * inset];
+      // edges on the glass sit behind the blast shutter zone (curtain and housing to 0.45 m inside the glass)
+      const ins = (k) => { const p = P[(k + n) % n], q = P[(k + 1 + n) % n]; return K.outlineDist([(p[0] + q[0]) / 2, (p[1] + q[1]) / 2]) < 0.05 ? FAC_INSET : inset; };
+      const iA = ins(i - 1), iS = ins(i), iB = ins(i + 1);
+      const q0 = [a[0] + d[0] * iA + nn[0] * iS, a[1] + d[1] * iA + nn[1] * iS], q1 = [b[0] - d[0] * iB + nn[0] * iS, b[1] - d[1] * iB + nn[1] * iS];
       const bx = [Math.min(q0[0], q1[0]) - 0.1, Math.min(q0[1], q1[1]) - 0.1, Math.max(q0[0], q1[0]) + 0.1, Math.max(q0[1], q1[1]) + 0.1];
       if (!freeHigh(bx, 'cove ' + roomId)) continue;
       const m = [(q0[0] + q1[0]) / 2, (q0[1] + q1[1]) / 2], len = Math.hypot(q1[0] - q0[0], q1[1] - q0[1]), D3 = [d[0], 0, d[1]], N3 = [nn[0], 0, nn[1]];
@@ -260,7 +271,8 @@ PARTS.floor_3 = function (K) {
     for (let c = (X ? z0 : x0) + pitch / 2; c < (X ? z1 : x1); c += pitch) {
       const ivs = cuts.filter((k) => (X ? c + 0.05 > k[1] && c - 0.05 < k[3] : c + 0.05 > k[0] && c - 0.05 < k[2])).map((k) => (X ? [k[0], k[2]] : [k[1], k[3]])).sort((p, q) => p[0] - q[0]);
       let a = A0;
-      const run = (u0, u1) => { u0 = Math.max(u0, A0); u1 = Math.min(u1, A1); if (u1 - u0 > 0.2) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
+      const [lo, hi] = inPlate(c);
+      const run = (u0, u1) => { u0 = Math.max(u0, A0, lo + 0.05); u1 = Math.min(u1, A1, hi - 0.05); if (u1 - u0 > 0.2 && Math.abs(c) + 0.05 < 26 - SHUT_CLEAR) { if (X) B(g, mk, u0, u1, CE - depth, CE - 0.005, c - 0.05, c + 0.05, '+y'); else B(g, mk, c - 0.05, c + 0.05, CE - depth, CE - 0.005, u0, u1, '+y'); } };
       for (const [c0, c1] of ivs) { if (c0 > a) run(a, c0); a = Math.max(a, c1); }
       run(a, A1);
     }
@@ -497,22 +509,22 @@ PARTS.floor_3 = function (K) {
     tray('z', -11.8, 8.8, -11.0);         // News Hall
     tray('z', -8.8, 8.8, 11.0);           // Archive Hall
     // Exec Hall: timber ceiling slats across the corridor
-    for (let z = 9.4; z < 25.7; z += 0.3) B(g, 'wood', -11.85, -9.15, 2.96, 3.06, z - 0.03, z + 0.03, '+y');
-    B(g, 'glow_warm', -11.9, -11.85, 2.9, 2.93, 9.2, 25.8);
+    for (let z = 9.4; z < 25.45; z += 0.3) B(g, 'wood', -11.85, -9.15, 2.96, 3.06, z - 0.03, z + 0.03, '+y');
+    B(g, 'glow_warm', -11.9, -11.85, 2.9, 2.93, 9.2, inPlate(-11.875)[1]);   // stops 0.46 m short of the glass (blast shutter zone)
     seams([-11.95, 9.05, -9.05, 25.95], 0.9, 'black');
   }
 
   // ---------------- the Grid: the 99F underside over the studio void (beams, ducts, rig, cable drops) ----------------
   {
     const g = D('grid');
-    const z0At = (x) => Math.max(-25.7, -26 + Math.max(0, x - 21) + 0.35);
+    const z0At = (x) => Math.max(-25.5, -26 + Math.max(0, x - 21) + 0.85);   // 0.45 m clear of the glass (blast shutters)
     // primary steel beams north-south (deep I-sections under the deck)
     for (const x of [11.0, 14.0, 17.0, 20.0, 23.0]) {
       const a = z0At(x), b = -9.35;
       B(g, 'steel_dark', x - 0.15, x + 0.15, 2.78, 2.8, a, b); B(g, 'steel_dark', x - 0.15, x + 0.15, 3.08, 3.1, a, b, '+y'); B(g, 'steel_dark', x - 0.012, x + 0.012, 2.8, 3.08, a, b);
     }
     // secondary purlins east-west
-    for (const z of [-23.0, -19.0, -13.0]) { const xs = z < -21 ? 9.35 : 9.35, xe = z < -21 ? 26 + (z + 21) - 0.4 : 25.65; B(g, 'steel_dark', xs, xe, 2.95, 3.08, z - 0.06, z + 0.06, '+y'); }
+    for (const z of [-23.0, -19.0, -13.0]) { const xs = z < -21 ? 9.35 : 9.35, xe = z < -21 ? 26 + (z + 21) - 0.85 : 25.5; B(g, 'steel_dark', xs, xe, 2.95, 3.08, z - 0.06, z + 0.06, '+y'); }
     // round supply duct east-west along the south edge, and a return duct along the west
     const duct = new T.CylinderGeometry(0.32, 0.32, 1, 14, 1, true);
     { const m = new T.Matrix4().makeRotationZ(PI / 2); const mm = MX(17.4, 2.72, -10.2, 0, 1, 1, 1).multiply(m).multiply(new T.Matrix4().makeScale(1, 15.6, 1)); GE(g, 'alloy', duct, mm); }
@@ -520,12 +532,12 @@ PARTS.floor_3 = function (K) {
     for (const x of [11.5, 15.0, 18.6, 22.2]) { B(g, 'steel_dark', x - 0.22, x + 0.22, 2.32, 2.4, -10.55, -10.45); B(g, 'louvre', x - 0.2, x + 0.2, 2.36, 2.44, -10.5, -10.42); }
     // lighting pipes (2.7 m above the grid floor) with hanging fixtures, all above head height on the catwalks
     const pipeZ = [-24.0, -20.5, -17.8, -12.0];
-    for (const z of pipeZ) { const xe = z < -21 ? 26 + (z + 21) - 0.5 : 25.5; BM(g, 'alloy', [9.4, 2.7, z], [xe, 2.7, z], 0.05); for (let x = 11.0; x < xe; x += 3.0) C(g, 'black', 'black', x, z, 0.008, 2.7, 2.95, 3, false); }
+    for (const z of pipeZ) { const xe = z < -21 ? 26 + (z + 21) - 0.85 : 25.45; BM(g, 'alloy', [9.4, 2.7, z], [xe, 2.7, z], 0.05); for (let x = 11.0; x < xe; x += 3.0) C(g, 'black', 'black', x, z, 0.008, 2.7, 2.95, 3, false); }
     const can = new T.CylinderGeometry(0.12, 0.15, 0.34, 10), lens = new T.CircleGeometry(0.11, 10); lens.rotateX(PI / 2);
     const yoke = new T.BoxGeometry(0.32, 0.04, 0.04);
     let n = 0;
     for (const z of pipeZ) for (let x = 10.4; x < 25.2; x += 1.45) {
-      if (z < -21 && x > 26 + (z + 21) - 0.8) continue;
+      if (z < -21 && x > 26 + (z + 21) - 1.1) continue;
       const tilt = ((n++ % 3) - 1) * 0.35, m = MX(x, 2.48, z).multiply(new T.Matrix4().makeRotationX(tilt));
       GE(g, 'black', can, m); GE(g, n % 4 ? 'glow_cool' : 'glow_pink', lens, m.clone().multiply(new T.Matrix4().makeTranslation(0, -0.175, 0)));
       GE(g, 'steel_dark', yoke, MX(x, 2.67, z));

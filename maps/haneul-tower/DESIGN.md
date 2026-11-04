@@ -384,6 +384,7 @@ node names (§10).
 | `portal` | skybridge portal frame with a barricadable double door | 1 |
 | `glass_floor` | walkable tempered glass floor | 1 (Skybridge, x 39.5…42.5) |
 | `holo` | stage hologram: blocks vision, not bullets; emitter ring destructible | 1 (`set_pieces`) |
+| `shutter` | armoured blast shutter inside a facade bay; open by default, closed it blocks vision and bullets over the whole bay; indestructible | 172 (`shutters`): F1 62, F2 56, F3 54 |
 | `zone_ext` | defender reveal zone, trigger only | 15 |
 
 Per floor:
@@ -486,10 +487,11 @@ rules           {floor_to_floor, ceiling, slab, plenum, door{w,h}, double_door{w
                  facade_entry_window{sill,head},
                  reinforce{height 2.0, header, sizes{xl,large,standard,small}, hatch 1.2, gadget, far_side,
                            budget 8, budget_rule, band 0.26, trim 0.05, pilaster 0.3, placement},
-                 thickness{<type>: m}, core_thickness{outer,inner}, curtain_wall{bay, lites_per_bay, chamfer_bay, vision[], spandrel[]}}
+                 thickness{<type>: m}, core_thickness{outer,inner}, curtain_wall{bay, lites_per_bay, chamfer_bay, vision[], spandrel[]},
+                 shutters{plane[s0,s1], guide, guide_s[], housing[s0,s1,h], slat, overlap, rail, travel_s, seal, free_end, default, rule, barricade_clear}}
 surface_types   {<type>: {destructible, reinforceable, node_prefix, desc}}   types: hard soft reinforceable glass balustrade
                  open hatch soft_floor door_barricadable window_barricadable opening glass_breakable glass_tempered
-                 spandrel portal pilaster glass_floor holo zone_ext
+                 spandrel portal pilaster glass_floor holo zone_ext shutter
 floors[]        {id F1|F2|F3, level '96F', name, y, height, ceiling, slab}
 outline[]       [x,z] curtain-wall line (glass outer face), clockwise
 core            {outline[[x,z]], thickness, type 'hard'}
@@ -532,6 +534,9 @@ exterior        {ledges[] {id, floor, y, width, rail_h, path, closed, breaks?, n
                  neighbours[] {id, name, footprint, top_y, label?, spawn_hall?, features[] {kind, box|center, h?, y0?, y1?, r?, type?, note?}, note},
                  mech_floor, tower_above, weather{rain, lightning}, elevation_f1 403.2,
                  defender_reveal_zones[] {id ZONE_EXT_.., kind, ref, y (or [y0,y1]), polygon | path+closed+width, note?}}
+shutters[]      {id (= bay id), bay, floor, face, room, site, double_height, covers[], entry, u0, u1, width, a, b, plane, seal{a, b},
+                 guides[], y_closed[0, vision_y1], y_open, travel_m, travel_s, slats, housing{y0, y1, s0, s1, where}, default 'open',
+                 node 'SHUTTER_<id>', collider 'COL_SHUTTER_<id>'}
 sites[]         {id S1..S4, name, floor, rooms[2], objectives[] {id S1A.., room, pos[x,y,z]}, hard_anchor}
 spawns          {attackers[] {id A1..A4, name, floor, points[[x,y,z]x5], approach},
                  defenders[] {id D1..D4, site, floor, points[[x,y,z]x5]}}
@@ -559,6 +564,7 @@ node also carries glTF `extras`: `{ "surface": "<type>", "id": "<layout id>", "f
 | `OPEN_` | non-barricadable opening markers |
 | `GLASS_T_` / `GLASS_B_` / `GLASS_TF_` | facade lites `GLASS_T_<bayId>_<k>` / `GLASS_B_<bayId>_<k>`; entry windows are `GLASS_B_` plus a `BARR_W_<bayId>_<k>` slot; the skybridge glass floor `GLASS_TF_skybridge` |
 | `HOLO_` | the stage hologram volume `HOLO_stage` (vision blocker, no bullet collider) and its emitter ring `HOLO_stage_emitter` (destructible) |
+| `SHUTTER_` | blast shutter `SHUTTER_<bayId>`: base mesh open, one morph target `closed`; clips `shutters_close` / `shutters_open`; its closed-state collider is the box `COL_SHUTTER_<bayId>` (on only while closed); guides and housings are `HARD_shutters_<floor>` |
 | `ZONE_EXT_` | defender reveal trigger volumes, one per `defender_reveal_zones` entry (no render geometry) |
 | `STAIR_` / `LADDER_` / `WALK_` / `LEDGE_` / `BRIDGE_` / `TERRACE` | circulation; ledges, bridges, truss, ramp and the cradle (`BRIDGE_CR_cradle`, animated) are floors with rails |
 | `SPAWN_ATK_<A>_<n>` / `SPAWN_DEF_<D>_<n>` / `OBJ_<id>` / `COVER_<id>` / `CALLOUT_<roomId>` | empty marker nodes (callout extras.name holds the name; never render it in the world) |
@@ -716,3 +722,29 @@ always one draw call, in both glbs; the Unity copy has no tiles. The sky dome ca
 river sheen and light streaks are painted into one opaque water strip cut out of the water sheet, the holo screens
 are opaque emissive, ridge crests stay under the cloud deck, and the mist, rain haze rings and hill halo are
 viewer-only. The `ENV_NB_*` neighbour bodies and Haneul's own `ENV_` parts stay separate (seen at arm's length).
+
+**Blast shutters on every outer room (user, overrides anything above).** *"Can you have some blastdoors on each outer
+room so people spawning outside can't just see through all windows? Keep the doors open for now though."* Every facade
+bay with glass gets a heavy armoured shutter that, closed, blocks sight and bullets over the whole bay. They are open by
+default and stay open for now.
+
+*Applied (tools/build_layout.py `shutters`, core.js `buildShutters`, validate_layout.py, render_plans.py, the viewer,
+HaneulTowerMap.cs):*
+- **172 shutters** (F1 62, F2 56, F3 54): every bay with glass, entry windows, the four facade doors, the Garden Doors
+  and the skybridge portal included; the two opaque Cold Store bays (F1_N04, F1_N05, all spandrel) have none. The skybridge tube needs none, since
+  the portal is its only way in. Double-height Garden and Studio bays get one 7.3 m shutter.
+- **Inside the glass, housed in the plenum.** The curtain runs 0.30–0.37 m inside the glass, behind the mullions, door
+  frames and barricade slots, so the facade, ledges, fins, reveal zones and rappel are untouched. Open, the slats stack
+  in a housing above the ceiling that fills the plenum to the slab; the room shows only slim dark guide channels on the
+  mullion lines with one small purple status dot each. Outside it would have cut across the ledges and the rappel line
+  and spoiled the facade.
+- **No peek gaps.** Closed, a shutter covers the floor to the bay's vision top and runs into its housing. Each end
+  either sits in a guide channel that meets the next bay's guide (on any floor), or runs 4 cm into a column or a hard
+  wall end. Interior glass (it breaks) and balustrades (1.1 m) never count as a seal. The validator re-checks every bay.
+- **Motion:** 0.25 m slats that overlap 3 cm, each moving straight down, so the curtain stays closed at every point of
+  its 2.0 s travel. In the glb, the base mesh is open and the morph target `closed` drops it; clips `shutters_close` /
+  `shutters_open`. In the viewer, the **Shutters** button or B. In Unity, `HaneulTowerMap.SetShutters` (all, or per
+  floor, room or site), with events; the `COL_SHUTTER_` box collides only while the shutter is closed.
+- **Dressing kept clear:** facade ceiling coves sit 0.64 m inside the glass, wall panelling and rafters stop 0.46 m from
+  it, and the laundry duct, the salt-brick ceiling, one garden bed, the Grid steel, the Exec Hall ceiling slats and its warm wall light line,
+  the Garden mist sheets (their SW corners) and the screening tiers (PR73, now x ≤ 24.2) were trimmed. A facade barricade must stay within 0.16 m of its slot.
