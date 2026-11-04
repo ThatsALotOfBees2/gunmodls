@@ -20,6 +20,7 @@ indigo, cinnabar and ochre accents.
 faster on a GPU. It offers:
 
 - orbit, plus walk and fly modes (V; WASD, Shift to sprint, F to fly);
+- freecam (G): no collision, WASD + mouse, Space/E up, C/Q down, Shift for 4x, mouse wheel or [ ] to change speed, H hides the UI for screenshots;
 - floor isolation (keys 0–3);
 - an X-ray overlay coloured by surface type (X), with callout labels (L) and markers (M);
 - toggles for rain and the skyline;
