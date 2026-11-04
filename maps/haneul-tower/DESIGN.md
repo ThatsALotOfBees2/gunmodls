@@ -384,7 +384,7 @@ node names (§10).
 | `portal` | skybridge portal frame with a barricadable double door | 1 |
 | `glass_floor` | walkable tempered glass floor | 1 (Skybridge, x 39.5…42.5) |
 | `holo` | stage hologram: blocks vision, not bullets; emitter ring destructible | 1 (`set_pieces`) |
-| `shutter` | armoured blast shutter inside a facade bay; open by default, closed it blocks vision and bullets over the whole bay; indestructible | 172 (`shutters`): F1 62, F2 56, F3 54 |
+| `shutter` | armoured blast shutter inside a facade bay; open by default, closed it blocks vision and bullets over the bay's glass; never over a door; indestructible | 170 (`shutters`): F1 61, F2 55, F3 54 |
 | `zone_ext` | defender reveal zone, trigger only | 15 |
 
 Per floor:
@@ -488,7 +488,7 @@ rules           {floor_to_floor, ceiling, slab, plenum, door{w,h}, double_door{w
                  reinforce{height 2.0, header, sizes{xl,large,standard,small}, hatch 1.2, gadget, far_side,
                            budget 8, budget_rule, band 0.26, trim 0.05, pilaster 0.3, placement},
                  thickness{<type>: m}, core_thickness{outer,inner}, curtain_wall{bay, lites_per_bay, chamfer_bay, vision[], spandrel[]},
-                 shutters{plane[s0,s1], guide, guide_s[], housing[s0,s1,h], slat, overlap, rail, travel_s, seal, free_end, default, rule, barricade_clear}}
+                 shutters{plane[s0,s1], guide, guide_s[], housing[s0,s1,h], slat, overlap, rail, travel_s, seal, free_end, default, rule, door_lites[], exempt[] {bay, reason}, barricade_clear}}
 surface_types   {<type>: {destructible, reinforceable, node_prefix, desc}}   types: hard soft reinforceable glass balustrade
                  open hatch soft_floor door_barricadable window_barricadable opening glass_breakable glass_tempered
                  spandrel portal pilaster glass_floor holo zone_ext shutter
@@ -535,7 +535,7 @@ exterior        {ledges[] {id, floor, y, width, rail_h, path, closed, breaks?, n
                  mech_floor, tower_above, weather{rain, lightning}, elevation_f1 403.2,
                  defender_reveal_zones[] {id ZONE_EXT_.., kind, ref, y (or [y0,y1]), polygon | path+closed+width, note?}}
 shutters[]      {id (= bay id), bay, floor, face, room, site, double_height, covers[], entry, u0, u1, width, a, b, plane, seal{a, b},
-                 guides[], y_closed[0, vision_y1], y_open, travel_m, travel_s, slats, housing{y0, y1, s0, s1, where}, default 'open',
+                 guides[], guide_u{a, b}, guides_solo[], door_side ('a'|'b'|null), span[u0, u1], y_closed[0, vision_y1], y_open, travel_m, travel_s, slats, housing{y0, y1, s0, s1, where}, default 'open',
                  node 'SHUTTER_<id>', collider 'COL_SHUTTER_<id>'}
 sites[]         {id S1..S4, name, floor, rooms[2], objectives[] {id S1A.., room, pos[x,y,z]}, hard_anchor}
 spawns          {attackers[] {id A1..A4, name, floor, points[[x,y,z]x5], approach},
@@ -730,8 +730,8 @@ default and stay open for now.
 
 *Applied (tools/build_layout.py `shutters`, core.js `buildShutters`, validate_layout.py, render_plans.py, the viewer,
 HaneulTowerMap.cs):*
-- **172 shutters** (F1 62, F2 56, F3 54): every bay with glass, entry windows, the four facade doors, the Garden Doors
-  and the skybridge portal included; the two opaque Cold Store bays (F1_N04, F1_N05, all spandrel) have none. The skybridge tube needs none, since
+- **170 shutters** (F1 61, F2 55, F3 54): every bay with glass, entry windows included, none over a door (see the
+  next note); the two opaque Cold Store bays (F1_N04, F1_N05, all spandrel) have none. The skybridge tube needs none, since
   the portal is its only way in. Double-height Garden and Studio bays get one 7.3 m shutter.
 - **Inside the glass, housed in the plenum.** The curtain runs 0.30–0.37 m inside the glass, behind the mullions, door
   frames and barricade slots, so the facade, ledges, fins, reveal zones and rappel are untouched. Open, the slats stack
@@ -748,3 +748,22 @@ HaneulTowerMap.cs):*
 - **Dressing kept clear:** facade ceiling coves sit 0.64 m inside the glass, wall panelling and rafters stop 0.46 m from
   it, and the laundry duct, the salt-brick ceiling, one garden bed, the Grid steel, the Exec Hall ceiling slats and its warm wall light line,
   the Garden mist sheets (their SW corners) and the screening tiers (PR73, now x ≤ 24.2) were trimmed. A facade barricade must stay within 0.16 m of its slot.
+
+**No shutter for the door (user, overrides the shutter note above).** *"also, dont have a shutter for the door"*.
+Door openings are exempt from the blast shutters; windows and entry windows keep theirs.
+
+*Applied (tools/build_layout.py, validate_layout.py, core.js `buildShutters`, docs):*
+- **Garden Doors (F1_S11) and the skybridge portal (F2_E11): no shutter.** The Garden double door spans the bay middle
+  (u 0.5–2.5 of 3.0), so the glass left is two 0.47 m strips beside it and the transom above: no clean narrower
+  curtain, so the whole bay goes without. The portal has no glass. Both are listed in `rules.shutters.exempt`.
+- **The four facade doors keep a narrower shutter over the glass lite only:** F1_SE00 Bath Door, F1_SW00 Garden side
+  door, F1_W08 catwalk door and F3_NW01 gantry door each have the door in one lite and tempered glass in the other. The
+  shutter now covers just the glass lite (1.41–1.44 m wide instead of 2.94–3.18 m), with its own guide channel on the
+  door-side mullion line, behind the door jamb and clear of the doorway; its housing stops there too. The other end is
+  unchanged (bay-end guide, or the corner column). The transom glass above each door is left unshuttered (it is over an
+  open doorway anyway).
+- **Lone guides:** a guide whose mullion line has no shutter on the other side (the door side, or the neighbour of a
+  door bay that lost its shutter, e.g. F1_S10/F1_S12 beside the Garden Doors, F2_E10/F2_E12 beside the portal) stands
+  alone and carries that line's status dot (`guides_solo`).
+- **Validator:** door bays must have no shutter, no curtain or guide may reach into a door lite, every glass lite must
+  still be covered, and the partner-guide rule skips lines whose other side is a door.

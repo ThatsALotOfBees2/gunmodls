@@ -83,8 +83,11 @@ finds no attacker spawn point visible from any shootable opening.
 
 ## Blast shutters
 
-Every room on the facade has heavy armoured blast shutters: **one per facade bay with glass, 172 in all** (F1 62,
-F2 56, F3 54), entry windows, facade doors, the Garden Doors and the skybridge portal included. They are **open by
+Every room on the facade has heavy armoured blast shutters: **one per facade bay with glass, 170 in all** (F1 61,
+F2 55, F3 54), entry windows included, but **never over a door**: the Garden Doors (F1_S11) and the skybridge portal
+(F2_E11) have none, and the four facade doors (Bath Door F1_SE00, Garden side door F1_SW00, catwalk door F1_W08,
+gantry door F3_NW01) keep their doorway clear: their shutter covers only the glass lite beside the door, sealed in its
+own guide on the door-side mullion line (the transom glass over the door stays glass). They are **open by
 default** and stay open for now; closing them is a switch for game modes, phases or testing.
 
 - **Inside the glass.** The slat curtain runs 0.30–0.37 m inside the glass, behind the mullions, door frames and
@@ -93,7 +96,7 @@ default** and stay open for now; closing them is a switch for game modes, phases
   with one small purple status dot.
 - **Closed, nothing gets through.** The curtain covers the full vision height of the bay (3.1 m; 7.3 m on the
   double-height Garden and Studio bays) from the floor into the housing, and each end seals either in a guide
-  channel shared with the next bay or against a column or hard wall end. Interior glass and balustrades are never
+  channel (shared with the next bay, or alone beside a door) or against a column or hard wall end. Interior glass and balustrades are never
   used as seals. A closed shutter stops sight and bullets and is indestructible; its collider (`COL_SHUTTER_<bay>`)
   is on only while it is closed.
 - **Data and engines.** `layout.json` has a `shutters` list (bay, floor, room, curtain extent, seals, heights,
@@ -125,7 +128,7 @@ The floor plans below show every surface by type. In the viewer, press X for the
 | **glass floor** | walkable tempered panel in the skybridge | 1 |
 | **rail** | glass balustrades and rails: shoot and vault over | 2 balustrades plus every ledge, catwalk and stair rail |
 | **hologram** | the stage hologram blocks vision, not bullets; its emitter is destructible and switched from a Control Room console | 1 |
-| **blast shutter** | armoured slat shutter inside a facade bay: open by default; closed it blocks sight and bullets over the whole bay (indestructible) | 172 (F1 62, F2 56, F3 54) |
+| **blast shutter** | armoured slat shutter inside a facade bay: open by default; closed it blocks sight and bullets over the bay's glass (indestructible); none over a door | 170 (F1 61, F2 55, F3 54) |
 
 > **User rules applied: hard corners, fewer breakable walls, every breakable wall reinforceable.** At every wall
 > corner and T-junction (and where a wall meets the facade) each wall arm is hard for at least 1.0 m. Breakable
@@ -176,8 +179,8 @@ steam bench, the shower block, the holo stage, the screening tiers and the stone
 | File | What it is |
 | --- | --- |
 | `viewer.html` | interactive viewer and the procedural source the `.glb` files are exported from |
-| `haneul-tower.glb` | the map: 498k triangles, 41.7 MB, 2,344 nodes, one node per typed surface with extras (172 `SHUTTER_` nodes with a `closed` morph target, clips `cradle_cycle`, `shutters_close`, `shutters_open`); the whole city skyline backdrop is one node, `BACKDROP_city` (one mesh, one baked material, one draw call; 132k triangles) |
-| `unity/haneul-tower.glb` | the Unity copy: the same 2,344 nodes (41.7 MB); the backdrop is the same single `BACKDROP_city` node (no culling tiles) |
+| `haneul-tower.glb` | the map: 498k triangles, 41.7 MB, 2,340 nodes, one node per typed surface with extras (170 `SHUTTER_` nodes with a `closed` morph target, clips `cradle_cycle`, `shutters_close`, `shutters_open`); the whole city skyline backdrop is one node, `BACKDROP_city` (one mesh, one baked material, one draw call; 132k triangles) |
+| `unity/haneul-tower.glb` | the Unity copy: the same 2,340 nodes (41.7 MB); the backdrop is the same single `BACKDROP_city` node (no culling tiles) |
 | `layout.json` | the layout: the single source of truth for floors, rooms, walls, openings, hatches, sites, spawns and routes |
 | `floorplans/` | one plan per floor plus an overview, each with a legend |
 | `shots/` | viewer screenshots |

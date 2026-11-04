@@ -1426,7 +1426,8 @@ function buildFacade() {
   }
 }
 /* ------------------------------------------------------------------ blast shutters (user: every outer room; open by default) */
-// One SHUTTER_<bayId> node per facade bay with glass (layout.json shutters[], made by tools/build_layout.py): an armoured
+// One SHUTTER_<bayId> node per facade bay with glass (layout.json shutters[], made by tools/build_layout.py; never over a
+// door: the Garden Doors and the skybridge portal get none, a bay with a door lite is shuttered over its glass lite only): an armoured
 // slat curtain inside the glass (plane s = rules.shutters.plane behind the mullions, door frames and barricade slots)
 // that retracts into a housing in the plenum above the ceiling. The node's mesh is the OPEN state; one morph target,
 // 'closed', drops every slat and the bottom rail to its closed place (pure vertical translations, so the linear blend is
@@ -1449,13 +1450,31 @@ function buildShutters() {
     // static: housing (no bottom face: the ceiling closes it and the curtain passes there) and guide channels with a
     // small purple status lamp on the room face
     const hs = house(f), hg = hs.gb('steel_dark');
-    const hu0 = sh.guides.includes('a') ? 0 : u0, hu1 = sh.guides.includes('b') ? W : u1;
+    // a guide sits on its mullion line (guide_u: the bay end, or the door-side line of a door bay, whose door lite is
+    // never shuttered), on the curtain's side of it
+    const GU = sh.guide_u || {}, gLine = (k) => (k in GU ? GU[k] : k === 'a' ? 0 : W), solo = sh.guides_solo || [];
+    const RV = sh.reveal || {}, hEnd = (k, u) => (sh.guides.includes(k) ? gLine(k) : RV[k] ? RV[k].housing_u : u);
+    const hu0 = hEnd('a', u0), hu1 = hEnd('b', u1);
     wbox(hg, F, hu0, hu1, vy, top, H0, H1, '-y');
+    // reveal plate (chamfer corner beside a facade door): on the door's jamb plane, in the door bay's frame, floor to
+    // slab; this curtain end and its housing end sit inside it, so the corner seals with nothing in the doorway
+    for (const [k, rv] of Object.entries(RV)) {
+      const db = BAYS.get(rv.door_bay), dd = P2.norm(P2.sub(db.b, db.a)), dn = [-dd[1], dd[0]];
+      const DF = { a: db.a, len: db.width, d: [dd[0], 0, dd[1]], n: [dn[0], 0, dn[1]], y: FY(f), t: 0.3 };
+      const [ru0, ru1] = rv.u, [rs0, rs1] = rv.s, [ry0, ry1] = rv.y;
+      wbox(hg, DF, ru0, ru1, ry0, ry1, rs0, rs1);
+      const door = db.lites.find((l) => l.type === 'door_barricadable'), face = door && door.u0 < 1e-6 ? ru1 : ru0, sg = face === ru1 ? 1 : -1;
+      wbox(hs.gb('alloy'), DF, sg > 0 ? face : face - 0.002, sg > 0 ? face + 0.002 : face, 0.004, ry1 - 0.004, rs1 - 0.09, rs1 - 0.02);   // brushed strip on the doorway face (2 mm: still behind the jamb face)
+      wbox(hs.gb('glow_purple'), DF, (ru0 + ru1) / 2 - 0.011, (ru0 + ru1) / 2 + 0.011, 2.19, 2.212, rs1, rs1 + 0.003);   // status dot on the room end
+    }
     for (const k of sh.guides) {
-      const g0 = k === 'a' ? 0 : W - R.guide, g1 = g0 + R.guide;
+      const g0 = k === 'a' ? gLine('a') : gLine('b') - R.guide, g1 = g0 + R.guide, line = gLine(k);
       wbox(hg, F, g0, g1, 0, top, G0, G1, '-y +y');
       wbox(hs.gb('alloy'), F, g0 + 0.008, g1 - 0.008, 0.004, vy - 0.004, G1, G1 + 0.006, '-y +y');   // brushed face strip
-      if (k === 'a') wbox(hs.gb('glow_purple'), F, g0 - 0.011, g0 + 0.011, 2.19, 2.212, G1 + 0.006, G1 + 0.009);   // one status dot per mullion line, on its centre
+      // one status dot per mullion line on its centre ('a' guides; a guide with no partner on its line has its own,
+      // kept on its own channel so it never floats over a doorway)
+      if (k === 'a' && !solo.includes('a')) wbox(hs.gb('glow_purple'), F, line - 0.011, line + 0.011, 2.19, 2.212, G1 + 0.006, G1 + 0.009);
+      else if (solo.includes(k)) wbox(hs.gb('glow_purple'), F, (g0 + g1) / 2 - 0.011, (g0 + g1) / 2 + 0.011, 2.19, 2.212, G1 + 0.006, G1 + 0.009);
     }
     // moving curtain, built CLOSED, then shifted into its open place (the base mesh); e.morph keeps the closed positions
     const frame = frameZ(wp(F, um, 0, sm), n2);
@@ -1465,7 +1484,7 @@ function buildShutters() {
         bay: sh.bay, face: sh.face, room: sh.room, site: sh.site || undefined, width: sh.width, double_height: sh.double_height, covers: sh.covers,
         y_closed: sh.y_closed, y_open: sh.y_open, travel_m: sh.travel_m, travel_s: sh.travel_s, slats: sh.slats, default: 'open', state: 'open',
         morph_target: 'closed (weight 1 = closed, 0 = open)', collider: sh.collider, clips: 'shutters_close, shutters_open',
-        blocks: 'vision and bullets over the whole bay when closed', destructible: false, frame: 'origin = closed curtain bottom centre; +X along the bay, +Y up, +Z into the building',
+        blocks: sh.door_side ? 'vision and bullets over the glass lite when closed (the door lite is never shuttered)' : 'vision and bullets over the whole bay when closed', door_side: sh.door_side || undefined, destructible: false, frame: 'origin = closed curtain bottom centre; +X along the bay, +Y up, +Z into the building',
       },
     });
     const moves = {};
@@ -2389,7 +2408,7 @@ const NAMING = {
   BRIDGE_: 'skybridge, truss, catwalks, gantry, hoist ramp, landings; BRIDGE_CR_cradle is the moving cradle (clip cradle_cycle)', TERRACE: 'sky terrace deck',
   SPAWN_ATK_: 'empty: attacker spawn point', SPAWN_DEF_: 'empty: defender spawn point', OBJ_: 'empty: objective', COVER_: 'empty: deployable cover spot (+Z faces the yaw)', CALLOUT_: 'empty: callout anchor (extras.name; never render it in the world)',
   PROP_: 'empty: layout prop marker PROP_<propId> (extras: pos, size, box, h, cover, type, breaks_sightline, built_in). built_in markers point at their HARD_/SOFT_ node; the rest are furniture slots for the separate furniture pack (no mesh, no collider here)',
-  SHUTTER_: 'blast shutter SHUTTER_<bayId> inside every facade bay with glass: one mesh, base = OPEN (stacked in the plenum housing), one morph target "closed"; clips shutters_close / shutters_open; node origin = closed curtain bottom centre, +Z into the building; not static (it moves)',
+  SHUTTER_: 'blast shutter SHUTTER_<bayId> inside every facade bay with glass except over a door (door bays: none; a door lite is left out, the shutter covers the glass lite beside it): one mesh, base = OPEN (stacked in the plenum housing), one morph target "closed"; clips shutters_close / shutters_open; node origin = closed curtain bottom centre, +Z into the building; not static (it moves)',
   COL_: 'empty: box collider (position, rotation, scale = size; BoxCollider size 1). COL_SHUTTER_<bayId> is the closed-state box of a shutter: enable it only while that shutter is closed',
   DECO_: 'decoration merged per floor, kind and material (no gameplay meaning, no collider)', ENV_: 'scenery bodies of the tower and the gameplay neighbours below and above the map (no collider)',
   BACKDROP_: 'BACKDROP_city: the whole city skyline as ONE mesh with ONE baked material (always drawn as one draw call: no culling tiles, no collider, no shadows, never an occluder); BACKDROP_sky: the sky dome with the cloud deck baked in',
