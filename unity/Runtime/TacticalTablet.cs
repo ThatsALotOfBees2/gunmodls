@@ -1,4 +1,4 @@
-// The tactical tablet: a rugged 8-inch tablet (136 x 222 x 16.4 mm) held in the left hand under the back strap,
+// The tactical tablet: a rugged 8-inch tablet (138 x 224 x 16.4 mm over the TPU) held in the left hand under the back strap,
 // screen toward the holder. Put it on the root of the tactical-tablet prefab (built from unity/tactical-tablet.glb with
 // Tools > Gunmodls > Build Prefabs From Selection; import with Animation: Legacy). Same API shape as TacticalPhone.
 //   Draw() / Holster()          draw sound, Wake() (and Unlock() if autoUnlock) / holster sound, PowerOff() or ScreenOff()
@@ -10,7 +10,8 @@
 //   PttDown() / PttUp()         push-to-talk on the violet side key: key-up chirp, the radio talk screen, the key held
 //                               (the ptt clip loops 0.3-1.3 s while held), then the release beep and back to the app
 //   SetAlert(on), LowBattery()  red alert loop / 3 s of the amber battery warning
-//   PowerOff(), ScreenOff()     power menu and shutdown to off / straight to a dark screen
+//   PowerOff(), ScreenOff()     power menu and shutdown to off (onPowerOff) / straight to a dark screen (onScreenOff;
+//                               Holster() with powerOffOnHolster off takes this path, so it fires onScreenOff only)
 //   SetFlap(open), SetPorts(o)  swing the USB-C flap open or shut (any time, on top of the other clips); SetPorts is the
 //                               phone script's name for the same call
 //   SetStrap(on)                show or hide the back hand strap (hand_strap)
@@ -65,7 +66,7 @@ public class TacticalTablet : MonoBehaviour
     public AudioClip wake, unlock, tap, scan, scanResult, alert, lowBattery, powerOff, button, flapOpen, flapClose, draw, holster, pttChirp, pttRelease;
 
     [Header("Events")]
-    public UnityEvent onWake, onUnlock, onScan, onScanResult, onAlert, onPowerOff, onTap, onPttDown, onPttUp;
+    public UnityEvent onWake, onUnlock, onScan, onScanResult, onAlert, onPowerOff, onScreenOff, onTap, onPttDown, onPttUp;
     public event Action<Vector3> Tapped;         // world point on the glass
 
     public State Current { get; private set; }
@@ -107,7 +108,8 @@ public class TacticalTablet : MonoBehaviour
     State resumeState = State.Idle;
     float stateT, flapT, flapTarget, clock;
     int forcedCell = -1, shownCell = -1;
-    bool feedShown, torchOn, scanFired, resultFired, pttHeld, pendingUnlock;
+    bool feedShown, feedFlip, torchOn, scanFired, resultFired, scanToIdle, pttHeld, pendingUnlock;
+    Texture feedTex;                             // the feed texture last applied (a new droneFeed is picked up at once)
     int cues;                                   // timed sound cues already played in this state (bit per cue)
     Color lastStatus = new Color(-1f, 0f, 0f, 0f);
 
@@ -261,7 +263,7 @@ public class TacticalTablet : MonoBehaviour
     {
         if (Current != State.Idle && Current != State.Scanning) return;
         SetState(State.Scanning);
-        scanFired = resultFired = false;
+        scanFired = resultFired = scanToIdle = false;
         PlayClip("scan", 0.05f);              // button at 0.05 s, scan 0.3 s, scan_result 1.0 s (Update)
     }
 
@@ -339,7 +341,7 @@ public class TacticalTablet : MonoBehaviour
         SetState(State.Off);
         PlayClip("power_off", 0f);            // the end of power_off: keys out, LED hidden
         var s = anim["power_off"]; if (s != null) s.time = s.length;
-        if (onPowerOff != null) onPowerOff.Invoke();
+        if (onScreenOff != null) onScreenOff.Invoke();
     }
 
     public void SetFlap(bool open)
@@ -403,7 +405,9 @@ public class TacticalTablet : MonoBehaviour
                 Cue(0, 0.05f, button);
                 if (!scanFired && stateT >= 0.3f) { scanFired = true; Play(scan); if (onScan != null) onScan.Invoke(); }
                 if (!resultFired && stateT >= 1.0f) { resultFired = true; Play(scanResult); if (onScanResult != null) onScanResult.Invoke(); }
-                if (stateT >= Length("scan") && anim["scan"] != null && anim.IsPlaying("scan")) PlayClip("idle", 0.15f);
+                // hand back to idle once: IsPlaying("scan") stays true through the cross-fade, so testing it here every
+                // frame restarted idle at time 0 for the whole fade
+                if (!scanToIdle && stateT >= Length("scan")) { scanToIdle = true; PlayClip("idle", 0.15f); }
                 if (stateT >= 2.5f) SetState(State.Idle);
                 break;
             case State.Talking:
@@ -488,8 +492,8 @@ public class TacticalTablet : MonoBehaviour
         var feed = droneFeed != null && (cell == DroneA || cell == DroneB);
         if (feed)
         {
-            if (feedShown) return;
-            feedShown = true; shownCell = -1;
+            if (feedShown && feedTex == droneFeed && feedFlip == flipFeed) return;
+            feedShown = true; shownCell = -1; feedTex = droneFeed; feedFlip = flipFeed;
             foreach (var a in atlas)
             {
                 // the mesh's UVs cover one cell: stretch the whole feed over that cell's range
@@ -504,7 +508,7 @@ public class TacticalTablet : MonoBehaviour
             return;
         }
         if (cell == shownCell && !feedShown) return;
-        feedShown = false; shownCell = cell;
+        feedShown = false; feedTex = null; shownCell = cell;
         float col = cell % GridX, row = cell / GridX;
         foreach (var a in atlas) Apply(a, a.tex, a.scale, a.offset + new Vector2(a.scale.x * col / GridX, -a.scale.y * row / GridY));
     }

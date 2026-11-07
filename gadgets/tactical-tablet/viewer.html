@@ -1254,7 +1254,7 @@ const SCREEN_CELLS = [
   'drone_a', 'drone_b', 'ptt_idle', 'ptt_talk', 'call_in',
   'alert_a', 'alert_b', 'low_battery', 'power_menu', 'shutdown',
 ];
-const UI = { acc: '#8a4dff', accLo: 'rgba(138,77,255,0.28)', wt: '#f2f3f5', wt2: 'rgba(242,243,245,0.46)', wt3: 'rgba(242,243,245,0.2)', wtT: 'rgba(242,243,245,0.55)', card: 'rgba(30,32,38,0.82)', red: '#ff4b4b', green: '#2fc26b', amber: '#ffb23e', blue: '#4aa3ff' };
+const UI = { acc: '#8a4dff', accLo: 'rgba(138,77,255,0.28)', wt: '#f2f3f5', wt2: 'rgba(242,243,245,0.38)', wt3: 'rgba(242,243,245,0.16)', wtT: 'rgba(242,243,245,0.55)', card: 'rgba(30,32,38,0.82)', red: '#ff4b4b', green: '#2fc26b', amber: '#ffb23e', blue: '#4aa3ff' };
 
 // putImageData ignores the cell transform and clip: go through a scratch canvas
 function putImg(x, img, dx, dy) { const c = canvas(img.width, img.height); c.getContext('2d').putImageData(img, 0, 0); x.drawImage(c, dx, dy); }
@@ -1266,13 +1266,20 @@ function line(x, pts, w, c) { x.beginPath(); x.moveTo(...pts[0]); for (const p o
 // a line of 'text' with no glyphs: word-length segments with gaps, thin and low contrast (cap height about 2-3 % of the cell)
 function tbar(x, x0, y0, w, c = UI.wt3, h = 5) {
   h = Math.max(2.5, Math.min(h, 7) * 0.62); if (c === UI.wt) c = UI.wtT;
-  const R = prng(Math.round(x0 * 13 + y0 * 7 + w)), gap = h * 1.3; let px = x0;
-  while (px < x0 + w - 4) { let ww = Math.min(x0 + w - px, h * (3.5 + R() * 9)); if (x0 + w - px - ww < h * 3) ww = x0 + w - px; fillRR(x, px, y0 + (7 - h) / 4, ww, h, h / 2, c); px += ww + gap; }
+  const R = prng(Math.round(x0 * 13 + y0 * 7 + w)), gap = h * 1.25; let px = x0;
+  while (px < x0 + w - 4) {
+    let ww = Math.min(x0 + w - px, h * (2.2 + Math.pow(R(), 1.6) * 13)); if (x0 + w - px - ww < h * 2.5) ww = x0 + w - px;
+    const hh = h * (0.78 + 0.3 * R());          // words with ascenders read taller than all-x-height ones
+    fillRR(x, px, y0 + (7 - h) / 4 + (h - hh), ww, hh, hh / 2, c); px += ww + gap;
+  }
 }
 
 function statusBar(x, w, { batt = 0.72, battCol = null, dim = false } = {}) {
   const c = dim ? UI.wt2 : UI.wt;
-  fillRR(x, 12, 8, 9, 7, 2, c); dot(x, 30, 12, 2.2, c);                         // notification glyphs: a bubble, a dot
+  const n = dim ? 'rgba(242,243,245,0.4)' : 'rgba(242,243,245,0.6)';            // notification glyphs, quieter than the system icons
+  dot(x, 16, 13, 1.4, n); for (const r of [3.6, 6.2]) { arcS(x, 16, 13, r, 1.3, n, -0.9, 0.9); arcS(x, 16, 13, r, 1.3, n, Math.PI - 0.9, Math.PI + 0.9); }   // radio
+  x.beginPath(); x.arc(33, 10.5, 3.6, Math.PI, 0); x.lineTo(33, 17); x.closePath(); x.fillStyle = n; x.fill(); dot(x, 33, 10.5, 1.3, dim ? '#000' : 'rgba(10,12,18,0.9)');   // location
+  line(x, [[46, 7.5], [46, 14]], 1.5, n); line(x, [[42.8, 11.3], [46, 14.5], [49.2, 11.3]], 1.5, n); line(x, [[42, 17], [50, 17]], 1.5, n);   // download
   const bx = w - 70;
   for (let i = 0; i < 4; i++) fillRR(x, bx + i * 4, 16 - (i + 1) * 2.4, 2.6, (i + 1) * 2.4, 0.8, i < 3 ? c : UI.wt3);
   for (const r of [3, 6, 9]) arcS(x, bx + 30, 17, r, 1.6, c, -2.3, -0.84);
@@ -1283,50 +1290,83 @@ function statusBar(x, w, { batt = 0.72, battCol = null, dim = false } = {}) {
 }
 function pill(x, w, h, c = UI.wt2) { fillRR(x, w / 2 - 34, h - 10, 68, 4, 2, c); }
 
-// a night city wallpaper: a soft dusk sky with depth haze, two layers of towers (the far one hazed), lit windows in
-// floor-wise clusters on the facades, a faint glow over the street
+// a night city wallpaper, photographic rather than drawn: a dusk sky with depth haze; three layers of towers (far ones
+// hazed, low contrast, sparse tiny windows), the near towers butted together with setbacks and roof plant (no gaps, so
+// no light streaks between them); lit windows in office clusters and scattered homes, never a full grid; bloom round
+// the lights, a warm street glow, film grain
 function wallpaper(x, w, h, rnd, dimK = 0) {
-  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#070a14'); g.addColorStop(0.35, '#111829'); g.addColorStop(0.62, '#232a3f'); g.addColorStop(0.78, '#2c2a36'); g.addColorStop(1, '#0a0a0e');
+  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#05070e'); g.addColorStop(0.3, '#0c1120'); g.addColorStop(0.55, '#1a2033'); g.addColorStop(0.7, '#2a2633'); g.addColorStop(0.82, '#1a1820'); g.addColorStop(1, '#08080b');
   x.fillStyle = g; x.fillRect(0, 0, w, h);
-  for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(220,225,255,${0.12 + rnd() * 0.25})`; x.fillRect(rnd() * w, rnd() * h * 0.35, 1, 1); }
-  const layers = [[0.6, [38, 44, 62], 18, 0.35, 0.55], [0.7, [16, 18, 26], 26, 0.85, 1]];
-  for (const [base, col, wmin, lit, k] of layers) {
-    let px = -8;
-    while (px < w) {
-      const bw = wmin + rnd() * 30, top = h * base - h * (0.05 + rnd() * 0.22) * k;
-      x.fillStyle = `rgb(${col})`; x.fillRect(px, top, bw, h - top);
-      const cw = 4 + Math.round(rnd() * 2), rh = 6, warm = rnd() < 0.7;
-      for (let yy = top + 5, f = 0; yy < h - 6; yy += rh, f++) {
-        const floorLit = rnd() < 0.28 * lit, run0 = rnd() * bw, runL = bw * (0.3 + rnd() * 0.7);
-        for (let xx = px + 3; xx < px + bw - 3; xx += cw) {
-          const on = floorLit ? (xx - px > run0 - runL / 2 && xx - px < run0 + runL / 2 && rnd() < 0.85) : rnd() < 0.015;
-          if (on) { const a = (0.18 + rnd() * 0.25) * k; x.fillStyle = warm ? `rgba(255,190,120,${a})` : `rgba(190,210,255,${a})`; x.fillRect(xx, yy, cw - 2, 3); }
+  for (let i = 0; i < 26; i++) { x.fillStyle = `rgba(220,225,255,${0.06 + rnd() * 0.16})`; x.fillRect(rnd() * w, rnd() * h * 0.3, 1, 1); }
+  const lights = canvas(w, h), L = lights.getContext('2d');
+  // [baseline (fraction of h), tower colour, min width, window size, density, light alpha]
+  const layers = [[0.62, [44, 48, 66], 12, 1, 0.25, 0.28], [0.68, [26, 28, 40], 18, 2, 0.55, 0.45], [0.74, [11, 12, 17], 26, 3, 1, 0.8]];
+  layers.forEach(([base, col, wmin, ws, dens, la], li) => {
+    let px = -6 - rnd() * 10;
+    while (px < w + 4) {
+      const bw = wmin + rnd() * wmin * 1.4, top = h * base - h * (0.04 + Math.pow(rnd(), 1.4) * 0.26) * (0.5 + 0.5 * dens), shade = 0.85 + rnd() * 0.3;
+      const c = `rgb(${col.map((v) => Math.round(v * shade))})`;
+      x.fillStyle = c; x.fillRect(px, top, bw, h - top);
+      let roof = top;
+      if (rnd() < 0.45) { const sw = bw * (0.45 + rnd() * 0.3), sh = 6 + rnd() * 18, sx = px + rnd() * (bw - sw); x.fillRect(sx, top - sh, sw, sh); roof = top - sh; }   // setback tier
+      if (rnd() < 0.5) x.fillRect(px + rnd() * bw * 0.7, roof - 3, 3 + rnd() * 6, 3);                                                       // roof plant
+      if (li === 2 && rnd() < 0.25) { x.fillRect(px + bw * 0.5, roof - 16 - rnd() * 10, 1, 26); if (rnd() < 0.6) { L.fillStyle = 'rgba(255,60,50,0.8)'; L.fillRect(px + bw * 0.5 - 0.5, roof - 26, 2, 2); } }   // mast + aviation light
+      // windows: office floors lit in clusters (a few consecutive floors, part of the width), homes scattered
+      const pitchX = ws + 1.5 + Math.round(rnd() * 2), pitchY = ws * 2 + 1 + Math.round(rnd() * 2), office = rnd() < 0.55, warm = office ? rnd() < 0.3 : rnd() < 0.85;
+      let cluster = 0;
+      for (let yy = top + 3, f = 0; yy < h * 0.95; yy += pitchY, f++) {
+        if (cluster <= 0 && rnd() < (office ? 0.12 : 0.05) * dens) cluster = 1 + Math.floor(rnd() * 5);
+        const c0 = px + rnd() * bw * 0.6, c1 = c0 + bw * (0.25 + rnd() * 0.6);
+        for (let xx = px + 2; xx < px + bw - ws - 1; xx += pitchX) {
+          const on = cluster > 0 ? (xx > c0 && xx < c1 && rnd() < 0.8) : rnd() < 0.025 * dens;
+          if (!on) continue;
+          const a = la * (0.35 + rnd() * 0.65) * Math.min(1, (yy - top + 30) / 60);
+          L.fillStyle = warm ? `rgba(255,${170 + Math.round(rnd() * 40)},${100 + Math.round(rnd() * 40)},${a})` : `rgba(${180 + Math.round(rnd() * 40)},215,255,${a})`;
+          L.fillRect(xx, yy, ws, Math.max(1, ws * 0.8));
         }
+        cluster--;
       }
-      px += bw + 2 + rnd() * 3;
+      px += bw - (li === 2 ? 1 : -rnd() * 2);
     }
-    // depth haze in front of this layer (soft, no hard band)
-    const hz = x.createLinearGradient(0, h * (base - 0.25), 0, h); hz.addColorStop(0, 'rgba(70,72,95,0)'); hz.addColorStop(0.45, `rgba(70,72,95,${0.12 * k})`); hz.addColorStop(1, 'rgba(10,10,14,0.2)');
-    x.fillStyle = hz; x.fillRect(0, h * (base - 0.25), w, h);
+    // haze in front of this layer: depth falloff toward the horizon, no hard band
+    const hz = x.createLinearGradient(0, h * (base - 0.3), 0, h); hz.addColorStop(0, 'rgba(60,62,84,0)'); hz.addColorStop(0.5, `rgba(60,62,84,${0.16 - li * 0.04})`); hz.addColorStop(1, 'rgba(8,8,12,0.25)');
+    x.drawImage(lights, 0, 0); x.save(); x.globalCompositeOperation = 'lighter'; x.filter = 'blur(2.5px)'; x.globalAlpha = 0.7; x.drawImage(lights, 0, 0); x.restore(); L.clearRect(0, 0, w, h);
+    x.fillStyle = hz; x.fillRect(0, h * (base - 0.3), w, h);
+    if (li === 1) { const sg = x.createLinearGradient(0, h * 0.62, 0, h * 0.8); sg.addColorStop(0, 'rgba(255,150,80,0)'); sg.addColorStop(1, 'rgba(255,150,80,0.08)'); x.fillStyle = sg; x.fillRect(0, h * 0.62, w, h * 0.2); }   // street glow
+  });
+  // bloom over everything: a blurred copy of the bright parts added back (canvas filter; skipped where unsupported)
+  {
+    const b = canvas(w, h), bx = b.getContext('2d'); bx.filter = 'blur(4px) brightness(1.6)'; bx.drawImage(x.canvas, 0, 0, w, h, 0, 0, w, h);
+    x.save(); x.globalCompositeOperation = 'lighter'; x.globalAlpha = 0.22; x.drawImage(b, 0, 0); x.restore();
   }
+  // film grain
+  { const img = x.getImageData(0, 0, w, h), d = img.data; for (let i = 0; i < d.length; i += 4) { const n = (rnd() - 0.5) * 7; d[i] += n; d[i + 1] += n; d[i + 2] += n; } x.putImageData(img, 0, 0); }
   if (dimK) { x.fillStyle = `rgba(0,0,0,${dimK})`; x.fillRect(0, 0, w, h); }
+}
+// a frosted panel: the wallpaper behind it blurred and darkened (the dock, widget cards)
+function frost(x, x0, y0, w, h, r, tint = 'rgba(255,255,255,0.08)') {
+  const c = canvas(Math.ceil(w), Math.ceil(h)), cx = c.getContext('2d'); cx.filter = 'blur(6px)'; cx.drawImage(x.canvas, x0 - 0, y0, w, h, 0, 0, w, h);
+  x.save(); rr(x, x0, y0, w, h, r); x.clip(); x.drawImage(c, x0, y0); x.fillStyle = tint; x.fillRect(x0, y0, w, h); x.restore();
 }
 // pictograms on a rounded-square icon, 44 px
 const ICONS = [
   ['#2a7d4f', (x, c, s) => { x.beginPath(); x.arc(c[0], c[1] - 3, 8, Math.PI, 0); x.lineTo(c[0], c[1] + 11); x.closePath(); x.fillStyle = '#fff'; x.fill(); dot(x, c[0], c[1] - 3, 3, '#2a7d4f'); }],          // map pin
-  ['#3a3f4a', (x, c) => { fillRR(x, c[0] - 11, c[1] - 7, 22, 15, 3, '#fff'); dot(x, c[0], c[1], 4.5, '#3a3f4a'); fillRR(x, c[0] - 5, c[1] - 10, 10, 4, 1.5, '#fff'); }],                  // camera
+  ['#4b5262', (x, c) => { fillRR(x, c[0] - 11, c[1] - 7, 22, 15, 3, '#fff'); dot(x, c[0], c[1], 4.5, '#4b5262'); fillRR(x, c[0] - 5, c[1] - 10, 10, 4, 1.5, '#fff'); }],                  // camera
   ['#2f8f5a', (x, c) => { line(x, [[c[0] - 7, c[1] - 8], [c[0] - 3, c[1] + 2], [c[0] + 7, c[1] + 8]], 5, '#fff'); }],                                                              // phone handset
   [UI.acc, (x, c) => { dot(x, c[0], c[1] + 3, 3, '#fff'); for (const r of [7, 12]) arcS(x, c[0], c[1] + 3, r, 2.4, '#fff', -2.4, -0.74); }],                                           // radio (PTT)
-  ['#4a4f5a', (x, c) => { arcS(x, c[0], c[1], 7, 4, '#fff'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; dot(x, c[0] + Math.cos(a) * 10, c[1] + Math.sin(a) * 10, 2.4, '#fff'); } }], // settings gear
+  ['#5d6472', (x, c) => { arcS(x, c[0], c[1], 7, 4, '#fff'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; dot(x, c[0] + Math.cos(a) * 10, c[1] + Math.sin(a) * 10, 2.4, '#fff'); } }], // settings gear
   ['#c47a1e', (x, c) => { fillRR(x, c[0] - 11, c[1] - 6, 22, 15, 2, '#fff'); fillRR(x, c[0] - 11, c[1] - 9, 9, 5, 1.5, '#fff'); }],                                                  // folder
   ['#2b5f9e', (x, c) => { arcS(x, c[0], c[1], 10, 2, '#fff'); x.beginPath(); x.moveTo(c[0], c[1] - 8); x.lineTo(c[0] + 3, c[1]); x.lineTo(c[0], c[1] + 8); x.lineTo(c[0] - 3, c[1]); x.closePath(); x.fillStyle = '#fff'; x.fill(); }], // compass
-  ['#30343c', (x, c) => { for (const [dx, dy] of [[-8, -8], [8, -8], [-8, 8], [8, 8]]) arcS(x, c[0] + dx, c[1] + dy, 4, 1.8, '#fff'); line(x, [[c[0] - 8, c[1] - 8], [c[0] + 8, c[1] + 8]], 2, '#fff'); line(x, [[c[0] + 8, c[1] - 8], [c[0] - 8, c[1] + 8]], 2, '#fff'); fillRR(x, c[0] - 3, c[1] - 3, 6, 6, 1.5, '#fff'); }], // drone
-  ['#262a33', (x, c) => { const g = x.createLinearGradient(c[0] - 10, 0, c[0] + 10, 0); g.addColorStop(0, '#ffd34d'); g.addColorStop(1, '#e0402b'); x.fillStyle = g; x.beginPath(); x.ellipse(c[0], c[1], 7, 11, 0, 0, Math.PI * 2); x.fill(); dot(x, c[0], c[1] - 3, 3, '#fff'); }], // thermal
+  ['#2c7a80', (x, c) => { for (const [dx, dy] of [[-8, -8], [8, -8], [-8, 8], [8, 8]]) arcS(x, c[0] + dx, c[1] + dy, 4, 1.8, '#fff'); line(x, [[c[0] - 8, c[1] - 8], [c[0] + 8, c[1] + 8]], 2, '#fff'); line(x, [[c[0] + 8, c[1] - 8], [c[0] - 8, c[1] + 8]], 2, '#fff'); fillRR(x, c[0] - 3, c[1] - 3, 6, 6, 1.5, '#fff'); }], // drone
+  [['#3b1a2e', '#d9562a'], (x, c) => { x.beginPath(); x.moveTo(c[0], c[1] - 12); x.bezierCurveTo(c[0] + 9, c[1] - 2, c[0] + 9, c[1] + 10, c[0], c[1] + 10); x.bezierCurveTo(c[0] - 9, c[1] + 10, c[0] - 9, c[1] - 2, c[0], c[1] - 12); x.fillStyle = '#fff'; x.fill(); dot(x, c[0], c[1] + 3, 3.6, '#e36a2e'); }], // thermal: a heat drop on a dark-to-orange tile
   ['#2c6e8f', (x, c) => { rr(x, c[0] - 11, c[1] - 8, 22, 16, 2); x.lineWidth = 2.4; x.strokeStyle = '#fff'; x.stroke(); line(x, [[c[0] - 11, c[1] - 7], [c[0], c[1] + 2], [c[0] + 11, c[1] - 7]], 2.2, '#fff'); }], // mail
-  ['#555b66', (x, c) => { for (let i = 0; i < 3; i++) tbar(x, c[0] - 10, c[1] - 8 + i * 7, 20, '#fff', 3.4); }],                                                                           // notes
-  ['#4b505c', (x, c) => { arcS(x, c[0], c[1], 9, 2.4, '#fff'); line(x, [[c[0], c[1]], [c[0], c[1] - 6]], 2.4, '#fff'); line(x, [[c[0], c[1]], [c[0] + 5, c[1] + 2]], 2.4, '#fff'); }],    // clock
+  ['#c39a22', (x, c) => { for (let i = 0; i < 3; i++) fillRR(x, c[0] - 10, c[1] - 9 + i * 7, i === 2 ? 13 : 20, 3.2, 1.6, '#fff'); }],                                                                           // notes
+  ['#3a4a8c', (x, c) => { arcS(x, c[0], c[1], 9, 2.4, '#fff'); line(x, [[c[0], c[1]], [c[0], c[1] - 6]], 2.4, '#fff'); line(x, [[c[0], c[1]], [c[0] + 5, c[1] + 2]], 2.4, '#fff'); }],    // clock
 ];
-function icon(x, cx, cy, k, s = 44) { const [bg, f] = ICONS[k % ICONS.length]; fillRR(x, cx - s / 2, cy - s / 2, s, s, s * 0.24, bg); x.save(); x.translate(cx, cy); x.scale(s / 44, s / 44); f(x, [0, 0]); x.restore(); }
+function icon(x, cx, cy, k, s = 44) {
+  let [bg, f] = ICONS[k % ICONS.length];
+  if (Array.isArray(bg)) { const g = x.createLinearGradient(cx - s / 2, cy - s / 2, cx + s / 2, cy + s / 2); g.addColorStop(0, bg[0]); g.addColorStop(1, bg[1]); bg = g; }
+  fillRR(x, cx - s / 2, cy - s / 2, s, s, s * 0.24, bg); x.save(); x.translate(cx, cy); x.scale(s / 44, s / 44); f(x, [0, 0]); x.restore(); }
 function analogClock(x, cx, cy, r, hh = 10.15, mm = 9, { face = 'rgba(255,255,255,0.08)', ring = UI.wt2, dotC = UI.wt } = {}) {
   dot(x, cx, cy, r, face); arcS(x, cx, cy, r, 1.5, ring);
   for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6, r0 = i % 3 ? r * 0.86 : r * 0.78; line(x, [[cx + Math.sin(a) * r0, cy - Math.cos(a) * r0], [cx + Math.sin(a) * r * 0.93, cy - Math.cos(a) * r * 0.93]], i % 3 ? 1.2 : 2.4, UI.wt2); }
@@ -1368,52 +1408,64 @@ const PERSON = [
   [0.655, 0.200, 0.650, 0.215, 0.036, 0.97],     // head (face hottest)
   [0.668, 0.180, 0.640, 0.185, 0.030, 0.72],     // helmet, cooler
   [0.650, 0.245, 0.655, 0.270, 0.020, 0.86],     // neck
-  [0.630, 0.290, 0.700, 0.300, 0.040, 0.70],     // shoulders (jacket)
-  [0.665, 0.300, 0.690, 0.440, 0.058, 0.64],     // torso (plate carrier insulates)
-  [0.680, 0.440, 0.700, 0.470, 0.052, 0.66],     // hips
+  [0.630, 0.290, 0.700, 0.300, 0.040, 0.60],     // shoulders (jacket)
+  [0.665, 0.300, 0.690, 0.440, 0.058, 0.50],     // torso (plate carrier insulates)
+  [0.680, 0.440, 0.700, 0.470, 0.052, 0.54],     // hips
   [0.630, 0.300, 0.575, 0.350, 0.021, 0.70],     // upper arm forward
   [0.575, 0.350, 0.515, 0.320, 0.018, 0.74],     // forearm
   [0.700, 0.305, 0.655, 0.360, 0.020, 0.70],     // far arm
   [0.655, 0.360, 0.560, 0.335, 0.017, 0.74],
   [0.512, 0.318, 0.512, 0.318, 0.017, 0.93],     // hands
   [0.560, 0.333, 0.560, 0.333, 0.015, 0.92],
-  [0.690, 0.460, 0.620, 0.500, 0.036, 0.6],      // thigh (kneeling, mostly behind the crate)
+  [0.690, 0.460, 0.620, 0.500, 0.036, 0.5],      // thigh (kneeling, mostly behind the crate)
 ];
 function thermalField(fw, fh, asp, rnd, phase) {
-  const T = new Float32Array(fw * fh);
+  // a temperature field (0..1 on the palette): the room near ambient (black to the darkest blue), low-contrast warm
+  // patches where real rooms have them, and the person as a smooth temperature field with a soft halo
+  const T = new Float32Array(fw * fh), G = (d, s) => Math.exp(-(d * d) / (2 * s * s));
   for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) {
     const u = (i + 0.5) / fw, v = (j + 0.5) / fh, uu = u * asp;
-    let t = 0.125 + 0.035 * (1 - v) + 0.012 * Math.sin(u * 5 + v * 2);                 // walls: ambient, a little warmer up high
-    if (v > 0.62) t = 0.06 + 0.03 * (v - 0.62);                                         // concrete floor, cold
-    if (u > 0.08 && u < 0.3 && v > 0.1 && v < 0.48) t = 0.04;                           // window: cold glass (reflects the night sky)
-    if (Math.abs(u - 0.38) < 0.012 && v < 0.62) t = Math.max(t, 0.36 - 0.1 * v);         // a hot-water pipe down the wall
-    if (Math.abs(v - 0.07) < 0.01 && u > 0.38) t = Math.max(t, 0.3);                    // and along the ceiling
-    if (u > 0.84 && u < 0.95 && v > 0.13 && v < 0.155) t = 0.55;                          // a light fitting
-    let hp = 0;
-    for (const [ax, ay, bx, by, r, ht] of PERSON) { const dd = segD(uu, v, ax * asp, ay, bx * asp, by) - r * asp * 0.9; if (dd < 0) hp = Math.max(hp, 0.25 + ht * 0.76); }
-    if (u > 0.42 && u < 0.52 && Math.abs(v - 0.31 + (u - 0.47) * 0.06) < 0.008) hp = Math.max(hp, 0.24);   // the rifle, near ambient
-    t = Math.max(t, hp);
-    if (u > 0.47 && u < 0.86 && v > 0.47 && v < 0.64) {                                  // the crate (cover): cool, with a fading handprint
-      t = 0.045 + 0.012 * (v - 0.47) * 6; if (Math.abs(v - 0.475) < 0.006 || Math.abs(u - 0.475) < 0.005 || Math.abs(u - 0.855) < 0.005) t = 0.07;
-      const hx = (u - 0.56) / 0.03, hy = (v - 0.5) / 0.022; if (hx * hx + hy * hy < 1) t = 0.26;
+    let t = 0.07 + 0.02 * (1 - v) + 0.006 * Math.sin(u * 4 + v * 3);                       // walls: ambient, warmer up high
+    if (v > 0.62) t = 0.045 + 0.02 * (v - 0.62);                                           // concrete floor, cold
+    if (u > 0.08 && u < 0.3 && v > 0.1 && v < 0.48) t = 0.025 + 0.01 * v;                  // window: cold glass
+    t += 0.07 * G(u - 0.38, 0.012) * (v < 0.62 ? 1 - 0.4 * v : 0);                         // a hot-water pipe down the wall, soft
+    t += 0.06 * G(Math.hypot((u - 0.2) * 1.4, v - 0.62), 0.05);                             // a radiator under the window: a warm patch
+    t += 0.04 * G(Math.hypot(u - 0.2, (v - 0.5) * 2.5), 0.06);                             // warm air rising off it
+    t = Math.max(t, 0.42 * G(Math.hypot((u - 0.9) * 1.2, v - 0.14), 0.022) + 0.05);           // a ceiling lamp, hot, with bloom
+    if (u > 0.86 && u < 0.97 && v > 0.36 && v < 0.46) t = Math.max(t, 0.2 + 0.05 * (v - 0.36) / 0.1);   // a monitor on a shelf: a warm rectangle
+    t += 0.05 * G(Math.hypot(u - 0.915, v - 0.33), 0.03);                                  // its exhaust warming the wall
+    // the person: each capsule a temperature, edges falling off over about 2 px, a faint halo (warm air) round the body
+    let hp = 0, near = 1e9;
+    for (const [ax, ay, bx, by, r, ht] of PERSON) {
+      const dd = segD(uu, v, ax * asp, ay, bx * asp, by) - r * asp * 0.9; near = Math.min(near, dd);
+      const k = 1 - sstep(-0.012, 0.004, dd); if (k > 0) hp = Math.max(hp, (0.22 + ht * 0.76) * k + t * (1 - k));
     }
-    if (u > 0.1 && u < 0.24 && v > 0.76 && v < 0.8) t = 0.3;                             // floor vent, warm air
+    // inside the body: the core of each limb a touch warmer than its edge (clothing over skin)
+    t = Math.max(t, hp, t + 0.09 * Math.exp(-Math.max(0, near) / 0.02));
+    if (u > 0.42 && u < 0.52 && Math.abs(v - 0.31 + (u - 0.47) * 0.06) < 0.008) t = Math.max(t, 0.2);   // the rifle, near ambient
+    if (u > 0.47 && u < 0.86 && v > 0.47 && v < 0.64) {                                    // the crate (cover): cool, a fading handprint
+      t = 0.05 + 0.01 * (v - 0.47) * 6;
+      t += 0.17 * G(Math.hypot((u - 0.56) / 1.4, v - 0.5), 0.018);
+    }
     T[j * fw + i] = t;
   }
-  // blur (optics) and NUC noise: per-column offsets plus temporal noise; the second frame moves the noise
-  const B = new Float32Array(fw * fh);
-  for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) { let a = 0, n = 0; for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= fw || jj >= fh) continue; const k = di || dj ? 1 : 2; a += T[jj * fw + ii] * k; n += k; } B[j * fw + i] = a / n; }
-  const col = Array.from({ length: fw }, () => (rnd() - 0.5) * 0.018);
-  for (let k = 0; k < B.length; k++) B[k] += col[k % fw] + (rnd() - 0.5) * 0.03;
+  // optics blur (two passes), then sensor noise only (no fixed pattern grid): small temporal noise
+  let B = T;
+  for (let pass = 0; pass < 2; pass++) {
+    const O = new Float32Array(fw * fh);
+    for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) { let a = 0, n = 0; for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= fw || jj >= fh) continue; const k = di || dj ? (di && dj ? 0.5 : 1) : 2; a += B[jj * fw + ii] * k; n += k; } O[j * fw + i] = a / n; }
+    B = O;
+  }
+  for (let k = 0; k < B.length; k++) B[k] += (rnd() - 0.5) * 0.012;
   return B;
 }
 function thermal(x, w, h, rnd, phase, locked = false) {
-  const y0 = 58, H = h - 128, fw = 80, fh = Math.round(80 * H / w), F = thermalField(fw, fh, w / H, prng(17 + phase * 5), phase);
+  const y0 = 58, H = h - 128, fw = 120, fh = Math.round(120 * H / w), F = thermalField(fw, fh, w / H, prng(17 + phase * 5), phase), nr = prng(91 + phase * 3);
   const img = x.createImageData(w, H), d = img.data;
   for (let j = 0; j < H; j++) for (let i = 0; i < w; i++) {
     const fx = Math.min(fw - 1.001, Math.max(0, (i + 0.5) / w * fw - 0.5)), fy = Math.min(fh - 1.001, Math.max(0, (j + 0.5) / H * fh - 0.5)), ix = Math.floor(fx), iy = Math.floor(fy), ax = fx - ix, ay = fy - iy;
     let t = (F[iy * fw + ix] * (1 - ax) + F[iy * fw + ix + 1] * ax) * (1 - ay) + (F[(iy + 1) * fw + ix] * (1 - ax) + F[(iy + 1) * fw + ix + 1] * ax) * ay;
-    const vx = (i / w - 0.5) * 2, vy = (j / H - 0.5) * 2; t *= 1 - 0.12 * (vx * vx + vy * vy) / 2;                // vignetting
+    const vx = (i / w - 0.5) * 2, vy = (j / H - 0.5) * 2; t *= 1 - 0.12 * (vx * vx + vy * vy) / 2; t += (nr() - 0.5) * 0.012;   // vignetting, pixel noise
     const c = ironCol(t), k = (j * w + i) * 4; d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = 255;
   }
   putImg(x, img, 0, y0);
@@ -1484,9 +1536,9 @@ const CELL_ART = {
   off: (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); },
   boot: (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); arcS(x, w / 2, h * 0.44, 22, 5, UI.wt, -Math.PI / 2 + 0.5, Math.PI * 1.5 - 0.5); line(x, [[w / 2, h * 0.44 - 26], [w / 2, h * 0.44 - 6]], 5, UI.wt); for (let i = 0; i < 3; i++) dot(x, w / 2 - 14 + i * 14, h * 0.78, 3, i === 0 ? UI.wt : UI.wt3); },
   lock: (x, w, h, rnd) => {
-    wallpaper(x, w, h, rnd, 0.2); statusBar(x, w); analogClock(x, w / 2, 130, 62, 10.15, 9, { dotC: UI.acc }); tbar(x, w / 2 - 44, 206, 88, UI.wt2, 6);
+    wallpaper(x, w, h, rnd, 0.2); statusBar(x, w); analogClock(x, w / 2, 130, 62, 10.15, 9, { dotC: UI.acc }); tbar(x, w / 2 - 36, 206, 72, UI.wt3, 6);
     // one notification: an app glyph, a two-line preview
-    fillRR(x, 16, 236, w - 32, 54, 14, 'rgba(28,30,36,0.72)'); fillRR(x, 28, 248, 30, 30, 8, '#2f8f5a'); line(x, [[37, 256], [41, 265], [50, 270]], 3.4, '#fff'); tbar(x, 68, 252, 120, UI.wt2, 6); tbar(x, 68, 266, 170, UI.wt3, 6);
+    frost(x, 16, 236, w - 32, 54, 14, 'rgba(20,22,28,0.5)'); fillRR(x, 28, 248, 30, 30, 8, '#2f8f5a'); line(x, [[37, 256], [41, 265], [50, 270]], 3.4, '#fff'); tbar(x, 68, 251, 96, UI.wt2, 6); tbar(x, 68, 266, 150, UI.wt3, 5);
     // lock glyph, swipe-up chevron, torch and camera shortcuts
     fillRR(x, w / 2 - 9, h - 104, 18, 14, 3, UI.wt); arcS(x, w / 2, h - 105, 6.5, 2.4, UI.wt, Math.PI, 0); line(x, [[w / 2 - 6, h - 32], [w / 2, h - 37], [w / 2 + 6, h - 32]], 1.8, UI.wt2);
     for (const cx of [44, w - 44]) { dot(x, cx, h - 58, 20, 'rgba(255,255,255,0.16)'); arcS(x, cx, h - 58, 20, 1, 'rgba(255,255,255,0.12)'); }
@@ -1495,12 +1547,16 @@ const CELL_ART = {
     pill(x, w, h);
   },
   home: (x, w, h, rnd) => {
-    wallpaper(x, w, h, rnd); statusBar(x, w); analogClock(x, 64, 82, 38, 10.15, 9, { face: 'rgba(20,22,28,0.55)' });
+    wallpaper(x, w, h, rnd); statusBar(x, w); frost(x, 26, 44, 76, 76, 38, 'rgba(14,16,22,0.45)'); analogClock(x, 64, 82, 38, 10.15, 9, { face: 'rgba(0,0,0,0)' });
     // a weather-style widget: a moon glyph and two short lines
-    fillRR(x, 120, 54, w - 136, 56, 14, 'rgba(20,22,28,0.55)'); dot(x, 144, 82, 11, '#d9dce4'); dot(x, 149, 78, 10, 'rgba(32,34,42,1)'); tbar(x, 166, 72, 80, UI.wt2, 6); tbar(x, 166, 86, 50, UI.wt3, 6);
+    frost(x, 120, 54, w - 136, 56, 14, 'rgba(14,16,22,0.42)'); dot(x, 142, 82, 11, '#d9dce4'); dot(x, 147, 78, 10, 'rgba(26,28,36,1)');
+    // a forecast row: small condition glyphs (cloud, cloud, moon, sun) on a faint temperature curve, no digits
+    const cloud = (cx, cy, k, a) => { x.fillStyle = `rgba(230,232,240,${a})`; x.beginPath(); x.arc(cx - 3 * k, cy, 3.4 * k, 0, Math.PI * 2); x.arc(cx + 2 * k, cy - 1.5 * k, 4.2 * k, 0, Math.PI * 2); x.arc(cx + 6 * k, cy + 0.5 * k, 2.8 * k, 0, Math.PI * 2); x.fill(); x.fillRect(cx - 6 * k, cy, 12.5 * k, 3.4 * k); };
+    cloud(176, 72, 0.8, 0.75); cloud(206, 74, 0.8, 0.55); dot(x, 236, 72, 4.4, 'rgba(220,224,235,0.7)'); dot(x, 238, 70.5, 3.8, 'rgba(26,28,36,1)'); dot(x, 266, 72, 3.2, '#f2c14e'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; line(x, [[266 + Math.cos(a) * 5, 72 + Math.sin(a) * 5], [266 + Math.cos(a) * 6.8, 72 + Math.sin(a) * 6.8]], 1.1, '#f2c14e'); }
+    line(x, [[166, 96], [186, 93], [206, 94], [226, 98], [246, 96], [272, 90]], 1.4, UI.wt3); for (const [px, py] of [[176, 94.5], [206, 94], [236, 97], [266, 91.5]]) dot(x, px, py, 1.6, UI.wt2);
     [4, 5, 6, 7, 8, 9, 10, 11].forEach((k, i) => icon(x, 46 + (i % 4) * 76, 160 + Math.floor(i / 4) * 74, k));
     dot(x, w / 2 - 8, h - 104, 2.6, UI.wt); dot(x, w / 2 + 8, h - 104, 2.6, 'rgba(255,255,255,0.3)');
-    fillRR(x, 12, h - 88, w - 24, 66, 22, 'rgba(255,255,255,0.1)'); [2, 3, 0, 1].forEach((k, i) => icon(x, 46 + i * 76, h - 55, k)); pill(x, w, h);
+    frost(x, 12, h - 88, w - 24, 66, 22, 'rgba(255,255,255,0.09)'); [2, 3, 0, 1].forEach((k, i) => icon(x, 46 + i * 76, h - 55, k)); pill(x, w, h);
   },
   app_open: (x, w, h, rnd) => { CELL_ART.home(x, w, h, rnd); x.fillStyle = 'rgba(0,0,0,0.35)'; x.fillRect(0, 0, w, h); fillRR(x, 30, 70, w - 60, h - 150, 26, '#1a1d23'); icon(x, w / 2, h / 2 - 20, 0, 64); },
   map_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1); appBar(x, w); navBar(x, w, h); },
@@ -1515,7 +1571,7 @@ const CELL_ART = {
   call_in: (x, w, h, rnd) => {
     wallpaper(x, w, h, rnd, 0.6); statusBar(x, w); avatar(x, w / 2, 150, 46, '#3d4f66', '#c9a68a'); arcS(x, w / 2, 150, 54, 1.5, 'rgba(255,255,255,0.18)'); arcS(x, w / 2, 150, 64, 1, 'rgba(255,255,255,0.08)');
     tbar(x, w / 2 - 54, 218, 108, UI.wt2, 8); sigBars(x, w / 2 - 10, 248, 3, UI.wt2); dot(x, w / 2 + 12, 244, 2.5, UI.green);
-    dot(x, 80, h - 90, 30, UI.red); dot(x, w - 80, h - 90, 30, UI.green); line(x, [[w - 90, h - 98], [w - 85, h - 86], [w - 70, h - 82]], 5, '#fff'); line(x, [[70, h - 86], [90, h - 86]], 5, '#fff'); pill(x, w, h);
+    dot(x, 80, h - 90, 30, UI.red); dot(x, w - 80, h - 90, 30, UI.green); line(x, [[w - 90, h - 98], [w - 85, h - 86], [w - 70, h - 82]], 5, '#fff'); x.save(); x.translate(80, h - 90); x.rotate(Math.PI * 0.75); line(x, [[-10, -8], [-5, 4], [10, 8]], 5, '#fff'); x.restore(); pill(x, w, h);
   },
   alert_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1); appBar(x, w); x.fillStyle = 'rgba(80,0,0,0.35)'; x.fillRect(0, 58, w, h); fillRR(x, 20, h / 2 - 90, w - 40, 170, 20, '#2a1416'); x.beginPath(); x.moveTo(w / 2, h / 2 - 66); x.lineTo(w / 2 + 34, h / 2 - 8); x.lineTo(w / 2 - 34, h / 2 - 8); x.closePath(); x.fillStyle = UI.red; x.fill(); fillRR(x, w / 2 - 3, h / 2 - 50, 6, 24, 3, '#fff'); dot(x, w / 2, h / 2 - 18, 3.5, '#fff'); tbar(x, 60, h / 2 + 12, w - 120, UI.wt2, 7); fillRR(x, 50, h / 2 + 46, w - 100, 24, 12, UI.red); navBar(x, w, h); },
   alert_b: (x, w, h, rnd) => { CELL_ART.alert_a(x, w, h, rnd); x.fillStyle = 'rgba(255,40,40,0.16)'; x.fillRect(0, 0, w, h); rr(x, 3, 3, w - 6, h - 6, 24); x.lineWidth = 6; x.strokeStyle = 'rgba(255,75,75,0.7)'; x.stroke(); },
@@ -1563,16 +1619,21 @@ function buildScreen() {
 // captive screws, a raised camera island screwed to the cover. The keys sit in pockets moulded into the TPU.
 const mm = (v) => v / 1000;
 const TB = {
-  tpu: { x: 67.5, y: 110.5, r: 12, bulge: 1.6, zone: 26, z0: -8.2, z1: 8.2 },  // TPU overmould: side wall 2 mm, corners 4.4 mm
+  tpu: { x: 67.5, y: 110.5, r: 12, bulge: 1.5, zone: 13, z0: -8.2, z1: 8.2 },  // TPU overmould: straight side walls 2 mm; corner bumpers 1.5 mm proud, blended over 13 mm
   glass: { x: 60, y: 104.5, r: 6, z0: -7.0, z1: -5.9 },     // 1.1 mm cover glass, 120 x 209, 1.2 mm below the TPU lip
   active: { w: 107.7, h: 172.3, y: -2.65 },                // 8.0" 16:10 panel, active area
   frame: { x: 65.5, y: 108.5, r: 11, z0: -5.6, z1: 3.6 },  // anodised aluminium mid-frame (shows in the key and port pockets)
   back: { x: 60, y: 103, r: 8, z0: 2.6, z1: 6.6, crown: [4, 0.8] },   // PC-GF10 back cover: flat top, edges crowned down 0.8 mm over 4 mm
   door: { x: 48, y0: -90, y1: -8, r: 5 },                  // battery door on the lower half of the cover
 };
+// hand-strap pockets in the back rim (x = pocket span on the +X side, mirrored), strap bar pin, strap centre y
+const STRAP = { px0: 61.5, px1: 64.9, pz0: 3.9, pinX: 63.2, pinZ: 5.9, y: -22 };
+// lanyard bar position (back-rim slot centre, bottom +X corner)
+const LAN = { x: 62.4, y: -104.4 };
 TB.env = [2 * (TB.tpu.x + TB.tpu.bulge), 2 * (TB.tpu.y + TB.tpu.bulge), TB.tpu.z1 - TB.tpu.z0];
-// the TPU outline (mm -> metres), inset by off: a rounded rectangle whose corners swell out by `bulge`, blending into
-// the straight sides over `zone` mm (the corners take the drops)
+// the TPU outline (mm -> metres), inset by off: straight, parallel side walls; only the corner bumpers stand `bulge`
+// proud of the wall line, blended into the straight wall with one tangent (smoothstep) run over `zone` mm (the corners
+// take the drops). The middle of every side is dead straight.
 function tpuOutline(off = 0, path = false) {
   const T = TB.tpu, hx = T.x - off, hy = T.y - off, r = Math.max(0.5, T.r - off), pts = [];
   const B = (d) => T.bulge * (1 - sstep(0, T.zone, d));
@@ -1582,7 +1643,7 @@ function tpuOutline(off = 0, path = false) {
     for (let i = 0; i <= 12; i++) { const a = a0 + (i / 12) * Math.PI / 2, rr = r + T.bulge; pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
     // straight side from this corner to the next: outward normal is the direction at a0 + 90 deg
     const na = a0 + Math.PI / 2, ox = Math.cos(na), oy = Math.sin(na), L = Math.hypot(nx - cx, ny - cy);
-    const ds = [1, 3, 5, 8, 11, 14, 17, 20, 23, T.zone]; const S = [...ds, ...ds.slice().reverse().map((d) => L - d)].filter((d) => d > 0 && d < L);
+    const ds = [0.8, 1.8, 3, 4.5, 6, 7.5, 9, 10.5, 12, T.zone]; const S = [...ds, ...ds.slice().reverse().map((d) => L - d)].filter((d) => d > 0 && d < L);
     for (const d of S) { const t = d / L, px = cx + (nx - cx) * t + ox * r, py = cy + (ny - cy) * t + oy * r, w = B(Math.min(d, L - d)); pts.push([px + ox * w, py + oy * w]); }
   }
   const s = path ? new THREE.Path() : new THREE.Shape();
@@ -1591,10 +1652,11 @@ function tpuOutline(off = 0, path = false) {
 }
 
 // TPU overmould: a fine mould stipple (VDI-30 like), a slow blotch, roughness 0.66-0.78 (the slight sheen of new TPU)
-function tpuMaps(N, seed, { tone = 0.072, rough = [0.68, 0.8], scuff = false } = {}) {
+function tpuMaps(N, seed, { tone = 0.072, rough = [0.8, 0.9], scuff = false } = {}) {
   const R = prng(seed), n2 = N * N, g = stretch(fbmT(N, 32, 3, R)), blot = stretch(fbmT(N, 2, 3, R)), st = stretch(fbmT(N, 110, 1, R)), H = new Float32Array(n2);
   const scr = new Float32Array(n2);
-  if (scuff) for (let j = 0; j < 120; j++) addScratch(scr, N, R() * N, R() * N, (R() - 0.5) * 0.9, 6 + R() * 30, (R() - 0.5) * 0.01, 0.4 + R() * 0.6);
+  const sk = scuff === true ? 1 : +scuff || 0;
+  if (sk) for (let j = 0; j < Math.round(120 * sk); j++) addScratch(scr, N, R() * N, R() * N, (R() - 0.5) * 0.9, 6 + R() * 30, (R() - 0.5) * 0.01, (0.4 + R() * 0.6) * Math.min(1, sk * 1.4));
   for (let i = 0; i < n2; i++) H[i] = g[i] * 0.1 + st[i] * 0.2 - scr[i] * 0.3;
   for (let j = 0; j < 500; j++) addDimple(H, N, R() * N, R() * N, 0.8 + R(), 0.15);
   const map = rgbaCanvas(N, N, (i, o) => { const t = (0.94 + 0.1 * blot[i] + 0.04 * g[i]) * tone + 0.04 * scr[i]; o[0] = t * 0.98; o[1] = t; o[2] = t * 1.04; });
@@ -1623,6 +1685,15 @@ function grainMaps(N, seed) {
   const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.8 + 0.1 * (1 - H[i]); o[2] = 0; });
   return { map, normal: normalFrom(H, N, 2.4), orm };
 }
+// back cover: PC-GF10 with a fine spark-erosion mould texture (VDI 27: pits about 0.15-0.3 mm, uniform), matte,
+// dark grey, one notch lighter than the TPU so the part line reads, never stone-like (no blotches, no large relief)
+function coverMaps(N, seed) {
+  const R = prng(seed), g = stretch(fbmT(N, 96, 1, R)), f = stretch(fbmT(N, 48, 2, R)), H = new Float32Array(N * N);
+  for (let i = 0; i < H.length; i++) H[i] = 0.6 * g[i] + 0.4 * f[i];
+  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.085 * (0.97 + 0.05 * f[i]); o[0] = t * 0.98; o[1] = t; o[2] = t * 1.05; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.8 + 0.08 * g[i]; o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 1.2), orm };
+}
 // cover glass roughness: clean (0.035) almost everywhere; a few oily thumb prints (ridged whorls) and one wipe arc
 function glassPrintMap(N, seed) {
   const R = prng(seed), V = new Float32Array(N * N);
@@ -1642,30 +1713,32 @@ function glassPrintMap(N, seed) {
 }
 // a thin-film (iridescent) dark germanium-like window for the thermal lens
 function tabletMaterials() {
-  TX.tpu = texSet('tpu', tpuMaps(256, 401));
-  TX.tpuScuff = texSet('tpu_scuffed', tpuMaps(256, 409, { tone: 0.15, rough: [0.84, 0.94], scuff: true }));
+  TX.tpu = texSet('tpu', tpuMaps(256, 401, { scuff: 0.45 }));
   TX.webbing = texSet('webbing', webbingMaps(256, 419));
   TX.grain = texSet('tpu_grain', grainMaps(256, 431));
   const T = (m) => { TILED.add(m); return m; };
   const diel = (m) => { m.metalness = 0; m.metalnessMap = null; return m; };   // dielectrics export metallicFactor 0
-  M.tpu = T(diel(pbr('tpu_bumper', TX.tpu, 0.03, { envMapIntensity: 0.42 }, 0.22)));
-  M.tpuScuff = T(diel(pbr('tpu_scuffed', TX.tpuScuff, 0.03, { envMapIntensity: 0.4 }, 0.4)));
-  CHIP.set(M.tpu, M.tpuScuff);
+  M.tpu = T(diel(pbr('tpu_bumper', TX.tpu, 0.03, { envMapIntensity: 0.3 }, 0.22)));
   // frame_alloy: hard-anodised 6063, satin (bead-blast before anodise); seen only in the key and port pockets
   M.alloy = T(pbr('frame_alloy', TX.under, 0.1, { color: '#24262a', metalness: 0.6, envMapIntensity: 0.45 }, 0.4));
   { const o = ormScaled(TX.under.orm.image, 1.6, 'frame_orm'); M.alloy.roughnessMap = o; M.alloy.metalnessMap = o; }
   M.trim = T(pbr('camera_trim', TX.under, 0.1, { color: '#50545c', metalness: 0.7, envMapIntensity: 0.8 }, 0.3));
   { const o = ormScaled(TX.under.orm.image, 1.15, 'trim_orm'); M.trim.roughnessMap = o; M.trim.metalnessMap = o; }
-  M.backCover = T(diel(pbr('back_cover', TX.polymer, 0.035, { color: '#d8d8d8', envMapIntensity: 0.5 }, 0.5)));
+  TX.cover = texSet('back_cover', coverMaps(256, 443));
+  M.backCover = T(diel(pbr('back_cover', TX.cover, 0.016, { envMapIntensity: 0.32 }, 0.35)));
   M.gripPad = T(diel(pbr('rubber_grip', TX.grain, 0.012, { envMapIntensity: 0.4 }, 0.6)));
   M.keys = T(diel(pbr('rubber_keys', TX.tpu, 0.02, { envMapIntensity: 0.5 }, 0.3)));
   // the one accent: the PTT cap, a dark desaturated violet pigment (not emissive)
-  M.ptt = new THREE.MeshStandardMaterial({ name: 'ptt_accent', color: '#2c2440', roughness: 0.66, metalness: 0, envMapIntensity: 0.45 });
+  M.ptt = new THREE.MeshStandardMaterial({ name: 'ptt_accent', color: '#1f1a28', roughness: 0.62, metalness: 0, envMapIntensity: 0.5 });
   M.ptt.userData.tile = 0.02;
   M.mask = new THREE.MeshStandardMaterial({ name: 'glass_mask', color: '#040405', roughness: 0.3, metalness: 0 });
-  M.inkEdge = new THREE.MeshStandardMaterial({ name: 'panel_border', color: '#0e0f12', roughness: 0.35, metalness: 0 });
+  M.inkEdge = new THREE.MeshStandardMaterial({ name: 'panel_border', color: '#060608', roughness: 0.3, metalness: 0 });
   M.deco = new THREE.MeshPhysicalMaterial({ name: 'camera_deco', color: '#0b0c0e', roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.0 });
-  M.thermal = new THREE.MeshPhysicalMaterial({ name: 'thermal_window', color: '#3a3d44', roughness: 0.12, metalness: 0.85, iridescence: 1, iridescenceIOR: 1.8, iridescenceThicknessRange: [240, 420], envMapIntensity: 1.1 });
+  M.thermal = new THREE.MeshPhysicalMaterial({ name: 'thermal_window', color: '#646872', roughness: 0.16, metalness: 0.9, iridescence: 1, iridescenceIOR: 2.0, iridescenceThicknessRange: [320, 560], envMapIntensity: 1.0 });
+  // lens AR coating (the faint green-violet ring seen in a real camera lens) and the moulded strap parts
+  M.coating = new THREE.MeshPhysicalMaterial({ name: 'lens_coating', color: '#14161c', roughness: 0.08, metalness: 0.6, iridescence: 1, iridescenceIOR: 1.6, iridescenceThicknessRange: [380, 620], envMapIntensity: 1.0 });
+  M.thread = new THREE.MeshStandardMaterial({ name: 'strap_stitch', color: '#3b3c40', roughness: 0.9, metalness: 0 });
+  M.buckle = new THREE.MeshStandardMaterial({ name: 'strap_buckle', color: '#141517', roughness: 0.55, metalness: 0, envMapIntensity: 0.5 });
   M.pogo = new THREE.MeshStandardMaterial({ name: 'pogo_gold', color: '#c9a24a', roughness: 0.3, metalness: 1.0 });
   M.webbing = T(diel(pbr('strap_webbing', TX.webbing, 0.025, { envMapIntensity: 0.35 }, 0.9)));
   M.torx = new THREE.MeshStandardMaterial({ name: 'fasteners', color: '#3a3c41', roughness: 0.4, metalness: 0.85, envMapIntensity: 0.8 });
@@ -1673,14 +1746,16 @@ function tabletMaterials() {
   M.vent = new THREE.MeshStandardMaterial({ name: 'vent_membrane', color: '#2b2c2f', roughness: 0.95, metalness: 0 });
   M.die = new THREE.MeshStandardMaterial({ name: 'flash_led', color: '#e4dcc0', roughness: 0.4, metalness: 0 });
   M.dieWarm = new THREE.MeshStandardMaterial({ name: 'flash_led_warm', color: '#e2a54e', roughness: 0.4, metalness: 0 });
-  for (const m of [M.mask, M.inkEdge, M.deco, M.thermal, M.pogo, M.torx, M.steel, M.vent, M.die, M.dieWarm]) m.userData.tile = 0.05;
+  for (const m of [M.mask, M.inkEdge, M.deco, M.thermal, M.coating, M.thread, M.buckle, M.pogo, M.torx, M.steel, M.vent, M.die, M.dieWarm]) m.userData.tile = 0.05;
+  // speaker mesh: black-coated perforated steel (it sits at the bottom of the slots, so it must read as a dark floor)
+  M.grille.color.set('#5a5a5e');
   // the crevice reads as a fine shadow line with a little dust in it, not a black outline
   M.crevice.color.set('#161513'); M.crevice.roughness = 1;
   // the flash diffuser: a clear PC Fresnel lens over the dies
   M.flash.color.set('#9a978e'); M.flash.roughness = 0.2; M.flash.transparent = true; M.flash.opacity = 0.55; M.flash.depthWrite = false;
   // cover glass: AR-coated, clean except a few prints, a softer veil
   TX.glassPrint = asTex(glassPrintMap(512, 97)); TX.glassPrint.name = 'glass_prints_orm';
-  Object.assign(M.screenGlass, { roughnessMap: TX.glassPrint, roughness: 1, clearcoat: 0.35, clearcoatRoughness: 0.05, specularIntensity: 0.45, envMapIntensity: 0.6, opacity: 0.12 });
+  Object.assign(M.screenGlass, { roughnessMap: TX.glassPrint, roughness: 1, clearcoat: 0.12, clearcoatRoughness: 0.12, specularIntensity: 0.4, envMapIntensity: 0.42, opacity: 0.12 });
   M.screenGlass.userData.tile = 0.24;
   // one status LED, green (scene.js tints it red on alert, amber on low battery)
   M.led.emissive.set('#2fc26b'); M.led.userData.emissive = '#2fc26b';
@@ -1736,25 +1811,29 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
       cutY(F.y - 0.1, 116, -27, -9, -4.0, 2.0, 1.6),             // programmable key (top edge)
       cutY(-116, -F.y + 0.1, -9.4, 9.4, -4.6, 3.0, 1.6),         // USB-C flap well (bottom edge)
     );
-    // nail notch at the flap's free edge, lanyard channel through the bottom +X corner, mic holes
+    // nail notch at the flap's free edge, mic holes
     g = subtract(g, cylY(mm(1.7), mm(-116), mm(-F.y + 0.2), 20).translate(0, 0, mm(-4.6)),
-      cylZ(mm(1.3), mm(4.2), mm(9), 18).translate(mm(62.6), mm(-104.6), 0), cylY(mm(0.6), mm(F.y - 0.2), mm(116), 12).translate(mm(14), 0, mm(-1.2)));
-    g = subtract(g, cylY(mm(1.3), mm(-118), mm(-104.6), 18).translate(mm(62.6), 0, mm(6.0)), cylY(mm(0.6), mm(-116), mm(-F.y + 0.2), 12).translate(mm(-24), 0, mm(-1.2)));
-    // scuffs only where a dropped tablet lands: the four corner apexes (front lip and back rim included)
-    const apex = (p) => Math.abs(p[0]) > mm(57) && Math.abs(p[1]) > mm(100);
-    add(body, g, M.tpu, 'body_bumper', { wear: { k: 300, chip: 0.42, freq: 70, kIn: 420, mask: apex } });
+      cylY(mm(0.6), mm(F.y - 0.2), mm(116), 12).translate(mm(14), 0, mm(-1.2)), cylY(mm(0.6), mm(-116), mm(-F.y + 0.2), 12).translate(mm(-24), 0, mm(-1.2)));
+    // lanyard bar (bottom +X corner): a 2.5 x 4 mm slot in the back rim meets a 4 x 2.5 mm slot out of the bottom edge;
+    // the 1.8 mm of TPU between them is the bar the cord loops round. Each mouth has a 0.3 mm radius step.
+    const LY = LAN;
+    g = subtract(g,
+      slabZ(rect(mm(LY.x - 1.25), mm(LY.x + 1.25), mm(LY.y - 2), mm(LY.y + 2), mm(1.24)), mm(3.9), mm(9), 0, 1, 10),
+      slabZ(rect(mm(LY.x - 1.55), mm(LY.x + 1.55), mm(LY.y - 2.3), mm(LY.y + 2.3), mm(1.54)), mm(Tp.z1 - 0.3), mm(9), 0, 1, 10),
+      cutY(-118, LY.y + 1.2, LY.x - 2, LY.x + 2, 3.9, 6.4, 1.2));
+    // hand-strap pockets: the strap bars sit recessed in the back rim (nothing stands proud of the wall line)
+    g = subtract(g, ...[1, -1].map((sg) => slabZ(rect(mm(sg > 0 ? STRAP.px0 : -STRAP.px1), mm(sg > 0 ? STRAP.px1 : -STRAP.px0), mm(STRAP.y - 15.5), mm(STRAP.y + 15.5), mm(1.4)), mm(STRAP.pz0), mm(10), mm(0.3), 1, 8)));
+    // no per-triangle wear split here: on the long extruded strips it cut saw-tooth notches into the corners. The wear
+    // is in the TPU texture instead (fine scuff lines, a few lighter rub marks), which reads the same at any distance
+    add(body, g, M.tpu, 'body_bumper', { wear: false });
     // the back rim's grip zone: a moulded leather-grain texture, 0.15 mm proud, inside the rim's bevel
     const zone = slabZ(ringShape(tpuOutline(2.2), [rrPath(B.x + 2.0, B.y + 2.0, B.r + 2.0)]), mm(Tp.z1 - 0.3), mm(Tp.z1 + 0.15), mm(0.12), 1, 8);
-    add(body, subtract(zone, cylZ(mm(1.5), mm(7), mm(9), 18).translate(mm(62.6), mm(-104.6), 0)), M.gripPad, 'body_grip_zone', { wear: false });
-    // the lanyard channel's floor reads dark through its mouth
-    add(body, discZ(62.6, -104.6, 1.3, 4.3, 18), M.crevice, 'body_lanyard_shadow', { cast: false, uv: 'box' });
-    // hand-strap anchors: loops moulded into the back rim (the webbing slots through them)
-    const anchor = (s) => {
-      const prof = roundedShape([[8.0, -44, 1.5], [12.2, -38.5, 2.6], [12.2, -5.5, 2.6], [8.0, 0, 1.5]].map(([z, y, r]) => [mm(z), mm(y), mm(r)]));
-      const a = slabX(prof, mm(s > 0 ? 61 : -66), mm(s > 0 ? 66 : -61), mm(1.0), 3, 8);
-      return subtract(a, new THREE.BoxGeometry(mm(12), mm(27.5), mm(1.8)).translate(mm(s * 63.5), mm(-22), mm(9.9)));
-    };
-    add(body, mergeUV([anchor(1), anchor(-1)]), M.tpu, 'body_strap_anchors', { wear: false });
+    add(body, subtract(zone, slabZ(rect(mm(LY.x - 2.2), mm(LY.x + 2.2), mm(LY.y - 3.0), mm(LY.y + 3.0), mm(2)), mm(7), mm(9), 0, 1, 8),
+      ...[1, -1].map((sg) => slabZ(rect(mm(sg > 0 ? STRAP.px0 - 0.6 : -STRAP.px1 - 0.6), mm(sg > 0 ? STRAP.px1 + 0.6 : -STRAP.px0 + 0.6), mm(STRAP.y - 16.1), mm(STRAP.y + 16.1), mm(2)), mm(7), mm(9), 0, 1, 8))), M.gripPad, 'body_grip_zone', { wear: false });
+    // the lanyard channel floor and the strap-pocket floors read dark
+    add(body, mergeUV([discZ(LY.x, LY.y, 1.0, 3.95, 18), ...[1, -1].map((sg) => slabZ(rect(mm(sg > 0 ? STRAP.px0 : -STRAP.px1), mm(sg > 0 ? STRAP.px1 : -STRAP.px0), mm(STRAP.y - 15.5), mm(STRAP.y + 15.5), mm(1.4)), mm(STRAP.pz0), mm(STRAP.pz0 + 0.04), 0, 1, 8))]), M.crevice, 'body_pocket_floors', { cast: false, uv: 'box' });
+    // strap bars: stainless pins across each pocket, pressed into the pocket ends
+    add(body, mergeUV([1, -1].map((sg) => cylY(mm(0.75), mm(STRAP.y - 15.6), mm(STRAP.y + 15.6), 16).translate(mm(sg * STRAP.pinX), 0, mm(STRAP.pinZ)))), M.steel, 'body_strap_bars', { cast: false });
   }
 
   /* back cover: PC-GF10, domed, screwed to the frame over a gasket; 0.3 mm part line to the TPU rim */
@@ -1779,21 +1858,26 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
     add(body, mergeUV([-6, -2, 2, 6].map((x) => cylZ(mm(0.9), mm(zB - 0.62), mm(zB - 0.5), 16).translate(mm(x), mm(-96.5), 0))), M.pogo, 'body_pogo_pads', { cast: false });
   }
 
-  /* camera island: anodised trim 1.3 mm proud, filleted, two Torx screws; main + ultrawide lenses, thermal, dual-tone flash */
+  /* camera island: a moulded seat (boss) on the cover, the anodised island on it (0.4 mm chamfers, two Torx screws);
+     main + ultrawide lenses in stepped bezels, a recessed germanium thermal window, a dual-tone flash */
   {
-    const cy = 92, zI0 = zB + domeAt(0, cy) - 0.3, zI1 = zB + domeAt(0, cy) + 1.3;
-    let isl = rbox(mm(-26), mm(26), mm(cy - 8), mm(cy + 8), mm(zI0), mm(zI1), mm(0.75), 3, 10);
+    const cy = 92, zI0 = zB + 0.2, zI1 = zB + 1.75;
+    add(body, rbox(mm(-27.4), mm(27.4), mm(cy - 9.4), mm(cy + 9.4), mm(zB - 0.3), mm(zB + 0.4), mm(0.4), 2, 10), M.backCover, 'body_cam_seat');
+    let isl = rbox(mm(-26), mm(26), mm(cy - 8), mm(cy + 8), mm(zI0), mm(zI1), mm(0.4), 1, 10);
     const lens = [[-3.5, 4.5, 'main'], [6.5, 3.5, 'wide']], th = [-14.5, 4.0], fl = [15.5, 3.0];
-    isl = subtract(isl, ...lens.map(([x, r]) => cylZ(mm(r), mm(zI1 - 0.3), mm(zI1 + 1), 32).translate(mm(x), mm(cy), 0)), cylZ(mm(th[1]), mm(zI1 - 0.9), mm(zI1 + 1), 32).translate(mm(th[0]), mm(cy), 0), cylZ(mm(fl[1]), mm(zI1 - 0.6), mm(zI1 + 1), 28).translate(mm(fl[0]), mm(cy), 0));
+    isl = subtract(isl, ...lens.map(([x, r]) => cylZ(mm(r + 0.95), mm(zI1 - 0.25), mm(zI1 + 1), 40).translate(mm(x), mm(cy), 0)), cylZ(mm(th[1]), mm(zI1 - 0.9), mm(zI1 + 1), 32).translate(mm(th[0]), mm(cy), 0), cylZ(mm(fl[1]), mm(zI1 - 0.6), mm(zI1 + 1), 28).translate(mm(fl[0]), mm(cy), 0));
     add(body, isl, M.trim, 'body_cam_island', { wear: false });
     add(body, mergeUV([-23, 23].map((x) => torxScrew(mm(1.0), V3(mm(x), mm(cy), mm(zI1 - 0.12)), V3(0, 0, 1), x))), M.torx, 'body_cam_screws', { cast: false });
-    // lenses: cover glass flush with the island top; under it the barrel's black baffle rings, the coated front element and the iris
-    const zL = zI1 - 0.08;
-    add(body, mergeUV(lens.map(([x, r]) => cylZ(mm(r), mm(zL - 0.2), mm(zL), 32).translate(mm(x), mm(cy), 0))), M.lens, 'body_cam_lenses', { cast: false });
+    // stepped bezel per lens: a turned ring standing 0.3 mm above the island floor of its counterbore, a 0.2 mm step down
+    // to the cover glass; under the glass the black baffle rings, the coated front element and the iris
+    const zL = zI1 - 0.18;
+    const bez = (x, r) => new THREE.LatheGeometry([[r, zL - 0.3], [r, zI1 + 0.05], [r + 0.15, zI1 + 0.2], [r + 0.75, zI1 + 0.2], [r + 0.92, zI1 + 0.05], [r + 0.92, zI1 - 0.3]].map(([a, z]) => new THREE.Vector2(mm(a), mm(z))), 40).rotateX(Math.PI / 2).translate(mm(x), mm(cy), 0);
+    add(body, mergeUV(lens.map(([x, r]) => bez(x, r))), M.trim, 'body_cam_bezels', { wear: false, crease: 40 });
+    add(body, mergeUV(lens.map(([x, r]) => cylZ(mm(r), mm(zL - 0.2), mm(zL), 40).translate(mm(x), mm(cy), 0))), M.lens, 'body_cam_lenses', { cast: false });
     const rings = [];
-    for (const [x, r] of lens) { rings.push(ringZ(x, cy, r * 0.86, r * 0.98, zL + 0.004, 32), ringZ(x, cy, r * 0.55, r * 0.68, zL + 0.004, 32), ringZ(x, cy, r * 0.1, r * 0.2, zL + 0.004, 20)); }
+    for (const [x, r] of lens) { rings.push(ringZ(x, cy, r * 0.86, r * 0.995, zL + 0.004, 40), ringZ(x, cy, r * 0.55, r * 0.66, zL + 0.004, 32), ringZ(x, cy, r * 0.1, r * 0.2, zL + 0.004, 20)); }
     add(body, mergeUV(rings), M.mask, 'body_cam_baffles', { cast: false, uv: 'box' });
-    add(body, mergeUV(lens.map(([x, r]) => ringZ(x, cy, r * 0.68, r * 0.84, zL + 0.004, 32))), M.thermal, 'body_cam_coating', { cast: false, uv: 'box' });
+    add(body, mergeUV(lens.map(([x, r]) => ringZ(x, cy, r * 0.66, r * 0.86, zL + 0.004, 40))), M.coating, 'body_cam_coating', { cast: false, uv: 'box' });
     add(body, mergeUV(lens.map(([x, r]) => ringZ(x, cy, r * 0.2, r * 0.55, zL + 0.003, 32))), M.deco, 'body_cam_elements', { cast: false, uv: 'box' });
     // thermal camera: a round chalcogenide window recessed 0.9 mm behind a black bezel ring
     add(body, ringZ(th[0], cy, th[1] * 0.78, th[1], zI1 - 0.88, 32), M.mask, 'body_thermal_bezel', { cast: false, uv: 'box' });
@@ -1818,13 +1902,26 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
     const slotP = (x0, x1, y0, y1) => roundedPath([[x0, y0, (y1 - y0) / 2 - 0.01], [x1, y0, (y1 - y0) / 2 - 0.01], [x1, y1, (y1 - y0) / 2 - 0.01], [x0, y1, (y1 - y0) / 2 - 0.01]].map(([x, y, r]) => [mm(x), mm(y), mm(r)]));
     const holes = [win(0.55), slotP(-7, 7, 97.9, 99.0)];
     for (const row of [0, 1]) for (let i = 0; i < 9 - row; i++) { const x = -12.8 + i * 3.2 + (row ? 1.6 : 0), y = -97.2 - row * 1.9; holes.push(slotP(x - 1.2, x + 1.2, y - 0.45, y + 0.45)); }
-    add(body, slabZ(ringShape(rr(G.x - 0.1, G.y - 0.1, G.r), holes), mm(G.z1), mm(G.z1 + 0.1), 0, 1, 12), M.mask, 'body_glass_mask', { cast: false });
-    // the panel's own inactive border shows as a slightly lighter black line inside the ink
-    add(body, slabZ(ringShape(roundedShape([[-aw - 0.55, y0 - 0.55, 2.55], [aw + 0.55, y0 - 0.55, 2.55], [aw + 0.55, y1 + 0.55, 2.55], [-aw - 0.55, y1 + 0.55, 2.55]].map(([x, y, r]) => [mm(x), mm(y), mm(r)])), [win(0)]), mm(G.z1 + 0.02), mm(G.z1 + 0.1), 0, 1, 12), M.inkEdge, 'body_panel_border', { cast: false });
-    // earpiece: a steel mesh 0.4 mm down in the slot; loudspeaker: a perforated grille behind the slot pattern
-    const zM = G.z1 + 0.1;     // behind the ink: the steel mesh shows only through the slots
-    add(body, mergeUV([rbox(mm(-7.3), mm(7.3), mm(97.6), mm(99.3), mm(zM + 0.15), mm(zM + 0.2), mm(0.02), 1), rbox(mm(-14.3), mm(14.3), mm(-100.0), mm(-96.3), mm(zM + 0.15), mm(zM + 0.2), mm(0.02), 1)]), M.grille, 'body_speaker_grilles', { cast: false });
-    add(body, mergeUV([rbox(mm(-7.5), mm(7.5), mm(97.4), mm(99.5), mm(zM + 0.4), mm(zM + 0.5), mm(0.02), 1), rbox(mm(-14.5), mm(14.5), mm(-100.2), mm(-96.1), mm(zM + 0.4), mm(zM + 0.5), mm(0.02), 1)]), M.crevice, 'body_speaker_backing', { cast: false });
+    // the ink runs right out under the glass's 2.5D edge (to the TPU lip wall), so no frame shows through the glass rim
+    // the ink is a print on the glass's back face: one flat sheet with no side walls (a 0.1 mm wall caught the key light as a
+    // dotted bright line along the display's lower edge in high three-quarter views)
+    add(body, new THREE.ShapeGeometry(ringShape(rr(G.x + 0.25, G.y + 0.25, G.r + 0.25), holes), 12).rotateY(Math.PI).translate(0, 0, mm(G.z1 + 0.01)), M.mask, 'body_glass_mask', { cast: false, uv: 'box' });
+    // the panel's own inactive border: a black-matrix band only a shade off the ink. It is one flat sheet (no side walls)
+    // lying behind the ink and in front of the display plane; its inner edge overlaps the display by 0.15 mm so the
+    // display's edge pixels and edge never show as a line
+    add(body, new THREE.ShapeGeometry(ringShape(roundedShape([[-aw - 0.6, y0 - 0.6, 2.6], [aw + 0.6, y0 - 0.6, 2.6], [aw + 0.6, y1 + 0.6, 2.6], [-aw - 0.6, y1 + 0.6, 2.6]].map(([x, y, r]) => [mm(x), mm(y), mm(r)])), [win(-0.15)]), 12).rotateY(Math.PI).translate(0, 0, mm(G.z1 + 0.13)), M.inkEdge, 'body_panel_border', { cast: false, uv: 'box' });
+    // the speaker slots through the glass are lined (their walls read as dark openings, not as lit glass edges)
+    {
+      const sleeve = (x0, x1, y0, y1) => { const r = (y1 - y0) / 2; return slabZ(ringShape(rect(mm(x0 + 0.01), mm(x1 - 0.01), mm(y0 + 0.01), mm(y1 - 0.01), mm(r - 0.011)), [roundedPath([[x0 + 0.06, y0 + 0.06, r - 0.061], [x1 - 0.06, y0 + 0.06, r - 0.061], [x1 - 0.06, y1 - 0.06, r - 0.061], [x0 + 0.06, y1 - 0.06, r - 0.061]].map(([x, y, q]) => [mm(x), mm(y), mm(q)]))]), mm(G.z0 + 0.03), mm(G.z1 + 0.1), 0, 1, 3); };
+      const sl = [sleeve(-7, 7, 97.9, 99.0)];
+      for (const row of [0, 1]) for (let i = 0; i < 9 - row; i++) { const x = -12.8 + i * 3.2 + (row ? 1.6 : 0), y = -97.2 - row * 1.9; sl.push(sleeve(x - 1.2, x + 1.2, y - 0.45, y + 0.45)); }
+      add(body, mergeUV(sl), M.crevice, 'body_speaker_slot_walls', { cast: false, uv: 'box' });
+    }
+    // earpiece and loudspeaker: black-coated perforated steel 0.2 mm behind the ink, a dark acoustic felt behind it
+    // (both in front of the frame face at G.z1 + 0.3, so the frame never shows through the holes)
+    const zM = G.z1 + 0.1;
+    add(body, mergeUV([rbox(mm(-7.3), mm(7.3), mm(97.6), mm(99.3), mm(zM + 0.04), mm(zM + 0.07), mm(0.01), 1), rbox(mm(-14.3), mm(14.3), mm(-100.0), mm(-96.3), mm(zM + 0.04), mm(zM + 0.07), mm(0.01), 1)]), M.grille, 'body_speaker_grilles', { cast: false });
+    add(body, mergeUV([rbox(mm(-7.5), mm(7.5), mm(97.4), mm(99.5), mm(zM + 0.12), mm(zM + 0.16), mm(0.01), 1), rbox(mm(-14.5), mm(14.5), mm(-100.2), mm(-96.1), mm(zM + 0.12), mm(zM + 0.16), mm(0.01), 1)]), M.crevice, 'body_speaker_backing', { cast: false });
     // top bezel: front camera (right of the earpiece), ALS / proximity window (left), status LED
     add(body, flipZ(discZ(0, 0, 1.9, 0, 24)).translate(mm(17), mm(97.6), zG + mm(0.06)), M.mask, 'body_cam_front_ring', { cast: false, uv: 'box' });
     add(body, cylZ(mm(1.05), zG + mm(0.02), zG + mm(0.05), 20).translate(mm(17), mm(97.6), 0), M.lens, 'body_cam_front', { cast: false });
@@ -1834,7 +1931,7 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
   add(ledStatus, cylZ(mm(0.55), mm(-0.02), mm(0.02), 12), M.led, 'led_status_dot', { cast: false });
 
   /* screen: the atlas plane under the glass (UVs cover cell 0's inner area, inside its gutter; v = 0 at the top) */
-  const screen = reg(node('screen', root, [0, mm(A.y), mm(G.z1 + 0.05)]));
+  const screen = reg(node('screen', root, [0, mm(A.y), mm(G.z1 + 0.17)]));
   {
     const g = new THREE.PlaneGeometry(mm(A.w), mm(A.h), 1, 1); g.rotateY(Math.PI);
     const [cw, ch] = SCREEN_CELL, [gx, gy] = SCREEN_GRID, [ux, uy] = SCREEN_GUTTER, W = cw * gx, H = ch * gy;
@@ -1844,10 +1941,10 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
 
   /* keys: rubber caps over sealed tact switches in pockets moulded into the TPU; 0.2 mm gap to the frame cut-out */
   // x keys: at = frame face x (signed), y0..y1 along the side, z0..z1 across it, out = height proud of the frame (signed)
-  const keyX = (name, at, y0, y1, z0, z1, out, mat = M.keys, shape = null) => {
+  const keyX = (name, at, y0, y1, z0, z1, out, mat = M.keys, shape = null, bev = 0.45) => {
     const n = reg(node(name, root, [mm(at), mm((y0 + y1) / 2), mm((z0 + z1) / 2)]));
     const hy = (y1 - y0) / 2, hz = (z1 - z0) / 2, s = Math.sign(out);
-    let g = slabX(rect(mm(-hz), mm(hz), mm(-hy), mm(hy), mm(Math.min(hz, 1.6))), mm(Math.min(-s * 0.8, out)), mm(Math.max(-s * 0.8, out)), mm(0.45), 2, 8);
+    let g = slabX(rect(mm(-hz), mm(hz), mm(-hy), mm(hy), mm(Math.min(hz, 1.6))), mm(Math.min(-s * 0.8, out)), mm(Math.max(-s * 0.8, out)), mm(bev), 3, 8);
     if (shape) g = shape(g, s, out, hy, hz);
     add(n, g, mat, name + '_cap', { wear: false });
     add(body, slabX(ringShape(rect(mm(z0 - 0.2), mm(z1 + 0.2), mm(y0 - 0.2), mm(y1 + 0.2), mm(Math.min(hz, 1.6) + 0.2)), [roundedPath([[z0, y0, Math.min(hz, 1.6)], [z1, y0, Math.min(hz, 1.6)], [z1, y1, Math.min(hz, 1.6)], [z0, y1, Math.min(hz, 1.6)]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(at + Math.min(0, s * 0.03)), mm(at + Math.max(0, s * 0.03)), 0, 1, 8), M.crevice, name + '_gap', { cast: false });
@@ -1864,8 +1961,9 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
     const gy0 = 25.4, gy1 = 76.6, gz0 = -6.0, gz1 = 4.0;
     add(body, slabX(ringShape(rect(mm(gz0), mm(gz1), mm(gy0), mm(gy1), mm(3.2)), [roundedPath([[gz0 + 1.2, gy0 + 1.2, 2.0], [gz1 - 1.2, gy0 + 1.2, 2.0], [gz1 - 1.2, gy1 - 1.2, 2.0], [gz0 + 1.2, gy1 - 1.2, 2.0]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(-Tp.x - 0.7), mm(-Tp.x + 0.4), mm(0.35), 2, 8), M.tpu, 'body_key_guard', { wear: false });
     // PTT (holder's left, +X, under the thumb): 20 x 7 mm, 1.3 mm proud of the TPU, one raised centre ridge
-    const ptt = keyX('btn_ptt', F.x, 14, 34, -4.5, 2.5, 3.3, M.ptt);
-    add(ptt, rbox(mm(3.0), mm(3.7), mm(-7), mm(7), mm(-1.1), mm(1.1), mm(0.32), 2), M.ptt, 'btn_ptt_ridge', { wear: false });
+    // a moulded key: 0.75 mm edge radii, the face dished 0.3 mm along its length, one raised cross rib at the centre
+    const ptt = keyX('btn_ptt', F.x, 14, 34, -4.5, 2.5, 3.3, M.ptt, saddle(0, 40, 0.3), 0.75);
+    add(ptt, rbox(mm(2.6), mm(3.32), mm(-0.65), mm(0.65), mm(-2.4), mm(2.4), mm(0.3), 3), M.ptt, 'btn_ptt_ridge', { wear: false });
   }
   // top edge: programmable key (the game's scan key)
   {
@@ -1896,22 +1994,62 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
     add(flap, rbox(...L(-6, 6, -Tp.y + 0.3, -Tp.y + 0.8, 2.4, 3.8), mm(0.2), 1), M.tpu, 'flap_usb_hinge', { wear: false });
   }
 
-  /* hand strap: elastic webbing slotted through the two moulded anchors, folded and stitched back on itself */
-  const strap = reg(node('hand_strap', root, [0, mm(-22), 0]));
+  /* hand strap: 25 mm nylon webbing looped round the two recessed strap bars (the tail sewn back on itself inside the
+     pocket), a ladder-lock slider for length on the +X side, and a 34 mm neoprene pad under the middle (the side the
+     back of the hand touches), sewn to the webbing along both edges with a bar-tack at each end. At rest the elastic
+     band bows 6 mm off the back and sags a little toward the bottom edge. Node local y = 0 is the strap centre line. */
+  const strap = reg(node('hand_strap', root, [0, mm(STRAP.y), 0]));
   {
-    const s = new THREE.Shape(), n = 32, P = [];
-    for (let i = 0; i <= n; i++) { const t = i / n, x = -67 + 134 * t, k = clamp01((60 - Math.abs(x)) / 10); const z = 9.3 + (Tp.z1 + 5.2 - 9.3) * Math.pow(Math.sin(Math.PI * clamp01((x + 58) / 116)), 0.7) * sstep(0, 1, k); P.push([x, z]); }
-    P.forEach(([x, z], i) => (i ? s.lineTo(mm(x), mm(-z)) : s.moveTo(mm(x), mm(-z))));
-    for (let i = n; i >= 0; i--) s.lineTo(mm(P[i][0]), mm(-(P[i][1] + 1.3)));
-    s.closePath();
-    add(strap, slabY(s, mm(-13), mm(13), 0, 1, 2), M.webbing, 'hand_strap_band');
-    // the folded-back ends (stitched) outside the anchors
-    add(strap, mergeUV([-1, 1].map((sg) => rbox(mm(sg > 0 ? 66.2 : -68.8), mm(sg > 0 ? 68.8 : -66.2), mm(-13), mm(13), mm(8.9), mm(11.2), mm(0.9), 2))), M.webbing, 'hand_strap_folds');
+    const X = 61.7, W = 12.5, tW = 1.2, padL = 42, padT = 3.0, padW = 17;
+    // the band's underside height: rim face at the pocket mouths, 6 mm bow at the middle (eased so it leaves the rim flat)
+    const zb = (x) => 8.45 + 6.0 * Math.pow(Math.sin(Math.PI * clamp01((x + X) / (2 * X))), 0.75);
+    const sag = (x) => -1.2 * Math.pow(Math.sin(Math.PI * clamp01((x + X) / (2 * X))), 2);     // y droop (mm), gravity
+    const slope = (x) => (zb(x + 0.5) - zb(x - 0.5));
+    // loft along X (section: loft y = our Z, loft z = our Y), mm in -> metres out, bent by sag()
+    const lofted = (o) => {
+      const g = loft(o).rotateX(Math.PI / 2), P = g.attributes.position;
+      for (let i = 0; i < P.count; i++) { const x = P.getX(i); P.setXYZ(i, mm(x), mm(P.getY(i) + sag(x)), mm(P.getZ(i))); }
+      g.computeVertexNormals(); return g;
+    };
+    const band = lofted({ x0: -X - 0.6, x1: X + 0.6, bot: (x) => zb(x), top: (x) => zb(x) + tW, hw: () => W, n: () => 8, steps: 44, seg: 20 });
+    // the tail from the slider back to the +X bar (a second layer on top of the band), and the slider itself
+    const bx = 49;
+    const tail = lofted({ x0: bx + 2.5, x1: X + 0.6, bot: (x) => zb(x) + tW + 0.05, top: (x) => zb(x) + 2 * tW - 0.15, hw: () => W - 0.2, n: () => 8, steps: 8, seg: 20 });
+    const pad = lofted({ x0: -padL, x1: padL, bot: (x) => zb(x) - padT, top: (x) => zb(x) + 0.02, hw: () => padW, n: () => 3.2, steps: 36, seg: 28, round: 7 });
+    add(strap, mergeUV([band, tail]), M.webbing, 'hand_strap_band');
+    add(strap, pad, M.webbing, 'hand_strap_pad');
+    // the loops round the strap bars, and the legs up out of the pockets
+    const loops = [];
+    for (const sg of [1, -1]) {
+      const px = sg * STRAP.pinX, pz = STRAP.pinZ, rI = 0.8, rO = 1.65;
+      const ring = new THREE.Shape(); ring.absarc(0, 0, mm(rO), 0, Math.PI * 2, false);
+      const hole = new THREE.Path(); hole.absarc(0, 0, mm(rI), 0, Math.PI * 2, true); ring.holes.push(hole);
+      // slabY's shape y is -Z: the ring centred at (px, -pz)
+      loops.push(slabY(ring, mm(-W), mm(W), 0, 1, 20).translate(mm(px), 0, mm(pz)));
+      const inX = sg * (STRAP.pinX - rI - 0.42), outX = sg * (STRAP.pinX + rI + 0.42);
+      loops.push(rbox(mm(inX - 0.43), mm(inX + 0.43), mm(-W), mm(W), mm(pz), mm(zb(sg * X) + tW * 0.6), mm(0.2), 1));
+      loops.push(rbox(mm(outX - 0.43), mm(outX + 0.43), mm(-W), mm(W), mm(pz), mm(pz + 1.8), mm(0.2), 1));
+    }
+    add(strap, mergeUV(loops), M.webbing, 'hand_strap_loops');
+    // ladder-lock slider: a moulded acetal frame with two bars, tipped to the band's slope
+    {
+      const z0 = zb(bx) + tW - 0.1, a = Math.atan(slope(bx));
+      const fr = new THREE.Shape(); roundedShape([[-3.6, -15, 1.4], [3.6, -15, 1.4], [3.6, 15, 1.4], [-3.6, 15, 1.4]], fr);
+      fr.holes.push(roundedPath([[-2.6, -13.2, 0.5], [-0.55, -13.2, 0.5], [-0.55, 13.2, 0.5], [-2.6, 13.2, 0.5]]), roundedPath([[0.55, -13.2, 0.5], [2.6, -13.2, 0.5], [2.6, 13.2, 0.5], [0.55, 13.2, 0.5]]));
+      const g = slabZ(fr, 0, 2.2, 0.45, 2, 6).rotateY(-a).translate(bx, sag(bx), z0); g.scale(0.001, 0.001, 0.001);
+      add(strap, g, M.buckle, 'hand_strap_slider');
+    }
+    // stitching: two rows along the webbing's edges over the pad, a bar-tack box across each pad end
+    const st = [];
+    const dash = (x, y, len, ang = 0) => { const z = zb(x) + tW + 0.02; return new THREE.BoxGeometry(mm(len), mm(0.34), mm(0.16)).translate(0, 0, mm(0.02)).rotateZ(ang).rotateY(-Math.atan(slope(x))).translate(mm(x), mm(y + sag(x)), mm(z)); };
+    for (const y of [-W + 1.3, W - 1.3]) for (let x = -padL + 6; x <= padL - 6 + 0.01; x += 2.3) st.push(dash(x, y, 1.5));
+    for (const xe of [-padL + 6, padL - 6]) for (let y = -W + 2.3; y <= W - 2.3 + 0.01; y += 2.3) st.push(dash(xe, y, 1.5, Math.PI / 2));
+    add(strap, mergeUV(st), M.thread, 'hand_strap_stitch', { cast: false, uv: 'box' });
   }
 
   /* locators (no mesh) */
   const LOC = {
-    grip_left_hand: [mm(10), mm(-22), mm(Tp.z1 + 7)],
+    grip_left_hand: [mm(10), mm(-22), mm(Tp.z1 + 0.5)],     // the palm's surface on the back, under the strap pad
     fx_touch: [mm(22), mm(-30), zG - mm(0.4)],
     fx_scan: [mm(-14.5), mm(92), mm(zB + 1.5)],
     cam_rear: [mm(-3.5), mm(92), mm(zB + 1.5)],
@@ -1956,7 +2094,7 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
 
   root.userData = {
     units: 'metres', up: '+Y (long axis, portrait)', forward: '+Z (rear cameras; the screen faces -Z, toward the holder)', left: "+X (holder's left: PTT key)",
-    origin: 'centre of the tablet volume; grip_left_hand is an attach socket: the palm centre under the hand strap', envelope_m: TB.env.map(mm),
+    origin: 'centre of the tablet volume; grip_left_hand is an attach socket: the palm surface on the back under the hand strap', envelope_m: TB.env.map(mm), envelope_note: 'over the TPU, without the strap; the camera island and its screws stand 0.5 mm proud of the back rim (16.9 mm deep there); the strap adds 7.6 mm at its middle',
     rest: 'keys out, flap closed, LED shown, strap at rest',
     nodes: 'btn_* press into the frame (power/volume +X 0.5-0.6 mm, PTT -X 0.8 mm, btn_action -Y 0.5 mm); btn_vol_up carries the one-piece volume rocker, btn_vol_down is its lower-half press point (no mesh); flap_usb hinges about X at the back edge of its well (open = -120 deg about X, swinging out of the bottom edge); led_status hidden by scale (STEP)',
   };
@@ -1965,7 +2103,7 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
     screen: K.SCREEN,
     extras: () => ({
       screen_atlas: { texture: 'screen_atlas (the emissive map of material screen)', size_px: [SCREEN_CELL[0] * SCREEN_GRID[0], SCREEN_CELL[1] * SCREEN_GRID[1]], cell_px: SCREEN_CELL, grid: SCREEN_GRID, gutter_px: SCREEN_GUTTER, cells: SCREEN_CELLS, uv: `screen_display covers cell 0's inner area (inside a ${SCREEN_GUTTER[0]} x ${SCREEN_GUTTER[1]} px gutter of edge pixels): u ${(SCREEN_GUTTER[0] / (SCREEN_CELL[0] * SCREEN_GRID[0])).toFixed(5)}..${((SCREEN_CELL[0] - SCREEN_GUTTER[0]) / (SCREEN_CELL[0] * SCREEN_GRID[0])).toFixed(5)}, v ${(SCREEN_GUTTER[1] / (SCREEN_CELL[1] * SCREEN_GRID[1])).toFixed(5)}..${((SCREEN_CELL[1] - SCREEN_GUTTER[1]) / (SCREEN_CELL[1] * SCREEN_GRID[1])).toFixed(5)}, v = 0 at the top edge; select a cell by offset (col / 5, row / 4)` },
-      locators: { grip_left_hand: 'attach socket: palm centre under the strap, palm facing -Z (no mesh)', fx_touch: 'thumb tap point on the glass', fx_scan: 'thermal window (scan origin)', cam_rear: 'main rear camera (+Z)', cam_thermal: 'thermal camera (+Z)', cam_front: 'front camera (-Z)', fx_flash: 'rear flash', fx_ptt: 'PTT key face' },
+      locators: { grip_left_hand: 'attach socket: the palm surface on the back rim plane, under the strap pad, palm facing -Z (no mesh)', fx_touch: 'thumb tap point on the glass', fx_scan: 'thermal window (scan origin)', cam_rear: 'main rear camera (+Z)', cam_thermal: 'thermal camera (+Z)', cam_front: 'front camera (-Z)', fx_flash: 'rear flash', fx_ptt: 'PTT key face' },
     }),
   };
 }
@@ -2067,8 +2205,10 @@ const LIGHTS = {};
   // profile, the back) still show their forms; low enough that it never flares the worn edges
   const cam = new THREE.DirectionalLight('#dfe3ff', 0.7); cam.position.set(-0.6, 0.8, 0.4); cam.target.position.set(0, 0, -1);
   camera.add(cam, cam.target); if (!camera.parent) scene.add(camera);
-  scene.add(key, key.target, fill, rim, hemi);
-  Object.assign(LIGHTS, { key, fill, rim, hemi, cam });
+  // a soft kicker from behind and above (+Z), so the back, the strap and the camera island read in back views
+  const kick = new THREE.SpotLight('#e8ecff', 16, 0, 0.6, 0.9, 2); kick.position.set(0.7, 2.1, 1.9); kick.target.position.set(0, 1.32, 0.34);
+  scene.add(key, key.target, fill, rim, hemi, kick, kick.target);
+  Object.assign(LIGHTS, { key, fill, rim, hemi, cam, kick });
 }
 // a soft backdrop (a large dim card behind the phone, with a faint pool of light behind the phone) so the silhouette reads
 const backdropGlow = (() => {
@@ -2084,15 +2224,15 @@ backdrop.position.set(0, 1.3, 1.6); backdrop.rotation.y = Math.PI; backdrop.rece
 
 /* lighting presets (viewer only): studio (default), daylight (outdoors, like the photo), night (the screen carries it) */
 const LIGHTING = {
-  studio: { bg: '#0b0c10', back: '#24252b', pool: 0.35, env: 0.75, exp: 1.0, key: ['#fff1e0', 18], fill: ['#b8c4ff', 0.55], rim: ['#ffffff', 0.9], cam: ['#dfe3ff', 0.7], hemi: ['#a7adc2', '#1b1a18', 0.4], glow: 1 },
-  daylight: { bg: '#8e959e', back: '#7d838b', pool: 0.15, env: 0.95, exp: 0.95, key: ['#fff4e2', 30], fill: ['#d4e2ff', 1.2], rim: ['#ffffff', 1.3], cam: ['#ffffff', 0.6], hemi: ['#d6dfee', '#5e5446', 1.1], glow: 1.35 },
-  night: { bg: '#040407', back: '#0b0c12', pool: 0.12, env: 0.22, exp: 1.1, key: ['#8ea6ff', 6], fill: ['#5a3dbf', 0.35], rim: ['#7a5cff', 1.3], cam: ['#6e5cff', 0.25], hemi: ['#30344a', '#050505', 0.18], glow: 0.85 },
+  studio: { bg: '#0b0c10', back: '#24252b', pool: 0.35, env: 0.75, exp: 1.0, key: ['#fff1e0', 18], fill: ['#b8c4ff', 0.55], rim: ['#ffffff', 0.9], cam: ['#dfe3ff', 0.7], kick: ['#e8ecff', 16], hemi: ['#a7adc2', '#1b1a18', 0.4], glow: 1 },
+  daylight: { bg: '#8e959e', back: '#7d838b', pool: 0.15, env: 0.95, exp: 0.95, key: ['#fff4e2', 30], fill: ['#d4e2ff', 1.2], rim: ['#ffffff', 1.3], cam: ['#ffffff', 0.6], kick: ['#ffffff', 6], hemi: ['#d6dfee', '#5e5446', 1.1], glow: 1.35 },
+  night: { bg: '#040407', back: '#0b0c12', pool: 0.12, env: 0.22, exp: 1.1, key: ['#8ea6ff', 6], fill: ['#5a3dbf', 0.35], rim: ['#7a5cff', 1.3], cam: ['#6e5cff', 0.25], kick: ['#8ea6ff', 1.5], hemi: ['#30344a', '#050505', 0.18], glow: 0.85 },
 };
 let lightingName = 'studio';
 function setLighting(name) {
   const L = LIGHTING[name] || LIGHTING.studio; lightingName = LIGHTING[name] ? name : 'studio';
   scene.background.set(L.bg); backdrop.material.color.set(L.back); scene.environmentIntensity = L.env; renderer.toneMappingExposure = L.exp;
-  for (const k of ['key', 'fill', 'rim', 'cam']) { LIGHTS[k].color.set(L[k][0]); LIGHTS[k].intensity = L[k][1]; }
+  for (const k of ['key', 'fill', 'rim', 'cam', 'kick']) { LIGHTS[k].color.set(L[k][0]); LIGHTS[k].intensity = L[k][1]; }
   backdrop.material.emissiveIntensity = L.pool;
   LIGHTS.hemi.color.set(L.hemi[0]); LIGHTS.hemi.groundColor.set(L.hemi[1]); LIGHTS.hemi.intensity = L.hemi[2];
   M.screen.emissiveIntensity = M.screen.userData.glow * L.glow;
@@ -2257,9 +2397,10 @@ function goView(name, instant = false) {
     } else if (camera.aspect > 1) { const up = V3(0, 1, 0), d = v.pos.distanceTo(v.target) * (camera.aspect > 1 ? 0.055 : 0.11); v.pos = v.pos.clone().addScaledVector(up, -d); v.target = v.target.clone().addScaledVector(up, -d); }
   }
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
-  if (v.fov) { camera.fov = v.fov; camera.updateProjectionMatrix(); } else if (camera.fov !== 34) { camera.fov = 34; camera.updateProjectionMatrix(); }
-  if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
-  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0 };
+  // the field of view tweens with the position (switching it up front framed the first frames far too tight)
+  const fov1 = v.fov || 34;
+  if (instant) { if (camera.fov !== fov1) { camera.fov = fov1; camera.updateProjectionMatrix(); } camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
+  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to: v.pos, tt: v.target, t: 0, fov0: camera.fov, fov1 };
 }
 function setSpin(on) { spinning = on; controls.autoRotate = on; controls.autoRotateSpeed = 0.8; $('spin').setAttribute('aria-pressed', String(on)); }
 for (const name of PHONE.order) {
@@ -2276,6 +2417,8 @@ document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('clic
 function markState() { document.querySelectorAll('[data-state]').forEach((x) => x.setAttribute('aria-pressed', String((x.dataset.state || null) === PLAY.state))); }
 document.querySelectorAll('[data-state]').forEach((b) => b.addEventListener('click', () => {
   unlockAudio(); PLAY.state = b.dataset.state || null; PLAY.cell = null; PLAY.led = null; PLAY.time = 0; markState();
+  // a forced screen state is not a clip: the clip chip shows a dash and no clip button stays lit
+  if (PLAY.state) { $('st-clip').textContent = '\u2014'; document.querySelectorAll('[data-clip]').forEach((x) => x.setAttribute('aria-pressed', 'false')); } else $('st-clip').textContent = PLAY.clip.replace('_', ' ');
   if (soundOn && typeof playSfx === 'function') { const s = { boot: 'wake', lock_on: 'scan_result', alert: 'alert', low_battery: 'low_battery', shutdown: 'power_off', home: 'tap', map: 'tap', drone: 'tap', scan: 'scan' }[PLAY.state]; if (s) playSfx(s); }
 }));
 function markLight() { document.querySelectorAll('[data-light]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.light === lightingName))); }
@@ -2299,7 +2442,7 @@ window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (k === 'l') { const L = Object.keys(LIGHTING); setLighting(L[(L.indexOf(lightingName) + 1) % L.length]); markLight(); } else if (k >= '1' && k <= String(PHONE.order.length)) playClip(PHONE.order[+k - 1]);
 });
-controls.addEventListener('start', () => { camTween = null; });
+controls.addEventListener('start', () => { if (camTween && camera.fov !== camTween.fov1) { camera.fov = camTween.fov1; camera.updateProjectionMatrix(); } camTween = null; });
 function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
 window.addEventListener('resize', resize);
 
@@ -2350,7 +2493,7 @@ function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null)
 function tick(dt) {
   sceneTick(dt);
   $('st-cell').textContent = SCREEN_CELLS[PHONE.screen.cell].replace('_', ' ');
-  if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+  if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.9); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.fov0 !== camTween.fov1) { camera.fov = lerp(camTween.fov0, camTween.fov1, e); camera.updateProjectionMatrix(); } if (camTween.t >= 1) camTween = null; }
 }
 function loop() { const dt = Math.min(clock.getDelta(), 1 / 30); tick(dt); controls.update(); composer.render(dt); }
 playClip('idle');
