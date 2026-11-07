@@ -811,6 +811,68 @@ that shatters, rather than coming loose, when its support goes.
 | `crate_small` | wood | shatter | 8 | 8 | 140 | lid_big (1) |  | `col_crate_small` | 3 |
 | `case` | plastic | detach | – | 12 | 80 | ground |  | `col_case` | 0 |
 
+### Batch E: Studio, shrine, garden
+
+#### `holo_cylinder`: Hologram cylinder
+
+1.12 × 2.02 × 1.13 m, 159.6 kg, cover none, 13,784 / 18,326 triangles, 12 debris bits, 17 textures. Stepped machined-alloy projector plinth (purple LED kick line, waisted vent band, cable port, LED deck reveal) with eight emitter heads round a lens array, under a see-through layered purple hologram column holding a wireframe model of the tower. The hologram (`holo`) is light only: `light: true` in `parts.json`, `cast_shadows: false` in the extras of its meshes (turn shadows off and use an additive unlit shader for the `holo_*` materials in Unity), and it is a shatter part with 0 chunks set to collapse, so it switches off, rather than falling, the moment the lens goes. The data-ring node carries `spin: 0.4` in its extras for a runtime spin about Y.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `base` | metal | shatter | 10 | 150 | 750 | ground |  | `col_base_1_hull`, `col_base_2` | 6 |
+| `lens` | glass | shatter | 15 | 3.5 | 20 | base (1) |  | `col_lens` | 6 |
+| `emitters` | electronics | detach | – | 6 | 45 | base (1) |  | `col_emitters_1`, `col_emitters_2`, `col_emitters_3`, `col_emitters_4`, `col_emitters_5`, `col_emitters_6`, `col_emitters_7`, `col_emitters_8` | 0 |
+| `holo` | electronics | shatter (collapse) | 0 | 0.05 | 1 | lens (1) |  | `col_holo` | 0 |
+
+#### `japanese_shrine`: Japanese shrine pavilion
+
+3.19 × 3.78 × 3.19 m, 3,087.7 kg, cover soft, 29,248 / 36,934 triangles, 95 debris bits, 47 textures. Indoor shrine pavilion for double-height rooms: four vermilion-lacquered pillars on black bases, tie and head beams with walnut bracket sets, an irimoya hip-and-gable tiled roof with upturned corners, black eave board over exposed rafters and a slatted gable; walnut plank deck on a granite plinth with a front step. Inside: mirror altar with sakaki vases, a paper andon, a suzu bell whose rope hangs in front of the offering box, and a purple LED cove under the head beams. Needs 3.9 m headroom; 2.05 m clear under the tie beams. Roof sections break into strips when the head frame goes; the gable sides also need both the front and back sections. About 29k triangles intact (over the 15k guideline: a room-sized hero piece).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `plinth` | stone | shatter | 8 | 1,400 | 1600 | ground | yes | `col_plinth` | 5 |
+| `step` | stone | shatter | 4 | 110 | 1120 | ground | yes | `col_step` | 3 |
+| `deck_frame` | wood | shatter | 9 | 100 | 420 | plinth (1) |  | `col_deck_frame` | 3 |
+| `deck` | wood | shatter | 16 | 110 | 335 | deck_frame (1) |  | `col_deck` | 4 |
+| `deck_led` | electronics | detach | – | 0.4 | 20 | deck_frame (1) |  | `col_deck_led` | 0 |
+| `pillar_fl` | wood | shatter | 7 | 50 | 260 | plinth, deck_frame (1) |  | `col_pillar_fl_hull` | 3 |
+| `pillar_fr` | wood | shatter | 7 | 50 | 260 | plinth, deck_frame (1) |  | `col_pillar_fr_hull` | 3 |
+| `pillar_bl` | wood | shatter | 7 | 50 | 260 | plinth, deck_frame (1) |  | `col_pillar_bl_hull` | 3 |
+| `pillar_br` | wood | shatter | 6 | 50 | 260 | plinth, deck_frame (1) |  | `col_pillar_br_hull` | 3 |
+| `tie_beams` | wood | shatter | 6 | 36 | 230 | pillar_fl, pillar_fr, pillar_bl, pillar_br (2) |  | `col_tie_beams_1`, `col_tie_beams_2`, `col_tie_beams_3`, `col_tie_beams_4` | 3 |
+| `head_frame` | wood | shatter | 12 | 170 | 420 | pillar_fl, pillar_fr, pillar_bl, pillar_br (3) |  | `col_head_frame_1`, `col_head_frame_2`, `col_head_frame_3`, `col_head_frame_4`, `col_head_frame_5`, `col_head_frame_6`, `col_head_frame_7`, `col_head_frame_8`, `col_head_frame_9` | 4 |
+| `cove_led` | electronics | detach | – | 0.6 | 20 | head_frame (1) |  | `col_cove_led` | 0 |
+| `roof_f` | ceramic | shatter (collapse) | 4 | 260 | 700 | head_frame (1) |  | `col_roof_f_1_hull`, `col_roof_f_2_hull`, `col_roof_f_3_hull`, `col_roof_f_4_hull`, `col_roof_f_5_hull`, `col_roof_f_6_hull`, `col_roof_f_7_hull`, `col_roof_f_8_hull`, `col_roof_f_9_hull` | 12 |
+| `roof_b` | ceramic | shatter (collapse) | 4 | 260 | 700 | head_frame (1) |  | `col_roof_b_1_hull`, `col_roof_b_2_hull`, `col_roof_b_3_hull`, `col_roof_b_4_hull`, `col_roof_b_5_hull`, `col_roof_b_6_hull`, `col_roof_b_7_hull`, `col_roof_b_8_hull`, `col_roof_b_9_hull` | 12 |
+| `roof_l` | ceramic | shatter (collapse) | 2 | 150 | 500 | head_frame, roof_f, roof_b (3) |  | `col_roof_l_1_hull`, `col_roof_l_2_hull`, `col_roof_l_3_hull`, `col_roof_l_4_hull`, `col_roof_l_5_hull`, `col_roof_l_6_hull`, `col_roof_l_7_hull` | 8 |
+| `roof_r` | ceramic | shatter (collapse) | 2 | 150 | 500 | head_frame, roof_f, roof_b (3) |  | `col_roof_r_1_hull`, `col_roof_r_2_hull`, `col_roof_r_3_hull`, `col_roof_r_4_hull`, `col_roof_r_5_hull`, `col_roof_r_6_hull`, `col_roof_r_7_hull` | 8 |
+| `ridge` | ceramic | detach | – | 90 | 400 | roof_f, roof_b (2) |  | `col_ridge` | 3 |
+| `altar` | wood | shatter | 6 | 14 | 170 | deck (1) |  | `col_altar` | 3 |
+| `mirror` | metal | detach | – | 3 | 210 | altar (1) |  | `col_mirror` | 0 |
+| `vase_r` | ceramic | shatter | 6 | 1.6 | 15 | altar (1) |  | `col_vase_r_hull` | 3 |
+| `sakaki_r` | plant | detach | – | 0.3 | 15 | vase_r (1) |  | `col_sakaki_r` | 3 |
+| `vase_l` | ceramic | shatter | 5 | 1.6 | 15 | altar (1) |  | `col_vase_l_hull` | 3 |
+| `sakaki_l` | plant | detach | – | 0.3 | 15 | vase_l (1) |  | `col_sakaki_l` | 3 |
+| `andon` | wood | detach | – | 2.2 | 40 | deck (1) |  | `col_andon` | 0 |
+| `bell` | metal | detach | – | 2.5 | 200 | head_frame (1) |  | `col_bell` | 0 |
+| `bell_rope` | fabric | detach | – | 1.2 | 50 | bell (1) |  | `col_bell_rope` | 0 |
+| `offering_box` | wood | shatter | 9 | 24 | 200 | deck (1) |  | `col_offering_box` | 3 |
+
+#### `maple_tree`: Red maple in a garden bed
+
+2.30 × 2.33 × 1.62 m, 453 kg, cover soft, 13,102 / 13,476 triangles, 42 debris bits, 25 textures. Cloud-pruned red Japanese maple on a gnarled trunk in a low basalt bed with raked gravel, moss islands, two moss-capped stones, stepping pebbles and a warm LED washer under the coping. Six flat leaf pads (2D alpha cards, with a dark under-layer so they read solid from below) each come loose with their twigs.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `bed` | stone | shatter | 8 | 320 | 1200 | ground | yes | `col_bed_1`, `col_bed_2`, `col_bed_3`, `col_bed_4` | 5 |
+| `soil` | plant | shatter (collapse) | 6 | 90 | 400 | bed (1) |  | `col_soil` | 10 |
+| `trunk` | plant | detach | – | 28 | 55 | soil (1) |  | `col_trunk_1`, `col_trunk_2`, `col_trunk_3` | 3 |
+| `canopy_1` | plant | detach | – | 2.5 | 25 | trunk (1) |  | `col_canopy_1` | 4 |
+| `canopy_2` | plant | detach | – | 2.5 | 25 | trunk (1) |  | `col_canopy_2` | 4 |
+| `canopy_3` | plant | detach | – | 2.5 | 25 | trunk (1) |  | `col_canopy_3` | 4 |
+| `canopy_4` | plant | detach | – | 2.5 | 25 | trunk (1) |  | `col_canopy_4` | 4 |
+| `canopy_5` | plant | detach | – | 2.5 | 25 | trunk (1) |  | `col_canopy_5` | 4 |
+| `canopy_6` | plant | detach | – | 2.5 | 25 | trunk (1) |  | `col_canopy_6` | 4 |
 ## Changing and rebuilding
 
 `viewer.html` is the source: everything is procedural three.js r0.180.0 inlined in one module. It has these
@@ -822,7 +884,7 @@ sections in order:
 - **Builder.** `defPiece`, `Piece` and `Part`.
 - **Fracture.** Voronoi cells cut by plane clipping for convex meshes, or three-bvh-csg for others. Wood cells
   stretch along the grain; glass cells are radial round an impact point.
-- **Pieces.** Batch 0 and A–D, one `defPiece({ id, name, batch, rooms, cover, note, build(P) })` each.
+- **Pieces.** Batch 0 and A–E, one `defPiece({ id, name, batch, rooms, cover, note, build(P) })` each.
 - **Viewer.**
 
 A piece is built like this:

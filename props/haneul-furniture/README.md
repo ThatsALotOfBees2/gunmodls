@@ -7,18 +7,24 @@ in the rain. You place every piece yourself; nothing here is placed in the map. 
 celadon, brass, dark alloy and stone, with tech pieces (render racks, holo console, broadcast desk) in graphite and
 dark alloy with a few purple `#8a4dff` lights. No text, logos, numbers or symbols anywhere.
 
-**37 pieces**, one `.glb` each. Every piece is built from named parts (277 in all) that come apart.
-The 99 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
-(749 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
+**37 pieces**, one `.glb` each. Every piece is built from named parts (317 in all) that come apart.
+The 121 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
+(908 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
 grain with saw-toothed ends (board by board), glass breaks radially round an impact (tempered glass dices), screens
 crack in their housings, hanji tears into ragged strips (a border strip stays on the frame), upholstery tears along
 its seams with recessed foam, and chunks of lights and screens are dark.
 Each part has a material class (for impact sounds and effects), a mass, a health value and collider proxies.
-251,268 triangles intact across the pack, 229,907 in the chunk sets.
+307,402 triangles intact across the pack, 298,643 in the chunk sets.
 
 ![Catalogue](catalogue.png)
 
-**Batch E (added):** `holo_cylinder` (projector plinth with a see-through purple hologram column), `japanese_shrine` (hokora-style wooden shrine on a granite plinth, gabled roof, rope with paper streamers, offering stand) and `maple_tree` (cloud-pruned red Japanese maple in a low basalt bed with a warm LED washer; the leaves are 2D alpha cards). Same naming, parts, chunks and colliders as every other piece; their entries are in `parts.json`.
+**Batch E:** `holo_cylinder` (stepped alloy projector plinth with purple LED lines, eight emitter heads and a lens array under a see-through layered purple hologram column with a wireframe model of the tower; the hologram casts no shadow and switches off when the lens is shot), `japanese_shrine` (indoor shrine pavilion for double-height rooms, 3.2 × 3.8 × 3.2 m: vermilion pillars, bracketed head beams and an irimoya hip-and-gable tiled roof with upturned corners over a walnut deck on a granite plinth; mirror altar, sakaki vases, paper andon, suzu bell and rope, offering box, purple LED cove; about 29k triangles, over the 15k guideline as a room-sized hero piece) and `maple_tree` (cloud-pruned red Japanese maple on a gnarled trunk with six flat leaf pads of 2D alpha cards, in a low basalt bed with raked gravel, moss, stones and a warm LED washer). Same naming, parts, chunks and colliders as every other piece; their entries are in `parts.json` and their parts tables in `INTEGRATION.md`.
+
+| id | Piece | Size (m) | kg | Cover | Triangles | Parts |
+| --- | --- | --- | --- | --- | --- | --- |
+| `holo_cylinder` | Hologram cylinder | 1.12 × 2.02 × 1.13 | 159.6 | none | 13,784 / 18,326 | 4 |
+| `japanese_shrine` | Japanese shrine pavilion | 3.19 × 3.78 × 3.19 | 3,087.7 | soft | 29,248 / 36,934 | 27 |
+| `maple_tree` | Red maple in a garden bed | 2.30 × 2.33 × 1.63 | 453 | soft | 13,102 / 13,476 | 9 |
 
 ## Files
 
