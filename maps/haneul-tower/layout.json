@@ -32,8 +32,8 @@
    "head": 2.0
   },
   "reinforce": {
-   "height": 2.0,
-   "header": "hard steel transom from 2.0 m to the ceiling",
+   "height": 3.1,
+   "header": "hard only above the ceiling line (plenum); panels are floor to ceiling, so reinforcement units are scaled to 3.1 m high",
    "sizes": {
     "xl": 4.0,
     "large": 3.0,
@@ -151,7 +151,7 @@
    "destructible": true,
    "reinforceable": true,
    "node_prefix": "REINF_",
-   "desc": "the only breakable wall type: Wall Fortification-sized panels 0..2.0 m in the straight runs between hard ends (corners and T-junctions hard for 1.0 m); hard trims, jambs and header"
+   "desc": "the only breakable wall type: Wall Fortification-sized panels floor to ceiling (0..3.1 m) in the straight runs between hard ends (corners and T-junctions hard for 1.0 m); hard trims, jambs and header"
   },
   "glass": {
    "destructible": true,
@@ -628,30 +628,6 @@
   }
  ],
  "slab_openings": [
-  {
-   "id": "SO_spiral",
-   "floor": "F2",
-   "polygon": [
-    [
-     -15.6,
-     -21.6
-    ],
-    [
-     -12.4,
-     -21.6
-    ],
-    [
-     -12.4,
-     -18.4
-    ],
-    [
-     -15.6,
-     -18.4
-    ]
-   ],
-   "for": "ST_spiral",
-   "rail": true
-  },
   {
    "id": "SO_suite",
    "floor": "F3",
@@ -3551,7 +3527,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3576,7 +3552,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3601,7 +3577,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O01",
@@ -3645,7 +3621,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O03",
@@ -3689,7 +3665,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O05",
@@ -3733,7 +3709,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O07",
@@ -3768,7 +3744,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3793,7 +3769,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3818,7 +3794,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3843,7 +3819,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3868,7 +3844,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -3893,7 +3869,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O08",
@@ -3917,7 +3893,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -3971,7 +3947,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_W+9",
    "note": "hard column wrap from the column face to the glass",
@@ -3997,7 +3973,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O10",
@@ -4033,7 +4009,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O11",
@@ -4070,7 +4046,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -4096,7 +4072,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O12",
@@ -4133,7 +4109,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O13",
@@ -4168,7 +4144,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O14",
@@ -4204,7 +4180,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S-9",
    "note": "hard column wrap from the column face to the glass",
@@ -4230,7 +4206,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O15",
@@ -4266,12 +4242,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S4",
@@ -4325,12 +4301,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S4",
@@ -4378,7 +4354,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O16",
@@ -4414,12 +4390,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S4",
@@ -4479,7 +4455,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O17",
@@ -4515,7 +4491,7 @@
    "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -4541,13 +4517,13 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "Ondol veranda wall (junction rule: door moved east)",
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S4",
@@ -4601,7 +4577,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O18",
@@ -4637,7 +4613,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O19",
@@ -4653,7 +4629,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": "S4",
@@ -4707,7 +4683,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O20",
@@ -4743,13 +4719,13 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "Ondol / Changing wall (junction rule: door moved north)",
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S4",
@@ -4803,7 +4779,7 @@
    "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -4829,7 +4805,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O21",
@@ -4865,7 +4841,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S+9",
    "note": "hard column wrap from the column face to the glass",
@@ -4891,7 +4867,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O22",
@@ -4906,7 +4882,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -4954,7 +4930,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O23",
@@ -4969,7 +4945,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5023,7 +4999,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O24",
@@ -5059,7 +5035,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O25",
@@ -5074,7 +5050,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5156,7 +5132,7 @@
    "type": "open",
    "thickness": 0.0,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "n": [
     -0.0,
@@ -5180,7 +5156,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O27",
@@ -5216,7 +5192,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O28",
@@ -5231,7 +5207,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5285,7 +5261,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E+9",
    "note": "hard column wrap from the column face to the glass",
@@ -5311,7 +5287,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O29",
@@ -5326,7 +5302,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5396,7 +5372,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O30",
@@ -5411,7 +5387,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5487,7 +5463,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O31",
@@ -5523,7 +5499,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O32",
@@ -5559,7 +5535,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E+0",
    "note": "hard column wrap from the column face to the glass",
@@ -5619,7 +5595,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O34",
@@ -5655,12 +5631,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5720,7 +5696,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O35",
@@ -5756,7 +5732,7 @@
    "type": "open",
    "thickness": 0.0,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "n": [
     -1.0,
@@ -5780,7 +5756,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O36",
@@ -5795,7 +5771,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5855,7 +5831,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O37",
@@ -5879,7 +5855,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -5939,7 +5915,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O39",
@@ -5975,7 +5951,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O40",
@@ -6020,7 +5996,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "cold store wall (insulated steel)",
    "n": [
@@ -6045,7 +6021,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "cold store wall (insulated steel)",
    "n": [
@@ -6070,7 +6046,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "cold store wall (insulated steel)",
    "n": [
@@ -6095,7 +6071,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N-9",
    "note": "hard column wrap from the column face to the glass",
@@ -6121,7 +6097,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O42",
@@ -6136,7 +6112,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6196,7 +6172,7 @@
    "type": "open",
    "thickness": 0.0,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "n": [
     -1.0,
@@ -6220,7 +6196,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O43",
@@ -6256,12 +6232,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6315,7 +6291,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O44",
@@ -6351,7 +6327,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O45",
@@ -6366,7 +6342,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6424,7 +6400,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O46",
@@ -6439,7 +6415,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6509,7 +6485,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O47",
@@ -6524,7 +6500,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6578,7 +6554,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F1_O48",
@@ -6593,7 +6569,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6653,7 +6629,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_W+0",
    "note": "hard column wrap from the column face to the glass",
@@ -6679,12 +6655,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -6738,7 +6714,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -6763,7 +6739,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -6788,7 +6764,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O01",
@@ -6832,7 +6808,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O03",
@@ -6876,7 +6852,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O05",
@@ -6920,7 +6896,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O07",
@@ -6955,7 +6931,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -6980,7 +6956,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -7005,7 +6981,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -7030,7 +7006,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -7055,7 +7031,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -7138,12 +7114,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S3",
@@ -7191,7 +7167,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_W+9",
    "note": "hard column wrap from the column face to the glass",
@@ -7217,13 +7193,13 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "faces the Garden Stair head",
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S3",
@@ -7271,7 +7247,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O09",
@@ -7332,7 +7308,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O10",
@@ -7368,12 +7344,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S3",
@@ -7421,7 +7397,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O11",
@@ -7457,12 +7433,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S3",
@@ -7510,7 +7486,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O12",
@@ -7546,12 +7522,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S3",
@@ -7634,7 +7610,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O14",
@@ -7670,7 +7646,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_W+0",
    "note": "hard column wrap from the column face to the glass",
@@ -7696,7 +7672,7 @@
    "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -7722,12 +7698,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S3",
@@ -7775,7 +7751,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O15",
@@ -7790,7 +7766,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S3",
@@ -7844,7 +7820,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "stone cellar wall (hard anchor of S3)",
    "n": [
@@ -7869,7 +7845,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "n": [
     -0.0,
@@ -7893,7 +7869,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O16",
@@ -7929,7 +7905,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O17",
@@ -7965,7 +7941,7 @@
    "type": "open",
    "thickness": 0.0,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "n": [
     -1.0,
@@ -7989,7 +7965,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O18",
@@ -8025,7 +8001,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O19",
@@ -8061,7 +8037,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N-18",
    "note": "hard column wrap from the column face to the glass",
@@ -8087,12 +8063,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8146,7 +8122,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_W-18",
    "note": "hard column wrap from the column face to the glass",
@@ -8172,7 +8148,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O20",
@@ -8187,7 +8163,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8235,12 +8211,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8288,7 +8264,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N-9",
    "note": "hard column wrap from the column face to the glass",
@@ -8314,7 +8290,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O21",
@@ -8329,7 +8305,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8389,7 +8365,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O22",
@@ -8404,7 +8380,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8474,7 +8450,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O23",
@@ -8510,7 +8486,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O24",
@@ -8546,7 +8522,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N+0",
    "note": "hard column wrap from the column face to the glass",
@@ -8572,7 +8548,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O25",
@@ -8587,7 +8563,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8657,7 +8633,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O26",
@@ -8673,7 +8649,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -8749,7 +8725,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N+9",
    "note": "hard column wrap from the column face to the glass",
@@ -8775,7 +8751,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O27",
@@ -8812,7 +8788,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O28",
@@ -8849,7 +8825,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "to_slab": true,
    "note": "LED volume backing (hard anchor of S2)",
@@ -8875,13 +8851,13 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "to_slab": true,
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S2",
@@ -8929,7 +8905,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O29",
@@ -8967,13 +8943,13 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "to_slab": true,
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "pos",
     "site": "S2",
@@ -9021,7 +8997,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E-9",
    "note": "hard column wrap from the column face to the glass",
@@ -9047,7 +9023,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O30",
@@ -9083,12 +9059,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S2",
@@ -9136,12 +9112,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S2",
@@ -9201,7 +9177,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O31",
@@ -9237,7 +9213,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O32",
@@ -9252,7 +9228,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": "S2",
@@ -9351,7 +9327,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O33",
@@ -9387,12 +9363,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S2",
@@ -9446,7 +9422,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O34",
@@ -9482,12 +9458,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S2",
@@ -9535,7 +9511,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E+9",
    "note": "hard column wrap from the column face to the glass",
@@ -9561,7 +9537,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O35",
@@ -9632,12 +9608,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -9697,7 +9673,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O37",
@@ -9712,7 +9688,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -9766,7 +9742,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O38",
@@ -9781,7 +9757,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -9841,7 +9817,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E+18",
    "note": "hard column wrap from the column face to the glass",
@@ -9867,7 +9843,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "freestanding": true,
    "note": "bridge screen: blocks the bridge sightline",
@@ -9893,7 +9869,7 @@
    "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O39",
@@ -9929,7 +9905,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O40",
@@ -9965,7 +9941,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S-9",
    "note": "hard column wrap from the column face to the glass",
@@ -9991,7 +9967,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O41",
@@ -10007,7 +9983,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -10077,7 +10053,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O42",
@@ -10092,7 +10068,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -10146,7 +10122,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -10172,7 +10148,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "freestanding": true,
    "note": "stone reception backdrop wall (splits the lobby lines)",
@@ -10198,7 +10174,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F2_O43",
@@ -10234,7 +10210,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S+9",
    "note": "hard column wrap from the column face to the glass",
@@ -10260,7 +10236,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10285,7 +10261,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10310,7 +10286,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O01",
@@ -10354,7 +10330,7 @@
    "type": "hard",
    "thickness": 0.6,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O03",
@@ -10398,7 +10374,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O05",
@@ -10442,7 +10418,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O07",
@@ -10477,7 +10453,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10502,7 +10478,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10527,7 +10503,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10552,7 +10528,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10577,7 +10553,7 @@
    "type": "hard",
    "thickness": 0.3,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "core": true,
    "n": [
@@ -10602,7 +10578,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "void wall: no footing on the void side, so hard",
    "n": [
@@ -10627,7 +10603,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N+9",
    "note": "hard column wrap from the column face to the glass",
@@ -10678,7 +10654,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O08",
@@ -10715,7 +10691,7 @@
    "type": "hard",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "faces Grid C",
    "was": "reinforceable",
@@ -10742,7 +10718,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O09",
@@ -10779,12 +10755,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S1",
@@ -10838,12 +10814,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S1",
@@ -10897,7 +10873,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O10",
@@ -10934,7 +10910,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O11",
@@ -10958,7 +10934,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": "S1",
@@ -11016,7 +10992,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N+0",
    "note": "hard column wrap from the column face to the glass",
@@ -11042,7 +11018,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "note": "render vault fire wall (hard anchor of S1)",
    "n": [
@@ -11067,7 +11043,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_N-9",
    "note": "hard column wrap from the column face to the glass",
@@ -11093,12 +11069,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S1",
@@ -11152,7 +11128,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O13",
@@ -11188,12 +11164,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "reinforceable",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "neg",
     "site": "S1",
@@ -11335,7 +11311,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O16",
@@ -11372,12 +11348,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -11431,7 +11407,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E-9",
    "note": "hard column wrap from the column face to the glass",
@@ -11457,7 +11433,7 @@
    "type": "open",
    "thickness": 0.0,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "n": [
     -1.0,
@@ -11481,7 +11457,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O17",
@@ -11517,7 +11493,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -11543,7 +11519,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O18",
@@ -11558,7 +11534,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -11616,7 +11592,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O19",
@@ -11652,7 +11628,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O20",
@@ -11688,7 +11664,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O21",
@@ -11724,7 +11700,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O22",
@@ -11739,7 +11715,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -11809,7 +11785,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O23",
@@ -11824,7 +11800,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -11940,7 +11916,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O25",
@@ -11955,7 +11931,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12009,7 +11985,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_W+9",
    "note": "hard column wrap from the column face to the glass",
@@ -12035,7 +12011,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O26",
@@ -12106,7 +12082,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O28",
@@ -12121,7 +12097,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12169,7 +12145,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O29",
@@ -12184,7 +12160,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12238,7 +12214,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O30",
@@ -12274,12 +12250,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12333,7 +12309,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S-9",
    "note": "hard column wrap from the column face to the glass",
@@ -12359,7 +12335,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O31",
@@ -12374,7 +12350,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12444,7 +12420,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O32",
@@ -12459,7 +12435,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12529,7 +12505,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O33",
@@ -12544,7 +12520,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12598,7 +12574,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S+0",
    "note": "hard column wrap from the column face to the glass",
@@ -12624,12 +12600,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12689,7 +12665,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O34",
@@ -12725,12 +12701,12 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12784,7 +12760,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_S+9",
    "note": "hard column wrap from the column face to the glass",
@@ -12810,7 +12786,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O35",
@@ -12846,7 +12822,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "was": "soft",
    "hardened": "junction rule: no straight run of 2.4 m between hard ends",
@@ -12872,7 +12848,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O36",
@@ -12887,7 +12863,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -12941,7 +12917,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E+9",
    "note": "hard column wrap from the column face to the glass",
@@ -12967,7 +12943,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O37",
@@ -13003,7 +12979,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O38",
@@ -13018,7 +12994,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -13076,7 +13052,7 @@
    "type": "hard",
    "thickness": 0.15,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O39",
@@ -13112,7 +13088,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O40",
@@ -13127,7 +13103,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -13197,7 +13173,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O41",
@@ -13212,7 +13188,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -13282,7 +13258,7 @@
    "type": "reinforceable",
    "thickness": 0.2,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [
     {
      "id": "F3_O42",
@@ -13297,7 +13273,7 @@
    "was": "soft",
    "reinforce": {
     "y0": 0.0,
-    "y1": 2.0,
+    "y1": 3.1,
     "header": "hard",
     "defender_side": "either",
     "site": null,
@@ -13367,7 +13343,7 @@
    "type": "hard",
    "thickness": 0.4,
    "y0": 0.0,
-   "y1": 3.9,
+   "y1": 4.195,
    "openings": [],
    "column_wrap": "C_E+0",
    "note": "hard column wrap from the column face to the glass",
@@ -30508,6 +30484,35 @@
    "dressing": "framed slab panel with a hanji ceiling tile below"
   },
   {
+   "id": "H16",
+   "floor": "F2",
+   "x": -14.0,
+   "z": -20.0,
+   "size": 1.2,
+   "type": "hatch",
+   "reinforceable": true,
+   "gadget": "wall-fortification-hatch",
+   "top_room": "F2_noraebang",
+   "bottom_room": "F1_dining_room",
+   "note": "Noraebang -> Dining Room; replaces the old spiral stair",
+   "reinforce_from": "above",
+   "mount": {
+    "pos": [
+     -14.0,
+     4.2,
+     -20.0
+    ],
+    "up": [
+     0,
+     1,
+     0
+    ],
+    "far_side_y": -0.3,
+    "note": "gadget as shipped: face-up on the slab"
+   },
+   "dressing": "framed slab panel with a hanji ceiling tile below"
+  },
+  {
    "id": "H15",
    "floor": "F3",
    "x": -2.0,
@@ -30767,21 +30772,6 @@
     ]
    ],
    "note": "steel stair along the studio north glass up to catwalk B"
-  },
-  {
-   "id": "ST_spiral",
-   "name": "Spiral Stair",
-   "kind": "spiral",
-   "floors": [
-    "F1",
-    "F2"
-   ],
-   "center": [
-    -14.0,
-    -20.0
-   ],
-   "radius": 1.4,
-   "note": "restaurant stair from the Dining Room to the Noraebang"
   },
   {
    "id": "ST_suite",

@@ -48,6 +48,13 @@ hard and never opened.
 | ![Tea Room](shots/tea_room.jpg) | ![Skybridge](shots/skybridge.jpg) | ![West facade](shots/rappel_west.jpg) |
 | Tea Room, S4 (F1) | Skybridge, A3 (F2) | West facade, ledges and rappel |
 
+
+> **Quick fixes (latest):** breakable panels now run floor to ceiling (0–3.1 m), so there is no hard band above
+> them; place Wall Fortification units scaled to 3.1 m high (y scale 1.55). The Spiral Stair between the Dining Room
+> and the Noraebang is gone: its slab hole is now hatch **H16** (Noraebang → Dining Room, reinforced from above).
+> Walls now run through the slab (to 5 mm under the next floor), which closes the see-through slot that showed at
+> stair and void slab edges.
+
 ## Sites
 
 Each site is two adjacent rooms with one objective in each and a defender spawn (five points) inside.
@@ -117,7 +124,7 @@ The floor plans below show every surface by type. In the viewer, press X for the
 | Type | Meaning | Count (layout) |
 | --- | --- | --- |
 | **hard** | indestructible: concrete core, shear and stone walls, columns and column wraps, slabs, exterior structure, and every wall corner and T-junction (1.0 m along each arm) | 139 wall segments, 778.1 m (33 core, 30 column wraps, 65 former partitions made hard by the junction rule), plus the hard ends, jambs, trims and headers of the reinforceable walls |
-| **breakable + reinforceable** | the only destructible wall type: Wall Fortification-sized panels (0–2.0 m high) in the straight runs between hard ends, with hard trims and a hard header above | 72 walls with 169 units, 337.5 m of panel: XL ×22, large ×38, standard ×53, small ×56 |
+| **breakable + reinforceable** | the only destructible wall type: Wall Fortification-sized panels (floor to ceiling, 0–3.1 m) in the straight runs between hard ends, with hard trims; only the hidden plenum above the ceiling is hard | 72 walls with 169 units, 337.5 m of panel: XL ×22, large ×38, standard ×53, small ×56 |
 | **hatch** | 1.2 × 1.2 m breakable floor panel; takes the gadget's hatch unit | 15 (all reinforced from above, face-up, as in Siege) |
 | **soft floor** | 2.4 m destructible floor/ceiling patch for vertical play | 9 |
 | **barricadable door / window** | openings that take a barricade | 121 interior doors, 4 interior windows, 39 facade entry windows, 4 facade doors + 2 facade double doors (127 `BARR_D_`, 43 `BARR_W_`) |
