@@ -19,7 +19,7 @@ working Unity version of all of it.
 - **Apps**: idle shows the map (abstract floor plan, ping ring, contacts), the drone feed, the signal scan or
   the home grid. The drone cells can be replaced by a live RenderTexture of the drone's camera.
 - Mass about 0.42 kg. Size 86 × 160 × 22.4 mm at the corners; with the lug, bracket, camera rings and lanyard
-  the bounds are 91 × 208 × 24 mm.
+  the bounds are 91 × 210 × 25 mm.
 
 ## Axes and import
 
@@ -41,7 +41,7 @@ working Unity version of all of it.
 | `body` | 0, 0, 0 | static: every fixed mesh |
 | `screen` | 0, −0.0035, −0.0080 | `screen_display` (atlas plane, 68 × 128 mm) and `screen_glass` |
 | `led_status` | −0.021, 0.0645, −0.0097 | clips (scale blink); tint from script (material `led_status`) |
-| `led_lug` | 0.0335, 0.1012, −0.0087 | clips (scale blink); tint from script (material `led_accent`) |
+| `led_lug` | 0.0335, 0.0942, −0.0087 | clips (scale blink); tint from script (material `led_accent`) |
 | `btn_power` | −0.0415, 0.037, 0 | clips: press +X 1.4 mm |
 | `btn_vol_up` / `btn_vol_down` | −0.0415, 0.0165 / 0.0005, 0 | press +X 1.2 mm (no clip uses them; drive for volume) |
 | `btn_action` | 0.0415, 0.026, 0 | `scan`: press −X 1.6 mm |
@@ -50,7 +50,7 @@ working Unity version of all of it.
 | `lanyard` | 0, −0.0824, 0 | cord loop pivot in the bracket slot; `idle` sways it ±3.4 deg, or drive a pendulum |
 | `grip_left_hand` | 0.004, −0.03, 0.024 | locator: palm |
 | `fx_touch` | 0.008, −0.018, −0.0086 | locator: thumb tap point on the glass |
-| `fx_scan` | 0.0335, 0.104, 0 | locator: lug tip, scan pulse origin |
+| `fx_scan` | 0.0335, 0.097, 0 | locator: lug tip, scan pulse origin |
 | `cam_rear` / `cam_front` | −0.0125, 0.057, 0.0118 / 0.021, 0.0645, −0.0098 | locators: cameras (+Z / −Z) |
 | `fx_flash` | 0.0165, 0.0615, 0.0119 | locator: rear flash, torch light origin |
 
@@ -74,20 +74,24 @@ mask), `screen`, `screen_glass` (transparent), `lens_glass`, `flash_diffuser` (s
 Sounds (`sounds/`, 44.1 kHz mono): `button` with every key press (0.05 s into wake, scan, power_off), `wake`
 at 0.25 s, `unlock` at 0.42 s, `scan` at 0.3 s (its four pings match the lug flashes), `scan_result` at
 1.0 s, `alert` looping (1.0 s seamless), `power_off` at 0.6 s, `low_battery`, `tap` for every touch,
-`flap_open` / `flap_close`, `draw` / `holster`.
+`flap_open` / `flap_close`, `draw` / `holster`. `unlock` also plays `tap` at 0.3 s (the thumb on the glass).
+`TacticalPhone.cs` plays each of these at the same times as the viewer (timed cues in `Update`).
 
 ## The screen atlas
 
 The `screen` material's **emissive map** is `screen_atlas`: 1088 × 2048 px, **4 × 4 cells of 272 × 512**
 (17:32, the 68 × 128 mm screen), sRGB, clamp. `screen_display`'s UVs cover cell 0 (u 0..0.25, v 0..0.25,
 v = 0 at the top of the image). The base colour is near black; the picture is all emission. The `.glb`
-carries an identity `KHR_texture_transform` on the emissive texture so glTFast builds the material with
-texture transforms.
+carries a `KHR_texture_transform` on the emissive texture (offset [0.75, 0], scale 1), so glTFast builds the
+material with texture transforms and the plain file (any glTF viewer, or the prefab without the script)
+shows the **lock** cell, not a dead black slab. `TacticalPhone.cs` subtracts that column on start, so its
+offsets below are relative to cell 0.
 
 Cell i is at column `i % 4`, row `floor(i / 4)` from the top left. To show cell i:
 
-- **three.js / glTF**: texture offset = (col / 4, row / 4).
-- **Unity (glTFast flips V)**: offset = imported offset + (scale.x · col / 4, −scale.y · row / 4), on every
+- **three.js / glTF**: texture offset = (col / 4, row / 4) (the file ships at (0.75, 0), the lock cell).
+- **Unity (glTFast flips V)**: offset = cell-0 offset + (scale.x · col / 4, −scale.y · row / 4), where the cell-0
+  offset is the imported offset − (scale.x · 3 / 4, 0), on every
   atlas property the shader has (`emissiveTexture`, `_EmissionMap`, and `_BaseMap` / `_MainTex`, which
   Standard / URP Lit use for the emission map's tiling), also written to `<prop>_ST`.
 
@@ -119,7 +123,7 @@ Sequencing (the viewer's `cellFor`, copied in `TacticalPhone.CellFor`):
 | unlock | lock until 0.45 s, then home, then the app |
 | scan | 0–0.25 s the app; 0.25–1.0 s scan a/b at 6 Hz; lock_on until 2.5 s; then the app |
 | alert | alert a/b at 4 Hz |
-| low battery | low_battery / off at 1 Hz for 3 s, then the app |
+| low battery | low_battery / off at 1 Hz for 3 s, then back: an alert stays an alert, a locked (or waking) phone goes back to the lock screen, otherwise the app |
 | power off | the app until 0.6 s, shutdown until 0.95 s, then off |
 
 LED tints: normal `#8a4dff`, alert `#ff3a44` (both LEDs), low battery `#ffb347` (status LED), off black.
@@ -131,7 +135,8 @@ LED tints: normal `#8a4dff`, alert `#ff3a44` (both LEDs), low battery `#ffb347` 
    BoxColliders from `*_COL`).
 3. Add **`TacticalPhone`** to the prefab root (it needs the `Animation` component glTFast adds). Assign the
    13 sounds from `sounds/`. Optional: `droneFeed` (RenderTexture of the drone camera; tick `flipFeed` if it
-   shows upside down), `torchLight`.
+   shows upside down; it replaces only the slots that held the atlas, and the atlas comes back when the
+   drone app closes), `torchLight`.
 4. Parent the prefab to the left hand bone so `grip_left_hand` sits in the palm, and point the thumb IK at
    `TouchPoint`.
 5. From the ability: `Draw()`, `Holster()`, `Scan()` (listen to `onScan` for the query, `ScanOrigin` for

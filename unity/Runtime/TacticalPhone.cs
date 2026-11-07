@@ -16,8 +16,9 @@
 //   SetTorch(on)                rear flash as a torch (emission + an optional spot light at fx_flash)
 // Screen: 4 x 4 atlas cells (272 x 512 px each) on the 'screen' material's emissive map; a cell is shown by
 // moving the texture offset by whole cells on a material copy owned by this component (glTFast applies *_ST with
-// _TEXTURE_TRANSFORM, which the glb's identity KHR_texture_transform turns on). glTFast flips V on import, so
-// cell (col, row) is the imported offset + (scale.x * col / 4, -scale.y * row / 4). droneFeed (a RenderTexture of
+// _TEXTURE_TRANSFORM, which the glb's KHR_texture_transform turns on). The glb ships showing the lock cell (offset
+// [0.75, 0]) so it reads without this script; that column is taken back out on start. glTFast flips V on import, so
+// cell (col, row) is the cell-0 offset + (scale.x * col / 4, -scale.y * row / 4). droneFeed (a RenderTexture of
 // the drone camera) replaces the drone cells while the Drone app is up.
 // LEDs: the clips blink led_status / led_lug by scale (STEP keys); their tint comes from here, on copies of the
 // 'led_status' and 'led_accent' materials (emissiveFactor for glTFast shaders, _EmissionColor for Standard / URP
@@ -77,6 +78,7 @@ public class TacticalPhone : MonoBehaviour
     // atlas cells (DESIGN 7): index = column + 4 * row from the top left
     public static readonly string[] Cells = { "off", "boot_a", "boot_b", "lock", "home", "map_a", "map_b", "drone_a", "drone_b", "scan_a", "scan_b", "lock_on", "alert_a", "alert_b", "low_battery", "shutdown" };
     const int Off = 0, BootA = 1, BootB = 2, LockCell = 3, HomeCell = 4, MapA = 5, MapB = 6, DroneA = 7, DroneB = 8, ScanA = 9, ScanB = 10, LockOn = 11, AlertA = 12, AlertB = 13, LowBat = 14, Shutdown = 15;
+    const int DefaultCell = LockCell;           // the cell the glb's KHR_texture_transform shows without this script
     const float ScreenW = 0.068f, ScreenH = 0.128f;
 
     static readonly string[] AtlasProps = { "emissiveTexture", "baseColorTexture", "_EmissionMap", "_BaseMap", "_MainTex" };
@@ -94,6 +96,7 @@ public class TacticalPhone : MonoBehaviour
     float stateT, portT, portTarget, clock;
     int forcedCell = -1, shownCell = -1;
     bool feedShown, torchOn, scanFired, resultFired;
+    int cues;                                   // timed sound cues already played in this state (bit per cue)
     Color lastStatus = new Color(-1f, 0f, 0f, 0f), lastAccent = new Color(-1f, 0f, 0f, 0f);
 
     void Awake()
@@ -187,7 +190,9 @@ public class TacticalPhone : MonoBehaviour
             // map slot is empty, so _MainTex / _BaseMap count whenever the shader has them
             var shared = p == "_MainTex" || p == "_BaseMap";
             if (!m.HasProperty(p) || (!shared && m.GetTexture(p) == null)) continue;
-            atlas.Add(new AtlasSlot { mat = m, prop = p, scale = m.GetTextureScale(p), offset = m.GetTextureOffset(p), tex = m.GetTexture(p) });
+            // the glb ships showing the lock cell (DefaultCell, row 0): take its column back out so offset is cell 0's
+            var sc = m.GetTextureScale(p);
+            atlas.Add(new AtlasSlot { mat = m, prop = p, scale = sc, offset = m.GetTextureOffset(p) - new Vector2(sc.x * (DefaultCell % 4) * 0.25f, 0f), tex = m.GetTexture(p) });
         }
         m.EnableKeyword("_TEXTURE_TRANSFORM");
     }
@@ -206,9 +211,8 @@ public class TacticalPhone : MonoBehaviour
     {
         if (Current != State.Off && Current != State.PoweringOff) return;
         SetState(State.Waking);
-        PlayClip("wake", 0.05f);
-        Play(button);
-        Play(wake);
+        pendingUnlock = false;
+        PlayClip("wake", 0.05f);              // button at 0.05 s and wake at 0.25 s (Update)
         loopSource.Stop();
         if (onWake != null) onWake.Invoke();
     }
@@ -218,8 +222,7 @@ public class TacticalPhone : MonoBehaviour
         if (Current == State.Waking) { pendingUnlock = true; return; }
         if (Current != State.Locked) return;
         SetState(State.Unlocking);
-        PlayClip("unlock", 0.1f);
-        Play(unlock);
+        PlayClip("unlock", 0.1f);             // tap at 0.3 s and unlock at 0.42 s (Update)
         if (onUnlock != null) onUnlock.Invoke();
     }
     bool pendingUnlock;
@@ -247,8 +250,7 @@ public class TacticalPhone : MonoBehaviour
         if (Current != State.Idle && Current != State.Scanning) return;
         SetState(State.Scanning);
         scanFired = resultFired = false;
-        PlayClip("scan", 0.05f);
-        Play(button);
+        PlayClip("scan", 0.05f);              // button at 0.05 s, scan 0.3 s, scan_result 1.0 s (Update)
     }
 
     public void SetAlert(bool on)
@@ -267,12 +269,20 @@ public class TacticalPhone : MonoBehaviour
             SetState(State.Idle);
             PlayClip("idle", 0.15f);
         }
+        else if (Current == State.LowBattery && resumeState == State.Alert)
+        {
+            // the warning was raised over an alert: end the alert now, the warning resumes to idle
+            loopSource.Stop();
+            resumeState = State.Idle;
+            PlayClip("idle", 0.15f);
+        }
     }
 
     public void LowBattery()
     {
         if (Current == State.Off || Current == State.PoweringOff || Current == State.LowBattery) return;
-        resumeState = Current == State.Alert ? State.Alert : State.Idle;
+        // resume where the warning interrupted: an alert stays an alert, a phone still locked (or waking) goes back to the lock screen
+        resumeState = Current == State.Alert ? State.Alert : Current == State.Waking || Current == State.Locked ? State.Locked : State.Idle;
         SetState(State.LowBattery);
         Play(lowBattery);
     }
@@ -282,9 +292,7 @@ public class TacticalPhone : MonoBehaviour
         if (Current == State.Off || Current == State.PoweringOff) return;
         loopSource.Stop();
         SetState(State.PoweringOff);
-        PlayClip("power_off", 0.05f);
-        Play(button);
-        Play(powerOff);
+        PlayClip("power_off", 0.05f);         // button at 0.05 s and power_off at 0.6 s (Update)
         if (onPowerOff != null) onPowerOff.Invoke();
     }
 
@@ -340,6 +348,7 @@ public class TacticalPhone : MonoBehaviour
         switch (Current)
         {
             case State.Waking:
+                Cue(0, 0.05f, button); Cue(1, 0.25f, wake);
                 if (stateT >= Length("wake"))
                 {
                     SetState(State.Locked); PlayClip("idle", 0.1f);
@@ -347,18 +356,26 @@ public class TacticalPhone : MonoBehaviour
                 }
                 break;
             case State.Unlocking:
+                Cue(0, 0.3f, tap); Cue(1, 0.42f, unlock);
                 if (stateT >= Length("unlock")) { SetState(State.Idle); PlayClip("idle", 0.1f); }
                 break;
             case State.Scanning:
+                Cue(0, 0.05f, button);
                 if (!scanFired && stateT >= 0.3f) { scanFired = true; Play(scan); if (onScan != null) onScan.Invoke(); }
                 if (!resultFired && stateT >= 1.0f) { resultFired = true; Play(scanResult); if (onScanResult != null) onScanResult.Invoke(); }
                 if (stateT >= Length("scan") && anim["scan"] != null && anim.IsPlaying("scan")) PlayClip("idle", 0.15f);
                 if (stateT >= 2.5f) SetState(State.Idle);
                 break;
             case State.LowBattery:
-                if (stateT >= 3f) { SetState(resumeState); if (resumeState == State.Idle && !anim.IsPlaying("idle")) PlayClip("idle", 0.1f); }
+                if (stateT >= 3f)
+                {
+                    SetState(resumeState);
+                    if (resumeState != State.Alert && !anim.IsPlaying("idle")) PlayClip("idle", 0.1f);
+                    if (resumeState == State.Locked && (pendingUnlock || autoUnlock)) { pendingUnlock = false; Unlock(); }
+                }
                 break;
             case State.PoweringOff:
+                Cue(0, 0.05f, button); Cue(1, 0.6f, powerOff);
                 if (stateT >= Length("power_off")) SetState(State.Off);
                 break;
         }
@@ -433,7 +450,7 @@ public class TacticalPhone : MonoBehaviour
                 var s = new Vector2(a.scale.x * 4f, a.scale.y * 4f);
                 var o = new Vector2(a.offset.x * 4f, a.offset.y * 4f - 3f * Mathf.Sign(a.scale.y));
                 if (flipFeed) { s.y = -s.y; o.y = 1f - o.y; }
-                Apply(a, droneFeed, s, o);
+                Apply(a, a.tex != null ? droneFeed : null, s, o);   // slots that held no texture (Standard / URP base map) only take the transform
             }
             return;
         }
@@ -445,7 +462,7 @@ public class TacticalPhone : MonoBehaviour
 
     static void Apply(AtlasSlot a, Texture tex, Vector2 s, Vector2 o)
     {
-        if (tex != null && a.mat.GetTexture(a.prop) != tex) a.mat.SetTexture(a.prop, tex);
+        if (a.mat.GetTexture(a.prop) != tex) a.mat.SetTexture(a.prop, tex);    // a.tex is the slot's own texture, null included, so this restores it
         a.mat.SetTextureScale(a.prop, s);
         a.mat.SetTextureOffset(a.prop, o);
         if (a.mat.HasProperty(a.prop + "_ST")) a.mat.SetVector(a.prop + "_ST", new Vector4(s.x, s.y, o.x, o.y));
@@ -464,7 +481,10 @@ public class TacticalPhone : MonoBehaviour
 
     // ---------------------------------------------------------------- helpers
 
-    void SetState(State s) { Current = s; stateT = 0f; }
+    void SetState(State s) { Current = s; stateT = 0f; cues = 0; if (s == State.Off) pendingUnlock = false; }
+
+    // play c once when the state's clock passes t (bit = this cue's slot in the state)
+    void Cue(int bit, float t, AudioClip c) { if ((cues & (1 << bit)) == 0 && stateT >= t) { cues |= 1 << bit; Play(c); } }
 
     void PlayClip(string clip, float fade)
     {

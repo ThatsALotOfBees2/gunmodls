@@ -92,39 +92,6 @@
   button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
   button.toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
   button:disabled { opacity: 0.4; cursor: not-allowed; }
-  #hud {
-    position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 18px);
-    display: flex; align-items: center; gap: 12px; pointer-events: none;
-    background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 14px 8px 8px;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); --hud: var(--accent);
-  }
-  #hud svg { display: block; flex: none; }
-  #hud .track { fill: none; stroke: var(--line); stroke-width: 5; }
-  #hud .track.thin { stroke-width: 3; }
-  #hud .ring { fill: none; stroke: var(--hud); stroke-width: 5; stroke-linecap: round; }
-  #hud .hold { fill: none; stroke: var(--fg); stroke-width: 3; stroke-linecap: round; }
-  #hud #hud-ticks rect { fill: var(--line); }
-  #hud #hud-ticks rect.on { fill: var(--hud); }
-  #hud .glyph { display: none; fill: none; stroke: var(--hud); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
-  #hud .glyph rect:not(.fill) { fill: none; }
-  #hud .glyph .fill, #hud .g-upload rect { fill: var(--hud); stroke: none; }
-  #hud[data-state="carry"] .g-carry, #hud[data-state="cancel"] .g-carry, #hud[data-state="pickup"] .g-carry,
-  #hud[data-state="plant"] .g-plant, #hud[data-state="upload"] .g-upload, #hud[data-state="disabling"] .g-upload,
-  #hud[data-state="complete"] .g-complete, #hud[data-state="disabled"] .g-disabled, #hud[data-state="preview"] .g-preview { display: inline; }
-  #hud[data-state="disabling"] .hold, #hud[data-state="disabled"] { --hud: var(--alarm); }
-  #hud[data-state="disabling"] .hold { stroke: var(--alarm); }
-  #hud[data-state="upload"] .g-upload rect { animation: hudbar 0.9s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: bottom; }
-  #hud[data-state="upload"] .g-upload rect:nth-child(2) { animation-delay: -0.3s; }
-  #hud[data-state="upload"] .g-upload rect:nth-child(3) { animation-delay: -0.6s; }
-  @keyframes hudbar { from { transform: scaleY(0.45); } to { transform: scaleY(1); } }
-  #hud[data-state="complete"] { --hud: #b89cff; }
-  #hud[data-state="complete"] svg { animation: hudpop 0.6s ease-out 1; }
-  @keyframes hudpop { 0% { transform: scale(0.8); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
-  @media (prefers-reduced-motion: reduce) { #hud * { animation: none !important; } }
-  .hud-text { display: grid; gap: 2px; min-width: 128px; }
-  .hud-text b { font: 600 15px/1.1 var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
-  .hud-text span { font: 500 11.5px var(--font-mono); color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
-  #hud[data-state="disabled"] .hud-text b, #hud[data-state="disabling"] .hud-text b { color: var(--alarm); }
   button.hold { touch-action: none; user-select: none; -webkit-user-select: none; }
   button.hold[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
   #act-disable.hold[aria-pressed="true"] { background: var(--alarm); color: #fff; }
@@ -138,14 +105,15 @@
   }
   @media (max-width: 640px) {
     .hint { display: none; }
-    #hud { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); right: 16px; padding: 6px 10px 6px 6px; }
-    #hud svg { width: 56px; height: 56px; }
     .plate .specs, .plate .state { display: none; }
     .plate { padding: 10px 12px; }
     .specs { font-size: 11px; }
     .specs .wide { display: none; }
     button { padding: 7px 8px; font-size: 12px; }
     .tag { display: none; }
+    /* chip rows wrap instead of scrolling sideways, so every clip and state button stays in view */
+    .group { flex-wrap: wrap; justify-content: center; overflow-x: visible; }
+    button { padding: 6px 7px; font-size: 11.5px; }
   }
 </style>
 <style>
@@ -193,7 +161,7 @@
         <button type="button" data-view="side">Side</button>
         <button type="button" data-view="back">Back</button>
       </div>
-      <button type="button" class="toggle" id="hand" aria-pressed="true" title="Show the glove (H)">Glove</button>
+      <button type="button" class="toggle" id="hand" aria-pressed="false" title="Show the glove (H)">Glove</button>
       <button type="button" class="toggle" id="spin" aria-pressed="false" title="Orbit the camera slowly">Orbit</button>
       <button type="button" class="toggle" id="sound" aria-pressed="true" title="Sounds">Sound</button>
     </div>
@@ -666,12 +634,14 @@ function underMaps(N, seed) {
   const orm = rgbaCanvas(N, N, (i, o) => { const d = clamp01(dust[i]); o[0] = 1; o[1] = lerp(0.42 + 0.03 * (streak[i] - 0.5) * 2 + 0.05 * blot[i] - 0.08 * scr[i], 0.85, d); o[2] = lerp(1, 0.1, d); });
   return { map, normal: normalFrom(H, N, 4 / k), orm };
 }
+// black rubber: a slow blotch, a fine moulded stipple (tiny pits about 0.3 mm at the 3 cm tile) and matte roughness 0.7-0.85
 function rubberMaps(N, seed) {
-  const R = prng(seed), g = stretch(fbmT(N, 32, 3, R)), blot = stretch(fbmT(N, 2, 3, R)), H = new Float32Array(N * N);
-  for (let i = 0; i < H.length; i++) H[i] = g[i] * 0.2;
-  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.85 + 0.25 * blot[i] + 0.1 * g[i]; o[0] = 0.075 * t; o[1] = 0.074 * t; o[2] = 0.076 * t; });
-  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.8 + 0.12 * g[i]; o[2] = 0; });
-  return { map, normal: normalFrom(H, N, 2), orm };
+  const R = prng(seed), n2 = N * N, g = stretch(fbmT(N, 32, 3, R)), blot = stretch(fbmT(N, 2, 3, R)), st = stretch(fbmT(N, 110, 1, R)), H = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) H[i] = g[i] * 0.2 + st[i] * 0.35;
+  for (let j = 0; j < 900; j++) addDimple(H, N, R() * N, R() * N, 0.9 + R() * 1.1, 0.25);
+  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.85 + 0.25 * blot[i] + 0.1 * g[i] + 0.08 * (st[i] - 0.5); o[0] = 0.075 * t; o[1] = 0.074 * t; o[2] = 0.076 * t; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.76 + 0.08 * g[i] + 0.06 * (st[i] - 0.5), 0.7, 0.86); o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 2.6), orm };
 }
 // moulded polymer: fine stipple, satin-matte
 function polymerMaps(N, seed) {
@@ -752,15 +722,35 @@ function brushedMaps(N, seed) {
     const g = sstep(0.78, 0.95, grime[i]) * 0.3, t = (0.9 + 0.08 * streak[i] + 0.05 * fineS[i]) * (0.96 + 0.06 * blot[i]) * (1 - g) + scr[i] * 0.18;
     o[0] = o[1] = Math.min(1, t); o[2] = Math.min(1, t * 1.015);
   });
-  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.4 + 0.07 * (streak[i] - 0.5) + 0.05 * (fineS[i] - 0.5) + 0.06 * blot[i] - 0.12 * scr[i] + 0.25 * sstep(0.78, 0.95, grime[i]), 0.18, 0.9); o[2] = 1; });
-  return { map, normal: normalFrom(H, N, 3 / k), orm };
+  // roughness about 0.46 on average (satin brushed, not polished): the review asked for 0.38-0.5
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.47 + 0.07 * (streak[i] - 0.5) + 0.05 * (fineS[i] - 0.5) + 0.06 * blot[i] - 0.1 * scr[i] + 0.25 * sstep(0.78, 0.95, grime[i]), 0.3, 0.9); o[2] = 1; });
+  return { map, normal: normalFrom(H, N, 3 / k), orm, F: { N, streak, fineS, blot, grime, scr, H } };
+}
+// Worn edges of the gunmetal: the same brushed sheet with the dark finish rubbed through to bright alloy only in
+// intermittent chips and short scuffed runs (about a third of the area), so a worn edge strip reads as chipped,
+// not as continuous chrome trim. Tone baked into the albedo (the material colour stays white).
+function wornMaps(F, seed, dark, bright) {
+  const { N, streak, fineS, blot, grime, scr, H } = F, R = prng(seed), n2 = N * N;
+  const C = stretch(fbmT(N, 5, 3, R)), S = stretch(fbmT(N, 22, 3, R, { gain: 0.6 })), D2 = stretch(fbmT(N, 70, 2, R));
+  const mask = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) { const th = lerp(0.74, 0.5, sstep(0.35, 0.85, C[i])), g = S[i] * 0.72 + D2[i] * 0.28; mask[i] = sstep(th - 0.02, th + 0.02, g); }
+  for (let j = 0; j < 220; j++) { const x = R() * N, y = R() * N, r = 1 + R() * 2.5; for (let yy = -3; yy <= 3; yy++) for (let xx = -3; xx <= 3; xx++) if (xx * xx + yy * yy <= r * r) { const i = (((y + yy) | 0) % N + N) % N * N + (((x + xx) | 0) % N + N) % N; mask[i] = 1; } }
+  const halo = blurW(mask, N, 3);
+  const Hw = new Float32Array(n2); for (let i = 0; i < n2; i++) Hw[i] = H[i] - mask[i] * 0.05;
+  const map = rgbaCanvas(N, N, (i, o) => {
+    const m = mask[i], gr = sstep(0.78, 0.95, grime[i]) * 0.3, t = (0.9 + 0.08 * streak[i] + 0.05 * fineS[i]) * (0.96 + 0.06 * blot[i]) * (1 - gr);
+    const hb = clamp01(halo[i] * 1.6) * (1 - m);
+    for (let c = 0; c < 3; c++) o[c] = Math.min(1, lerp(dark[c] * t * (1 + 0.3 * hb) + scr[i] * 0.08, bright[c] * (0.92 + 0.1 * fineS[i]) + scr[i] * 0.05, m));
+  });
+  const orm = rgbaCanvas(N, N, (i, o) => { const m = mask[i]; o[0] = 1; o[1] = clampR(lerp(0.47 + 0.06 * (streak[i] - 0.5) + 0.06 * blot[i] - 0.05 * clamp01(halo[i] * 1.6), 0.4 + 0.08 * fineS[i] - 0.06 * scr[i], m), 0.34, 0.9); o[2] = lerp(0.85, 1, m); });
+  return { map, normal: normalFrom(Hw, N, 3 * 1024 / N), orm };
 }
 // Rubber with a moulded diamond knurl (cells x cells pyramids per tile), slightly worn flat on the crowns.
 function knurlMaps(N, cells = 16, seed = 61) {
-  const R = prng(seed), n2 = N * N, p = N / cells, blot = stretch(fbmT(N, 3, 3, R)), g = stretch(fbmT(N, 48, 2, R)), H = new Float32Array(n2);
+  const R = prng(seed), n2 = N * N, p = N / cells, blot = stretch(fbmT(N, 3, 3, R)), g = stretch(fbmT(N, 96, 2, R)), H = new Float32Array(n2);
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const u = wrap01((x + y) / (p * 2)), v = wrap01((x - y) / (p * 2)), d = Math.min(Math.abs(u - 0.5), Math.abs(v - 0.5)) * 2;
-    H[y * N + x] = Math.min(0.82, Math.pow(d, 0.8)) + g[y * N + x] * 0.05;
+    H[y * N + x] = Math.min(0.82, Math.pow(d, 0.8)) + g[y * N + x] * 0.09;
   }
   const map = rgbaCanvas(N, N, (i, o) => { const t = (0.85 + 0.2 * blot[i]) * (0.9 + 0.16 * H[i]); o[0] = 0.07 * t; o[1] = 0.07 * t; o[2] = 0.075 * t; });
   const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.86 - 0.18 * sstep(0.7, 0.82, H[i]) + 0.05 * g[i], 0.5, 0.95); o[2] = 0; });
@@ -775,6 +765,13 @@ function glassScuffMap(N, seed) {
   for (let j = 0; j < 26; j++) { const cx = N * (0.45 + 0.3 * R()), cy = N * (0.5 + 0.3 * R()), r = N * (0.1 + 0.25 * R()), a = R() * 6.283; for (let s = 0; s < 1.6; s += 0.004) { const x = cx + Math.cos(a + s) * r, y = cy + Math.sin(a + s) * r; const i = ((Math.round(y) % N + N) % N) * N + ((Math.round(x) % N + N) % N); wipe[i] = Math.max(wipe[i], 0.5); } }
   const w = blurW(wipe, N, 2), sc = blurW(scr, N, 1);
   return rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.05 + 0.05 * blot[i] + 0.18 * w[i] + 0.5 * sc[i], 0, 1); o[2] = 0; });
+}
+
+// a Fresnel lens for the flash diffusers: concentric sawtooth rings round the UV centre (UV 0..1 = one lens)
+function fresnelNormal(N, rings) {
+  const H = new Float32Array(N * N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const r = Math.hypot(x + 0.5 - N / 2, y + 0.5 - N / 2) / (N / 2); H[y * N + x] = r < 1 ? wrap01(r * rings) * 0.9 : 0; }
+  return normalFrom(H, N, 2.2);
 }
 
 /* ------------------------------------------------------------------ materials */
@@ -805,6 +802,7 @@ function ormScaled(src, g, name) {
 function texSet(name, maps, { jpeg = true } = {}) {
   const s = { map: asTex(maps.map, { srgb: true, jpeg }), normal: asTex(maps.normal), orm: asTex(maps.orm) };
   s.map.name = name + '_albedo'; s.normal.name = name + '_normal'; s.orm.name = name + '_orm';
+  if (maps.F) s.F = maps.F;
   return s;
 }
 // PBR material on a texture set: colour, roughness and metalness factors multiply the maps; tile = metres per UV unit
@@ -820,38 +818,39 @@ function glowMat(name, emissive, glow = 1.5, o = {}) {
   return m;
 }
 // base material -> its worn-edge variant (add() splits convex edges into it); materials that take box UVs
-const CHIP = new Map(), TILED = new Set();
+const CHIP = new Map(), TILED = new Set(), BRUSHED = new Set();
 function buildMaterials() {
   const t0 = performance.now();
   // a phone is small: tiles are 4-10 cm so the grain reads at hand distance
   TX.brushed = texSet('brushed', brushedMaps(512, 17));
-  TX.worn = { map: TX.brushed.map, normal: TX.brushed.normal, orm: ormScaled(TX.brushed.orm.image, 0.85, 'brushed_worn_orm') };
+  TX.worn = texSet('worn', wornMaps(TX.brushed.F, 23, hexRGB('#4d5058'), hexRGB('#9a9ea7')));
   TX.under = texSet('frame', underMaps(512, 37));
   TX.rubber = texSet('rubber', rubberMaps(256, 71));
   TX.polymer = texSet('polymer', polymerMaps(256, 89));
   TX.knurl = texSet('knurl', knurlMaps(256, 16, 61));
   TX.grille = texSet('grille', grilleMaps(256, 8), { jpeg: false });
 
-  M.gunmetal = pbr('gunmetal', TX.brushed, 0.08, { color: '#555860', metalness: 0.92, envMapIntensity: 1.0 }, 0.5);
-  M.gunmetalWorn = pbr('gunmetal_worn', TX.worn, 0.08, { color: '#a7aab2', metalness: 1, envMapIntensity: 1.0 }, 0.5);
+  M.gunmetal = pbr('gunmetal', TX.brushed, 0.08, { color: '#4d5058', metalness: 0.85, envMapIntensity: 0.75 }, 0.5);
+  M.gunmetalWorn = pbr('gunmetal_worn', TX.worn, 0.08, { envMapIntensity: 0.75 }, 0.5);
   M.frame = pbr('frame_alloy', TX.under, 0.1, { color: '#2a2c32', metalness: 0.8, envMapIntensity: 0.9 }, 0.5);
   M.polymer = pbr('polymer', TX.polymer, 0.04, { envMapIntensity: 0.7 }, 0.5);
-  M.rubber = pbr('rubber', TX.rubber, 0.05, { envMapIntensity: 0.5 }, 0.6);
+  M.rubber = pbr('rubber', TX.rubber, 0.03, { envMapIntensity: 0.45 }, 0.8);
   M.grip = pbr('rubber_grip', TX.knurl, 0.03, { envMapIntensity: 0.5 }, 0.8);
   M.black = pbr('black_steel', TX.under, 0.08, { color: '#121317', metalness: 0.5, envMapIntensity: 0.6 }, 0.5);
   M.bolt = new THREE.MeshStandardMaterial({ name: 'fasteners', color: '#5a5c64', metalness: 0.9, roughness: 0.3, envMapIntensity: 0.9 });
-  M.crevice = new THREE.MeshStandardMaterial({ name: 'crevice', color: '#1c1b1a', metalness: 0, roughness: 0.95 });
+  M.crevice = new THREE.MeshStandardMaterial({ name: 'crevice', color: '#121110', metalness: 0, roughness: 0.95 });
   M.grille = pbr('grille', TX.grille, 0.012, { alphaTest: 0.5, side: THREE.DoubleSide, envMapIntensity: 0.6 }, 0.6);
   M.screenGlass = new THREE.MeshPhysicalMaterial({ name: 'screen_glass', color: '#0c0d12', roughness: 0.06, metalness: 0, transparent: true, opacity: 0.16, clearcoat: 1, clearcoatRoughness: 0.04, specularIntensity: 0.6, envMapIntensity: 0.9, depthWrite: false });
   TX.glassScuff = asTex(glassScuffMap(512, 97)); TX.glassScuff.name = 'glass_scuff_orm';
   M.screenGlass.roughnessMap = TX.glassScuff; M.screenGlass.roughness = 1;
   M.lens = new THREE.MeshPhysicalMaterial({ name: 'lens_glass', color: '#06070b', roughness: 0.05, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.02, envMapIntensity: 1.2 });
-  M.flash = new THREE.MeshStandardMaterial({ name: 'flash_diffuser', color: '#9c988c', roughness: 0.4, metalness: 0, emissive: '#000000' });
+  M.flash = new THREE.MeshStandardMaterial({ name: 'flash_diffuser', color: '#8f8b80', roughness: 0.32, metalness: 0, emissive: '#000000' });
+  TX.fresnel = asTex(fresnelNormal(128, 7), { repeat: false }); TX.fresnel.name = 'flash_fresnel_normal'; M.flash.normalMap = TX.fresnel; M.flash.normalScale.set(1, 1);
   M.led = glowMat('led_status', '#8a4dff', 1.6);
   M.accent = glowMat('led_accent', '#8a4dff', 1.3);
   for (const m of [M.bolt, M.crevice, M.lens, M.flash]) m.userData.tile = 0.05;
   M.screenGlass.userData.tile = 0.07;
-  CHIP.set(M.gunmetal, M.gunmetalWorn); CHIP.set(M.frame, M.gunmetalWorn);
+  CHIP.set(M.gunmetal, M.gunmetalWorn); CHIP.set(M.frame, M.gunmetalWorn); BRUSHED.add(M.gunmetal); BRUSHED.add(M.gunmetalWorn);
   for (const m of [M.gunmetal, M.gunmetalWorn, M.frame, M.polymer, M.rubber, M.grip, M.black, M.grille]) TILED.add(m);
   return performance.now() - t0;
 }
@@ -867,7 +866,11 @@ function prepUV(g) {
   return g;
 }
 // box projection: each triangle takes the plane its normal points at most; 1 UV = tile metres
-function boxUV(g, tile = 0.3, off = [0, 0]) {
+// brush = true (brushed gunmetal): U, the brushing direction, runs along each face's long run on a phone-sized part:
+// along Y on the side faces, along X on the top and bottom faces, and round the frame like a machined ring on the
+// front and back faces (along Y in the side bands, along X in the top and bottom bands; BRUSH_HALF = the half size)
+const BRUSH_HALF = [0.043, 0.080];
+function boxUV(g, tile = 0.3, off = [0, 0], brush = false) {
   g = prepUV(g);
   const p = g.attributes.position.array, nm = g.attributes.normal.array, uv = new Float32Array(p.length / 3 * 2);
   for (let i = 0; i < p.length; i += 9) {
@@ -878,7 +881,10 @@ function boxUV(g, tile = 0.3, off = [0, 0]) {
     const X = Math.abs(nx), Y = Math.abs(ny), Z = Math.abs(nz);
     for (let k = 0; k < 3; k++) {
       const x = p[i + k * 3], y = p[i + k * 3 + 1], z = p[i + k * 3 + 2]; let u, w;
-      if (X >= Y && X >= Z) { u = nx > 0 ? -z : z; w = y; } else if (Y >= Z) { u = x; w = ny > 0 ? -z : z; } else { u = nz > 0 ? x : -x; w = y; }
+      if (brush) {
+        if (X >= Y && X >= Z) { u = y; w = nx > 0 ? -z : z; } else if (Y >= Z) { u = x; w = ny > 0 ? -z : z; }
+        else { const cx = (p[i] + p[i + 3] + p[i + 6]) / 3, cy = (p[i + 1] + p[i + 4] + p[i + 7]) / 3; if (BRUSH_HALF[0] - Math.abs(cx) < BRUSH_HALF[1] - Math.abs(cy)) { u = y; w = nz > 0 ? x : -x; } else { u = nz > 0 ? x : -x; w = y; } }
+      } else if (X >= Y && X >= Z) { u = nx > 0 ? -z : z; w = y; } else if (Y >= Z) { u = x; w = ny > 0 ? -z : z; } else { u = nz > 0 ? x : -x; w = y; }
       const o = (i / 3 + k) * 2; uv[o] = u / tile + off[0]; uv[o + 1] = w / tile + off[1];
     }
   }
@@ -1033,7 +1039,7 @@ function add(parent, geo, mat, name, opts = {}) {
   let g = fixNormals(dropDegenerate(prepUV(geo)));
   if (opts.crease !== false && opts.uv !== 'keep') g = creaseNormals(g, opts.crease || 36);
   const tile = mat.userData.tile || 0.3;
-  if (opts.uv !== 'keep' && (opts.uv === 'box' || !g.attributes.uv || TILED.has(mat))) g = boxUV(g, tile, nameOffset(name));
+  if (opts.uv !== 'keep' && (opts.uv === 'box' || !g.attributes.uv || TILED.has(mat))) g = boxUV(g, tile, nameOffset(name), BRUSHED.has(mat));
   const out = [];
   const make = (gg, mm, nn) => {
     if (!gg) return;
@@ -1140,7 +1146,9 @@ function patchGLB(buf, fn) {
 }
 // Scene name = the file name (a scene named like the root node makes three's loader rename the node); every
 // emissive baked to strength 1 (glTFast ignores KHR_materials_emissive_strength); an identity
-// KHR_texture_transform on the screen atlas so glTFast builds the screen material with texture transforms.
+// KHR_texture_transform on the screen atlas so glTFast builds the screen material with texture transforms. Its offset
+// is the 'lock' cell (col 3, row 0: offset [0.75, 0]) so the plain glb shows a lit lock screen, not the black 'off'
+// cell; TacticalPhone.cs takes that cell back out of the imported offset (DefaultCell).
 function patchJSON(json, sceneName) {
   if (json.scenes && json.scenes[0]) json.scenes[0].name = sceneName;
   for (const m of json.materials || []) {
@@ -1151,7 +1159,7 @@ function patchJSON(json, sceneName) {
       if (!Object.keys(m.extensions).length) delete m.extensions;
     }
     if (m.name === 'screen' && m.emissiveTexture) {
-      m.emissiveTexture.extensions = Object.assign(m.emissiveTexture.extensions || {}, { KHR_texture_transform: { offset: [0, 0], scale: [1, 1] } });
+      m.emissiveTexture.extensions = Object.assign(m.emissiveTexture.extensions || {}, { KHR_texture_transform: { offset: [0.75, 0], scale: [1, 1] } });
       json.extensionsUsed = [...new Set([...(json.extensionsUsed || []), 'KHR_texture_transform'])];
     }
   }
@@ -1371,21 +1379,64 @@ function bootArt(x, w, h, R, k) {
   for (let i = 0; i < 3; i++) bar(x, cx - 50 + i * 36 + (k > 0.5 ? 6 : 0), cy + 100, 28, 5, i === (k > 0.5 ? 2 : 0) ? SC.hi : SC.dim);
 }
 function droneArt(x, w, h, R, f) {
-  // a feed window: dark noisy image area, corner brackets, a centre reticle, a horizon tick ladder, signal blocks
-  const x0 = 18, y0 = 60, x1 = w - 18, y1 = h - 110;
-  const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#120d1e'); g.addColorStop(1, '#0a0812'); x.fillStyle = g; x.fillRect(x0, y0, x1 - x0, y1 - y0);
-  for (let i = 0; i < 900; i++) { const v = R(); x.fillStyle = `rgba(201,178,255,${v * 0.08})`; x.fillRect(x0 + R() * (x1 - x0), y0 + R() * (y1 - y0), 2, 2); }
-  x.fillStyle = 'rgba(138,77,255,0.12)'; for (let yy = y0 + (f ? 3 : 0); yy < y1; yy += 6) x.fillRect(x0, yy, x1 - x0, 1);
-  // floor and a doorway, as blocks of tone
-  x.fillStyle = 'rgba(138,77,255,0.1)'; x.beginPath(); x.moveTo(x0, y1); x.lineTo(w / 2 - 20, (y0 + y1) / 2 + 30); x.lineTo(w / 2 + 20, (y0 + y1) / 2 + 30); x.lineTo(x1, y1); x.fill();
-  x.fillStyle = 'rgba(201,178,255,0.08)'; x.fillRect(w / 2 + 18, (y0 + y1) / 2 - 40, 30, 70);
-  cornerBrackets(x, x0 + 6, y0 + 6, x1 - 6, y1 - 6, 20, SC.hi, 2);
-  const cx = w / 2, cy = (y0 + y1) / 2; ring(x, cx, cy, 16, 2, SC.hi);
-  x.strokeStyle = SC.hi; x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 34, cy); x.lineTo(cx - 20, cy); x.moveTo(cx + 20, cy); x.lineTo(cx + 34, cy); x.moveTo(cx, cy - 34); x.lineTo(cx, cy - 20); x.stroke();
-  for (let i = -3; i <= 3; i++) bar(x, x1 - 22, cy + i * 16 + (f ? 4 : 0), i ? 8 : 14, 2, SC.pri);
-  if (f) { x.fillStyle = SC.red; x.beginPath(); x.arc(x0 + 20, y0 + 22, 5, 0, Math.PI * 2); x.fill(); }
-  for (let i = 0; i < 6; i++) bar(x, 24 + i * 16, h - 92, 10, 10 + i * 4 * (f ? 0.8 : 1), i < 4 ? SC.pri : SC.dim);
+  // drone camera feed: an abstract room in perspective (floor grid, back wall with a doorway, side walls, a crate and a
+  // low table as tone blocks), film grain, scan lines and a vignette, then the overlay: a compass tick strip, a
+  // pitch ladder, the reticle, corner brackets, a target box on the crate, signal bars, a waveform and a rec dot
+  statusStrip(x, w, R);
+  const x0 = 14, y0 = 50, x1 = w - 14, y1 = h - 104, fw = x1 - x0, fh = y1 - y0, sh = f ? 2 : 0;
+  x.save(); x.beginPath(); x.rect(x0, y0, fw, fh); x.clip();
+  const g = x.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#1d1630'); g.addColorStop(0.55, '#140f22'); g.addColorStop(1, '#0c0915'); x.fillStyle = g; x.fillRect(x0, y0, fw, fh);
+  const vx = w / 2 + 6 + sh, vy = y0 + fh * 0.42, bw = 66, bh = 58;            // vanishing point and the back wall
+  const poly = (pts, col) => { x.fillStyle = col; x.beginPath(); pts.forEach(([px, py], i) => (i ? x.lineTo(px, py) : x.moveTo(px, py))); x.closePath(); x.fill(); };
+  const bl = [vx - bw / 2, vy - bh / 2], br = [vx + bw / 2, vy - bh / 2], brb = [vx + bw / 2, vy + bh / 2], blb = [vx - bw / 2, vy + bh / 2];
+  poly([[x0, y0], bl, blb, [x0, y1]], 'rgba(201,178,255,0.05)');                  // left wall
+  poly([[x1, y0], br, brb, [x1, y1]], 'rgba(201,178,255,0.085)');                 // right wall (lit)
+  poly([[x0, y0], [x1, y0], br, bl], 'rgba(201,178,255,0.025)');                  // ceiling
+  poly([blb, brb, [x1, y1], [x0, y1]], 'rgba(138,77,255,0.10)');                  // floor
+  poly([bl, br, brb, blb], 'rgba(201,178,255,0.11)');                              // back wall
+  x.fillStyle = 'rgba(5,4,10,0.75)'; x.fillRect(vx - 10, vy - 12, 20, bh / 2 + 12);  // doorway
+  x.fillStyle = 'rgba(201,178,255,0.06)'; x.fillRect(vx - 26, vy - 20, 10, 8); x.fillRect(vx + 14, vy - 20, 10, 8);   // wall lights
+  // floor grid: lines toward the vanishing point and cross lines closing up with distance
+  x.strokeStyle = 'rgba(201,178,255,0.13)'; x.lineWidth = 1;
+  for (let i = -6; i <= 6; i++) { x.beginPath(); x.moveTo(vx + i * bw / 12, vy + bh / 2); x.lineTo(vx + i * (fw / 5), y1 + 20); x.stroke(); }
+  for (let k = 1; k <= 7; k++) { const t = Math.pow(k / 7, 1.8), yy = vy + bh / 2 + (y1 - vy - bh / 2) * t, hw = bw / 2 + (fw * 0.65) * t; x.beginPath(); x.moveTo(vx - hw, yy); x.lineTo(vx + hw, yy); x.stroke(); }
+  // a crate on the floor (front face, top and side in three tones) and a low table on the left
+  const cx0 = vx + 30, cy0 = y0 + fh * 0.66, cs = 44;
+  poly([[cx0, cy0], [cx0 + cs, cy0], [cx0 + cs, cy0 + cs * 0.8], [cx0, cy0 + cs * 0.8]], 'rgba(201,178,255,0.16)');
+  poly([[cx0, cy0], [cx0 + 10, cy0 - 12], [cx0 + cs + 6, cy0 - 12], [cx0 + cs, cy0]], 'rgba(201,178,255,0.24)');
+  poly([[cx0 + cs, cy0], [cx0 + cs + 6, cy0 - 12], [cx0 + cs + 6, cy0 + cs * 0.8 - 14], [cx0 + cs, cy0 + cs * 0.8]], 'rgba(201,178,255,0.09)');
+  x.fillStyle = 'rgba(5,4,10,0.4)'; x.fillRect(cx0 + 6, cy0 + cs * 0.38, cs - 12, 3);
+  poly([[x0 + 18, y0 + fh * 0.6], [x0 + 74, y0 + fh * 0.57], [x0 + 80, y0 + fh * 0.61], [x0 + 20, y0 + fh * 0.65]], 'rgba(201,178,255,0.12)');
+  x.fillStyle = 'rgba(201,178,255,0.08)'; x.fillRect(x0 + 24, y0 + fh * 0.645, 4, 30); x.fillRect(x0 + 72, y0 + fh * 0.605, 4, 26);
+  // grain, scan lines, vignette
+  for (let i = 0; i < 2600; i++) { const v = R(); x.fillStyle = `rgba(214,200,255,${v * v * 0.11})`; x.fillRect(x0 + R() * fw, y0 + R() * fh, 1.5, 1.5); }
+  x.fillStyle = 'rgba(5,4,10,0.28)'; for (let yy = y0 + (f ? 2 : 0); yy < y1; yy += 4) x.fillRect(x0, yy, fw, 1.4);
+  const vg = x.createRadialGradient(w / 2, (y0 + y1) / 2, fh * 0.2, w / 2, (y0 + y1) / 2, fh * 0.62); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,0.6)'); x.fillStyle = vg; x.fillRect(x0, y0, fw, fh);
+  x.restore();
+  x.strokeStyle = SC.dim; x.lineWidth = 1; x.strokeRect(x0 + 0.5, y0 + 0.5, fw - 1, fh - 1);
+  // compass tick strip along the top of the feed, a caret at the heading
+  x.save(); x.beginPath(); x.rect(x0 + 30, y0 + 8, fw - 60, 22); x.clip();
+  for (let i = -20; i <= 20; i++) { const px = w / 2 + i * 9 - (f ? 3 : 0), big = i % 4 === 0; bar(x, px, y0 + (big ? 12 : 17), big ? 2 : 1.5, big ? 12 : 7, big ? SC.hi : SC.pri); }
+  x.restore();
+  x.fillStyle = SC.acc; x.beginPath(); x.moveTo(w / 2 - 5, y0 + 36); x.lineTo(w / 2 + 5, y0 + 36); x.lineTo(w / 2, y0 + 30); x.closePath(); x.fill();
+  // pitch ladder: paired bars with a centre gap, shifting a little between frames
+  const cx = w / 2, cy = (y0 + y1) / 2;
+  for (let i = -3; i <= 3; i++) { if (!i) continue; const yy = cy + i * 30 + (f ? 4 : 0), l = Math.abs(i) % 2 ? 16 : 24; x.strokeStyle = SC.pri; x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 56 - l, yy); x.lineTo(cx - 56, yy); x.lineTo(cx - 56, yy + (i < 0 ? 5 : -5)); x.moveTo(cx + 56 + l, yy); x.lineTo(cx + 56, yy); x.lineTo(cx + 56, yy + (i < 0 ? 5 : -5)); x.stroke(); }
+  x.strokeStyle = SC.hi; x.lineWidth = 2; x.beginPath(); x.moveTo(cx - 80, cy); x.lineTo(cx - 40, cy); x.moveTo(cx + 40, cy); x.lineTo(cx + 80, cy); x.stroke();
+  // reticle
+  ring(x, cx, cy, 16, 2, SC.hi);
+  x.beginPath(); x.moveTo(cx - 30, cy); x.lineTo(cx - 20, cy); x.moveTo(cx + 20, cy); x.lineTo(cx + 30, cy); x.moveTo(cx, cy - 30); x.lineTo(cx, cy - 20); x.moveTo(cx, cy + 20); x.lineTo(cx, cy + 30); x.stroke();
+  x.fillStyle = SC.acc; x.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+  // a target box on the crate and the frame corners
+  cornerBrackets(x, cx0 - 6, cy0 - 18, cx0 + cs + 12, cy0 + cs * 0.8 + 6, 7, f ? SC.acc : SC.hi, 1.5);
+  cornerBrackets(x, x0 + 6, y0 + 6, x1 - 6, y1 - 6, 18, SC.hi, 2);
+  // altitude-like bar on the right edge, recording dot (pulses between frames)
+  for (let i = -5; i <= 5; i++) bar(x, x1 - 18, cy + i * 12 + (f ? 3 : 0), i ? 6 : 12, 2, i ? SC.pri : SC.hi);
+  x.fillStyle = f ? SC.red : 'rgba(255,58,68,0.45)'; x.beginPath(); x.arc(x0 + 18, y1 - 18, f ? 5 : 4, 0, Math.PI * 2); x.fill();
+  // under the feed: link bars and a waveform
+  for (let i = 0; i < 6; i++) bar(x, 24 + i * 16, h - 92 + (6 - i) * 2, 10, 10 + i * 4 * (f ? 0.8 : 1), i < 4 ? SC.pri : SC.dim);
   wave(x, w / 2 - 10, h - 78, 110, 8, 0.3, f * 2, SC.hi, 2);
+  dockRow(x, w, h, SC.dim, 1);
 }
 function scanArt(x, w, h, R, f) {
   statusStrip(x, w, R);
@@ -1439,7 +1490,7 @@ const PH = {
   hole: { x: 0.0365, yb: -0.0715, yt: 0.0685, notchX0: 0.0085, notchX1: 0.0125, notchY: 0.064 },
   screen: { w: 0.068, h: 0.128, y: -0.0035, z: -0.0080 },
   back: { x: 0.0377, y: 0.0762, r: 0.008, z0: -0.0078, z1: 0.0102 },
-  lug: { x0: 0.0245, x1: 0.0425, y0: 0.0783, y1: 0.104, z: 0.0086 },
+  lug: { x0: 0.0245, x1: 0.0425, y0: 0.0783, y1: 0.097, z: 0.0086 },  // a stubby block: 17 mm above the corners (was 24)
 };
 
 // a circle (or ring when hole > 0) as a THREE.Shape, centred on (cx, cy)
@@ -1468,9 +1519,9 @@ function buildPhone(K) {
   const railRect = (d = 0) => rect(-inset(R.x, R.b) + d, inset(R.x, R.b) - d, -inset(R.y, R.b) + d, inset(R.y, R.b) - d, R.r - d);
   {
     // the front band carries the window; the seam groove at z 0.0022..0.0046 runs all round the sides between the bands
-    add(body, slabZ(ringShape(railRect(), [roundedPath(holePts(R.b * 0.9))]), R.z0, 0.0026, R.b, 3, 12), M.gunmetal, 'body_rail');
+    add(body, slabZ(ringShape(railRect(), [roundedPath(holePts(R.b * 0.9))]), R.z0, 0.0026, R.b, 3, 12), M.gunmetal, 'body_rail', { wear: { chip: 0.6 } });
     const inner = roundedPath([[-0.0368, -0.0752, 0.007], [0.0368, -0.0752, 0.007], [0.0368, 0.0752, 0.007], [-0.0368, 0.0752, 0.007]]);
-    add(body, slabZ(ringShape(railRect(), [inner]), 0.0042, R.z1, 0.0009, 2, 12), M.gunmetal, 'body_rail_rear');
+    add(body, slabZ(ringShape(railRect(), [inner]), 0.0042, R.z1, 0.0009, 2, 12), M.gunmetal, 'body_rail_rear', { wear: { chip: 0.62 } });
     add(body, slabZ(rect(-R.x + 0.0006, R.x - 0.0006, -R.y + 0.0006, R.y - 0.0006, R.r - 0.0006), 0.0021, 0.0047, 0.0003, 1, 12), M.rubber, 'body_rail_gasket');
   }
   /* bezel: the black band between the rail and the glass (tucks under the rail) */
@@ -1484,7 +1535,7 @@ function buildPhone(K) {
     const w = S.w / 2, y0 = S.y - S.h / 2, y1 = S.y + S.h / 2, g = 0.0017;
     const outer = roundedShape([[-w - g, y0 - g, 0.0055], [w + g, y0 - g, 0.0055], [w + g, y1 - 0.004 + g, 0.0012], [w - 0.004, y1 + g, 0.0012], [-w + 0.004, y1 + g, 0.0012], [-w - g, y1 - 0.004 + g, 0.0012]]);
     const inner = roundedPath([[-w, y0, 0.004], [w, y0, 0.004], [w, y1 - 0.0035, 0.001], [w - 0.0035, y1, 0.001], [-w + 0.0035, y1, 0.001], [-w, y1 - 0.0035, 0.001]]);
-    add(body, slabZ(ringShape(outer, [inner]), -0.0100, -0.0081, 0.0005, 2, 10), M.gunmetal, 'body_lip');
+    add(body, slabZ(ringShape(outer, [inner]), -0.0100, -0.0081, 0.0005, 2, 10), M.gunmetal, 'body_lip', { wear: { chip: 0.7, k: 260 } });
     // a thin black gasket between the lip and the glass
     const gin = roundedPath([[-w + 0.0004, y0 + 0.0004, 0.0036], [w - 0.0004, y0 + 0.0004, 0.0036], [w - 0.0004, y1 - 0.0036, 0.001], [w - 0.0036, y1 - 0.0004, 0.001], [-w + 0.0036, y1 - 0.0004, 0.001], [-w + 0.0004, y1 - 0.0036, 0.001]]);
     const gout = roundedShape([[-w - 0.0002, y0 - 0.0002, 0.0042], [w + 0.0002, y0 - 0.0002, 0.0042], [w + 0.0002, y1 - 0.0034, 0.001], [w - 0.0034, y1 + 0.0002, 0.001], [-w + 0.0034, y1 + 0.0002, 0.001], [-w - 0.0002, y1 - 0.0034, 0.001]]);
@@ -1510,26 +1561,28 @@ function buildPhone(K) {
       screws.push(hexScrew(0.0016, V3(sx * (C.x - 0.0045), sy * (C.y - 0.0045), -C.z), V3(0, 0, -1), sx * sy, 14));
       screws.push(hexScrew(0.0015, V3(sx * (C.x - 0.0045), sy * (C.y - 0.0045), C.z), V3(0, 0, 1), sx * sy * 2, 12));
     }
-    add(body, mergeUV(front), M.gunmetal, 'body_corners');
+    add(body, mergeUV(front), M.gunmetal, 'body_corners', { wear: { chip: 0.45 }, crease: 40 });
     add(body, mergeUV(pads), M.gunmetal, 'body_corner_pads', { wear: { chip: 0.42, k: 200 } });
-    add(body, mergeUV(back), M.gunmetal, 'body_corners_rear');
+    add(body, mergeUV(back), M.gunmetal, 'body_corners_rear', { wear: { chip: 0.48 }, crease: 40 });
     add(body, mergeUV(core), M.rubber, 'body_corner_cores');
     add(body, mergeUV(screws), M.bolt, 'body_corner_screws', { cast: false });
   }
 
-  /* ---------------------------------------------------------------- top lug: antenna / emitter block */
+  /* ---------------------------------------------------------------- top lug: a stubby machined emitter block */
+  // a solid dark-anodized block with one rubber band, a gunmetal cap with a recessed cap screw and the LED strip groove
   {
-    const cx = (L.x0 + L.x1) / 2;
-    add(body, rbox(L.x0, L.x1, L.y0 + 0.003, 0.1026, -L.z, L.z, 0.0028, 3), M.polymer, 'body_lug');
-    add(body, rbox(L.x0 - 0.0003, L.x1 + 0.0003, 0.1021, 0.1040, -L.z - 0.0003, L.z + 0.0003, 0.0016, 3), M.gunmetal, 'body_lug_cap');
-    add(body, rbox(L.x0 - 0.001, L.x1 + 0.0008, L.y0, L.y0 + 0.0042, -L.z - 0.0008, L.z + 0.0008, 0.001, 2), M.gunmetal, 'body_lug_collar');
-    const ribs = [0.0874, 0.0906, 0.0938].map((y) => rbox(L.x0 - 0.0005, L.x1 + 0.0005, y, y + 0.0017, -L.z - 0.0005, L.z + 0.0005, 0.0008, 2));
-    ribs.push(rbox(L.x0 - 0.0004, L.x1 + 0.0002, L.y0 + 0.0042, L.y0 + 0.0054, -L.z - 0.0004, L.z + 0.0004, 0.0005, 1));      // collar gasket
-    add(body, mergeUV(ribs), M.rubber, 'body_lug_ribs');
+    const cx = (L.x0 + L.x1) / 2, yb = L.y0 + 0.0054, yt = L.y1 - 0.0041, ym = (yb + yt) / 2 - 0.0006;
+    add(body, rbox(L.x0, L.x1, L.y0 + 0.003, L.y1 - 0.0014, -L.z, L.z, 0.0028, 3), M.frame, 'body_lug', { wear: { chip: 0.5, k: 200 } });
+    add(body, rbox(L.x0 - 0.0003, L.x1 + 0.0003, L.y1 - 0.0019, L.y1, -L.z - 0.0003, L.z + 0.0003, 0.0016, 3), M.gunmetal, 'body_lug_cap', { wear: { chip: 0.36, k: 160 } });
+    add(body, rbox(L.x0 - 0.001, L.x1 + 0.0008, L.y0, L.y0 + 0.0042, -L.z - 0.0008, L.z + 0.0008, 0.001, 2), M.gunmetal, 'body_lug_collar', { wear: { chip: 0.42 } });
+    add(body, mergeUV([
+      rbox(L.x0 - 0.0004, L.x1 + 0.0004, ym - 0.0013, ym + 0.0013, -L.z - 0.0004, L.z + 0.0004, 0.0006, 2),           // the one rubber band
+      rbox(L.x0 - 0.0004, L.x1 + 0.0002, L.y0 + 0.0042, L.y0 + 0.0054, -L.z - 0.0004, L.z + 0.0004, 0.0005, 1),     // collar gasket
+    ]), M.rubber, 'body_lug_ribs');
     // the strip groove on the lug's front, and the cap screw on top
-    add(body, rbox(cx - 0.0068, cx + 0.0068, 0.0999, 0.10205, -L.z - 0.0004, -L.z + 0.0006, 0.0005, 1), M.black, 'body_lug_groove', { cast: false });
-    add(body, hexScrew(0.0017, V3(cx, 0.1033, 0), V3(0, 1, 0), 0.4), M.bolt, 'body_lug_screw', { cast: false });
-    add(body, cylY(0.0021, 0.1034, 0.10405, 24).translate(cx, 0, 0), M.black, 'body_lug_bore', { cast: false });
+    add(body, rbox(cx - 0.0068, cx + 0.0068, L.y1 - 0.0041, L.y1 - 0.00195, -L.z - 0.0004, -L.z + 0.0006, 0.0005, 1), M.black, 'body_lug_groove', { cast: false });
+    add(body, hexScrew(0.0017, V3(cx, L.y1 - 0.0007, 0), V3(0, 1, 0), 0.4), M.bolt, 'body_lug_screw', { cast: false });
+    add(body, cylY(0.0021, L.y1 - 0.0006, L.y1 + 0.00005, 24).translate(cx, 0, 0), M.black, 'body_lug_bore', { cast: false });
   }
   const ledLug = reg(node('led_lug', root, [(L.x0 + L.x1) / 2, L.y1 - 0.0028, -L.z - 0.0001]));
   add(ledLug, rbox(-0.0055, 0.0055, -0.0007, 0.0007, -0.0003, 0.0003, 0.0003, 1), M.accent, 'led_lug_strip', { cast: false });
@@ -1547,8 +1600,10 @@ function buildPhone(K) {
     add(body, subtract(sp, rbox(-0.0128, 0.0128, -0.0759, -0.0739, -0.02, 0, 0.0009, 1)), M.frame, 'body_speaker_plate', { wear: SMALL_WEAR });
     add(body, rbox(-0.013, 0.013, -0.0762, -0.0736, -0.0103, -0.0099, 0.0003, 1), M.grille, 'body_speaker', { cast: false });
     // front camera and the status LED light pipe, set in the black bezel
-    add(body, cylZ(0.0022, -0.0098, -0.0092, 24).translate(0.021, 0.0645, 0), M.lens, 'body_cam_front', { cast: false });
-    add(body, mergeUV([new THREE.TorusGeometry(0.0026, 0.00045, 8, 28).translate(0.021, 0.0645, -0.0097), new THREE.TorusGeometry(0.0015, 0.0003, 6, 20).translate(-0.021, 0.0645, -0.0097)]), M.black, 'body_front_rings', { cast: false });
+    add(body, mergeUV([cylZ(0.0021, -0.00955, -0.0091, 28).translate(0.021, 0.0645, 0),
+      new THREE.SphereGeometry(0.0015, 16, 5, 0, Math.PI * 2, 0, 0.75).rotateX(-Math.PI / 2).scale(1, 1, 0.5).translate(0.021, 0.0645, -0.0095)]), M.lens, 'body_cam_front', { cast: false });
+    add(body, mergeUV([slabZ(circ(0.0027, 0.021, 0.0645, 0.0021), -0.0099, -0.0091, 0.0002, 1, 16), new THREE.TorusGeometry(0.00125, 0.00018, 5, 16).translate(0.021, 0.0645, -0.00958)]), M.black, 'body_cam_front_cup', { cast: false });
+    add(body, mergeUV([new THREE.TorusGeometry(0.0029, 0.0004, 8, 28).translate(0.021, 0.0645, -0.0097), new THREE.TorusGeometry(0.0015, 0.0003, 6, 20).translate(-0.021, 0.0645, -0.0097)]), M.black, 'body_front_rings', { cast: false });
   }
   const ledStatus = reg(node('led_status', root, [-0.021, 0.0645, -0.0097]));
   add(ledStatus, cylZ(0.0011, -0.0002, 0.0002, 16), M.led, 'led_status_dot', { cast: false });
@@ -1589,7 +1644,7 @@ function buildPhone(K) {
   btn('btn_action', R.x, 0.006, 0.046, 0.003, M.grip, 'action');
   pocket(R.x, 0.0052, 0.0468, 1);
   rib(R.x - 0.001, R.x + 0.0044, 0.0473, 0.0503); rib(R.x - 0.001, R.x + 0.0044, 0.0013, 0.0043);
-  add(body, mergeUV(guards), M.gunmetal, 'body_key_guards', { wear: { chip: 0.5, k: 260 } });
+  add(body, mergeUV(guards), M.gunmetal, 'body_key_guards', { wear: { chip: 0.66, k: 320 } });
   add(body, mergeUV(pockets), M.black, 'body_key_pockets');
 
   /* ---------------------------------------------------------------- bottom bracket with the lanyard slot */
@@ -1629,12 +1684,19 @@ function buildPhone(K) {
     rbox(0.0010, 0.0021, -0.0070, 0.0070, -0.0013, 0.0003, 0.0003, 1),             // hinge strap
   ]), M.rubber, 'flap_side_cover');
 
-  /* ---------------------------------------------------------------- lanyard: cord loop with a crimp ferrule */
+  /* ---------------------------------------------------------------- lanyard: cord through the slot, crimp ferrule, slack loop */
+  // node space: origin in the bracket slot. The cord passes front to back through the slot over the bar under it,
+  // both strands drop into a metal crimp ferrule, and a short slack loop hangs from the ferrule.
   const lanyard = reg(node('lanyard', root, [0, SLOT.y, 0]));
   {
-    add(lanyard, new THREE.TorusGeometry(0.0095, 0.0012, 8, 30).rotateY(Math.PI / 2).translate(0, -0.0092, 0), M.rubber, 'lanyard_loop');
-    const fer = latheX([[-0.0034, 0.0014], [-0.0030, 0.0019], [0.0030, 0.0019], [0.0034, 0.0014]].map(([x, r]) => [x, r]), 20).rotateY(Math.PI / 2).translate(0, -0.0187, 0);
-    add(lanyard, fer, M.black, 'lanyard_ferrule', { wear: false });
+    const cord = (pts, seg) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(([x, y, z]) => V3(x, y, z)), false, 'catmullrom', 0.5), seg, 0.0011, 6, false);
+    const through = cord([[0, -0.0118, -0.0008], [0, -0.0085, -0.0042], [0.0002, -0.0040, -0.0106], [0.0002, -0.0005, -0.0118], [0.0002, -0.0005, -0.0095], [0.0002, -0.0005, 0], [0.0002, -0.0005, 0.0070],
+      [0.0002, -0.0006, 0.0090], [0.0001, -0.0038, 0.0096], [0, -0.0084, 0.0046], [0, -0.0118, 0.0008]], 44);
+    const loop = cord([[0.0009, -0.0150, 0], [0.0034, -0.0178, -0.0005], [0.0066, -0.0212, -0.0012], [0.0068, -0.0248, -0.0011], [0.0040, -0.0274, -0.0004], [0.0004, -0.0283, 0.0003],
+      [-0.0034, -0.0272, 0.0008], [-0.0062, -0.0240, 0.0011], [-0.0058, -0.0196, 0.0007], [-0.0030, -0.0166, 0.0003], [-0.0009, -0.0150, 0]], 40);
+    add(lanyard, mergeUV([through, loop]), M.rubber, 'lanyard_loop');
+    const fer = latheX([[-0.0034, 0.0019], [-0.0030, 0.0025], [-0.0012, 0.0025], [-0.0010, 0.0022], [0.0010, 0.0022], [0.0012, 0.0025], [0.0030, 0.0025], [0.0034, 0.0019]], 24).rotateZ(Math.PI / 2).translate(0, -0.0132, 0);
+    add(lanyard, fer, M.bolt, 'lanyard_ferrule', { wear: false });
   }
 
   /* ---------------------------------------------------------------- top face: IR window and mic hole */
@@ -1655,7 +1717,13 @@ function buildPhone(K) {
     add(body, slabZ(circ(0.0034, 0, -0.016, 0.0019), 0.0105, 0.0112, 0.0002, 1, 28), M.black, 'body_boss_insert', { cast: false });
     add(body, cylZ(0.0019, 0.0104, 0.01115, 20).translate(0, -0.016, 0), M.crevice, 'body_boss_bore', { cast: false });
     // vent slots between the door and the camera island
-    add(body, mergeUV([-3, -2, -1, 0, 1, 2, 3].map((i) => rbox(i * 0.0062 - 0.0022, i * 0.0062 + 0.0022, 0.0399, 0.0423, 0.0099, 0.01035, 0.0009, 1, 3))), M.crevice, 'body_vents', { cast: false });
+    {
+      const slots = [-3, -2, -1, 0, 1, 2, 3].map((i) => i * 0.0062), vy0 = 0.0401, vy1 = 0.0421;
+      // a plate with seven slots through it; the extrusion bevel rounds the plate edge and gives every slot a bevelled lip
+      const holes = slots.map((x) => { const pth = new THREE.Path(); pth.setFromPoints(rect(x - 0.0024, x + 0.0024, vy0 - 0.0003, vy1 + 0.0003, 0.0011).getPoints(2).reverse()); return pth; });
+      add(body, slabZ(ringShape(rect(-0.0231, 0.0231, 0.0398, 0.0424, 0.0012), holes), 0.0098, 0.0109, 0.0004, 1, 4), M.gunmetal, 'body_vent_plate', { wear: SMALL_WEAR });
+      add(body, rbox(-0.0225, 0.0225, 0.0398, 0.0424, 0.01000, 0.01012, 0.00005, 1), M.crevice, 'body_vents', { cast: false });
+    }
     const sc = [];
     for (const [x, y] of [[-0.0305, 0.0350], [0.0305, 0.0350], [-0.0305, -0.0680], [0.0305, -0.0680], [-0.0322, -0.016], [0.0322, -0.016]]) sc.push(hexScrew(0.0016, V3(x, y, 0.0108), V3(0, 0, 1), x * 30 + y, 14));
     add(body, mergeUV(sc), M.bolt, 'body_back_screws', { cast: false });
@@ -1668,8 +1736,16 @@ function buildPhone(K) {
     add(body, mergeUV(lenses.map(([x, y]) => cylZ(0.0048, z1 + 0.0010, z1 + 0.0016, 32).translate(x, y, 0))), M.lens, 'body_cam_lenses', { cast: false });
     add(body, mergeUV(lenses.map(([x, y]) => new THREE.TorusGeometry(0.0029, 0.0004, 8, 28).translate(x, y, z1 + 0.00175))), M.black, 'body_cam_apertures', { cast: false });
     add(body, mergeUV(lenses.map(([x, y]) => new THREE.SphereGeometry(0.0024, 20, 8, 0, Math.PI * 2, 0, 0.7).rotateX(Math.PI / 2).scale(1, 1, 0.45).translate(x, y, z1 + 0.0008))), M.lens, 'body_cam_elements', { cast: false });
-    add(body, rbox(0.0118, 0.0212, 0.0578, 0.0652, z1 + 0.0009, z1 + 0.0018, 0.0006, 1), M.black, 'body_flash_frame', { cast: false });
-    add(body, mergeUV([0.0145, 0.0185].map((x) => rbox(x - 0.0016, x + 0.0016, 0.0590, 0.0640, z1 + 0.0012, z1 + 0.0019, 0.0011, 1, 6))), M.flash, 'body_flash', { cast: false });
+    {
+      const pill = (x, g = 0) => rect(x - 0.0016 - g, x + 0.0016 + g, 0.0590 - g, 0.0640 + g, 0.0014 + g);
+      add(body, slabZ(ringShape(rect(0.0118, 0.0212, 0.0578, 0.0652, 0.0012), [0.0145, 0.0185].map((x) => { const sh = pill(x, 0.0002); const pth = new THREE.Path(); pth.setFromPoints(sh.getPoints(3).reverse()); return pth; })), z1 + 0.0009, z1 + 0.0021, 0.0003, 1, 8), M.black, 'body_flash_frame', { cast: false });
+      const pills = [0.0145, 0.0185].map((x) => {
+        const g = prepUV(slabZ(pill(x), z1 + 0.0010, z1 + 0.0017, 0.0002, 1, 5)), P = g.attributes.position.array, uv = new Float32Array(P.length / 3 * 2);
+        for (let i = 0, j = 0; i < P.length; i += 3, j += 2) { uv[j] = (P[i] - x) / 0.0052 + 0.5; uv[j + 1] = (P[i + 1] - 0.0615) / 0.0052 + 0.5; }
+        g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g;
+      });
+      add(body, mergeUV(pills), M.flash, 'body_flash', { cast: false, uv: 'keep' });
+    }
     add(body, cylZ(0.0013, z1 + 0.0010, z1 + 0.0017, 16).translate(0.0165, 0.0500, 0), M.lens, 'body_cam_sensor', { cast: false });
     add(body, mergeUV([[-0.0222, 0.0468], [0.0222, 0.0468], [-0.0222, 0.0672], [0.0222, 0.0672]].map(([x, y]) => hexScrew(0.0009, V3(x, y, z1 + 0.0013), V3(0, 0, 1), x * 70))), M.bolt, 'body_cam_screws', { cast: false });
   }
@@ -1822,24 +1898,37 @@ const LIGHTS = {};
   const fill = new THREE.DirectionalLight('#b8c4ff', 0.55); fill.position.set(1.6, 1.8, -1.4);
   const rim = new THREE.DirectionalLight('#ffffff', 0.9); rim.position.set(1.2, 2.4, 1.6);
   const hemi = new THREE.HemisphereLight('#a7adc2', '#1b1a18', 0.4);
+  // a soft fill that rides with the camera (up and to the left of it), so views the key light grazes (the side
+  // profile, the back) still show their forms; low enough that it never flares the worn edges
+  const cam = new THREE.DirectionalLight('#dfe3ff', 0.7); cam.position.set(-0.6, 0.8, 0.4); cam.target.position.set(0, 0, -1);
+  camera.add(cam, cam.target); if (!camera.parent) scene.add(camera);
   scene.add(key, key.target, fill, rim, hemi);
-  Object.assign(LIGHTS, { key, fill, rim, hemi });
+  Object.assign(LIGHTS, { key, fill, rim, hemi, cam });
 }
-// a soft backdrop (a large dim card behind the phone) so the silhouette reads
-const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(6, 4), new THREE.MeshStandardMaterial({ color: '#24252b', roughness: 0.9, metalness: 0 }));
+// a soft backdrop (a large dim card behind the phone, with a faint pool of light behind the phone) so the silhouette reads
+const backdropGlow = (() => {
+  const c = canvas(256, 256), x = c.getContext('2d'), g = x.createRadialGradient(128, 128, 4, 128, 128, 128);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.45, 'rgba(255,255,255,0.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = '#000'; x.fillRect(0, 0, 256, 256); x.fillStyle = g; x.fillRect(0, 0, 256, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const backdrop = new THREE.Mesh(new THREE.PlaneGeometry(24, 14), new THREE.MeshStandardMaterial({ color: '#24252b', roughness: 0.9, metalness: 0, emissive: '#5a5c6e', emissiveMap: backdropGlow, emissiveIntensity: 0.0 }));
+backdrop.geometry.attributes.uv.array.forEach((v, i, a) => { a[i] = (v - 0.5) * (i % 2 ? 14 / 1.6 : 24 / 1.6) + 0.5; });   // the glow pool about 1.6 m across
+backdropGlow.wrapS = backdropGlow.wrapT = THREE.ClampToEdgeWrapping;
 backdrop.position.set(0, 1.3, 1.6); backdrop.rotation.y = Math.PI; backdrop.receiveShadow = false; scene.add(backdrop);
 
 /* lighting presets (viewer only): studio (default), daylight (outdoors, like the photo), night (the screen carries it) */
 const LIGHTING = {
-  studio: { bg: '#0b0c10', back: '#24252b', env: 0.75, exp: 1.0, key: ['#fff1e0', 18], fill: ['#b8c4ff', 0.55], rim: ['#ffffff', 0.9], hemi: ['#a7adc2', '#1b1a18', 0.4], glow: 1 },
-  daylight: { bg: '#8e959e', back: '#7d838b', env: 1.15, exp: 0.95, key: ['#fff4e2', 34], fill: ['#d4e2ff', 1.3], rim: ['#ffffff', 1.4], hemi: ['#d6dfee', '#5e5446', 1.2], glow: 1.35 },
-  night: { bg: '#040407', back: '#0b0c12', env: 0.22, exp: 1.1, key: ['#8ea6ff', 6], fill: ['#5a3dbf', 0.35], rim: ['#7a5cff', 1.3], hemi: ['#30344a', '#050505', 0.18], glow: 0.85 },
+  studio: { bg: '#0b0c10', back: '#24252b', pool: 0.35, env: 0.75, exp: 1.0, key: ['#fff1e0', 18], fill: ['#b8c4ff', 0.55], rim: ['#ffffff', 0.9], cam: ['#dfe3ff', 0.7], hemi: ['#a7adc2', '#1b1a18', 0.4], glow: 1 },
+  daylight: { bg: '#8e959e', back: '#7d838b', pool: 0.15, env: 0.95, exp: 0.95, key: ['#fff4e2', 30], fill: ['#d4e2ff', 1.2], rim: ['#ffffff', 1.3], cam: ['#ffffff', 0.6], hemi: ['#d6dfee', '#5e5446', 1.1], glow: 1.35 },
+  night: { bg: '#040407', back: '#0b0c12', pool: 0.12, env: 0.22, exp: 1.1, key: ['#8ea6ff', 6], fill: ['#5a3dbf', 0.35], rim: ['#7a5cff', 1.3], cam: ['#6e5cff', 0.25], hemi: ['#30344a', '#050505', 0.18], glow: 0.85 },
 };
 let lightingName = 'studio';
 function setLighting(name) {
   const L = LIGHTING[name] || LIGHTING.studio; lightingName = LIGHTING[name] ? name : 'studio';
   scene.background.set(L.bg); backdrop.material.color.set(L.back); scene.environmentIntensity = L.env; renderer.toneMappingExposure = L.exp;
-  for (const k of ['key', 'fill', 'rim']) { LIGHTS[k].color.set(L[k][0]); LIGHTS[k].intensity = L[k][1]; }
+  for (const k of ['key', 'fill', 'rim', 'cam']) { LIGHTS[k].color.set(L[k][0]); LIGHTS[k].intensity = L[k][1]; }
+  backdrop.material.emissiveIntensity = L.pool;
   LIGHTS.hemi.color.set(L.hemi[0]); LIGHTS.hemi.groundColor.set(L.hemi[1]); LIGHTS.hemi.intensity = L.hemi[2];
   M.screen.emissiveIntensity = M.screen.userData.glow * L.glow;
   return lightingName;
@@ -1879,9 +1968,10 @@ const GLOVE = new THREE.Group(); GLOVE.name = 'glove_proxy'; HOLD.add(GLOVE);
   });
 }
 function setHand(on) { GLOVE.visible = !!on; }
+setHand(false);     // the glove is a framing aid, off by default (Glove / H shows it)
 
 /* playback: one clip at a time; the screen cell and LED tint follow the clip (DESIGN.md 7-8) */
-const PLAY = { clip: 'idle', t: 0, playing: true, cell: null, led: null, app: 'map', state: null, time: 0 };
+const PLAY = { clip: 'idle', t: 0, playing: true, cell: null, led: null, app: 'map', state: null, time: 0, lockOnUntil: -1 };
 // screen states the viewer can force (null = follow the clip): [cell a, cell b, flip rate in Hz]
 const SCREEN_STATES = {
   off: ['off'], boot: ['boot_a', 'boot_b', 8], lock: ['lock'], home: ['home'], map: ['map_a', 'map_b', 2], drone: ['drone_a', 'drone_b', 6],
@@ -1913,13 +2003,17 @@ function clipOf() { return { clip: PLAY.clip, t: +PLAY.t.toFixed(3), cell: SCREE
 function sceneRefresh() {
   const C = PHONE.clips[PLAY.clip];
   if (C) PHONE.pose(PLAY.clip, PLAY.t); else PHONE.rest();
-  PHONE.screen.setCell(PLAY.cell ?? (PLAY.state ? stateCell(PLAY.state, PLAY.time) : cellFor(PLAY.clip, C ? (C.loop ? wrap(PLAY.t, C.len) : Math.min(PLAY.t, C.len)) : 0)));
+  const held = PLAY.clip === 'idle' && PLAY.time < PLAY.lockOnUntil ? 'lock_on' : null;     // the scan result stays up to 2.5 s
+  PHONE.screen.setCell(PLAY.cell ?? (PLAY.state ? stateCell(PLAY.state, PLAY.time) : held ?? cellFor(PLAY.clip, C ? (C.loop ? wrap(PLAY.t, C.len) : Math.min(PLAY.t, C.len)) : 0)));
   applyLed(PLAY.led ?? ledFor(PLAY.clip));
 }
 // one-shots chain back to idle (power_off holds off; port_open holds open)
 const CHAIN = { wake: 'unlock', unlock: 'idle', scan: 'idle' };
 let onClipChange = () => { };
-function playClip(name) { PLAY.clip = name; PLAY.t = 0; PLAY.playing = true; PLAY.cell = null; PLAY.led = null; PLAY.state = null; onClipChange(name); }
+function playClip(name, chained = false) {
+  PLAY.lockOnUntil = chained && PLAY.clip === 'scan' ? PLAY.time + (2.5 - PHONE.clips.scan.len) : -1;
+  PLAY.clip = name; PLAY.t = 0; PLAY.playing = true; PLAY.cell = null; PLAY.led = null; PLAY.state = null; onClipChange(name);
+}
 // sound cues: [sound, time in the clip]; looping clips repeat their cues every loop
 const CLIP_CUES = {
   idle: [], wake: [['button', 0.05], ['wake', 0.25]], unlock: [['tap', 0.3], ['unlock', 0.42]], scan: [['button', 0.05], ['scan', 0.3], ['scan_result', 1.0]],
@@ -1934,7 +2028,7 @@ function sceneTick(dt) {
     const b = C0 && C0.loop ? wrap(PLAY.t, C0.len) : PLAY.t;
     for (const [snd, at] of CLIP_CUES[PLAY.clip] || []) if ((b >= a && at > a && at <= b) || (b < a && (at > a || at <= b)) || (at === 0 && PLAY.t === dt)) onCue(snd);
     const C = PHONE.clips[PLAY.clip];
-    if (C && !C.loop && PLAY.t >= C.len) { const nx = CHAIN[PLAY.clip]; if (nx) playClip(nx); else { PLAY.t = C.len; PLAY.playing = false; } }
+    if (C && !C.loop && PLAY.t >= C.len) { const nx = CHAIN[PLAY.clip]; if (nx) playClip(nx, true); else { PLAY.t = C.len; PLAY.playing = false; } }
   }
   sceneRefresh();
 }
@@ -1948,7 +2042,7 @@ function viewFor(name) {
     case 'ref': { const d = V3(-0.12, 0.27, -1).normalize().multiplyScalar(0.255), t = V3(0.008, 0.014, 0); return { pos: L(d.x + t.x, d.y + t.y, d.z), target: L(t.x, t.y, 0), fov: 40 }; }
     case 'front': return { pos: L(0, 0.006, -0.42), target: L(0, 0.006, 0) };
     case 'back': return { pos: L(0.16, 0.08, 0.36), target: L(0, 0.006, 0) };
-    case 'side': return { pos: L(-0.42, 0.01, -0.03), target: L(0, 0.006, 0) };
+    case 'side': return { pos: L(-0.41, 0.05, -0.09), target: L(0, 0.004, 0) };
     case 'top': return { pos: L(0.04, 0.3, -0.12), target: L(0, 0.05, 0) };
     case 'bottom': return { pos: L(0.05, -0.2, -0.13), target: L(0, -0.075, 0) };
     case 'fp': return { pos: V3(0, 1.62, 0), target: L(0, 0, 0) };
@@ -1991,8 +2085,22 @@ function playSfx(name, gain = 0.8) {
 const $ = (id) => document.getElementById(id);
 let camTween = null, spinning = false, soundOn = true;
 function unlockAudio() { if (typeof audioUnlock === 'function') audioUnlock(); }
+// pull the camera back on viewports the framing was not made for: narrow phones (the views fit the phone's width at
+// about 0.62 aspect, the ref crop at 0.705) and short or wide screens for the ref crop (lug and bottom under the bar)
+function viewFit(name) {
+  const a = camera.aspect, h = stage.clientHeight;
+  let k = Math.max(1, (name === 'ref' ? 0.705 : 0.62) / a) * (a < 0.62 ? 1.12 : 1);
+  if (name === 'ref' && (a > 1 || h < 760)) k = Math.max(k, a > 1 ? 1.6 : 1.3);
+  if (name !== 'ref' && h < 900) k = Math.max(k, 1.3);
+  return k;
+}
 function goView(name, instant = false) {
   const v = viewFor(name); camTween = null;
+  if (name !== 'fp') {
+    const k = viewFit(name); if (k > 1) v.pos = v.target.clone().add(v.pos.clone().sub(v.target).multiplyScalar(k));
+    // the control bar covers the bottom of landscape screens (and nearly half of a phone screen): aim lower so the phone sits above it
+    if (camera.aspect > 1 || camera.aspect < 0.62) { const up = V3(0, 1, 0), d = v.pos.distanceTo(v.target) * (camera.aspect > 1 ? 0.055 : 0.11); v.pos = v.pos.clone().addScaledVector(up, -d); v.target = v.target.clone().addScaledVector(up, -d); }
+  }
   document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
   if (v.fov) { camera.fov = v.fov; camera.updateProjectionMatrix(); } else if (camera.fov !== 34) { camera.fov = 34; camera.updateProjectionMatrix(); }
   if (instant) { camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); return; }
@@ -2048,18 +2156,28 @@ function exportScenes() { const out = exportScenesFor(MODELS); sceneRefresh(); r
 async function exportGLB() {
   const was = looping;
   return exportGLBFor(MODELS, {
-    before: () => { setLoop(false); PHONE.screen.setCell('map_a'); applyLed('normal'); },
+    before: () => { setLoop(false); PHONE.screen.setCell('lock'); applyLed('normal'); },
     after: () => { sceneRefresh(); if (was) setLoop(true); },
   });
 }
-// preview.png: no UI, held like the reference, the map app on screen
+// preview.png: no UI, no glove: the phone alone in a front three-quarter view, filling about 70 % of the frame height,
+// on the studio backdrop with its soft light pool, the map app on screen
 function preview() {
   setLoop(false); setSpin(false);
   document.querySelectorAll('.plate, .bar, .hint').forEach((e) => { e.hidden = true; });
-  setLighting('studio'); PLAY.state = null; setPose('ref'); setHand(true); hold('idle', 0.2); PLAY.cell = 'map_a'; sceneRefresh();
-  goView('ref', true);
-  // the ref view crops like the photo; the preview pulls back so the lug and the bracket fit
-  { const d = camera.position.clone().sub(controls.target); controls.target.add(HOLD.localToWorld(V3(0, 0.012, 0)).sub(HOLD.localToWorld(V3(0, 0, 0)))); camera.position.copy(controls.target).add(d.multiplyScalar(1.32)); controls.update(); }
+  setLighting('studio'); PLAY.state = null; setPose('rest'); setHand(false); hold('idle', 0.2); PLAY.cell = 'map_a'; sceneRefresh();
+  goView('34', true);
+  // fit: centre the target on the phone's box and set the distance so its projected height is 70 % of the frame
+  const box = new THREE.Box3().setFromObject(PHONE.root), c = box.getCenter(V3(0, 0, 0)), pts = [];
+  for (let i = 0; i < 8; i++) pts.push(V3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  let dist = camera.position.distanceTo(controls.target);
+  for (let it = 0; it < 6; it++) {
+    controls.target.copy(c); camera.position.copy(c).addScaledVector(dir, dist); controls.update(); camera.updateMatrixWorld(true);
+    let y0 = 1, y1 = -1; for (const p of pts) { const q = p.clone().project(camera); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); }
+    dist *= (y1 - y0) / 2 / 0.7;
+  }
+  controls.target.copy(c); camera.position.copy(c).addScaledVector(dir, dist); controls.update();
   composer.render(); const gl = renderer.getContext(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
 }
 function stats() {
