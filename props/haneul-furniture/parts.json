@@ -379,6 +379,138 @@
    "name": "soil",
    "cls": "plant",
    "inner": "soil"
+  },
+  {
+   "key": "holoColumn",
+   "name": "holo_column",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoColumnIn",
+   "name": "holo_column_inner",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoBeam",
+   "name": "holo_beam",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoRay",
+   "name": "holo_ray",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoFlare",
+   "name": "holo_flare",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoRing",
+   "name": "holo_ring",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoPlate",
+   "name": "holo_plate",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoLine",
+   "name": "holo_line",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoFill",
+   "name": "holo_fill",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "holoLens",
+   "name": "holo_lens",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "lacquerRed",
+   "name": "lacquer_vermilion",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "lacquerBlack",
+   "name": "lacquer_black",
+   "cls": "wood",
+   "inner": "walnutInner"
+  },
+  {
+   "key": "roofTile",
+   "name": "roof_tile",
+   "cls": "ceramic",
+   "inner": "biscuit"
+  },
+  {
+   "key": "roofRidge",
+   "name": "roof_ridge",
+   "cls": "ceramic",
+   "inner": "biscuit"
+  },
+  {
+   "key": "lacquerMatte",
+   "name": "lacquer_black_matte",
+   "cls": "wood",
+   "inner": "walnutInner"
+  },
+  {
+   "key": "mapleLeaf",
+   "name": "foliage_maple_palmate",
+   "cls": "plant",
+   "inner": "mapleLeaf"
+  },
+  {
+   "key": "mapleLeafSolid",
+   "name": "foliage_maple_solid",
+   "cls": "plant",
+   "inner": "mapleLeafSolid"
+  },
+  {
+   "key": "gravelRaked",
+   "name": "gravel_raked",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "mapleBark",
+   "name": "bark_maple",
+   "cls": "plant",
+   "inner": "woodInner"
+  },
+  {
+   "key": "mapleStone",
+   "name": "stone_garden",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "mapleGravelCrumb",
+   "name": "gravel_crumb",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "moss",
+   "name": "moss",
+   "cls": "plant",
+   "inner": "soil"
   }
  ],
  "pieces": [
@@ -7966,45 +8098,82 @@
    ],
    "cover": "none",
    "size_m": [
-    1.2,
-    2,
-    1.2
+    1.12,
+    2.02,
+    1.133
    ],
    "floor_contact": 0,
-   "mass_kg": 146.1,
+   "mass_kg": 159.6,
    "parts": [
     {
      "part": "base",
      "material": "metal",
      "materials": [
+      "graphite",
+      "led_purple",
       "alloy_dark",
-      "glass_smoked",
-      "led_purple"
+      "steel_brushed",
+      "rubber"
      ],
-     "mass": 140,
+     "mass": 150,
      "health": 750,
      "break": "shatter",
      "attach": [
       "ground"
      ],
      "need": 0,
-     "stops_bullets": true,
+     "stops_bullets": false,
      "chunks": 10,
      "debris": [
       "debris_1",
       "debris_2",
       "debris_3",
-      "debris_4"
+      "debris_4",
+      "debris_5",
+      "debris_6"
      ],
      "colliders": [
-      "col_base_hull"
+      "col_base_1_hull",
+      "col_base_2"
      ]
     },
     {
-     "part": "emitter",
+     "part": "lens",
+     "material": "glass",
+     "materials": [
+      "glass_smoked",
+      "graphite",
+      "holo_lens"
+     ],
+     "mass": 3.5,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 15,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_lens"
+     ]
+    },
+    {
+     "part": "emitters",
      "material": "electronics",
      "materials": [
       "graphite",
+      "steel_brushed",
+      "alloy_dark",
+      "holo_lens",
       "led_purple"
      ],
      "mass": 6,
@@ -8018,20 +8187,35 @@
      "chunks": 0,
      "debris": [],
      "colliders": [
-      "col_emitter"
+      "col_emitters_1",
+      "col_emitters_2",
+      "col_emitters_3",
+      "col_emitters_4",
+      "col_emitters_5",
+      "col_emitters_6",
+      "col_emitters_7",
+      "col_emitters_8"
      ]
     },
     {
      "part": "holo",
      "material": "electronics",
      "materials": [
-      "hologram"
+      "holo_beam",
+      "holo_column",
+      "holo_column_inner",
+      "holo_plate",
+      "holo_ray",
+      "holo_flare",
+      "holo_ring",
+      "holo_fill",
+      "holo_line"
      ],
-     "mass": 0.1,
+     "mass": 0.05,
      "health": 1,
-     "break": "detach",
+     "break": "shatter",
      "attach": [
-      "emitter"
+      "lens"
      ],
      "need": 1,
      "stops_bullets": false,
@@ -8039,35 +8223,37 @@
      "debris": [],
      "colliders": [
       "col_holo"
-     ]
+     ],
+     "note": "light only: casts no shadow, blocks nothing; shatters to nothing (0 chunks, collapse) the moment the lens goes, so it switches off instead of falling",
+     "collapse": true,
+     "light": true
     }
    ],
-   "debris": 4,
+   "debris": 12,
    "triangles": {
-    "intact": 5600,
-    "chunks": 4797
+    "intact": 13784,
+    "chunks": 18326
    },
    "hidden_scale": 0.0001,
-   "note": "round projector plinth with an emitter ring and a see-through purple hologram column; the column blocks nothing and dies with the plinth"
+   "note": "stepped machined alloy projector plinth (LED kick, waisted vent band, cable port, LED deck reveal, eight emitter heads round a lens array) under a see-through layered hologram column with a wireframe model of the tower; the hologram is light only: it casts no shadow, blocks nothing and switches off (shatter with 0 chunks, collapse) when the lens goes"
   },
   {
    "id": "japanese_shrine",
-   "name": "Small Japanese shrine",
+   "name": "Japanese shrine pavilion",
    "batch": "E",
    "rooms": [
     "F1 Garden",
-    "F1 Tea Room",
     "F2 Gallery",
-    "F1 Ondol Lounge"
+    "F3 Exec Hall"
    ],
    "cover": "soft",
    "size_m": [
-    1.151,
-    1.28,
-    0.845
+    3.191,
+    3.784,
+    3.191
    ],
    "floor_contact": 0,
-   "mass_kg": 294.5,
+   "mass_kg": 3087.7,
    "parts": [
     {
      "part": "plinth",
@@ -8075,169 +8261,762 @@
      "materials": [
       "stone_granite"
      ],
-     "mass": 260,
-     "health": 1200,
+     "mass": 1400,
+     "health": 1600,
      "break": "shatter",
      "attach": [
       "ground"
      ],
      "need": 0,
      "stops_bullets": true,
-     "chunks": 6,
+     "chunks": 8,
      "debris": [
       "debris_1",
       "debris_2",
       "debris_3",
-      "debris_4"
+      "debris_4",
+      "debris_5"
      ],
      "colliders": [
-      "col_plinth_1",
-      "col_plinth_2"
+      "col_plinth"
      ]
     },
     {
-     "part": "body",
+     "part": "step",
+     "material": "stone",
+     "materials": [
+      "stone_granite"
+     ],
+     "mass": 110,
+     "health": 1120,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 4,
+     "debris": [
+      "debris_6",
+      "debris_7",
+      "debris_8"
+     ],
+     "colliders": [
+      "col_step"
+     ]
+    },
+    {
+     "part": "deck_frame",
      "material": "wood",
      "materials": [
+      "lacquer_black",
       "wood_walnut"
      ],
-     "mass": 22,
-     "health": 195,
+     "mass": 100,
+     "health": 420,
      "break": "shatter",
      "attach": [
       "plinth"
      ],
      "need": 1,
      "stops_bullets": false,
-     "chunks": 8,
+     "chunks": 9,
      "debris": [
-      "debris_5",
-      "debris_6",
-      "debris_7"
+      "debris_9",
+      "debris_10",
+      "debris_11"
      ],
      "colliders": [
-      "col_body"
+      "col_deck_frame"
      ]
     },
     {
-     "part": "door_l",
+     "part": "deck",
      "material": "wood",
      "materials": [
-      "wood_oak",
-      "wood_ebony",
-      "brass"
-     ],
-     "mass": 1.2,
-     "health": 75,
-     "break": "detach",
-     "attach": [
-      "body"
-     ],
-     "need": 1,
-     "stops_bullets": false,
-     "chunks": 0,
-     "debris": [],
-     "colliders": [
-      "col_door_l"
-     ]
-    },
-    {
-     "part": "door_r",
-     "material": "wood",
-     "materials": [
-      "wood_oak",
-      "wood_ebony",
-      "brass"
-     ],
-     "mass": 1.2,
-     "health": 75,
-     "break": "detach",
-     "attach": [
-      "body"
-     ],
-     "need": 1,
-     "stops_bullets": false,
-     "chunks": 0,
-     "debris": [],
-     "colliders": [
-      "col_door_r"
-     ]
-    },
-    {
-     "part": "roof",
-     "material": "wood",
-     "materials": [
-      "wood_ebony",
       "wood_walnut"
      ],
-     "mass": 9,
-     "health": 145,
+     "mass": 110,
+     "health": 335,
+     "break": "shatter",
+     "attach": [
+      "deck_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 16,
+     "debris": [
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_deck"
+     ]
+    },
+    {
+     "part": "deck_led",
+     "material": "electronics",
+     "materials": [
+      "led_purple"
+     ],
+     "mass": 0.4,
+     "health": 20,
      "break": "detach",
      "attach": [
-      "body"
+      "deck_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_deck_led"
+     ]
+    },
+    {
+     "part": "pillar_fl",
+     "material": "wood",
+     "materials": [
+      "lacquer_vermilion",
+      "lacquer_black",
+      "brass"
+     ],
+     "mass": 50,
+     "health": 260,
+     "break": "shatter",
+     "attach": [
+      "plinth",
+      "deck_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_16",
+      "debris_17",
+      "debris_18"
+     ],
+     "colliders": [
+      "col_pillar_fl_hull"
+     ]
+    },
+    {
+     "part": "pillar_fr",
+     "material": "wood",
+     "materials": [
+      "lacquer_vermilion",
+      "lacquer_black",
+      "brass"
+     ],
+     "mass": 50,
+     "health": 260,
+     "break": "shatter",
+     "attach": [
+      "plinth",
+      "deck_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_19",
+      "debris_20",
+      "debris_21"
+     ],
+     "colliders": [
+      "col_pillar_fr_hull"
+     ]
+    },
+    {
+     "part": "pillar_bl",
+     "material": "wood",
+     "materials": [
+      "lacquer_vermilion",
+      "lacquer_black",
+      "brass"
+     ],
+     "mass": 50,
+     "health": 260,
+     "break": "shatter",
+     "attach": [
+      "plinth",
+      "deck_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_22",
+      "debris_23",
+      "debris_24"
+     ],
+     "colliders": [
+      "col_pillar_bl_hull"
+     ]
+    },
+    {
+     "part": "pillar_br",
+     "material": "wood",
+     "materials": [
+      "lacquer_vermilion",
+      "lacquer_black",
+      "brass"
+     ],
+     "mass": 50,
+     "health": 260,
+     "break": "shatter",
+     "attach": [
+      "plinth",
+      "deck_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_25",
+      "debris_26",
+      "debris_27"
+     ],
+     "colliders": [
+      "col_pillar_br_hull"
+     ]
+    },
+    {
+     "part": "tie_beams",
+     "material": "wood",
+     "materials": [
+      "lacquer_vermilion",
+      "brass"
+     ],
+     "mass": 36,
+     "health": 230,
+     "break": "shatter",
+     "attach": [
+      "pillar_fl",
+      "pillar_fr",
+      "pillar_bl",
+      "pillar_br"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_28",
+      "debris_29",
+      "debris_30"
+     ],
+     "colliders": [
+      "col_tie_beams_1",
+      "col_tie_beams_2",
+      "col_tie_beams_3",
+      "col_tie_beams_4"
+     ]
+    },
+    {
+     "part": "head_frame",
+     "material": "wood",
+     "materials": [
+      "lacquer_vermilion",
+      "wood_walnut",
+      "lacquer_black"
+     ],
+     "mass": 170,
+     "health": 420,
+     "break": "shatter",
+     "attach": [
+      "pillar_fl",
+      "pillar_fr",
+      "pillar_bl",
+      "pillar_br"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 12,
+     "debris": [
+      "debris_31",
+      "debris_32",
+      "debris_33",
+      "debris_34"
+     ],
+     "colliders": [
+      "col_head_frame_1",
+      "col_head_frame_2",
+      "col_head_frame_3",
+      "col_head_frame_4",
+      "col_head_frame_5",
+      "col_head_frame_6",
+      "col_head_frame_7",
+      "col_head_frame_8",
+      "col_head_frame_9"
+     ]
+    },
+    {
+     "part": "cove_led",
+     "material": "electronics",
+     "materials": [
+      "led_purple"
+     ],
+     "mass": 0.6,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "head_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cove_led"
+     ]
+    },
+    {
+     "part": "roof_f",
+     "material": "ceramic",
+     "materials": [
+      "roof_tile",
+      "wood_walnut",
+      "lacquer_black",
+      "roof_ridge"
+     ],
+     "mass": 260,
+     "health": 700,
+     "break": "shatter",
+     "attach": [
+      "head_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_35",
+      "debris_36",
+      "debris_37",
+      "debris_38",
+      "debris_39",
+      "debris_40",
+      "debris_41",
+      "debris_42",
+      "debris_43",
+      "debris_44",
+      "debris_45",
+      "debris_46"
+     ],
+     "colliders": [
+      "col_roof_f_1_hull",
+      "col_roof_f_2_hull",
+      "col_roof_f_3_hull",
+      "col_roof_f_4_hull",
+      "col_roof_f_5_hull",
+      "col_roof_f_6_hull",
+      "col_roof_f_7_hull",
+      "col_roof_f_8_hull",
+      "col_roof_f_9_hull"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "roof_b",
+     "material": "ceramic",
+     "materials": [
+      "roof_tile",
+      "wood_walnut",
+      "lacquer_black",
+      "roof_ridge"
+     ],
+     "mass": 260,
+     "health": 700,
+     "break": "shatter",
+     "attach": [
+      "head_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_47",
+      "debris_48",
+      "debris_49",
+      "debris_50",
+      "debris_51",
+      "debris_52",
+      "debris_53",
+      "debris_54",
+      "debris_55",
+      "debris_56",
+      "debris_57",
+      "debris_58"
+     ],
+     "colliders": [
+      "col_roof_b_1_hull",
+      "col_roof_b_2_hull",
+      "col_roof_b_3_hull",
+      "col_roof_b_4_hull",
+      "col_roof_b_5_hull",
+      "col_roof_b_6_hull",
+      "col_roof_b_7_hull",
+      "col_roof_b_8_hull",
+      "col_roof_b_9_hull"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "roof_l",
+     "material": "ceramic",
+     "materials": [
+      "roof_tile",
+      "wood_walnut",
+      "lacquer_black",
+      "roof_ridge",
+      "brass",
+      "lacquer_black_matte",
+      "lacquer_vermilion"
+     ],
+     "mass": 150,
+     "health": 500,
+     "break": "shatter",
+     "attach": [
+      "head_frame",
+      "roof_f",
+      "roof_b"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 2,
+     "debris": [
+      "debris_59",
+      "debris_60",
+      "debris_61",
+      "debris_62",
+      "debris_63",
+      "debris_64",
+      "debris_65",
+      "debris_66"
+     ],
+     "colliders": [
+      "col_roof_l_1_hull",
+      "col_roof_l_2_hull",
+      "col_roof_l_3_hull",
+      "col_roof_l_4_hull",
+      "col_roof_l_5_hull",
+      "col_roof_l_6_hull",
+      "col_roof_l_7_hull"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "roof_r",
+     "material": "ceramic",
+     "materials": [
+      "roof_tile",
+      "wood_walnut",
+      "lacquer_black",
+      "roof_ridge",
+      "brass",
+      "lacquer_black_matte",
+      "lacquer_vermilion"
+     ],
+     "mass": 150,
+     "health": 500,
+     "break": "shatter",
+     "attach": [
+      "head_frame",
+      "roof_f",
+      "roof_b"
+     ],
+     "need": 3,
+     "stops_bullets": false,
+     "chunks": 2,
+     "debris": [
+      "debris_67",
+      "debris_68",
+      "debris_69",
+      "debris_70",
+      "debris_71",
+      "debris_72",
+      "debris_73",
+      "debris_74"
+     ],
+     "colliders": [
+      "col_roof_r_1_hull",
+      "col_roof_r_2_hull",
+      "col_roof_r_3_hull",
+      "col_roof_r_4_hull",
+      "col_roof_r_5_hull",
+      "col_roof_r_6_hull",
+      "col_roof_r_7_hull"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "ridge",
+     "material": "ceramic",
+     "materials": [
+      "roof_ridge"
+     ],
+     "mass": 90,
+     "health": 400,
+     "break": "detach",
+     "attach": [
+      "roof_f",
+      "roof_b"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_75",
+      "debris_76",
+      "debris_77"
+     ],
+     "colliders": [
+      "col_ridge"
+     ]
+    },
+    {
+     "part": "altar",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "lacquer_black"
+     ],
+     "mass": 14,
+     "health": 170,
+     "break": "shatter",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_78",
+      "debris_79",
+      "debris_80"
+     ],
+     "colliders": [
+      "col_altar"
+     ]
+    },
+    {
+     "part": "mirror",
+     "material": "metal",
+     "materials": [
+      "lacquer_black",
+      "brass",
+      "steel_brushed"
+     ],
+     "mass": 3,
+     "health": 210,
+     "break": "detach",
+     "attach": [
+      "altar"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mirror"
+     ]
+    },
+    {
+     "part": "vase_r",
+     "material": "ceramic",
+     "materials": [
+      "porcelain"
+     ],
+     "mass": 1.6,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "altar"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 6,
+     "debris": [
+      "debris_81",
+      "debris_82",
+      "debris_83"
+     ],
+     "colliders": [
+      "col_vase_r_hull"
+     ]
+    },
+    {
+     "part": "sakaki_r",
+     "material": "plant",
+     "materials": [
+      "bark",
+      "foliage"
+     ],
+     "mass": 0.3,
+     "health": 15,
+     "break": "detach",
+     "attach": [
+      "vase_r"
      ],
      "need": 1,
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_8",
-      "debris_9",
-      "debris_10"
+      "debris_84",
+      "debris_85",
+      "debris_86"
      ],
      "colliders": [
-      "col_roof"
+      "col_sakaki_r"
      ]
     },
     {
-     "part": "rope",
-     "material": "fabric",
+     "part": "vase_l",
+     "material": "ceramic",
      "materials": [
-      "paper_hanji",
       "porcelain"
      ],
+     "mass": 1.6,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "altar"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_87",
+      "debris_88",
+      "debris_89"
+     ],
+     "colliders": [
+      "col_vase_l_hull"
+     ]
+    },
+    {
+     "part": "sakaki_l",
+     "material": "plant",
+     "materials": [
+      "bark",
+      "foliage"
+     ],
      "mass": 0.3,
+     "health": 15,
+     "break": "detach",
+     "attach": [
+      "vase_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_90",
+      "debris_91",
+      "debris_92"
+     ],
+     "colliders": [
+      "col_sakaki_l"
+     ]
+    },
+    {
+     "part": "andon",
+     "material": "wood",
+     "materials": [
+      "lacquer_black",
+      "paper_hanji_lit"
+     ],
+     "mass": 2.2,
      "health": 40,
      "break": "detach",
      "attach": [
-      "body"
+      "deck"
      ],
      "need": 1,
      "stops_bullets": false,
      "chunks": 0,
      "debris": [],
      "colliders": [
-      "col_rope"
+      "col_andon"
      ]
     },
     {
-     "part": "offering",
-     "material": "wood",
+     "part": "bell",
+     "material": "metal",
      "materials": [
-      "wood_oak",
-      "celadon"
+      "lacquer_black",
+      "brass"
      ],
-     "mass": 0.8,
-     "health": 65,
+     "mass": 2.5,
+     "health": 200,
      "break": "detach",
      "attach": [
-      "plinth"
+      "head_frame"
      ],
      "need": 1,
      "stops_bullets": false,
      "chunks": 0,
      "debris": [],
      "colliders": [
-      "col_offering"
+      "col_bell"
+     ]
+    },
+    {
+     "part": "bell_rope",
+     "material": "fabric",
+     "materials": [
+      "fabric_cinnabar",
+      "fabric_oat"
+     ],
+     "mass": 1.2,
+     "health": 50,
+     "break": "detach",
+     "attach": [
+      "bell"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_bell_rope"
+     ]
+    },
+    {
+     "part": "offering_box",
+     "material": "wood",
+     "materials": [
+      "wood_walnut",
+      "lacquer_black",
+      "brass"
+     ],
+     "mass": 24,
+     "health": 200,
+     "break": "shatter",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_93",
+      "debris_94",
+      "debris_95"
+     ],
+     "colliders": [
+      "col_offering_box"
      ]
     }
    ],
-   "debris": 10,
+   "debris": 95,
    "triangles": {
-    "intact": 5704,
-    "chunks": 2953
+    "intact": 29248,
+    "chunks": 36934
    },
    "hidden_scale": 0.0001,
-   "note": "hokora-style wooden shrine on a granite plinth: gabled roof with crossed finials and ridge logs, two doors, a straw rope with paper streamers, an offering stand"
+   "note": "indoor shrine pavilion for double-height rooms: four vermilion-lacquered pillars on black bases, tie and head beams, carved bracket sets, an irimoya hip-and-gable kawara roof with a soft sori curve, upturned corners, a black kayaoi eave board over exposed rafters and a slatted gable, on a walnut plank deck over a granite plinth with a front step; inside a mirror altar with sakaki vases, a paper andon, a suzu bell with its rope in front of the offering box, and a hidden purple LED cove under the head beams. About 3.2 m square and 3.8 m tall: needs at least 3.9 m clear headroom (double-height rooms only); deck 0.20 m up, 2.05 m clear under the tie beams, 2.2 m under the head beams. Roof sections shatter into strips when the head frame goes; about 29k triangles intact (over the 15k guideline: a room-sized hero piece)"
   },
   {
    "id": "maple_tree",
@@ -8251,12 +9030,12 @@
    ],
    "cover": "soft",
    "size_m": [
-    2.389,
-    2.449,
-    1.675
+    2.301,
+    2.334,
+    1.625
    ],
    "floor_contact": 0,
-   "mass_kg": 437,
+   "mass_kg": 453,
    "parts": [
     {
      "part": "bed",
@@ -8273,12 +9052,13 @@
      ],
      "need": 0,
      "stops_bullets": true,
-     "chunks": 6,
+     "chunks": 8,
      "debris": [
       "debris_1",
       "debris_2",
       "debris_3",
-      "debris_4"
+      "debris_4",
+      "debris_5"
      ],
      "colliders": [
       "col_bed_1",
@@ -8292,10 +9072,11 @@
      "material": "plant",
      "materials": [
       "soil",
-      "stone_pebble",
-      "foliage"
+      "gravel_raked",
+      "moss",
+      "stone_garden"
      ],
-     "mass": 80,
+     "mass": 90,
      "health": 400,
      "break": "shatter",
      "attach": [
@@ -8303,12 +9084,18 @@
      ],
      "need": 1,
      "stops_bullets": false,
-     "chunks": 7,
+     "chunks": 6,
      "debris": [
-      "debris_5",
       "debris_6",
       "debris_7",
-      "debris_8"
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11",
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15"
      ],
      "colliders": [
       "col_soil"
@@ -8319,10 +9106,10 @@
      "part": "trunk",
      "material": "plant",
      "materials": [
-      "bark"
+      "bark_maple"
      ],
-     "mass": 25,
-     "health": 50,
+     "mass": 28,
+     "health": 55,
      "break": "detach",
      "attach": [
       "soil"
@@ -8331,22 +9118,25 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_9",
-      "debris_10",
-      "debris_11"
+      "debris_16",
+      "debris_17",
+      "debris_18"
      ],
      "colliders": [
-      "col_trunk"
+      "col_trunk_1",
+      "col_trunk_2",
+      "col_trunk_3"
      ]
     },
     {
      "part": "canopy_1",
      "material": "plant",
      "materials": [
-      "foliage_maple"
+      "bark_maple",
+      "foliage_maple_palmate"
      ],
-     "mass": 2,
-     "health": 20,
+     "mass": 2.5,
+     "health": 25,
      "break": "detach",
      "attach": [
       "trunk"
@@ -8355,10 +9145,10 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_12",
-      "debris_13",
-      "debris_14",
-      "debris_15"
+      "debris_19",
+      "debris_20",
+      "debris_21",
+      "debris_22"
      ],
      "colliders": [
       "col_canopy_1"
@@ -8368,10 +9158,11 @@
      "part": "canopy_2",
      "material": "plant",
      "materials": [
-      "foliage_maple"
+      "bark_maple",
+      "foliage_maple_palmate"
      ],
-     "mass": 2,
-     "health": 20,
+     "mass": 2.5,
+     "health": 25,
      "break": "detach",
      "attach": [
       "trunk"
@@ -8380,10 +9171,10 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_16",
-      "debris_17",
-      "debris_18",
-      "debris_19"
+      "debris_23",
+      "debris_24",
+      "debris_25",
+      "debris_26"
      ],
      "colliders": [
       "col_canopy_2"
@@ -8393,10 +9184,11 @@
      "part": "canopy_3",
      "material": "plant",
      "materials": [
-      "foliage_maple"
+      "bark_maple",
+      "foliage_maple_palmate"
      ],
-     "mass": 2,
-     "health": 20,
+     "mass": 2.5,
+     "health": 25,
      "break": "detach",
      "attach": [
       "trunk"
@@ -8405,10 +9197,10 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_20",
-      "debris_21",
-      "debris_22",
-      "debris_23"
+      "debris_27",
+      "debris_28",
+      "debris_29",
+      "debris_30"
      ],
      "colliders": [
       "col_canopy_3"
@@ -8418,10 +9210,11 @@
      "part": "canopy_4",
      "material": "plant",
      "materials": [
-      "foliage_maple"
+      "bark_maple",
+      "foliage_maple_palmate"
      ],
-     "mass": 2,
-     "health": 20,
+     "mass": 2.5,
+     "health": 25,
      "break": "detach",
      "attach": [
       "trunk"
@@ -8430,10 +9223,10 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_24",
-      "debris_25",
-      "debris_26",
-      "debris_27"
+      "debris_31",
+      "debris_32",
+      "debris_33",
+      "debris_34"
      ],
      "colliders": [
       "col_canopy_4"
@@ -8443,10 +9236,11 @@
      "part": "canopy_5",
      "material": "plant",
      "materials": [
-      "foliage_maple"
+      "bark_maple",
+      "foliage_maple_palmate"
      ],
-     "mass": 2,
-     "health": 20,
+     "mass": 2.5,
+     "health": 25,
      "break": "detach",
      "attach": [
       "trunk"
@@ -8455,10 +9249,10 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_28",
-      "debris_29",
-      "debris_30",
-      "debris_31"
+      "debris_35",
+      "debris_36",
+      "debris_37",
+      "debris_38"
      ],
      "colliders": [
       "col_canopy_5"
@@ -8468,10 +9262,11 @@
      "part": "canopy_6",
      "material": "plant",
      "materials": [
-      "foliage_maple"
+      "bark_maple",
+      "foliage_maple_palmate"
      ],
-     "mass": 2,
-     "health": 20,
+     "mass": 2.5,
+     "health": 25,
      "break": "detach",
      "attach": [
       "trunk"
@@ -8480,23 +9275,23 @@
      "stops_bullets": false,
      "chunks": 0,
      "debris": [
-      "debris_32",
-      "debris_33",
-      "debris_34",
-      "debris_35"
+      "debris_39",
+      "debris_40",
+      "debris_41",
+      "debris_42"
      ],
      "colliders": [
       "col_canopy_6"
      ]
     }
    ],
-   "debris": 35,
+   "debris": 42,
    "triangles": {
-    "intact": 10164,
-    "chunks": 8231
+    "intact": 13102,
+    "chunks": 13476
    },
    "hidden_scale": 0.0001,
-   "note": "a cloud-pruned red Japanese maple in a low basalt bed with a warm LED washer and moss mounds; leaves are 2D alpha cards"
+   "note": "a cloud-pruned red Japanese maple on a gnarled twisting trunk, in a low basalt bed with raked gravel, moss islands, three stones and a warm LED washer under the coping; leaves are 2D alpha cards in flat pads"
   }
  ]
 }

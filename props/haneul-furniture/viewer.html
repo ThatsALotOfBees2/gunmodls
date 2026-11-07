@@ -3833,144 +3833,1175 @@ defPiece({
   },
 });
 
-/* ---- batchE.js */
-// Batch E (user additions): holo_cylinder japanese_shrine maple_tree
+/* ---- batchE1_holo.js */
+// Batch E (user additions): batchE1_holo.js
+// holo_cylinder: machined projector plinth with an emitter lens array, and a layered, fading hologram column that
+// shows a wireframe model of the Haneul Tower standing on a city plate.
+
+/* ---- hologram materials and sheets (own entries, registered once; nothing shared is changed) */
+// Every hologram material is black, transparent and emissive: glTF exports it as an ordinary BLEND material whose
+// colour comes from the emissive texture and whose alpha comes from the base-colour texture. The viewer adds the
+// layers (additive blending); an engine that blends normally shows much the same over a dark room.
+function holoE1Mats() {
+  if (M.holoColumn) return M;
+  const rnd = prng(811);
+  const tex = (c, name) => { const t = asTex(c, { srgb: true, repeat: true }); t.name = name; t.wrapT = THREE.ClampToEdgeWrapping; return t; };
+  // column sheet: v = 0 bottom (bright) .. 1 top (gone); fine scan lines, a few brighter data bands, faint vertical seams
+  const col = canvas(128, 512), cx = col.getContext('2d');
+  cx.clearRect(0, 0, 128, 512);
+  const bands = Array.from({ length: 7 }, () => [rnd() * 0.85, 0.004 + rnd() * 0.01]);
+  for (let y = 0; y < 512; y++) {
+    const v = 1 - y / 511;
+    let a = 0.36 * Math.exp(-3.8 * v) + 0.06 * (1 - v);
+    // the top dissolves: full strength to 45 % of the height, then a smooth fade to nothing
+    const ft = Math.max(0, (v - 0.45) / 0.55); a *= 1 - ft * ft * (3 - 2 * ft);
+    const line = (y % 4 === 0) ? 1.0 : (y % 4 === 1 ? 0.45 : 0.12);
+    let band = 0; for (const [bv, bw] of bands) band += Math.exp(-((v - bv) * (v - bv)) / (bw * bw * 0.5)) * 0.22 * (1 - v);
+    for (let x = 0; x < 128; x += 2) {
+      const seam = (x % 32 === 0) ? 0.3 * (1 - v) * (1 - v) : 0;
+      const al = Math.min(1, a * line + band + seam);
+      cx.fillStyle = `rgba(${Math.min(255, 200 + band * 150) | 0},${Math.min(255, 180 + band * 150) | 0},255,${al.toFixed(3)})`; cx.fillRect(x, y, 2, 1);
+    }
+  }
+  // beam: bright core across u, strong at v = 0 fading toward v = 1
+  const bm = canvas(32, 128), bxc = bm.getContext('2d');
+  for (let y = 0; y < 128; y++) { const v = 1 - y / 127; for (let x = 0; x < 32; x++) { const u = (x + 0.5) / 32 - 0.5, a = Math.min(1, 0.85 * Math.exp(-u * u * 160) + 0.32 * Math.exp(-u * u * 22)) * (0.12 + 0.88 * Math.pow(1 - v, 1.6)) * Math.min(1, v * 12 + 0.3) * Math.min(1, (1 - v) * 6); bxc.fillStyle = `rgba(230,215,255,${a.toFixed(3)})`; bxc.fillRect(x, y, 1, 1); } }
+  // data ring: dashes of mixed length along u, soft across v
+  const rg = canvas(512, 16), rx = rg.getContext('2d'); rx.clearRect(0, 0, 512, 16);
+  for (let x = 0; x < 512;) { const L = 4 + (rnd() * 40 | 0), gap = 3 + (rnd() * 14 | 0), br = 0.45 + rnd() * 0.55; for (let y = 0; y < 16; y++) { const w = 1 - Math.abs((y + 0.5) / 8 - 1); rx.fillStyle = `rgba(225,210,255,${(br * Math.pow(w, 0.6)).toFixed(3)})`; rx.fillRect(x, y, Math.min(L, 512 - x), 1); } x += L + gap; }
+  // plate: concentric fine circles and radial spokes, fading toward the rim (u = angle, v = radius)
+  const pl = canvas(256, 128), px = pl.getContext('2d'); px.clearRect(0, 0, 256, 128);
+  for (let y = 0; y < 128; y++) { const v = 1 - y / 127, rr = (y % 12 === 0) ? 0.55 : (y % 4 === 0 ? 0.16 : 0.04); for (let x = 0; x < 256; x += 2) { const spoke = (x % 32 === 0) ? 0.25 : 0; px.fillStyle = `rgba(215,195,255,${(Math.min(1, rr + spoke) * (0.35 + 0.65 * v) * Math.min(1, (1 - v) * 10 + 0.2)).toFixed(3)})`; px.fillRect(x, y, 2, 1); } }
+  // flare: a soft round glow with a hot centre (the card at each emitter nozzle)
+  const fl = canvas(32, 32), fx = fl.getContext('2d');
+  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) { const r = Math.hypot((x + 0.5) / 16 - 1, (y + 0.5) / 16 - 1), a = Math.max(0, Math.min(1, 0.9 * Math.exp(-r * r * 22) + 0.3 * Math.exp(-r * r * 5)) * (1 - Math.min(1, r) ** 2)); fx.fillStyle = `rgba(240,230,255,${a.toFixed(3)})`; fx.fillRect(x, y, 1, 1); }
+  TX.holoFlare = tex(fl, 'holo_flare'); TX.holoFlare.wrapS = THREE.ClampToEdgeWrapping;
+  TX.holoColumn = tex(col, 'holo_column'); TX.holoBeam = tex(bm, 'holo_beam'); TX.holoRing = tex(rg, 'holo_ring'); TX.holoPlate = tex(pl, 'holo_plate');
+  const hm = (key, name, emissive, glow, o = {}) => {
+    const m = new THREE.MeshStandardMaterial({ name, color: '#000000', emissive, emissiveIntensity: glow, transparent: true, depthWrite: false, side: THREE.DoubleSide, roughness: 1, metalness: 0, blending: THREE.AdditiveBlending, ...o });
+    if (o.map) { m.emissiveMap = o.map; m.userData.keepUV = true; }
+    // light only: it never casts a shadow (the viewer reads userData.noShadow; it exports in the material extras)
+    m.userData.glow = glow; m.userData.noShadow = true; reg(key, m, 'electronics', 'pcb'); m.userData.tile = 0.1;
+    return m;
+  };
+  // opacities stay low so that an engine that blends normally (black albedo, real alpha) still reads light, not smoke
+  hm('holoColumn', 'holo_column', '#9b6bff', 1.0, { map: TX.holoColumn, opacity: 0.75 });
+  hm('holoColumnIn', 'holo_column_inner', '#cbbcff', 0.9, { map: TX.holoColumn, opacity: 0.5 });   // cooler lavender inner layer
+  hm('holoBeam', 'holo_beam', '#b48cff', 1.3, { map: TX.holoBeam, opacity: 0.6 });
+  hm('holoRay', 'holo_ray', '#e2d6ff', 2.4, { map: TX.holoBeam, opacity: 0.95 });                    // emitter beams only
+  hm('holoFlare', 'holo_flare', '#e8ddff', 2.6, { map: TX.holoFlare, opacity: 1.0 });
+  hm('holoRing', 'holo_ring', '#c4a6ff', 1.4, { map: TX.holoRing, opacity: 0.85 });
+  hm('holoPlate', 'holo_plate', '#a37aff', 1.1, { map: TX.holoPlate, opacity: 0.8 });
+  hm('holoLine', 'holo_line', '#d4c2ff', 1.5, { opacity: 0.8 });
+  hm('holoFill', 'holo_fill', '#7d45ff', 1.0, { opacity: 0.08 });
+  reg('holoLens', glowMat('holo_lens', '#b896ff', 2.0, { roughness: 0.15 }), 'electronics', 'pcb');
+  return M;
+}
+
+/* ---- hologram geometry helpers (own UVs) */
+// flat annulus in the XZ plane, u = angle (repeated uRep times), v = 0 inner .. 1 outer; a0..a1 for an arc
+function holoAnnulus(r0, r1, y, seg, uRep = 1, a0 = 0, a1 = Math.PI * 2) {
+  const pos = [], uv = [], nor = [], idx = [];
+  for (let i = 0; i <= seg; i++) {
+    const t = i / seg, a = a0 + (a1 - a0) * t, c = Math.cos(a), s = Math.sin(a);
+    pos.push(c * r0, y, s * r0, c * r1, y, s * r1); uv.push(t * uRep, 0, t * uRep, 1); nor.push(0, 1, 0, 0, 1, 0);
+    if (i < seg) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  return g;
+}
+// open shell (cone frustum or cylinder) with its u repeated round the axis
+function holoShell(rBot, rTop, y0, y1, seg, uRep = 1, uOff = 0) {
+  const g = new THREE.CylinderGeometry(rTop, rBot, y1 - y0, seg, 1, true); g.translate(0, (y0 + y1) / 2, 0);
+  const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setX(i, uv.getX(i) * uRep + uOff);
+  return g;
+}
+// light beam from A to B: two crossed quads, width wA at A and wB at B, v = 0 at A .. 1 at B
+function holoBeamGeo(A, B, wA, wB) {
+  const a = V3(...A), b = V3(...B), d = b.clone().sub(a).normalize();
+  const s1 = V3(0, 1, 0).cross(d); if (s1.lengthSq() < 1e-6) s1.set(1, 0, 0); s1.normalize();
+  const s2 = d.clone().cross(s1).normalize(), pos = [], uv = [];
+  for (const s of [s1, s2]) {
+    const q = [a.clone().addScaledVector(s, -wA / 2), a.clone().addScaledVector(s, wA / 2), b.clone().addScaledVector(s, wB / 2), b.clone().addScaledVector(s, -wB / 2)], u = [[0, 0], [1, 0], [1, 1], [0, 1]];
+    for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(q[k].x, q[k].y, q[k].z); uv.push(...u[k]); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
+  return g;
+}
+// thin open triangular prism along a segment (a wireframe edge: 6 triangles)
+function holoEdge(A, B, r) {
+  const a = V3(...A), b = V3(...B), d = b.clone().sub(a).normalize();
+  const s1 = (Math.abs(d.y) > 0.9 ? V3(1, 0, 0) : V3(0, 1, 0)).cross(d).normalize(), s2 = d.clone().cross(s1).normalize();
+  const ring = [0, 1, 2].map((k) => { const t = k / 3 * Math.PI * 2; return s1.clone().multiplyScalar(Math.cos(t) * r).addScaledVector(s2, Math.sin(t) * r); });
+  const pos = [];
+  for (let k = 0; k < 3; k++) { const p = ring[k], q = ring[(k + 1) % 3], a0 = a.clone().add(p), a1 = a.clone().add(q), b0 = b.clone().add(p), b1 = b.clone().add(q); for (const v of [a0, b0, b1, a0, b1, a1]) pos.push(v.x, v.y, v.z); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+  return g;
+}
+// filled flat polygon [[x, z], ...] at height y (fan)
+function holoPoly(pts, y) {
+  const pos = []; for (let i = 1; i < pts.length - 1; i++) for (const p of [pts[0], pts[i + 1], pts[i]]) pos.push(p[0], y, p[1]);
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
+  return g;
+}
+// geometry bag: collect per material, add one merged mesh per material (keeps UVs for materials that keep their own)
+function holoBag() {
+  const m = new Map();
+  return {
+    add(g, mat) { if (!m.has(mat)) m.set(mat, []); m.get(mat).push(g); },
+    to(part, opts) {
+      for (const [mat, gs] of m) {
+        if (!mat.userData.keepUV) { part.add(mergeGeos(gs), mat, opts); continue; }
+        part.add(mergeGeometries(gs.map((g) => { g = g.index ? g.toNonIndexed() : g; const o = new THREE.BufferGeometry(); o.setAttribute('position', g.attributes.position); if (!g.attributes.normal) g.computeVertexNormals(); o.setAttribute('normal', g.attributes.normal); o.setAttribute('uv', g.attributes.uv); return o; }), false), mat, opts);
+      }
+    },
+  };
+}
+
+// flat glow card facing along dir d (a unit vector) at point c, size s: two crossed quads so it reads from any side
+function holoCard(c, d, s) {
+  const D = V3(...d).normalize(), a = (Math.abs(D.y) > 0.9 ? V3(1, 0, 0) : V3(0, 1, 0)).cross(D).normalize(), b = D.clone().cross(a).normalize();
+  const pos = [], uv = [];
+  for (const [e1, e2] of [[a, b], [a.clone().add(D).normalize(), b], [b.clone().add(D).normalize(), a]]) {
+    const q = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => V3(...c).addScaledVector(e1, x * s / 2).addScaledVector(e2, y * s / 2));
+    for (const k of [0, 1, 2, 0, 2, 3]) { pos.push(q[k].x, q[k].y, q[k].z); uv.push([0, 1, 1, 0][k] ?? 0, [0, 0, 1, 1][k]); }
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
+  return g;
+}
 
 defPiece({
   id: 'holo_cylinder', name: 'Hologram cylinder', batch: 'E', cover: 'none',
   rooms: ['F2 Studio', 'F3 Control Room', 'F2 Reception', 'F3 Exec Hall'],
-  note: 'round projector plinth with an emitter ring and a see-through purple hologram column; the column blocks nothing and dies with the plinth',
+  note: 'stepped machined alloy projector plinth (LED kick, waisted vent band, cable port, LED deck reveal, eight emitter heads round a lens array) under a see-through layered hologram column with a wireframe model of the tower; the hologram is light only: it casts no shadow, blocks nothing and switches off (shatter with 0 chunks, collapse) when the lens goes',
   build(P) {
-    const R = 0.6, H = 2.0;
-    // plinth: stepped alloy drum, dark glass emitter disc on top, purple LED ring in the step
-    const base = P.part('base', { break: 'shatter', chunks: 8, mass: 140, cls: 'metal', stops: true });
-    base.add(lathe([[0, 0], [R, 0], [R, 0.02], [R - 0.01, 0.03], [R - 0.01, 0.1], [R - 0.05, 0.11], [R - 0.06, 0.16], [0, 0.16]], 64, 40), M.alloy);
-    base.add(cylY(R - 0.075, 0.159, 0.166, { seg: 64 }), M.glassSmoked);
-    base.add(cylY(R - 0.008, 0.105, 0.112, { seg: 64, rTop: R - 0.048 }), M.led);
-    base.colHull(cylY(R, 0, 0.166, { seg: 16 }));
-    base.debris(4, 'scrap', M.alloy, 0.07);
-    // emitter crown: a slim ring of projector heads around the disc
-    const emit = P.part('emitter', { break: 'detach', mass: 6, cls: 'electronics', attach: 'base' });
-    for (let i = 0; i < 12; i++) {
-      const a = (i / 12) * Math.PI * 2, x = Math.cos(a) * (R - 0.04), z = Math.sin(a) * (R - 0.04);
-      emit.add(rotGeo(rbox(-0.018, 0.018, 0.166, 0.2, -0.012, 0.012, 0.004, 1), 0, -a, 0, [0, 0, 0]).translate(x, 0, z), M.graphite);
-      emit.add(cylY(0.007, 0.2, 0.204, { x: x * 0.985, z: z * 0.985, seg: 8 }), M.led);
+    holoE1Mats();
+    const RD = 0.56;                    // drum radius (lower and upper drum)
+    const RW = 0.515;                   // waisted vent band radius
+    const YT = 0.40;                    // deck top
+    const ring = (n, f) => { for (let i = 0; i < n; i++) f(i, (i / n) * Math.PI * 2); };
+    const atA = (g, a) => rotGeo(g, 0, -a, 0);   // local +X (radial) -> direction a (x = cos a, z = sin a)
+
+    /* plinth, three steps: a graphite foot with an LED kick line under the overhang; an alloy lower drum; a waisted
+       graphite vent band (five banks of deep slots, the cable port at the back); an alloy upper drum; a graphite step
+       with a continuous LED reveal; the machined alloy deck. Bright steel chamfers catch the key and the column glow. */
+    const base = P.part('base', { break: 'shatter', chunks: 8, mass: 150, cls: 'metal', impact: [0.25, 0.2, 0.45] });
+    base.add(cylY(0.48, 0, 0.05, { seg: 48 }), M.graphite);                                         // foot
+    base.add(cylY(0.488, 0.019, 0.031, { seg: 48 }), M.led);                                        // kick line
+    base.add(lathe([[0, 0.05], [0.53, 0.05], [RD, 0.068], [RD, 0.118], [0, 0.118]], 48, 30), M.alloy);   // lower drum
+    base.add(lathe([[0, 0.118], [RD, 0.118], [RD - 0.004, 0.127], [RD - 0.022, 0.135], [0, 0.135]], 48, 30), M.steel);   // steel chamfer
+    base.add(cylY(RW, 0.135, 0.275, { seg: 48 }), M.graphite);                                     // waist
+    base.add(lathe([[0, 0.275], [RD - 0.022, 0.275], [RD - 0.004, 0.283], [RD, 0.292], [0, 0.292]], 48, 30), M.steel);   // steel chamfer
+    base.add(lathe([[0, 0.292], [RD, 0.292], [RD, 0.338], [0.536, 0.352], [0, 0.352]], 48, 30), M.alloy);              // upper drum
+    base.add(cylY(0.522, 0.352, 0.37, { seg: 48 }), M.graphite);                                   // reveal step
+    base.add(cylY(0.526, 0.357, 0.365, { seg: 48 }), M.led);                                       // deck LED line
+    base.add(lathe([[0, 0.37], [0.512, 0.37], [0.512, 0.386], [0.5, 0.393], [0.49, YT], [0, YT]], 48, 30), M.alloy);      // deck
+    base.add(lathe([[0.49, YT - 0.002], [0.5, 0.393], [0.512, 0.386], [0.5135, 0.386], [0.502, 0.3945], [0.4905, YT + 0.0005]], 48, 30), M.steel, { convex: false });   // bright deck edge
+    base.add(lathe([[0.301, YT - 0.004], [0.326, YT - 0.004], [0.326, YT + 0.01], [0.319, YT + 0.016], [0.301, YT + 0.016], [0.301, YT - 0.004]], 48, 30), M.steel, { convex: false });   // lens bezel
+    // vent banks: deep dark slots between proud graphite fins
+    const slots = [], fins = [];
+    for (let b = 0; b < 5; b++) {
+      const ac = Math.PI / 2 + (b - 2) * 1.08;
+      for (let k = -5; k <= 5; k++) {
+        const a = ac + k * 0.034;
+        slots.push(atA(bx(RW - 0.016, RW + 0.001, 0.152, 0.258, -0.0078, 0.0078), a));
+        if (k < 5) fins.push(atA(bx(RW - 0.006, RW + 0.012, 0.148, 0.262, -0.0028, 0.0028), a + 0.017));
+      }
+      // a steel frame round each bank
+      for (const y of [0.144, 0.262]) fins.push(atA(bx(RW - 0.004, RW + 0.013, y, y + 0.006, -0.2, 0.2), ac));
     }
-    emit.colBox(-R, R, 0.166, 0.205, -R, R);
-    // hologram: open column with scan lines, three floating rings and a slow lattice core (no collider: it blocks nothing)
-    const holo = P.part('holo', { break: 'detach', mass: 0.1, cls: 'electronics', attach: 'emitter', health: 1 });
-    holo.add(new THREE.CylinderGeometry(R - 0.09, R - 0.06, H - 0.21, 64, 1, true).translate(0, 0.21 + (H - 0.21) / 2, 0), M.holo);
-    [0.6, 1.15, 1.7].forEach((y, i) => holo.add(new THREE.TorusGeometry(R - 0.16 - i * 0.03, 0.006, 6, 64).rotateX(Math.PI / 2).translate(0, y, 0), M.holo));
-    holo.add(new THREE.IcosahedronGeometry(0.2, 1).translate(0, 1.15, 0), M.holo);
+    base.add(mergeGeos(slots), M.rubber, { convex: false });
+    base.add(mergeGeos(fins), M.graphite, { convex: false });
+    // cable port boss at the back (-Z) with a round socket, a cable stub and a status pip
+    base.add(rbox(-0.08, 0.08, 0.15, 0.262, -RW - 0.034, -RW + 0.04, 0.01, 2), M.graphite);
+    base.add(cylZ(0.034, -RW - 0.05, -RW - 0.03, { y: 0.2, seg: 24 }), M.steel);
+    base.add(cylZ(0.021, -RW - 0.058, -RW - 0.046, { y: 0.2, seg: 16 }), M.rubber);
+    base.add(cylZ(0.006, -RW - 0.04, -RW - 0.032, { x: 0.058, y: 0.24, seg: 10 }), M.led);
+    base.colHull(cylY(RD, 0, YT, { seg: 16 }));
+    base.colBox(-0.08, 0.08, 0.15, 0.262, -RW - 0.058, -RD + 0.01);
+    base.debris(6, 'bolt', M.steel, 0.03);
+
+    /* lens array: a smoked glass disc with a raised central emitter and two rings of lenslets (shoot it and the
+       hologram goes out) */
+    const L0 = YT - 0.013, L1 = YT + 0.007;
+    const lens = P.part('lens', { break: 'shatter', chunks: 7, pattern: 'radial', impact: [0.09, YT + 0.01, 0.11], attach: 'base', mass: 3.5, cls: 'glass' });
+    lens.add(cylY(0.3, L0, L1, { seg: 56 }), M.glassSmoked);
+    const collars = [cylY(0.078, L1 - 0.004, L1 + 0.008, { seg: 20 })], lights = [cylY(0.058, L1, L1 + 0.015, { seg: 20 })];
+    ring(6, (i, a) => { const x = Math.cos(a + 0.3) * 0.135, z = Math.sin(a + 0.3) * 0.135; collars.push(cylY(0.024, L1 - 0.004, L1 + 0.005, { x, z, seg: 10 })); lights.push(cylY(0.016, L1 - 0.001, L1 + 0.009, { x, z, seg: 10 })); });
+    ring(12, (i, a) => { const x = Math.cos(a) * 0.235, z = Math.sin(a) * 0.235; collars.push(cylY(0.016, L1 - 0.004, L1 + 0.003, { x, z, seg: 8 })); lights.push(cylY(0.0105, L1 - 0.002, L1 + 0.006, { x, z, seg: 8 })); });
+    lens.add(mergeGeos(collars), M.graphite, { convex: false });
+    lens.add(mergeGeos(lights), M.holoLens, { convex: false });
+    lens.colBox(-0.3, 0.3, YT, L1 + 0.015, -0.3, 0.3);   // sits above the base hull (capped at the deck top)
+
+    /* emitter heads: eight angled pods standing proud of the deck rim, each aiming its nozzle at the edge of the
+       city plate; a steel cowl, an alloy barrel, a glowing tip */
+    const emit = P.part('emitters', { break: 'detach', mass: 6, cls: 'electronics', attach: 'base' });
+    const eb = holoBag(), RE = 0.44, YB = YT + 0.02, YP = 0.80, RP = 0.27, tips = [];
+    ring(8, (i, a0) => {
+      const a = a0 + Math.PI / 8;
+      const d = V3(RP - RE, YP - (YB + 0.03), 0).normalize(), n0 = [RE - 0.004, YB + 0.026, 0], n1 = [n0[0] + d.x * 0.055, n0[1] + d.y * 0.055, 0], n2 = [n1[0] + d.x * 0.006, n1[1] + d.y * 0.006, 0];
+      eb.add(atA(rbox(RE - 0.05, RE + 0.07, YT - 0.004, YB + 0.012, -0.036, 0.036, 0.008, 1), a), M.graphite);    // pod over the rim
+      eb.add(atA(bx(RE + 0.012, RE + 0.074, YB + 0.004, YB + 0.03, -0.039, 0.039), a), M.steel);       // cowl
+      eb.add(atA(rod([RE - 0.02, YB + 0.006, 0], n0, 0.02, 10), a), M.alloy);
+      eb.add(atA(rod(n0, n1, 0.019, 10), a), M.alloy);
+      eb.add(atA(rod(n1, n2, 0.014, 10), a), M.holoLens);
+      eb.add(atA(bx(RE + 0.07, RE + 0.075, YT + 0.006, YB + 0.002, -0.012, 0.012), a), M.led);                 // outward status bar
+      tips.push([Math.cos(a) * n2[0], n2[1], Math.sin(a) * n2[0], a, d.clone()]);
+      const cxp = Math.cos(a) * (RE + 0.01), czp = Math.sin(a) * (RE + 0.01);
+      emit.colBox(cxp - 0.055, cxp + 0.055, YT, YB + 0.06, czp - 0.055, czp + 0.055);
+    });
+    eb.to(emit);
+
+    /* hologram: layered additive light, no solid. Emitter flare, outer and inner fading shells, data rings and arcs,
+       beams from the emitters, a city plate and a wireframe tower with faint floor plates and skin. */
+    const holo = P.part('holo', { break: 'detach', mass: 0.05, cls: 'electronics', attach: 'lens', health: 1,
+      note: 'light only: casts no shadow, blocks nothing; shatters to nothing (0 chunks, collapse) the moment the lens goes, so it switches off instead of falling' });
+    const hb = holoBag(), Y0 = YT + 0.02, H = 2.02;
+    hb.add(holoShell(0.3, 0.44, Y0, Y0 + 0.17, 44, 1), M.holoBeam);                       // emitter flare
+    hb.add(holoShell(0.44, 0.44, Y0, H, 44, 3), M.holoColumn);                            // outer shell (dissolves from ~45 %)
+    hb.add(holoShell(0.39, 0.385, Y0, Y0 + 0.7 * (H - Y0), 40, 2, 0.37), M.holoColumnIn);  // inner shell, cooler, lower
+    hb.add(holoShell(0.045, 0.1, Y0 + 0.003, YP, 16, 1), M.holoBeam);                     // central beam up to the plate
+    hb.add(holoAnnulus(0.06, 0.44, Y0 + 0.006, 48, 6), M.holoPlate);                      // glow pooled on the lens
+    tips.forEach(([x, y, z, a, d]) => {
+      hb.add(holoBeamGeo([x, y, z], [Math.cos(a) * RP, YP - 0.012, Math.sin(a) * RP], 0.032, 0.012), M.holoRay);
+      const D = [Math.cos(a) * d.x, d.y, Math.sin(a) * d.x];
+      hb.add(holoCard([x + D[0] * 0.006, y + D[1] * 0.006, z + D[2] * 0.006], D, 0.075), M.holoFlare);
+      hb.add(holoCard([Math.cos(a) * RP, YP - 0.01, Math.sin(a) * RP], D, 0.05), M.holoFlare);
+    });
+    // data rings (their own mesh, tagged to spin): dashed rings and partial arcs at a few heights, slightly tilted;
+    // the top one is an arc, so nothing caps the column
+    const rb = holoBag();
+    [[0.43, 0.016, 0.66, 0.0, 0, 6.283, 7], [0.36, 0.008, 1.2, 0.07, 0.4, 4.1, 5], [0.41, 0.018, 1.5, -0.05, 0, 6.283, 9], [0.33, 0.006, 1.58, -0.05, 2.0, 5.0, 4], [0.35, 0.01, 1.86, 0.03, 3.6, 5.4, 3]]
+      .forEach(([r, w, y, tilt, a0, a1, rep]) => rb.add(holoAnnulus(r - w, r, 0, Math.max(16, Math.round(64 * (a1 - a0) / 6.283)), rep, a0, a1).rotateX(tilt).rotateZ(tilt * 0.6).translate(0, y, 0), M.holoRing));
+    // city plate: a gridded disc with a bright rim and a scatter of low blocks round the tower footprint
+    hb.add(holoAnnulus(0.02, RP, YP, 48, 8), M.holoPlate);
+    hb.add(holoAnnulus(RP - 0.004, RP + 0.002, YP, 72, 1), M.holoRing);
+    const rc = prng(97);
+    for (let i = 0; i < 24; i++) {
+      const a = rc() * Math.PI * 2, r = 0.15 + rc() * 0.105, w = 0.011 + rc() * 0.015, dd = 0.011 + rc() * 0.015, h = 0.012 + (0.27 - r) * (0.25 + rc() * 0.5);
+      const x = Math.cos(a) * r, z = Math.sin(a) * r, ry = a + (rc() - 0.5) * 0.3;
+      hb.add(rotGeo(bx(-w, w, 0, h, -dd, dd), 0, -ry, 0).translate(x, YP + 0.001, z), M.holoFill);
+      const cs = [[-w, -dd], [w, -dd], [w, dd], [-w, dd]].map(([u, v]) => [x + u * Math.cos(ry) - v * Math.sin(ry), z + u * Math.sin(ry) + v * Math.cos(ry)]);
+      for (let k = 0; k < 4; k++) hb.add(holoEdge([cs[k][0], YP + h, cs[k][1]], [cs[(k + 1) % 4][0], YP + h, cs[(k + 1) % 4][1]], 0.0011), M.holoLine);
+    }
+    // the tower: a chamfered square plan that tapers and twists as it rises, with a crown and a spire
+    const N = 24, YB0 = YP + 0.035, HT = 0.9, lv = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, w = 0.09 * (1 - 0.38 * Math.pow(t, 1.5)) * (i >= N - 1 ? 0.82 : 1), c = w * 0.42, tw = t * 0.95 + 0.3, y = YB0 + t * HT;
+      lv.push([[w, -c], [w, c], [c, w], [-c, w], [-w, c], [-w, -c], [-c, -w], [c, -w]].map(([u, v]) => [u * Math.cos(tw) - v * Math.sin(tw), y, u * Math.sin(tw) + v * Math.cos(tw)]));
+    }
+    const skin = [];
+    for (let i = 0; i <= N; i++) for (let k = 0; k < 8; k++) {
+      const p = lv[i][k], q = lv[i][(k + 1) % 8];
+      const lobby = i === 8 || i === 16;   // sky lobbies: brighter double bands
+      if (i % 3 === 0 || lobby || (i >= N - 1 && k % 2 === 0)) hb.add(holoEdge(p, q, lobby || i === 0 ? 0.0019 : 0.0009), M.holoLine);
+      if (i < N) hb.add(holoEdge(p, lv[i + 1][k], k % 2 === 0 ? 0.0014 : 0.0008), M.holoLine);
+      if (i < N) { const r2 = lv[i + 1][k], s2 = lv[i + 1][(k + 1) % 8]; skin.push(...p, ...r2, ...q, ...q, ...r2, ...s2); }
+    }
+    { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(skin, 3)); g.computeVertexNormals(); hb.add(g, M.holoFill); }
+    for (const i of [0, 8, 16, N]) hb.add(holoPoly(lv[i].map((p) => [p[0], p[2]]), lv[i][0][1]), M.holoFill);
+    // podium round the tower foot
+    { const pw = 0.118, ph = 0.035, pc = [[-pw, -pw], [pw, -pw], [pw, pw], [-pw, pw]];
+      hb.add(bx(-pw, pw, YP + 0.001, YP + ph, -pw, pw), M.holoFill);
+      for (let k = 0; k < 4; k++) { hb.add(holoEdge([pc[k][0], YP + ph, pc[k][1]], [pc[(k + 1) % 4][0], YP + ph, pc[(k + 1) % 4][1]], 0.0013), M.holoLine); hb.add(holoEdge([pc[k][0], YP + 0.002, pc[k][1]], [pc[k][0], YP + ph, pc[k][1]], 0.0013), M.holoLine); } }
+    // crown fins rising to a spire
+    const top = lv[N], yTop = top[0][1];
+    for (let k = 0; k < 8; k += 2) hb.add(holoEdge(top[k], [top[k][0] * 0.25, yTop + 0.09, top[k][2] * 0.25], 0.0013), M.holoLine);
+    hb.add(holoEdge([0, yTop, 0], [0, yTop + 0.18, 0], 0.0016), M.holoLine);
+    // sparse floating data motes in the column
+    const rm = prng(53);
+    for (let i = 0; i < 36; i++) {
+      const a = rm() * Math.PI * 2, r = 0.16 + rm() * 0.25, y = Y0 + 0.18 + Math.pow(rm(), 1.3) * 1.3, s = 0.003 + rm() * 0.005;
+      hb.add(rotGeo(holoPoly([[-s, -s], [s, -s], [s, s], [-s, s]], 0), rm() * 3, a, 0).translate(Math.cos(a) * r, y, Math.sin(a) * r), M.holoLine);
+    }
+    hb.to(holo);
+    const kSpin = holo.items.length; rb.to(holo);
+    holo.colBox(-0.04, 0.04, YT + 0.008, YT + 0.016, -0.04, 0.04);   // a token proxy inside the lens box: the light blocks nothing
+
+    /* after the build (only this piece): the hologram becomes a shatter part with no chunks that collapses with the
+       lens, so every engine that follows the parts contract hides it (no body, nothing to go dark); light meshes
+       stop casting shadows (and say so in their extras); the data rings carry a spin rate and turn in the viewer */
+    const finish = P.finish.bind(P);
+    P.finish = () => {
+      const b = finish(), bp = b.parts.find((q) => q.name === 'holo');
+      const cg = new THREE.Group(); cg.name = 'chunks_holo'; cg.position.copy(bp.rest); cg.quaternion.copy(bp.restQ);
+      cg.userData = { part: 'holo', hidden_scale: CHUNK_SCALE, chunks: 0 }; b.root.add(cg);
+      bp.chunkGroup = cg; bp.chunks = [];
+      Object.assign(bp.meta, { break: 'shatter', chunks: 0, collapse: true, light: true });
+      b.root.traverse((m) => { if (m.isMesh && m.material && m.material.userData.noShadow) { m.castShadow = false; m.userData.cast_shadows = false; } });
+      const spin = bp.node.children.find((m) => m.isMesh && m.name.endsWith('_' + kSpin));
+      if (spin) {
+        spin.userData.spin = 0.4;   // rad/s about the piece's up axis (a later HoloSpin script can read it)
+        spin.onBeforeRender = () => { spin.rotation.y = (performance.now() / 1000 * 0.4) % (Math.PI * 2); };
+      }
+      setMode(b, 'intact');
+      return b;
+    };
   },
 });
 
-defPiece({
-  id: 'japanese_shrine', name: 'Small Japanese shrine', batch: 'E', cover: 'soft',
-  rooms: ['F1 Garden', 'F1 Tea Room', 'F2 Gallery', 'F1 Ondol Lounge'],
-  note: 'hokora-style wooden shrine on a granite plinth: gabled roof with crossed finials and ridge logs, two doors, a straw rope with paper streamers, an offering stand',
-  build(P) {
-    // plinth: two granite steps (stops bullets)
-    const plinth = P.part('plinth', { break: 'shatter', chunks: 8, mass: 260, stops: true });
-    plinth.add(rbox(-0.5, 0.5, 0, 0.18, -0.4, 0.4, 0.01, 2), M.granite);
-    plinth.add(rbox(-0.42, 0.42, 0.18, 0.34, -0.32, 0.32, 0.01, 2), M.granite);
-    plinth.colBox(-0.5, 0.5, 0, 0.18, -0.4, 0.4).colBox(-0.42, 0.42, 0.18, 0.34, -0.32, 0.32);
-    plinth.debris(4, 'dice', M.granite, 0.05);
-    // body: walnut cella on a sill, corner posts, side boards
-    const Y0 = 0.34, Y1 = 0.86, W = 0.3, D = 0.24;
-    const body = P.part('body', { break: 'shatter', chunks: 7, mass: 22, attach: 'plinth', grain: 'y' });
-    body.add(rbox(-W - 0.03, W + 0.03, Y0, Y0 + 0.04, -D - 0.03, D + 0.03, 0.004, 1), M.walnut);
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) body.add(rbox(sx * W - 0.025, sx * W + 0.025, Y0 + 0.04, Y1, sz * D - 0.025, sz * D + 0.025, 0.003, 1), M.walnut, { grain: 'y' });
-    body.add(rbox(-W, W, Y0 + 0.04, Y1, D - 0.012, D, 0.002, 1), M.walnut, { grain: 'y' });           // back
-    for (const sx of [-1, 1]) body.add(rbox(sx * W - (sx > 0 ? 0.012 : 0), sx * W + (sx < 0 ? 0.012 : 0), Y0 + 0.04, Y1, -D, D, 0.002, 1), M.walnut, { grain: 'y' });
-    body.add(rbox(-W - 0.02, W + 0.02, Y1 - 0.04, Y1, -D - 0.02, D + 0.02, 0.003, 1), M.walnut);    // head beam
-    body.colBox(-W - 0.03, W + 0.03, Y0, Y1, -D - 0.03, D + 0.03);
-    body.debris(3, 'splinter', M.walnut, 0.08);
-    // doors: two oak lattice leaves with brass fittings (each comes off on its own)
-    for (const sx of [-1, 1]) {
-      const dr = P.part('door_' + (sx < 0 ? 'l' : 'r'), { break: 'detach', mass: 1.2, attach: 'body', grain: 'y' });
-      const x0 = sx < 0 ? -W + 0.025 : 0.002, x1 = sx < 0 ? -0.002 : W - 0.025;
-      dr.add(rbox(x0, x1, Y0 + 0.05, Y1 - 0.045, -D - 0.008, -D + 0.004, 0.002, 1), M.oak, { grain: 'y' });
-      for (let k = 1; k < 4; k++) { const y = Y0 + 0.05 + ((Y1 - Y0 - 0.095) * k) / 4; dr.add(rbox(x0 + 0.01, x1 - 0.01, y - 0.004, y + 0.004, -D - 0.014, -D - 0.008, 0.001, 1), M.ebony); }
-      dr.add(rbox(sx < 0 ? x1 - 0.03 : x0 + 0.012, sx < 0 ? x1 - 0.012 : x0 + 0.03, (Y0 + Y1) / 2 - 0.03, (Y0 + Y1) / 2 + 0.03, -D - 0.018, -D - 0.008, 0.002, 1), M.brass);
-      dr.colBox(x0, x1, Y0 + 0.05, Y1 - 0.045, -D - 0.014, -D + 0.004);
+/* ---- batchE2_shrine.js */
+// Batch E (user additions): batchE2_shrine.js
+// Indoor Japanese shrine pavilion (like the one in the map's Garden): vermilion pillars on black bases, tie and head
+// beams, stacked bracket sets, an irimoya (hip-and-gable) tiled roof with upturned corners and exposed rafters, on a
+// plank deck over a stone plinth. Materials made here (lacquer, roof tiles) are this file's own entries in M.
+{
+  // ---------------------------------------------------------------- materials (built once, on first use)
+  // lacquer: a soft broad mottle, fine grain, a few scratches, and wear only as long grain-aligned streaks (no round
+  // blotches: those read as bullet holes)
+  const shrLacquerSheet = (N, seed, base, under, { wear = 0.1, rough = 0.3 } = {}) => {
+    const rnd = prng(seed), mott = stretch(fbmT(N, 3, 4, rnd)), grain = stretch(fbmT(N, 3, 4, rnd, { ar: 22 }));
+    const wn = stretch(fbmT(N, 2, 5, rnd, { ar: 10 })), S = new Float32Array(N * N);
+    for (let k = 0; k < 22; k++) addScratch(S, N, rnd() * N, rnd() * N, (rnd() - 0.5) * 0.4, 10 + rnd() * 40, (rnd() - 0.5) * 0.02, 0.4 + rnd() * 0.4);
+    const B = hexRGB(base), U = hexRGB(under), A = new Float32Array(N * N * 3), H = new Float32Array(N * N), R = new Float32Array(N * N);
+    for (let i = 0; i < N * N; i++) {
+      const w = clamp01(sstep(1 - wear * 0.6, 1 - wear * 0.6 + 0.1, wn[i]) * (0.25 + 0.5 * grain[i]) + S[i] * 0.45);
+      const g = 0.93 + 0.1 * (mott[i] - 0.5) + 0.05 * (grain[i] - 0.5);
+      A[i * 3] = lerp(B[0] * g, U[0], w); A[i * 3 + 1] = lerp(B[1] * g, U[1], w); A[i * 3 + 2] = lerp(B[2] * g, U[2], w);
+      H[i] = 0.5 + 0.18 * grain[i] - 0.2 * w; R[i] = rough + 0.08 * (mott[i] - 0.5) + 0.25 * w;
     }
-    // roof: two pitched ebony boards with a deep overhang, ridge beam, crossed finials and ridge logs
-    const roof = P.part('roof', { break: 'detach', mass: 9, attach: 'body', grain: 'x' });
-    const OH = 0.16, RH = 0.22, half = W + OH, run = D + OH, pitch = Math.atan2(RH, run), L = Math.hypot(RH, run) + 0.02;
-    for (const sz of [-1, 1]) {
-      const g = sz > 0 ? rbox(-half, half, -0.013, 0.013, 0, L, 0.003, 1).rotateX(pitch) : rbox(-half, half, -0.013, 0.013, -L, 0, 0.003, 1).rotateX(-pitch);
-      roof.add(g.translate(0, Y1 + RH + 0.02, 0), M.ebony, { grain: 'x' });
+    return pack(N, A, H, R, null, 1.2);
+  };
+  // kawara roof tiles: u = 4 tile columns (the geometry carries the round-tile ribs), v = 2 courses; each course
+  // overlaps the one above it (a step in the normal map), each tile has its own tone, grime in the channels
+  const shrTileSheet = (N, seed) => {
+    const rnd = prng(seed), mott = stretch(fbmT(N, 6, 4, rnd)), fine = stretch(fbmT(N, 32, 2, rnd));
+    const cellT = []; for (let k = 0; k < 64; k++) cellT.push(rnd());
+    const T0 = hexRGB('#25282d'), T1 = hexRGB('#363940'), Gr = hexRGB('#1b1c1f');
+    const A = new Float32Array(N * N * 3), H = new Float32Array(N * N), R = new Float32Array(N * N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const i = y * N + x, u = x / N, v = 1 - y / N, cu = u * 4 + 0.5, ci = Math.floor(cu) % 4, cv = v * 2, cj = Math.floor(cv) % 2;
+      const fu = cu - Math.floor(cu), fv = cv - Math.floor(cv), t = cellT[(ci * 2 + cj) * 7 % 64];
+      mix3(A, i, T0, T1, clamp01(t * 0.7 + (mott[i] - 0.5) * 0.4 + (fine[i] - 0.5) * 0.15));
+      const chan = 1 - sstep(0.0, 0.16, Math.min(fu, 1 - fu)), lip = 1 - sstep(0.0, 0.06, fv);
+      mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], Gr, chan * 0.55 + lip * 0.5);
+      H[i] = 0.85 - fv * 0.55 + 0.05 * fine[i];
+      R[i] = 0.5 + 0.1 * t + 0.22 * chan + 0.15 * lip + 0.06 * (mott[i] - 0.5);
     }
-    roof.add(rbox(-half - 0.02, half + 0.02, Y1 + RH + 0.01, Y1 + RH + 0.06, -0.03, 0.03, 0.004, 1), M.walnut, { grain: 'x' });
-    for (const sx of [-1, 1]) {
-      for (const sz of [-1, 1]) roof.add(rotGeo(rbox(-0.012, 0.012, 0, 0.2, -0.006, 0.006, 0.002, 1), 0, 0, sz * 0.5, [0, 0, 0]).translate(sx * (half + 0.01), Y1 + RH + 0.02, 0), M.walnut);
+    return pack(N, A, H, R, null, 2.2);
+  };
+  const shrMats = () => {
+    if (!M.lacquerRed) {
+      const red = texSet('lacquer_vermilion', shrLacquerSheet(256, 211, '#a8261c', '#3a1a12', { wear: 0.08, rough: 0.3 }));
+      reg('lacquerRed', pbr('lacquer_vermilion', red, 0.6, { metalness: 0, envMapIntensity: 1.0 }, 0.6), 'wood', 'oakInner');
+      const blk = texSet('lacquer_black', shrLacquerSheet(256, 223, '#17130f', '#4a2c1d', { wear: 0.06, rough: 0.26 }));
+      reg('lacquerBlack', pbr('lacquer_black', blk, 0.6, { metalness: 0, envMapIntensity: 1.0 }, 0.6), 'wood', 'walnutInner');
+      const tile = texSet('roof_tile', shrTileSheet(256, 233));
+      reg('roofTile', pbr('roof_tile', tile, 0.56, { metalness: 0, envMapIntensity: 0.55 }, 1.0), 'ceramic', 'biscuit');
+      const rid = texSet('roof_ridge', grainSheet(128, 239, { tone: '#2f3238', tone2: '#25272c', p: 20, rough: 0.45, rv: 0.08, ns: 1 }));
+      reg('roofRidge', pbr('roof_ridge', rid, 0.3, { metalness: 0, envMapIntensity: 0.9 }, 0.8), 'ceramic', 'biscuit');
     }
-    for (let i = 0; i < 4; i++) roof.add(new THREE.CylinderGeometry(0.022, 0.022, 0.1, 12).rotateX(Math.PI / 2).translate(-0.27 + i * 0.18, Y1 + RH + 0.085, 0), M.ebony);
-    roof.colBox(-half, half, Y1, Y1 + RH + 0.1, -run, run);
-    roof.debris(3, 'splinter', M.ebony, 0.1);
-    // straw rope with zigzag paper streamers across the head beam
-    const rope = P.part('rope', { break: 'detach', mass: 0.3, cls: 'fabric', attach: 'body' });
-    const pts = []; for (let i = 0; i <= 8; i++) { const u = i / 8, x = -W - 0.02 + (2 * W + 0.04) * u; pts.push([x, Y1 - 0.06 - Math.sin(u * Math.PI) * 0.05, -D - 0.035]); }
-    rope.add(taperTube(pts, 0.016, 0.016, 8, 24), M.hanji, { grain: 'x' });
-    for (const u of [0.3, 0.5, 0.7]) {
-      const x = -W - 0.02 + (2 * W + 0.04) * u, y = Y1 - 0.06 - Math.sin(u * Math.PI) * 0.05;
-      for (let k = 0; k < 4; k++) rope.add(rbox(x - 0.018 + (k % 2) * 0.012, x + 0.006 + (k % 2) * 0.012, y - 0.035 - k * 0.03, y - 0.012 - k * 0.03, -D - 0.04, -D - 0.037, 0.0005, 1), M.porcelain);
+    if (!M.lacquerMatte) {
+      // the gable infill: a duller, darker black so it does not pick up the blue sky as glossy plastic
+      const mt = texSet('lacquer_black_matte', shrLacquerSheet(128, 227, '#120f0d', '#2a1d16', { wear: 0.02, rough: 0.58 }));
+      reg('lacquerMatte', pbr('lacquer_black_matte', mt, 0.6, { metalness: 0, envMapIntensity: 0.5 }, 0.5), 'wood', 'walnutInner');
     }
-    rope.colBox(-W - 0.03, W + 0.03, Y1 - 0.25, Y1 - 0.04, -D - 0.06, -D - 0.02);
-    // offering stand (sanbo) on the front step with a small celadon cup
-    const stand = P.part('offering', { break: 'detach', mass: 0.8, attach: 'plinth', grain: 'x' });
-    stand.add(rbox(-0.09, 0.09, 0.34, 0.4, -0.37, -0.25, 0.003, 1), M.oak, { grain: 'x' });
-    stand.add(rbox(-0.1, 0.1, 0.4, 0.412, -0.38, -0.24, 0.003, 1), M.oak, { grain: 'x' });
-    stand.add(lathe([[0, 0], [0.025, 0], [0.032, 0.035], [0.028, 0.036], [0, 0.03]], 24, 40).translate(0, 0.412, -0.31), M.celadon);
-    stand.colBox(-0.1, 0.1, 0.34, 0.45, -0.38, -0.24);
-  },
-});
+  };
+
+  // ---------------------------------------------------------------- dimensions (metres)
+  const E = 1.52;              // eave half-width (square plan)
+  const PX = 1.02;             // pillar centres at +-PX
+  const XG = 0.9;              // the gable sits at +-XG; the hip slopes run from the eave up to it
+  const DG = E - XG;           // depth of the hip slopes
+  const GX = XG + 0.1;         // half-width of the upper (gable) roof, overhanging the gable wall
+  const THK = 0.13;            // roof thickness at the eave: tile layer TS over the walnut sheathing
+  const TS = 0.035;
+  const LC = 0.15;             // corner upturn (soft: square falloff)
+  const RP = 0.14;             // round-tile rib pitch
+  const DY = 0.2;              // deck top
+  const PY = 0.1;              // plinth top
+  const F = (d) => 2.77 + 0.32 * d + 0.13 * d * d;             // roof top at distance d in from the eave (sori: shallow at the eave)
+  const lift = (x, z) => LC * Math.pow(Math.min(1.05, Math.abs(x) / E), 2) * Math.pow(Math.min(1.05, Math.abs(z) / E), 2);
+  const YG = F(DG), YR = F(E);
+  // round-tile rib, 3 samples per rib (flanks and a rounded crown)
+  const RIB = [[0, -0.3], [0.35, 0.9], [0.65, 0.9], [1, -0.3]], PH = [0, 0.35, 0.65];
+  const ribH = (s) => { const f = ((s / RP + 0.5) % 1 + 1) % 1; for (let k = 1; k < RIB.length; k++) if (f <= RIB[k][0]) { const [a0, h0] = RIB[k - 1], [a1, h1] = RIB[k]; return lerp(h0, h1, (f - a0) / (a1 - a0)); } return RIB[0][1]; };
+  const ribCols = (smax) => {
+    const out = [-smax, smax];
+    for (let k = -Math.ceil(smax / RP) - 1; k <= Math.ceil(smax / RP) + 1; k++) for (const ph of PH) { const s = RP * (k + ph - 0.5); if (Math.abs(s) < smax - 0.004) out.push(s); }
+    return out.sort((a, b) => a - b);
+  };
+  const range = (a, b, n) => Array.from({ length: n + 1 }, (_, i) => a + (b - a) * i / n);
+  const geoOf = (pos, uv, idx) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); if (uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); if (idx) g.setIndex(idx); return g; };
+  const triN = (P, a, b, c) => { const ux = P[b * 3] - P[a * 3], uy = P[b * 3 + 1] - P[a * 3 + 1], uz = P[b * 3 + 2] - P[a * 3 + 2], vx = P[c * 3] - P[a * 3], vy = P[c * 3 + 1] - P[a * 3 + 1], vz = P[c * 3 + 2] - P[a * 3 + 2]; return [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]; };
+  const soupUV = (pos) => { const g = geoOf(pos, null, null); g.computeVertexNormals(); const uv = []; for (let i = 0; i < pos.length; i += 3) uv.push((pos[i] + pos[i + 2]) / (4 * RP), pos[i + 1] / 0.6); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); return g; };
+  // one roof slab, as two closed solids so it can be cut into chunks: the tile layer (ribbed top, an underside TS
+  // below, edge walls zipped between the full top boundary and the sampled underside) and the walnut sheathing
+  // under it (sampled top and soffit, edge walls). hulls: collider point sets, one per (s band x d band) of split.
+  function roofSlab(rows, smax, hw, xz, split) {
+    const cols = ribCols(smax), R = rows.length, C = cols.length, P = [], UV = [], U = [], Bs = [], SD = [];
+    for (let i = 0; i < R; i++) {
+      const d = rows[i], h = hw(d);
+      for (let j = 0; j < C; j++) {
+        const s = cols[j], sc = clampR(s, -h, h), [x, z] = xz(sc, d), b = F(d) + lift(x, z), fade = sstep(0, 0.07, h - Math.abs(s)) * sstep(0, 0.05, d + 0.001);
+        P.push(x, b + 0.03 * ribH(s) * fade, z); UV.push(sc / (4 * RP), d / 0.6); U.push(x, b - TS, z); Bs.push(x, b - THK, z); SD.push(sc, d);
+      }
+    }
+    const grid = (Pa, rr, cc, up) => {
+      const idx = [];
+      for (let i = 0; i < rr.length - 1; i++) for (let j = 0; j < cc.length - 1; j++) {
+        const a = rr[i] * C + cc[j], b = rr[i] * C + cc[j + 1], c = rr[i + 1] * C + cc[j], d = rr[i + 1] * C + cc[j + 1];
+        for (const t of [[a, c, b], [b, c, d]]) { const n = triN(Pa, ...t); if (Math.hypot(...n) < 1e-10) continue; idx.push(...((n[1] > 0) === up ? t : [t[0], t[2], t[1]])); }
+      }
+      return idx;
+    };
+    const all = (n) => Array.from({ length: n }, (_, i) => i), sub = (n, k) => all(n).filter((i) => i % k === 0 || i === n - 1);
+    const RI = sub(R, 2), CI = sub(C, 3), RIs = new Set(RI), CIs = new Set(CI), samp = (k) => RIs.has(Math.floor(k / C)) && CIs.has(k % C);
+    const loop = [];
+    for (let j = 0; j < C; j++) loop.push(j);
+    for (let i = 1; i < R; i++) loop.push(i * C + C - 1);
+    for (let j = C - 2; j >= 0; j--) loop.push((R - 1) * C + j);
+    for (let i = R - 2; i > 0; i--) loop.push(i * C);
+    let cx = 0, cz = 0; for (const k of loop) { cx += P[k * 3] / loop.length; cz += P[k * 3 + 2] / loop.length; }
+    const V = (A, k) => [A[k * 3], A[k * 3 + 1], A[k * 3 + 2]];
+    const tri = (out, a, b, c) => {
+      const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      if (Math.hypot(nx, ny, nz) < 1e-10) return;
+      const mx = (a[0] + b[0] + c[0]) / 3 - cx, mz = (a[2] + b[2] + c[2]) / 3 - cz;
+      out.push(...(nx * mx + nz * mz > 0 ? [...a, ...b, ...c] : [...a, ...c, ...b]));
+    };
+    const W1 = [], W2 = [];
+    let bp = loop[0];
+    for (let n = 0; n < loop.length; n++) {
+      const p = loop[n], q = loop[(n + 1) % loop.length];
+      tri(W1, V(P, p), V(P, q), V(U, bp));
+      if (samp(q)) { tri(W1, V(P, q), V(U, q), V(U, bp)); bp = q; }
+    }
+    const sl = loop.filter(samp);
+    for (let n = 0; n < sl.length; n++) { const a = sl[n], b = sl[(n + 1) % sl.length]; tri(W2, V(U, a), V(U, b), V(Bs, a)); tri(W2, V(U, b), V(Bs, b), V(Bs, a)); }
+    const top = geoOf(P, UV, grid(P, all(R), all(C), true)); top.computeVertexNormals();
+    const under = geoOf(U, UV, grid(U, RI, CI, false)); under.computeVertexNormals();
+    const shell = mergeGeometries([top.toNonIndexed(), under.toNonIndexed(), soupUV(W1)], false);
+    const bTop = geoOf(U, null, grid(U, RI, CI, true)); bTop.computeVertexNormals();
+    const bBot = geoOf(Bs, null, grid(Bs, RI, CI, false)); bBot.computeVertexNormals();
+    const bw = geoOf(W2, null, null); bw.computeVertexNormals();
+    const body = mergeGeos([bTop, bBot, bw]);
+    const hulls = [];
+    for (let a = 0; a < split.s.length - 1; a++) for (let b = 0; b < split.d.length - 1; b++) {
+      const pts = [];
+      for (let k = 0; k < R * C; k++) {
+        const sc = SD[k * 2], d = SD[k * 2 + 1];
+        if (sc < split.s[a] - 0.05 || sc > split.s[a + 1] + 0.05 || d < split.d[b] - 0.045 || d > split.d[b + 1] + 0.045) continue;
+        pts.push(V(P, k), V(Bs, k));
+      }
+      if (pts.length >= 8) hulls.push(pts);
+    }
+    return { shell, body, hulls };
+  }
+  const ptsGeo = (pts) => geoOf(pts.flat(), null, null);
+  // a box of section w x h running from a to b, its height kept upright
+  function beamAB(a, b, w, h) {
+    const A = V3(...a), B = V3(...b), X = B.clone().sub(A), L = X.length(); X.normalize();
+    const Z = X.clone().cross(V3(0, 1, 0)).normalize(), Y = Z.clone().cross(X).normalize();
+    const g = new THREE.BoxGeometry(L, h, w); g.applyMatrix4(new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(A.clone().add(B).multiplyScalar(0.5)));
+    return g;
+  }
+  // a board swept along a polyline (pts: its inner top edge, nrm: outward horizontal [x, z]); a closed solid
+  function sweepBoard(pts, nrm, w, h) {
+    const pos = [], idx = [], n = pts.length;
+    for (const [x, y, z] of pts) { const ox = nrm[0] * w, oz = nrm[1] * w; pos.push(x, y, z, x + ox, y, z + oz, x + ox, y - h, z + oz, x, y - h, z); }
+    for (let i = 0; i < n - 1; i++) for (let k = 0; k < 4; k++) { const a = i * 4 + k, b = i * 4 + (k + 1) % 4; idx.push(a, b, a + 4, b, b + 4, a + 4); }
+    const L = (n - 1) * 4; idx.push(0, 2, 1, 0, 3, 2, L, L + 1, L + 2, L, L + 2, L + 3);
+    const g = geoOf(pos, null, idx).toNonIndexed(), pa = g.attributes.position.array;
+    let v = 0;
+    for (let i = 0; i < pa.length; i += 9) v += pa[i] * (pa[i + 4] * pa[i + 8] - pa[i + 5] * pa[i + 7]) - pa[i + 1] * (pa[i + 3] * pa[i + 8] - pa[i + 5] * pa[i + 6]) + pa[i + 2] * (pa[i + 3] * pa[i + 7] - pa[i + 4] * pa[i + 6]);
+    if (v < 0) for (let i = 0; i < pa.length; i += 9) for (let c = 0; c < 3; c++) { const t = pa[i + 3 + c]; pa[i + 3 + c] = pa[i + 6 + c]; pa[i + 6 + c] = t; }
+    g.computeVertexNormals();
+    return g;
+  }
+  // square block with a bevelled (tapered) lower half: masu / makito bearing blocks
+  const masuGeo = (x, z, yb, h, wt, wb) => { const k = Math.SQRT2; const g = lathe([[0, 0], [wb * k, 0], [wt * k, h * 0.45], [wt * k, h], [0, h]], 4, 40); g.rotateY(Math.PI / 4); return g.translate(x, yb, z); };
+  // bracket arm (hijiki) profile along u: flat top, short end faces, a rounded underside sweeping in at both ends
+  const armPts = (u0, u1, yb, h, both = true) => {
+    const out = [], k = 0.09, e = h - 0.026, q = [0, 0.5, 0.87, 1].map((t) => [Math.cos(t * Math.PI / 2), Math.sin(t * Math.PI / 2)]);
+    out.push([u1, yb + h, 0]); for (const [c, s] of q) out.push([u1 - k + k * c, yb + e - e * s, 0]);
+    if (both) for (const [c, s] of [...q].reverse()) out.push([u0 + k - k * c, yb + e - e * s, 0]);
+    else out.push([u0, yb, 0]);
+    out.push([u0, yb + h, 0]);
+    return out;
+  };
+  const ySoffit = (x, z, o) => F(E - o) + lift(x, z) - THK;
+
+  defPiece({
+    id: 'japanese_shrine', name: 'Japanese shrine pavilion', batch: 'E', cover: 'soft',
+    rooms: ['F1 Garden', 'F2 Gallery', 'F3 Exec Hall'],
+    note: 'indoor shrine pavilion for double-height rooms: four vermilion-lacquered pillars on black bases, tie and head beams, carved bracket sets, an irimoya hip-and-gable kawara roof with a soft sori curve, upturned corners, a black kayaoi eave board over exposed rafters and a slatted gable, on a walnut plank deck over a granite plinth with a front step; inside a mirror altar with sakaki vases, a paper andon, a suzu bell with its rope in front of the offering box, and a hidden purple LED cove under the head beams. About 3.2 m square and 3.8 m tall: needs at least 3.9 m clear headroom (double-height rooms only); deck 0.20 m up, 2.05 m clear under the tie beams, 2.2 m under the head beams. Roof sections shatter into strips when the head frame goes; about 29k triangles intact (over the 15k guideline: a room-sized hero piece)',
+    build(P) {
+      shrMats();
+      const RED = M.lacquerRed, BLK = M.lacquerBlack;
+
+      // ---------------- plinth and step: granite (stop bullets)
+      const plinth = P.part('plinth', { break: 'shatter', chunks: 10, mass: 1400, stops: true, health: 1600 });
+      plinth.add(rbox(-1.36, 1.36, 0, PY - 0.035, -1.36, 1.36, 0.01, 2), M.granite);
+      plinth.add(rbox(-1.385, 1.385, PY - 0.04, PY, -1.385, 1.385, 0.008, 2), M.granite);
+      plinth.colBox(-1.385, 1.385, 0, PY, -1.385, 1.385);
+      plinth.debris(5, 'dice', M.granite, 0.06);
+      const step = P.part('step', { break: 'shatter', chunks: 5, mass: 110, stops: true });
+      step.add(rbox(-0.62, 0.62, 0, 0.055, 1.36, 1.58, 0.008, 2), M.granite);
+      step.colBox(-0.62, 0.62, 0, 0.055, 1.36, 1.58);
+      step.debris(3, 'dice', M.granite, 0.05);
+
+      // ---------------- deck: black-lacquered sills and walnut joists (deck_frame) under walnut boards (deck, board by board)
+      const frame = P.part('deck_frame', { break: 'shatter', chunks: 8, mass: 100, attach: 'plinth', grain: 'x', health: 420 });
+      const DW = 1.3;
+      frame.add(rbox(-DW, DW, PY, DY - 0.03, DW - 0.1, DW, 0.006, 1), BLK, { grain: 'x' });
+      frame.add(rbox(-DW, DW, PY, DY - 0.03, -DW, -DW + 0.1, 0.006, 1), BLK, { grain: 'x' });
+      for (const sx of [-1, 1]) frame.add(rbox(sx > 0 ? DW - 0.1 : -DW, sx > 0 ? DW : -DW + 0.1, PY, DY - 0.03, -DW + 0.1, DW - 0.1, 0.006, 1), BLK, { grain: 'z' });
+      for (const x of [-0.65, 0, 0.65]) frame.add(rbox(x - 0.04, x + 0.04, PY, DY - 0.03, -DW + 0.1, DW - 0.1, 0.004, 1), M.walnut, { grain: 'z' });
+      frame.colBox(-DW, DW, PY, DY - 0.03, -DW, DW);
+      frame.debris(3, 'splinter', M.walnut, 0.1);
+      const deck = P.part('deck', { break: 'shatter', chunks: 16, mass: 110, attach: 'deck_frame', grain: 'x' });
+      const NB = 16, bw = (2 * DW) / NB;
+      for (let k = 0; k < NB; k++) { const z0 = -DW + k * bw; deck.add(rbox(-DW + 0.004, DW - 0.004, DY - 0.03, DY, z0 + 0.003, z0 + bw - 0.003, 0.004, 1), M.walnut, { grain: 'x' }); }
+      deck.colBox(-DW, DW, DY - 0.03, DY, -DW, DW);
+      deck.debris(4, 'splinter', M.walnut, 0.1);
+      // a thin purple LED line where the deck meets the plinth (front and sides)
+      const led = P.part('deck_led', { break: 'detach', mass: 0.4, cls: 'electronics', attach: 'deck_frame', health: 20 });
+      led.add(bx(-DW + 0.02, DW - 0.02, PY + 0.004, PY + 0.01, DW, DW + 0.004), M.led);
+      led.add(bx(DW, DW + 0.004, PY + 0.004, PY + 0.01, -DW + 0.02, DW - 0.02), M.led);
+      led.add(bx(-DW - 0.004, -DW, PY + 0.004, PY + 0.01, -DW + 0.02, DW - 0.02), M.led);
+      led.colBox(-DW - 0.004, DW + 0.004, PY, PY + 0.015, -DW, DW + 0.004);
+
+      // ---------------- pillars: vermilion shafts on black flared bases with a brass band; they stand on the
+      // foundation stones (plinth), the deck sill only steadies them
+      const PT = 2.52;
+      for (const [nm, sx, sz] of [['pillar_fl', 1, 1], ['pillar_fr', -1, 1], ['pillar_bl', 1, -1], ['pillar_br', -1, -1]]) {
+        const x = sx * PX, z = sz * PX;
+        const p = P.part(nm, { break: 'shatter', chunks: 5, mass: 50, attach: ['plinth', 'deck_frame'], need: 1, grain: 'y', health: 260 });
+        p.add(cylY(0.085, DY + 0.12, PT, { x, z, seg: 16 }), RED, { grain: 'y' });
+        p.add(moveGeo(lathe([[0, 0], [0.118, 0], [0.118, 0.02], [0.104, 0.045], [0.097, 0.13], [0, 0.13]], 16, 40), x, DY, z), BLK, { grain: 'y' });
+        p.add(cylY(0.099, DY + 0.13, DY + 0.145, { x, z, seg: 16 }), M.brass);
+        p.colHull(cylY(0.11, DY, PT, { x, z, seg: 10 }));
+        p.debris(3, 'splinter', RED, 0.12);
+      }
+      const PILLARS = ['pillar_fl', 'pillar_fr', 'pillar_bl', 'pillar_br'];
+
+      // ---------------- tie beams (nuki) through the pillars, ends capped in brass
+      const NY0 = 2.25, NY1 = 2.33, NO = PX + 0.2;
+      const tie = P.part('tie_beams', { break: 'shatter', chunks: 8, mass: 36, attach: PILLARS, need: 2, grain: 'x' });
+      for (const s of [-1, 1]) {
+        tie.add(rbox(-NO, NO, NY0, NY1, s * PX - 0.035, s * PX + 0.035, 0.005, 1), RED, { grain: 'x' });
+        tie.add(rbox(s * PX - 0.035, s * PX + 0.035, NY0 + 0.002, NY1 - 0.002, -NO, NO, 0.005, 1), RED, { grain: 'z' });
+        for (const e of [-1, 1]) {
+          tie.add(bx(e > 0 ? NO : -NO - 0.006, e > 0 ? NO + 0.006 : -NO, NY0 + 0.006, NY1 - 0.006, s * PX - 0.03, s * PX + 0.03), M.brass);
+          tie.add(bx(s * PX - 0.03, s * PX + 0.03, NY0 + 0.008, NY1 - 0.008, e > 0 ? NO : -NO - 0.006, e > 0 ? NO + 0.006 : -NO), M.brass);
+        }
+        tie.colBox(-NO, NO, NY0, NY1, s * PX - 0.035, s * PX + 0.035).colBox(s * PX - 0.035, s * PX + 0.035, NY0, NY1, -NO, NO);
+      }
+      tie.debris(3, 'splinter', RED, 0.1);
+
+      // ---------------- head frame: head beams, bracket sets, purlins and the coffered ceiling
+      const HB0 = 2.4, HB1 = PT, HO = PX + 0.24, KY0 = HB1 + 0.16, KY1 = KY0 + 0.11, PL = PX + 0.14;
+      const head = P.part('head_frame', { break: 'shatter', chunks: 12, mass: 170, attach: PILLARS, need: 3, grain: 'x', health: 420 });
+      for (const s of [-1, 1]) {
+        head.add(rbox(-HO, HO, HB0, HB1, s * PX - 0.06, s * PX + 0.06, 0.006, 1), RED, { grain: 'x' });
+        head.add(rbox(s * PX - 0.058, s * PX + 0.058, HB0 + 0.004, HB1 - 0.004, -HO, HO, 0.006, 1), RED, { grain: 'z' });
+        head.add(rbox(-PL, PL, KY0, KY1, s * PX - 0.065, s * PX + 0.065, 0.006, 1), M.walnut, { grain: 'x' });
+        head.add(rbox(s * PX - 0.063, s * PX + 0.063, KY0 + 0.004, KY1 - 0.006, -PL, PL, 0.006, 1), M.walnut, { grain: 'z' });
+        head.colBox(-HO, HO, HB0, HB1, s * PX - 0.06, s * PX + 0.06).colBox(s * PX - 0.06, s * PX + 0.06, HB0, HB1, -HO, HO);
+        head.colBox(-PL, PL, KY0, KY1, s * PX - 0.065, s * PX + 0.065).colBox(s * PX - 0.065, s * PX + 0.065, KY0, KY1, -PL, PL);
+      }
+      // bracket set: a black bearing block (daito) with a bevelled foot, walnut arms (hijiki) with rounded
+      // undersides, small bevelled blocks (makito) carrying the purlin; a diagonal arm at the corners under the hip rafter
+      const AY0 = HB1 + 0.045, AY1 = HB1 + 0.11, AW = 0.04;
+      const bracket = (x, z, corner, alongX) => {
+        head.add(masuGeo(x, z, HB1, 0.065, 0.115, 0.09), BLK);
+        const arms = corner ? ['x', 'z'] : [alongX ? 'x' : 'z'];
+        for (const a of arms) {
+          if (a === 'x') head.add(profZ(armPts(x - 0.3, x + 0.3, AY0, AY1 - AY0), z - AW, z + AW), M.walnut, { grain: 'x' });
+          else head.add(profX(armPts(z - 0.3, z + 0.3, AY0, AY1 - AY0), x - AW, x + AW), M.walnut, { grain: 'z' });
+          for (const o of [-0.24, 0.24]) head.add(a === 'x' ? masuGeo(x + o, z, AY1, KY0 - AY1, 0.055, 0.042) : masuGeo(x, z + o, AY1, KY0 - AY1, 0.055, 0.042), M.walnut);
+        }
+        head.add(masuGeo(x, z, AY1, KY0 - AY1, 0.06, 0.046), M.walnut);
+        if (corner) {
+          const ang = Math.atan2(Math.sign(z), Math.sign(x));
+          head.add(rotGeo(profZ(armPts(-0.06, 0.5, AY0 + 0.005, AY1 - AY0, false), -AW, AW), 0, -ang, 0).translate(x, 0, z), M.walnut, { grain: 'x' });
+          const ox = x + Math.sign(x) * 0.31, oz = z + Math.sign(z) * 0.31;
+          head.add(masuGeo(ox, oz, AY1 + 0.005, KY0 - AY1, 0.055, 0.042), M.walnut);
+        }
+      };
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) bracket(sx * PX, sz * PX, true);
+      for (const s of [-1, 1]) { bracket(0, s * PX, false, true); bracket(s * PX, 0, false, false); }
+      // ceiling: walnut boards in a black lacquer coffer grid
+      const CI = PX - 0.065;
+      head.add(rbox(-CI, CI, KY1 - 0.02, KY1, -CI, CI, 0.003, 1), M.walnut, { grain: 'x' });
+      for (const t of [-0.6, -0.2, 0.2, 0.6]) {
+        const c = t * CI / 0.8;
+        head.add(bx(c - 0.02, c + 0.02, KY1 - 0.06, KY1 - 0.02, -CI, CI), BLK, { grain: 'z' });
+        head.add(bx(-CI, CI, KY1 - 0.058, KY1 - 0.022, c - 0.02, c + 0.02), BLK, { grain: 'x' });
+      }
+      head.colBox(-CI, CI, KY1 - 0.06, KY1, -CI, CI);
+      head.debris(4, 'splinter', M.walnut, 0.12);
+      // hidden purple LED cove on the inside faces of the head beams, washing the ceiling and the altar
+      const cove = P.part('cove_led', { break: 'detach', mass: 0.6, cls: 'electronics', attach: 'head_frame', health: 20 });
+      const CV = PX - 0.06;
+      for (const s of [-1, 1]) {
+        cove.add(bx(-CV + 0.01, CV - 0.01, HB0 + 0.012, HB0 + 0.024, s * CV - (s > 0 ? 0.006 : 0), s * CV + (s > 0 ? 0 : 0.006)), M.led);
+        cove.add(bx(s * (CV + 0.002) - (s > 0 ? 0.006 : 0), s * (CV + 0.002) + (s > 0 ? 0 : 0.006), HB0 + 0.012, HB0 + 0.024, -CV + 0.01, CV - 0.01), M.led);
+      }
+      cove.colBox(-CV, CV, HB0 + 0.01, HB0 + 0.026, -CV, CV);
+
+      // ---------------- roof: front/back sections (lower hip slope + the upper gable roof) and the side sections
+      // (hip slope, gable, hip rafters, descending ridges). Each section shatters into strips when it loses support;
+      // the side sections need the head frame and both front and back sections (their gables sit on those).
+      const lowRows = range(0, DG, 8), upRows = range(DG, E, 6);
+      const S3 = (w) => [-w - 0.01, -0.5, 0.5, w + 0.01];
+      const RF = (nm, front, s) => {
+        const xz = front ? (a, d) => [a, s * (E - d)] : (a, d) => [s * (E - d), a];
+        const slabs = [roofSlab(lowRows, E, (d) => E - d, xz, { s: S3(E), d: [0, 0.31, DG] })];
+        if (front) slabs.push(roofSlab(upRows, GX, () => GX, xz, { s: S3(GX), d: [DG, E] }));
+        const zIn = (lo, hi) => (s > 0 ? [lo, hi] : [-hi, -lo]);
+        const cells = front ? [{ x: [-1e4, -0.5] }, { x: [0.5, 1e4] }, { x: [-0.5, 0.5], z: zIn(XG, 1e4) }, { x: [-0.5, 0.5], z: zIn(-1e4, XG) }] : [{ z: [-1e4, 0] }, { z: [0, 1e4] }];
+        const part = P.part(nm, {
+          break: 'shatter', collapse: true, cells, chunks: cells.length, teeth: false, cls: 'ceramic', mass: front ? 260 : 150, health: front ? 700 : 500,
+          attach: front ? 'head_frame' : ['head_frame', 'roof_f', 'roof_b'], need: front ? 1 : 3,
+        });
+        part.add(mergeGeometries(slabs.map((q) => q.shell), false), M.roofTile, { uv: false, convex: false });
+        part.add(mergeGeos(slabs.map((q) => q.body)), M.walnut, { grain: front ? 'z' : 'x', tile: 0.4, convex: false });
+        // black kayaoi board on the eave face, over a band of walnut fascia and the rafter ends
+        const kp = range(-E - (front ? 0.012 : 0), E + (front ? 0.012 : 0), 20).map((a) => { const [x, z] = xz(a, 0); return [x, F(0) + lift(Math.min(Math.abs(x), E), Math.min(Math.abs(z), E)) - TS + 0.004, z]; });
+        part.add(sweepBoard(kp, front ? [0, s] : [s, 0], 0.012, 0.064), BLK, { grain: front ? 'x' : 'z', convex: false });
+        // round eave-tile ends, one per rib
+        const caps = [];
+        for (let k = -Math.floor(E / RP); k <= Math.floor(E / RP); k++) {
+          const a = RP * k; if (Math.abs(a) > E - 0.07) continue;
+          const [x0, z0] = xz(a, -0.012), [x1, z1] = xz(a, 0.035), y = F(0) + lift(x0, z0) - 0.004;
+          caps.push(rod([x0, y, z0], [x1, y, z1], 0.029, 6));
+        }
+        part.add(mergeGeos(caps), M.roofRidge);
+        // rafters under the eave, parallel, stopping at the hip rafters; their ends show past the fascia
+        const raf = [];
+        for (let a = -E + 0.06; a <= E - 0.06 + 1e-6; a += 0.115) {
+          const o0 = Math.max(PX - 0.06, Math.abs(a) + 0.06), o1 = E + 0.02;
+          if (o1 - o0 < 0.05) continue;
+          const pt = (o) => { const [x, z] = front ? [a, s * o] : [s * o, a]; return [x, ySoffit(x, z, Math.min(o, E)) - 0.0275, z]; };
+          raf.push(beamAB(pt(o0), pt(o1), 0.045, 0.055));
+        }
+        part.add(mergeGeos(raf), M.walnut, { grain: front ? 'z' : 'x' });
+        const hull = [];
+        if (!front) {
+          // hip rafters (odaruki) at this side's two corners, following the upturn, with a thin brass sheath on the end
+          const hips = [], caps2 = [];
+          for (const sz of [-1, 1]) {
+            const pt = (p) => { const pc = Math.min(p, E); return [s * p, F(E - pc) + lift(pc, pc) - THK - 0.066, sz * p]; };
+            const ps = [0.95, 1.2, 1.4, E + 0.04];
+            for (let k = 0; k < ps.length - 1; k++) hips.push(beamAB(pt(ps[k]), pt(ps[k + 1]), 0.1, 0.12));
+            // the sheath: a 4 mm brass band round the last 4 cm, the end grain left showing
+            const A = V3(...pt(1.4)), B = V3(...pt(E + 0.04)), dir = B.clone().sub(A).normalize();
+            const Zb = dir.clone().cross(V3(0, 1, 0)).normalize(), Yb = Zb.clone().cross(dir).normalize();
+            const b0 = B.clone().addScaledVector(dir, -0.05), b1 = B.clone().addScaledVector(dir, -0.008);
+            for (const sg of [-1, 1]) {
+              caps2.push(beamAB(b0.clone().addScaledVector(Yb, sg * 0.062).toArray(), b1.clone().addScaledVector(Yb, sg * 0.062).toArray(), 0.108, 0.004));
+              caps2.push(beamAB(b0.clone().addScaledVector(Zb, sg * 0.052).toArray(), b1.clone().addScaledVector(Zb, sg * 0.052).toArray(), 0.004, 0.12));
+            }
+          }
+          part.add(mergeGeos(hips), M.walnut);
+          part.add(mergeGeos(caps2), M.brass);
+          // gable: a matte black infill behind a kitsuregoshi lattice of thin walnut slats over a vermilion tie
+          const yb = (z) => F(E - Math.abs(z)) - THK, wallPts = [[-XG, YG - THK], [XG, YG - THK]];
+          for (const z of range(XG, -XG, 16)) wallPts.push([z, yb(z) - 0.004]);
+          const xw0 = s > 0 ? XG - 0.02 : -XG - 0.01, xw1 = s > 0 ? XG + 0.01 : -XG + 0.02;
+          part.add(profX(wallPts.map(([z, y]) => [z, y, 0]), xw0, xw1), M.lacquerMatte, { grain: 'z' });
+          const fx = (a, b) => (s > 0 ? [XG + a, XG + b] : [-XG - b, -XG - a]);
+          const [tx0, tx1] = fx(0.01, 0.045);
+          let zt = 0; for (let lo = 0, hi = XG, k = 0; k < 30; k++) { zt = (lo + hi) / 2; if (yb(zt) > YG + 0.075) lo = zt; else hi = zt; }
+          part.add(rbox(tx0, tx1, YG - 0.01, YG + 0.06, -zt, zt, 0.004, 1), RED, { grain: 'z' });
+          const [sx0, sx1] = fx(0.01, 0.026), NS = 15;
+          for (let k = 0; k < NS; k++) {
+            const z = -XG + 0.1 + (2 * XG - 0.2) * k / (NS - 1), top = yb(Math.abs(z) + 0.011) - 0.008;
+            if (top - (YG + 0.06) < 0.03) continue;
+            part.add(bx(sx0, sx1, YG + 0.058, top, z - 0.011, z + 0.011), M.walnut, { grain: 'y' });
+          }
+          // barge boards: thin at the apex, deeper toward the eaves, hugging the roof line
+          const bTop = [], bBot = [];
+          for (const z of range(-XG - 0.02, XG + 0.02, 16)) { const f = F(E - Math.min(E, Math.abs(z))); bTop.push([z, f + 0.035]); bBot.unshift([z, f - THK - 0.012 - 0.035 * Math.min(1, Math.abs(z) / XG)]); }
+          const bx0 = s > 0 ? GX : -GX - 0.035, bx1 = s > 0 ? GX + 0.035 : -GX;
+          part.add(profX([...bTop, ...bBot].map(([z, y]) => [z, y, 0]), bx0, bx1), M.lacquerMatte, { grain: 'z' });
+          part.add(cylX(0.05, s > 0 ? GX + 0.035 : -GX - 0.045, s > 0 ? GX + 0.045 : -GX - 0.035, { y: YR - 0.1, seg: 16 }), M.brass);
+          // descending ridges: down the barge edge from the apex, then along the hip to the corner, curling up there
+          for (const sz of [-1, 1]) {
+            const bxr = GX - 0.05, pts = range(0.03, XG, 5).map((z) => [s * bxr, F(E - z) + 0.05, sz * z]);
+            for (const p of range(bxr + 0.03, E - 0.02, 5)) pts.push([s * p, F(E - p) + lift(p, p) + 0.045, sz * p]);
+            const e = pts[pts.length - 1]; pts.push([e[0] + s * 0.045, e[1] + 0.03, e[2] + sz * 0.045]);
+            part.add(taperTube(pts, 0.05, 0.036, 6, 24), M.roofRidge);
+          }
+          for (const [z, y] of wallPts) hull.push([s * XG - 0.02 * s, y, z]);
+          for (const [z, y] of [...bTop, ...bBot]) hull.push([s * (GX + 0.035), y, z]);
+        }
+        slabs.forEach((q) => q.hulls.forEach((h) => part.colHull(ptsGeo(h))));
+        if (hull.length) part.colHull(ptsGeo(hull));
+        part.debris(front ? 12 : 8, 'shard', M.roofTile, 0.07);
+        return part;
+      };
+      RF('roof_f', true, 1); RF('roof_b', true, -1); RF('roof_l', false, 1); RF('roof_r', false, -1);
+      const ridge = P.part('ridge', { break: 'detach', mass: 90, cls: 'ceramic', attach: ['roof_f', 'roof_b'], need: 2, health: 400 });
+      const RL = GX + 0.02;
+      ridge.add(rbox(-RL, RL, YR - 0.07, YR + 0.04, -0.12, 0.12, 0.01, 1), M.roofRidge);
+      ridge.add(rbox(-RL + 0.02, RL - 0.02, YR + 0.04, YR + 0.08, -0.1, 0.1, 0.008, 1), M.roofRidge);
+      ridge.add(rbox(-RL + 0.04, RL - 0.04, YR + 0.08, YR + 0.12, -0.085, 0.085, 0.008, 1), M.roofRidge);
+      ridge.add(cylX(0.05, -RL + 0.04, RL - 0.04, { y: YR + 0.135, seg: 16 }), M.roofRidge);
+      // ridge-end tiles: plain shields whose upper corners sweep out and up
+      const oni = [[-0.15, YR - 0.07], [0.15, YR - 0.07], [0.15, YR + 0.09], [0.19, YR + 0.18], [0.205, YR + 0.22], [0.165, YR + 0.205], [0.07, YR + 0.18], [0, YR + 0.195], [-0.07, YR + 0.18], [-0.165, YR + 0.205], [-0.205, YR + 0.22], [-0.19, YR + 0.18], [-0.15, YR + 0.09]];
+      for (const s of [-1, 1]) ridge.add(profX(oni.map(([z, y]) => [z, y, 0]), s > 0 ? RL : -RL - 0.06, s > 0 ? RL + 0.06 : -RL, 0.008), M.roofRidge, { grain: 'z' });
+      ridge.colBox(-RL - 0.06, RL + 0.06, YR - 0.07, YR + 0.22, -0.15, 0.15);
+      ridge.debris(3, 'shard', M.roofRidge, 0.06);
+
+      // ---------------- inside: aged walnut altar table with a mirror and sakaki vases, a paper andon beside it
+      const AT = DY + 0.62, AZ0 = -0.82, AZ1 = -0.46;
+      const altar = P.part('altar', { break: 'shatter', chunks: 6, mass: 14, attach: 'deck', grain: 'x' });
+      altar.add(rbox(-0.56, 0.56, AT - 0.03, AT, AZ0, AZ1, 0.005, 2), M.walnut, { grain: 'x' });
+      for (const sx of [-1, 1]) {
+        for (const z of [AZ0 + 0.04, AZ0 + 0.13, AZ1 - 0.13, AZ1 - 0.04]) altar.add(bx(sx * 0.47 - 0.016, sx * 0.47 + 0.016, DY + 0.035, AT - 0.03, z - 0.016, z + 0.016), M.walnut, { grain: 'y' });
+        altar.add(rbox(sx * 0.47 - 0.025, sx * 0.47 + 0.025, DY, DY + 0.035, AZ0 + 0.01, AZ1 - 0.01, 0.005, 1), BLK, { grain: 'z' });
+      }
+      altar.add(rbox(-0.5, 0.5, AT - 0.09, AT - 0.03, AZ0 + 0.005, AZ0 + 0.025, 0.003, 1), BLK, { grain: 'x' });
+      altar.colBox(-0.56, 0.56, DY, AT, AZ0, AZ1);
+      const MZ = (AZ0 + AZ1) / 2;
+      const mir = P.part('mirror', { break: 'detach', mass: 3, attach: 'altar', cls: 'metal' });
+      mir.add(rbox(-0.13, 0.13, AT, AT + 0.04, MZ - 0.07, MZ + 0.07, 0.006, 2), BLK, { grain: 'x' });
+      for (const sx of [-1, 1]) mir.add(rbox(sx * 0.1 - 0.015, sx * 0.1 + 0.015, AT + 0.04, AT + 0.22, MZ - 0.015, MZ + 0.015, 0.004, 1), BLK, { grain: 'y' });
+      mir.add(cylZ(0.135, MZ - 0.018, MZ - 0.004, { y: AT + 0.25, seg: 24 }), M.brass);
+      mir.add(cylZ(0.12, MZ - 0.004, MZ + 0.006, { y: AT + 0.25, seg: 24 }), M.steel);
+      mir.colBox(-0.14, 0.14, AT, AT + 0.39, MZ - 0.07, MZ + 0.07);
+      const vase = [[0, 0], [0.04, 0], [0.045, 0.01], [0.05, 0.06], [0.042, 0.11], [0.026, 0.14], [0.03, 0.17], [0.024, 0.172], [0, 0.165]].map(([r, y]) => [r * 1.3, y * 1.3]);
+      for (const sx of [-1, 1]) {
+        const nm = sx > 0 ? 'l' : 'r', x = sx * 0.37;
+        const v = P.part('vase_' + nm, { break: 'shatter', chunks: 5, mass: 1.6, attach: 'altar' });
+        const vg = moveGeo(lathe(vase, 16, 38), x, AT, MZ);
+        v.add(vg, M.porcelain, { convex: false }); v.colHull(vg); v.debris(3, 'shard', M.porcelain, 0.03);
+        const sk = P.part('sakaki_' + nm, { break: 'detach', mass: 0.3, cls: 'plant', attach: 'vase_' + nm });
+        sk.add(taperTube([[x, AT + 0.15, MZ], [x + sx * 0.012, AT + 0.3, MZ], [x + sx * 0.035, AT + 0.46, MZ + 0.01]], 0.007, 0.003, 6, 8), M.bark, { grain: 'y' });
+        sk.add(leafCards([x + sx * 0.025, AT + 0.38, MZ], [0.12, 0.14, 0.1], 42, 0.085, 410 + sx), M.foliage);
+        sk.colBox(x - 0.12, x + 0.12, AT + 0.2, AT + 0.53, MZ - 0.1, MZ + 0.1);
+        sk.debris(3, 'leaf', M.foliage, 0.04);
+      }
+      const LX = -0.82, LZ = -0.62;
+      const lan = P.part('andon', { break: 'detach', mass: 2.2, cls: 'wood', attach: 'deck', health: 40 });
+      for (const sx of [-1, 1]) for (const sz of [-1, 1]) lan.add(bx(LX + sx * 0.09 - 0.012, LX + sx * 0.09 + 0.012, DY, DY + 0.46, LZ + sz * 0.09 - 0.012, LZ + sz * 0.09 + 0.012), BLK, { grain: 'y' });
+      lan.add(bx(LX - 0.082, LX + 0.082, DY + 0.12, DY + 0.42, LZ - 0.082, LZ + 0.082), M.hanjiLit, { grain: 'y' });
+      lan.add(rbox(LX - 0.11, LX + 0.11, DY + 0.42, DY + 0.45, LZ - 0.11, LZ + 0.11, 0.004, 1), BLK);
+      lan.add(rbox(LX - 0.1, LX + 0.1, DY + 0.1, DY + 0.12, LZ - 0.1, LZ + 0.1, 0.004, 1), BLK);
+      lan.colBox(LX - 0.11, LX + 0.11, DY, DY + 0.46, LZ - 0.11, LZ + 0.11);
+
+      // ---------------- suzu bell hung from an iron arm on the front head beam, in front of the pillar line, with
+      // its red-and-white rope falling in front of the offering box
+      const BZ = 1.16, BY = 2.08;
+      const bell = P.part('bell', { break: 'detach', mass: 2.5, cls: 'metal', attach: 'head_frame' });
+      bell.add(bx(-0.012, 0.012, 2.462, 2.486, PX + 0.06, BZ + 0.012), BLK, { grain: 'z' });
+      bell.add(cylY(0.006, BY + 0.07, 2.47, { z: BZ, seg: 8 }), M.brass);
+      bell.add(new THREE.TorusGeometry(0.02, 0.006, 6, 12).translate(0, BY + 0.088, BZ), M.brass);
+      const suzu = [[0, -0.082], [0.032, -0.08], [0.056, -0.066], [0.072, -0.04], [0.078, -0.008], [0.074, 0.026], [0.06, 0.052], [0.036, 0.07], [0.012, 0.078], [0, 0.079]];
+      bell.add(moveGeo(lathe(suzu, 20, 50), 0, BY, BZ), M.brass);
+      bell.add(new THREE.TorusGeometry(0.073, 0.006, 6, 20).rotateX(Math.PI / 2).translate(0, BY - 0.032, BZ), M.brass);
+      bell.add(bx(-0.004, 0.004, BY - 0.086, BY - 0.044, BZ - 0.046, BZ + 0.046), BLK);
+      bell.colBox(-0.08, 0.08, BY - 0.085, 2.49, BZ - 0.08, BZ + 0.08);
+      const rope = P.part('bell_rope', { break: 'detach', mass: 1.2, cls: 'fabric', attach: 'bell' });
+      const RT = BY - 0.08, RB = DY + 0.95, helix = (ph) => range(0, 1, 20).map((t) => [0.012 * Math.cos(ph + t * 22), RT - t * (RT - RB), BZ + 0.012 * Math.sin(ph + t * 22)]);
+      rope.add(taperTube(helix(0), 0.016, 0.015, 6, 30), M.fabricCinnabar, { grain: 'y' });
+      rope.add(taperTube(helix(Math.PI), 0.016, 0.015, 6, 30), M.fabricOat, { grain: 'y' });
+      rope.add(cylY(0.03, RB - 0.2, RB + 0.01, { z: BZ, seg: 12, rTop: 0.02 }), M.fabricCinnabar, { grain: 'y' });
+      rope.colBox(-0.04, 0.04, RB - 0.2, RT, BZ - 0.04, BZ + 0.04);
+      // offering box: dark walnut panels in a black lacquer frame with brass corner straps, a slatted top over a black well
+      const box = P.part('offering_box', { break: 'shatter', chunks: 8, mass: 24, attach: 'deck', grain: 'x' });
+      const [X0, X1, OY, Z0, Z1] = [-0.33, 0.33, DY + 0.4, 0.6, 0.94];
+      box.add(rbox(X0 + 0.03, X1 - 0.03, DY + 0.01, OY - 0.03, Z0, Z0 + 0.022, 0.003, 1), M.walnut, { grain: 'x' });
+      box.add(rbox(X0 + 0.03, X1 - 0.03, DY + 0.01, OY - 0.03, Z1 - 0.022, Z1, 0.003, 1), M.walnut, { grain: 'x' });
+      box.add(rbox(X1 - 0.022, X1, DY + 0.01, OY - 0.03, Z0 + 0.03, Z1 - 0.03, 0.003, 1), M.walnut, { grain: 'z' });
+      box.add(rbox(X0, X0 + 0.022, DY + 0.01, OY - 0.03, Z0 + 0.03, Z1 - 0.03, 0.003, 1), M.walnut, { grain: 'z' });
+      for (const cx of [X0, X1]) for (const cz of [Z0, Z1]) box.add(rbox(cx > 0 ? X1 - 0.03 : X0, cx > 0 ? X1 : X0 + 0.03, DY, OY - 0.03, cz > Z0 + 0.1 ? Z1 - 0.03 : Z0, cz > Z0 + 0.1 ? Z1 : Z0 + 0.03, 0.004, 1), BLK, { grain: 'y' });
+      box.add(rbox(X0 - 0.012, X1 + 0.012, OY - 0.03, OY, Z0 - 0.012, Z0 + 0.03, 0.004, 1), BLK, { grain: 'x' });
+      box.add(rbox(X0 - 0.012, X1 + 0.012, OY - 0.03, OY, Z1 - 0.03, Z1 + 0.012, 0.004, 1), BLK, { grain: 'x' });
+      box.add(rbox(X0 - 0.012, X0 + 0.03, OY - 0.03, OY, Z0 + 0.03, Z1 - 0.03, 0.004, 1), BLK, { grain: 'z' });
+      box.add(rbox(X1 - 0.03, X1 + 0.012, OY - 0.03, OY, Z0 + 0.03, Z1 - 0.03, 0.004, 1), BLK, { grain: 'z' });
+      box.add(bx(X0 + 0.022, X1 - 0.022, OY - 0.17, OY - 0.15, Z0 + 0.022, Z1 - 0.022), BLK);
+      for (let k = 0; k < 6; k++) box.add(rotGeo(bx(X0 + 0.03, X1 - 0.03, -0.01, 0.01, -0.02, 0.02), 0.95, 0, 0).translate(0, OY - 0.04, Z0 + 0.065 + k * 0.042), M.walnut, { grain: 'x' });
+      // brass corner straps (L plates at the top and bottom of each corner)
+      for (const cx of [X0, X1]) for (const cz of [Z0, Z1]) for (const y of [DY + 0.02, OY - 0.1]) {
+        const ox = cx > 0 ? 1 : -1, oz = cz > Z0 + 0.1 ? 1 : -1, x0 = cx + ox * 0.002, z0 = cz + oz * 0.002;
+        box.add(bx(Math.min(x0, x0 - ox * 0.07), Math.max(x0, x0 - ox * 0.07), y, y + 0.06, Math.min(z0, z0 + oz * 0.004), Math.max(z0, z0 + oz * 0.004)), M.brass);
+        box.add(bx(Math.min(x0, x0 + ox * 0.004), Math.max(x0, x0 + ox * 0.004), y, y + 0.06, Math.min(z0, z0 - oz * 0.07), Math.max(z0, z0 - oz * 0.07)), M.brass);
+      }
+      box.colBox(X0 - 0.012, X1 + 0.012, DY, OY, Z0 - 0.012, Z1 + 0.012);
+      box.debris(3, 'splinter', M.walnut, 0.08);
+    },
+  });
+}
+
+/* ---- batchE3_maple.js */
+// Batch E (user additions): batchE3_maple.js
+// maple_tree: a cloud-pruned red Japanese maple (momiji) in a low basalt bed: raked pale gravel, moss islands,
+// three stones, a coping with a warm LED washer under its inner lip. Leaves are 2D alpha cards in flat pads.
+
+// ------------------------------------------------------------------ textures and materials (own keys only)
+// palmate maple leaf: seven narrow serrated lobes (the lowest pair small), midribs, a petiole
+function mplDrawLeaf(x, cx, cy, R, rot, base, rnd) {
+  const LOBES = [[0, 1], [0.6, 0.9], [-0.6, 0.9], [1.18, 0.7], [-1.18, 0.7], [1.8, 0.38], [-1.8, 0.38]];
+  const [r, g, b] = hexRGB(base).map((v) => v * 255);
+  const sh = (k) => `rgb(${Math.min(255, r * k) | 0},${Math.min(255, g * k * (k > 1 ? 1.3 : 1)) | 0},${Math.min(255, b * k) | 0})`;
+  x.save(); x.translate(cx, cy); x.rotate(rot);
+  x.strokeStyle = sh(0.55); x.lineWidth = Math.max(1.6, R * 0.05); x.lineCap = 'round';
+  x.beginPath(); x.moveTo(0, R * 0.05); x.quadraticCurveTo(R * 0.12, R * 0.4, R * 0.05, R * 0.72); x.stroke();
+  const grad = x.createRadialGradient(0, 0, R * 0.05, 0, 0, R); grad.addColorStop(0, sh(0.6)); grad.addColorStop(0.45, sh(0.92)); grad.addColorStop(1, sh(1.05));
+  x.fillStyle = grad; x.beginPath();
+  const NS = 12;
+  for (const [a0, len0] of LOBES) {
+    const a = a0 + (rnd() - 0.5) * 0.12, len = R * len0 * (0.92 + rnd() * 0.12), w = len * 0.21, ca = Math.cos(a), sa = Math.sin(a), pts = [];
+    const wAt = (i) => { const t = i / NS; return w * Math.sin(Math.PI * Math.pow(t, 0.72)) * (1 - t * 0.2) + (i % 2 && i < NS ? 0.17 * w : 0); };
+    for (let i = 0; i <= NS; i++) pts.push([i / NS * len, i < NS ? wAt(i) : 0]);
+    for (let i = NS - 1; i >= 0; i--) pts.push([i / NS * len, -wAt(i)]);
+    pts.forEach(([t, s], i) => { const px = s * ca + t * sa, py = s * sa - t * ca; i ? x.lineTo(px, py) : x.moveTo(px, py); });
+    x.closePath();
+  }
+  x.moveTo(R * 0.17, 0); x.arc(0, 0, R * 0.17, 0, Math.PI * 2);
+  x.fill();
+  x.strokeStyle = sh(0.5); x.globalAlpha = 0.55; x.lineWidth = Math.max(0.8, R * 0.018);
+  for (const [a0, len0] of LOBES) { const L = R * len0 * 0.85; x.beginPath(); x.moveTo(0, 0); x.lineTo(Math.sin(a0) * L, -Math.cos(a0) * L); x.stroke(); }
+  x.globalAlpha = 1; x.restore();
+}
+// 2 x 2 atlas of leaf sprays (five to eight leaves each), deep crimson with a few dark leaves. Quadrant 0 (top
+// left) carries the odd orange-red leaf and goes on the top layer only; quadrant 3 (bottom right) is the dark
+// underside spray for the pad floor
+function mplLeafAtlas(N, seed) {
+  const c = canvas(N, N), x = c.getContext('2d'), rnd = prng(seed), Q = N / 2;
+  const tones = ['#5a0a12', '#6e0c14', '#7a0e16', '#82101a', '#93161a', '#a01c1b', '#4f0910', '#6e0c14', '#5a0a12', '#8f1519'];
+  const warm = tones.concat(['#b02a1c', '#a8301c']), dark = ['#3e070c', '#4f0910', '#5a0a12', '#480810'];
+  x.clearRect(0, 0, N, N);
+  for (let q = 0; q < 4; q++) {
+    const ox = (q % 2) * Q, oy = Math.floor(q / 2) * Q, n = 5 + Math.floor(rnd() * 4), tl = q === 0 ? warm : q === 3 ? dark : tones;
+    x.save(); x.beginPath(); x.rect(ox + 2, oy + 2, Q - 4, Q - 4); x.clip();
+    for (let k = 0; k < n; k++) {
+      const ang = k / n * Math.PI * 2 + rnd() * 0.6, rr = (k === 0 ? 0 : 0.2 + rnd() * 0.12) * Q;
+      const cx = ox + Q / 2 + Math.cos(ang) * rr, cy = oy + Q / 2 + Math.sin(ang) * rr, R = Q * (0.17 + rnd() * 0.07);
+      mplDrawLeaf(x, cx, cy, R, ang + Math.PI / 2 + (rnd() - 0.5) * 0.9, tl[Math.floor(rnd() * tl.length)], rnd);
+    }
+    x.restore();
+  }
+  return c;
+}
+// raked gravel in bed plan coordinates (canvas x = piece x across 2W, canvas y = piece z across 2D): concentric rake
+// lines round the stones and moss islands, straight lines along x elsewhere; pale grain speckle
+function mplGravelSheet(N, seed, W, D, rings) {
+  const rnd = prng(seed), sp = stretch(fbmT(N, 128, 2, rnd)), mott = stretch(fbmT(N, 6, 3, rnd));
+  const A = new Float32Array(N * N * 3), H = new Float32Array(N * N), R = new Float32Array(N * N);
+  const L0 = hexRGB('#6c6862'), L1 = hexRGB('#55524c'), Dk = hexRGB('#33302c'), pitch = 0.028;
+  for (let y = 0; y < N; y++) for (let xx = 0; xx < N; xx++) {
+    const i = y * N + xx, px = -W + (xx + 0.5) / N * 2 * W, pz = -D + (y + 0.5) / N * 2 * D;
+    let dmin = 9;
+    for (const [cx, cz, rx, rz] of rings) { const dx = (px - cx) / rx, dz = (pz - cz) / rz; dmin = Math.min(dmin, (Math.hypot(dx, dz) - 1) * Math.min(rx, rz)); }
+    const ph = dmin < 0.115 ? Math.max(0, dmin) / pitch : (pz + 2) / pitch;
+    const g = Math.pow(0.5 + 0.5 * Math.cos(2 * Math.PI * ph), 1.5), grain = sp[i];
+    mix3(A, i, L0, L1, clamp01((mott[i] - 0.5) * 0.5 + 0.25 + (grain - 0.5) * 0.9));
+    mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], Dk, (1 - g) * 0.58);
+    H[i] = g * 0.8 + grain * 0.35;
+    R[i] = 0.82 + (1 - g) * 0.1;
+  }
+  return pack(N, A, H, R, null, 2.4);
+}
+// moss: soft mottled green with fine tufts
+function mplMossSheet(N, seed) {
+  const rnd = prng(seed), big = stretch(fbmT(N, 4, 3, rnd)), fine = stretch(fbmT(N, 48, 2, rnd));
+  const A = new Float32Array(N * N * 3), H = new Float32Array(N * N), R = new Float32Array(N * N);
+  const C0 = hexRGB('#1c2513'), C1 = hexRGB('#34441f'), C2 = hexRGB('#4c5a2c');
+  for (let i = 0; i < N * N; i++) {
+    mix3(A, i, C0, C1, clamp01(big[i] * 0.6 + fine[i] * 0.55 - 0.1));
+    if (fine[i] > 0.8) mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], C2, (fine[i] - 0.8) * 2);
+    H[i] = fine[i] * 0.8 + big[i] * 0.2; R[i] = 0.95;
+  }
+  return pack(N, A, H, R, null, 4);
+}
+// maple bark: smooth grey-brown with long shallow fissures running along the stem (v), a few pale lenticel flecks
+function mplBarkSheet(N, seed) {
+  const rnd = prng(seed), fis = stretch(fbmT(N, 10, 3, rnd, { ar: 0.12 })), mot = stretch(fbmT(N, 5, 3, rnd)), fine = stretch(fbmT(N, 64, 2, rnd, { ar: 0.4 }));
+  const A = new Float32Array(N * N * 3), H = new Float32Array(N * N), R = new Float32Array(N * N);
+  const C0 = hexRGB('#4a3d35'), C1 = hexRGB('#6a5a4e'), Dk = hexRGB('#1d1612'), Pl = hexRGB('#8b7c6d');
+  for (let i = 0; i < N * N; i++) {
+    const f = sstep(0.62, 0.8, Math.abs(fis[i] - 0.5) * 2);
+    mix3(A, i, C0, C1, clamp01(mot[i] * 0.7 + (fine[i] - 0.5) * 0.5));
+    mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], Dk, f * 0.8);
+    if (fine[i] > 0.9) mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], Pl, (fine[i] - 0.9) * 5);
+    H[i] = 1 - f * 0.7 + fine[i] * 0.15; R[i] = 0.78 + f * 0.15;
+  }
+  return pack(N, A, H, R, null, 3);
+}
+// garden stone: matte weathered grey-brown, pitted, faint pale lichen flecks
+function mplStoneSheet(N, seed) {
+  const rnd = prng(seed), big = stretch(fbmT(N, 5, 4, rnd)), pit = stretch(fbmT(N, 40, 2, rnd)), fine = stretch(fbmT(N, 110, 2, rnd));
+  const A = new Float32Array(N * N * 3), H = new Float32Array(N * N), R = new Float32Array(N * N);
+  const C0 = hexRGB('#3a3833'), C1 = hexRGB('#57534a'), Dk = hexRGB('#201e1b'), Li = hexRGB('#77755f');
+  for (let i = 0; i < N * N; i++) {
+    mix3(A, i, C0, C1, clamp01(big[i] * 0.8 + (fine[i] - 0.5) * 0.4));
+    const pt = sstep(0.72, 0.9, pit[i]); mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], Dk, pt * 0.6);
+    if (fine[i] > 0.86 && big[i] > 0.5) mix3(A, i, [A[i * 3], A[i * 3 + 1], A[i * 3 + 2]], Li, (fine[i] - 0.86) * 4);
+    H[i] = 1 - pt * 0.6 + fine[i] * 0.2; R[i] = 0.9 + pt * 0.06;
+  }
+  return pack(N, A, H, R, null, 3);
+}
+function mplMats(W, D, rings) {
+  if (M.mapleLeaf) return;
+  const leaf = asTex(mplLeafAtlas(512, 61), { srgb: true, repeat: false }); leaf.name = 'foliage_maple_palmate';
+  reg('mapleLeaf', new THREE.MeshStandardMaterial({ name: 'foliage_maple_palmate', map: leaf, color: '#d8c8c8', alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.62, metalness: 0, envMapIntensity: 0.5 }), 'plant');
+  M.mapleLeaf.userData.keepUV = true;
+  reg('mapleLeafSolid', new THREE.MeshStandardMaterial({ name: 'foliage_maple_solid', color: '#5e0e13', side: THREE.DoubleSide, roughness: 0.62, metalness: 0 }), 'plant');
+  reg('gravelRaked', pbr('gravel_raked', texSet('gravel_raked', mplGravelSheet(512, 71, W, D, rings)), 1, { metalness: 0, envMapIntensity: 0.5 }, 1.0), 'stone', 'stoneInner');
+  M.gravelRaked.userData.keepUV = true;
+  reg('mapleBark', pbr('bark_maple', texSet('bark_maple', mplBarkSheet(256, 97)), 1, { metalness: 0, envMapIntensity: 0.5 }, 1.4), 'plant', 'woodInner');
+  M.mapleBark.userData.keepUV = true;
+  reg('mapleStone', pbr('stone_garden', texSet('stone_garden', mplStoneSheet(256, 131)), 0.35, { metalness: 0, envMapIntensity: 0.35 }, 1.3), 'stone', 'stoneInner');
+  reg('mapleGravelCrumb', new THREE.MeshStandardMaterial({ name: 'gravel_crumb', color: '#6f6b63', roughness: 0.92, metalness: 0 }), 'stone', 'stoneInner');
+  reg('moss', pbr('moss', texSet('moss', mplMossSheet(256, 83)), 0.18, { metalness: 0, envMapIntensity: 0.3 }, 1.6), 'plant', 'soil');
+  M.moss.userData.keepUV = true; M.mapleStone.userData.keepUV = true;   // lumps carry their own UVs (mplLump uvTile)
+}
+
+// ------------------------------------------------------------------ geometry helpers
+// gnarled tube: CatmullRom through pts with per-point radii, parallel-transport frames (no flips), twisting flutes,
+// lumps and an optional buttressed root flare at the base; capped; indexed ring so the shading stays smooth
+function mplGnarl(pts, radii, { seg = 12, steps = 24, flute = 0.06, lobes = 5, twist = 0.6, lump = 0.05, flare = 0, flareH = 0.15, seed = 1, collar = 0, collarAt = 0, calm = [] } = {}) {
+  const curve = new THREE.CatmullRomCurve3(pts.map((p) => V3(...p)), false, 'centripetal'), len = curve.getLength();
+  const rAt = (u) => { const f = u * (radii.length - 1), i = Math.min(radii.length - 2, Math.floor(f)); return lerp(radii[i], radii[i + 1], f - i); };
+  const pos = [], idx = [], s1 = seed * 1.7, s2 = seed * 2.9;
+  let T = curve.getTangentAt(0), Nn = (Math.abs(T.y) < 0.9 ? V3(0, 1, 0) : V3(1, 0, 0)).cross(T).normalize();
+  for (let i = 0; i <= steps; i++) {
+    const u = i / steps, p = curve.getPointAt(u), Tn = curve.getTangentAt(u);
+    const ax = V3().crossVectors(T, Tn); if (ax.length() > 1e-6) Nn.applyAxisAngle(ax.normalize(), Math.acos(clampR(T.dot(Tn), -1, 1)));
+    T = Tn; const Bn = V3().crossVectors(T, Nn).normalize(); Nn = V3().crossVectors(Bn, T).normalize();
+    const h = u * len, fl = flare * Math.exp(-h / flareH);
+    // collar: a swollen ring where a limb leaves its parent (full inside the parent, easing off past collarAt);
+    // calm: world heights where flutes and lumps fade (limb junctions), so no pinch shows there
+    const col = collar ? 1 + collar * (h < collarAt ? 1 : Math.exp(-(((h - collarAt) / 0.035) ** 2))) : 1;
+    let cm = 1; for (const yc of calm) cm = Math.min(cm, 1 - 0.85 * Math.exp(-(((p.y - yc) / 0.09) ** 2)));
+    for (let j = 0; j < seg; j++) {
+      const a = j / seg * Math.PI * 2, lobe = Math.cos(lobes * a + twist * h * 6.283 + s1);
+      const nz = Math.sin(a * 2 + h * 9 + s1) * Math.sin(a * 3 - h * 13 + s2);
+      const r = rAt(u) * col * (1 + fl + ((flute * cm) + fl * 0.9) * lobe + lump * cm * nz);
+      const q = p.clone().addScaledVector(Nn, Math.cos(a) * r).addScaledVector(Bn, Math.sin(a) * r);
+      pos.push(q.x, q.y, q.z);
+    }
+  }
+  for (let i = 0; i < steps; i++) for (let j = 0; j < seg; j++) { const a = i * seg + j, b = i * seg + (j + 1) % seg, c = a + seg, d = b + seg; idx.push(a, c, b, b, c, d); }
+  const c0 = curve.getPointAt(0), c1 = curve.getPointAt(1), i0 = pos.length / 3; pos.push(c0.x, c0.y, c0.z, c1.x, c1.y, c1.z);
+  for (let j = 0; j < seg; j++) { const j1 = (j + 1) % seg; idx.push(i0, j, j1, i0 + 1, steps * seg + j1, steps * seg + j); }
+  // wind outward whatever the frame's handedness: flip every triangle if the signed volume comes out negative
+  let vol = 0;
+  for (let t = 0; t < idx.length; t += 3) { const [a, b, c] = [idx[t] * 3, idx[t + 1] * 3, idx[t + 2] * 3]; vol += pos[a] * (pos[b + 1] * pos[c + 2] - pos[b + 2] * pos[c + 1]) - pos[a + 1] * (pos[b] * pos[c + 2] - pos[b + 2] * pos[c]) + pos[a + 2] * (pos[b] * pos[c + 1] - pos[b + 1] * pos[c]); }
+  const flip = vol < 0; if (flip) for (let t = 0; t < idx.length; t += 3) { const k = idx[t + 1]; idx[t + 1] = idx[t + 2]; idx[t + 2] = k; }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  // unwrap: u round the stem (whole repeats, so no seam), v along it; normals from the smooth ring above
+  const nm = g.attributes.normal.array, rep = Math.max(1, Math.round(2 * Math.PI * (radii[0] + radii[radii.length - 1]) / 2 / 0.16)), vs = len / steps / 0.32;
+  const P2 = [], N2 = [], U2 = [], put = (k, u, v) => { P2.push(pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]); N2.push(nm[k * 3], nm[k * 3 + 1], nm[k * 3 + 2]); U2.push(u, v); };
+  for (let i = 0; i < steps; i++) for (let j = 0; j < seg; j++) {
+    const a = i * seg + j, b = i * seg + (j + 1) % seg, c = a + seg, d = b + seg, u0 = j / seg * rep, u1 = (j + 1) / seg * rep, v0 = i * vs, v1 = (i + 1) * vs;
+    if (flip) { put(a, u0, v0); put(b, u1, v0); put(c, u0, v1); put(b, u1, v0); put(d, u1, v1); put(c, u0, v1); }
+    else { put(a, u0, v0); put(c, u0, v1); put(b, u1, v0); put(b, u1, v0); put(c, u0, v1); put(d, u1, v1); }
+  }
+  for (let t = steps * seg * 6; t < idx.length; t++) { const k = idx[t], ang = (k % seg) / seg * 6.283; put(k, k >= i0 ? 0.5 : 0.5 + 0.4 * Math.cos(ang), k >= i0 ? 0.5 : 0.5 + 0.4 * Math.sin(ang)); }
+  const o = new THREE.BufferGeometry(); o.setAttribute('position', new THREE.Float32BufferAttribute(P2, 3)); o.setAttribute('normal', new THREE.Float32BufferAttribute(N2, 3)); o.setAttribute('uv', new THREE.Float32BufferAttribute(U2, 2));
+  return o;
+}
+// a convex lump (stone or moss mound): hull of jittered points on an ellipsoid (flattened below flatBase); normals
+// softened toward the radial direction so it shades round
+function mplLump(c, r, n, jit, seed, flatBase = -1, soft = 0.75, uvTile = 0) {
+  const rnd = prng(seed), pts = [];
+  for (let i = 0; i < n; i++) {
+    const y = 1 - 2 * (i + 0.5) / n, rr = Math.sqrt(1 - y * y), th = i * 2.39996 + rnd(), k = 1 + (rnd() - 0.5) * 2 * jit;
+    pts.push(V3(Math.cos(th) * rr * k * r[0] + c[0], Math.max(y, flatBase) * k * r[1] + c[1], Math.sin(th) * rr * k * r[2] + c[2]));
+  }
+  const g = new ConvexGeometry(pts), p = g.attributes.position, nm = g.attributes.normal;
+  for (let i = 0; i < p.count; i++) {
+    const v = V3((p.getX(i) - c[0]) / r[0], (p.getY(i) - c[1]) / r[1], (p.getZ(i) - c[2]) / r[2]).normalize();
+    const f = V3(nm.getX(i), nm.getY(i), nm.getZ(i)).multiplyScalar(1 - soft).addScaledVector(v, soft).normalize(); nm.setXYZ(i, f.x, f.y, f.z);
+  }
+  // uvTile: own continuous UVs (projected from above, sides sheared in by height) so the texture runs over the
+  // facets without the seams a per-face box projection leaves; the material must carry keepUV
+  if (uvTile) {
+    const uv = new Float32Array(p.count * 2);
+    for (let i = 0; i < p.count; i++) { const y = p.getY(i) - c[1]; uv[i * 2] = (p.getX(i) + y * 0.6) / uvTile; uv[i * 2 + 1] = (p.getZ(i) - y * 0.6) / uvTile; }
+    g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  }
+  return g;
+}
+// cloud pad of leaf cards: a flat 'cloud' built from 2-3 overlapping sub-ellipses strung along the limb direction
+// (ux, uz), so the outline is lobed and long (about 1.6 : 1) rather than round. Plateau top (thick * (1 - rr^6)),
+// droop only in the outer 20 %, cards face mostly up with a gentle outward tilt at the rim. About 28 % of the cards
+// form a dense, nearly flat floor in the bottom fifth of the pad using the dark underside spray (atlas quadrant 3),
+// so the pad reads solid from below; orange-tinted quadrant 0 only on the top layer. Normals blend toward the pad's
+// outward direction so the top catches light and the underside falls dark.
+function mplPadCards(c, L, Wd, ux, uz, thick, droop, n, size, seed) {
+  const rnd = prng(seed), pos = [], nor = [], uv = [], up = V3(0, 1, 0), t1 = V3(), t2 = V3(), vx = -uz, vz = ux;
+  // sub-ellipses: [offset along axis, half length, half width]
+  const subs = [[-0.42 * L, 0.55 * L, 0.82 * Wd], [0.05 * L, 0.6 * L, Wd], [0.5 * L, 0.45 * L, 0.72 * Wd]].map(([o, a, b]) => [o + (rnd() - 0.5) * 0.06 * L, a, b, (rnd() - 0.5) * 0.35 * Wd]);
+  const area = subs.map(([, a, b]) => a * b), tot = area.reduce((x, y) => x + y, 0);
+  const rrAt = (s1, s2) => Math.min(...subs.map(([o, a, b, sh]) => Math.hypot((s1 - o) / a, (s2 - sh) / b)));
+  for (let i = 0; i < n; i++) {
+    let k = 0, pick = rnd() * tot; while (pick > area[k] && k < subs.length - 1) pick -= area[k++];
+    const [o, a, b, sh] = subs[k], th = rnd() * 6.283, rho = Math.sqrt(rnd()) * 0.96;
+    const s1 = o + Math.cos(th) * rho * a, s2 = sh + Math.sin(th) * rho * b, rr = Math.min(1, rrAt(s1, s2));
+    const ox = s1 * ux + s2 * vx, oz = s1 * uz + s2 * vz, floor = rnd() < 0.28;
+    const dro = droop * Math.pow(Math.max(0, (rr - 0.8) / 0.2), 2), bot = c[1] - dro, top = bot + thick * (1 - Math.pow(rr, 6));
+    const layer = floor ? rnd() * 0.2 : 0.15 + 0.85 * Math.pow(rnd(), 0.8);
+    const p = V3(c[0] + ox, lerp(bot, top, layer), c[2] + oz);
+    const ol = Math.hypot(ox, oz) || 1, out = V3(ox / ol, 0, oz / ol);
+    const tilt = floor ? rnd() * 0.18 : 0.1 + rr * 0.4 + (rnd() - 0.5) * 0.4;
+    const nn = up.clone().multiplyScalar(Math.cos(tilt)).addScaledVector(out, Math.sin(tilt)).add(V3(rnd() - 0.5, 0, rnd() - 0.5).multiplyScalar(floor ? 0.1 : 0.3)).normalize();
+    t1.crossVectors(Math.abs(nn.y) > 0.98 ? V3(0, 0, 1) : up, nn).normalize(); t2.crossVectors(nn, t1);
+    const ang = rnd() * 6.283, sz = size * (floor ? 1.05 : 0.75 + 0.5 * rnd()) / 2, ca = Math.cos(ang), sa = Math.sin(ang);
+    const U = t1.clone().multiplyScalar(ca).addScaledVector(t2, sa), Wv = t1.clone().multiplyScalar(-sa).addScaledVector(t2, ca);
+    const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a1, b1]) => p.clone().addScaledVector(U, a1 * sz).addScaledVector(Wv, b1 * sz));
+    // quadrant: floor = 3 (dark); top layer may take 0 (warm); the rest 1 or 2
+    const qd = floor ? 3 : layer > 0.7 && rnd() < 0.4 ? 0 : 1 + (rnd() < 0.5 ? 1 : 0), qx = (qd % 2) * 0.5, qy = qd < 2 ? 0.5 : 0;
+    const cu = [[qx, qy], [qx + 0.5, qy], [qx + 0.5, qy + 0.5], [qx, qy + 0.5]];
+    const mass = V3(ox / (L * 1.4), (p.y - c[1] - thick * 0.45) / (thick * 0.6), oz / (L * 1.4)).normalize();
+    const v = mass.multiplyScalar(0.6).addScaledVector(nn, 0.4).normalize();
+    // front copy and a reversed copy 1 mm behind it (same outward normal), as leafCards does
+    for (const q of [0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2]) {
+      const back = pos.length % 36 >= 18, P0 = corners[q].clone().addScaledVector(nn, back ? -0.001 : 0);
+      pos.push(P0.x, P0.y, P0.z); nor.push(v.x, v.y, v.z); uv.push(cu[q][0], cu[q][1]);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  return g;
+}
 
 defPiece({
   id: 'maple_tree', name: 'Red maple in a garden bed', batch: 'E', cover: 'soft',
   rooms: ['F1 Garden', 'F2 Gallery', 'F2 Reception', 'F1 Veranda'],
-  note: 'a cloud-pruned red Japanese maple in a low basalt bed with a warm LED washer and moss mounds; leaves are 2D alpha cards',
+  note: 'a cloud-pruned red Japanese maple on a gnarled twisting trunk, in a low basalt bed with raked gravel, moss islands, three stones and a warm LED washer under the coping; leaves are 2D alpha cards in flat pads',
   build(P) {
-    const W = 0.95, D = 0.75, T = 0.08, H = 0.22;
-    // bed: low basalt kerb with a warm LED strip on its inner lip (stops bullets)
+    const W = 0.95, D = 0.75, T = 0.09, H = 0.22, G = H - 0.06;   // G: gravel surface
+    // features: stones [x, z, rx, rz, height, seed] and moss islands [x, z, rx, rz]; the gravel is raked round them.
+    // The central moss island sits off the trunk so the root flare and surface roots cross bare gravel first.
+    const stones = [[0.46, -0.36, 0.15, 0.11, 0.13, 5], [-0.6, 0.4, 0.11, 0.09, 0.1, 6], [0.66, 0.36, 0.065, 0.055, 0.065, 7]];
+    const moss = [[0.1, 0.16, 0.27, 0.19], [0.48, 0.4, 0.2, 0.15]];
+    mplMats(W - T, D - T, stones.map(([x, z, rx, rz]) => [x, z, rx + 0.02, rz + 0.02]).concat(moss.map(([x, z, rx, rz]) => [x, z, rx + 0.03, rz + 0.03])));
+    // ---------------------------------------------------------------- bed: basalt kerb (stops bullets)
+    // shadow-gap foot, kerb walls, a bevelled coping that overhangs the gravel 2 cm, warm LED strip tucked under it
     const bed = P.part('bed', { break: 'shatter', chunks: 8, mass: 320, stops: true });
-    bed.add(rbox(-W, W, 0, H, D - T, D, 0.006, 2), M.basalt); bed.add(rbox(-W, W, 0, H, -D, -D + T, 0.006, 2), M.basalt);
-    bed.add(rbox(W - T, W, 0, H, -D + T, D - T, 0.006, 2), M.basalt); bed.add(rbox(-W, -W + T, 0, H, -D + T, D - T, 0.006, 2), M.basalt);
-    bed.add(rbox(-W + T, W - T, H - 0.03, H - 0.022, -D + T - 0.004, -D + T, 0.001, 1), M.ledWarm);
-    bed.add(rbox(W - T, W - T + 0.004, H - 0.03, H - 0.022, -D + T, D - T, 0.001, 1), M.ledWarm);
+    const F = 0.035, CO = 0.035, OV = 0.02;
+    bed.add(rbox(-W + 0.03, W - 0.03, 0, F, -D + 0.03, D - 0.03, 0.004, 1), M.basalt);
+    bed.add(rbox(-W + 0.008, W - 0.008, F - 0.002, H - CO, D - T, D - 0.008, 0.006, 1), M.basalt);
+    bed.add(rbox(-W + 0.008, W - 0.008, F - 0.002, H - CO, -D + 0.008, -D + T, 0.006, 1), M.basalt);
+    bed.add(rbox(W - T, W - 0.008, F - 0.002, H - CO, -D + T, D - T, 0.006, 1), M.basalt);
+    bed.add(rbox(-W + 0.008, -W + T, F - 0.002, H - CO, -D + T, D - T, 0.006, 1), M.basalt);
+    const ci = T + OV;   // coping inner reach
+    bed.add(rbox(-W, W, H - CO, H, D - ci, D, 0.011, 2), M.basalt, { off: [0.1, 0.3] });
+    bed.add(rbox(-W, W, H - CO, H, -D, -D + ci, 0.011, 2), M.basalt, { off: [0.6, 0.2] });
+    bed.add(rbox(W - ci, W, H - CO, H, -D + ci + 0.003, D - ci - 0.003, 0.011, 2), M.basalt, { off: [0.3, 0.7] });
+    bed.add(rbox(-W, -W + ci, H - CO, H, -D + ci + 0.003, D - ci - 0.003, 0.011, 2), M.basalt, { off: [0.8, 0.5] });
+    // LED washer: four strips on the wall's inner face just under the coping overhang, lighting the gravel
+    const ly0 = H - CO - 0.012, ly1 = H - CO - 0.002, li = T;
+    bed.add(bx(-W + li, W - li, ly0, ly1, D - li - 0.006, D - li), M.ledWarm);
+    bed.add(bx(-W + li, W - li, ly0, ly1, -D + li, -D + li + 0.006), M.ledWarm);
+    bed.add(bx(W - li - 0.006, W - li, ly0, ly1, -D + li + 0.006, D - li - 0.006), M.ledWarm);
+    bed.add(bx(-W + li, -W + li + 0.006, ly0, ly1, -D + li + 0.006, D - li - 0.006), M.ledWarm);
     bed.colBox(-W, W, 0, H, D - T, D).colBox(-W, W, 0, H, -D, -D + T).colBox(W - T, W, 0, H, -D + T, D - T).colBox(-W, -W + T, 0, H, -D + T, D - T);
-    bed.debris(4, 'dice', M.basalt, 0.06);
-    // soil with pale gravel and moss mounds (moss = low green leaf-card clumps)
-    const soil = P.part('soil', { break: 'shatter', chunks: 6, collapse: true, attach: 'bed', need: 1, mass: 80, cls: 'plant', health: 400 });
-    soil.add(rbox(-W + T, W - T, 0.02, H - 0.05, -D + T, D - T, 0.004, 1), M.soil, { tile: 0.3 });
-    const rnd = prng(808);
-    for (let i = 0; i < 40; i++) { const s = 0.015 + rnd() * 0.015, x = (rnd() * 2 - 1) * (W - T - 0.03), z = (rnd() * 2 - 1) * (D - T - 0.03); soil.add(new THREE.IcosahedronGeometry(s, 0).scale(1, 0.5, 1).translate(x, H - 0.05, z), M.pebble, { tile: 0.1 }); }
-    [[-0.45, -0.2, 0.22], [-0.2, -0.45, 0.18], [0.1, -0.35, 0.2], [-0.05, 0.05, 0.16], [0.4, 0.3, 0.15]].forEach(([x, z, r], i) => soil.add(leafCards([x, H - 0.02, z], [r, 0.05, r * 0.8], 26, 0.12, 900 + i), M.foliage));
-    soil.colBox(-W + T, W - T, 0.02, H - 0.03, -D + T, D - T);
-    soil.debris(4, 'crumb', M.soil, 0.04);
-    // trunk: leaning, twisting stem with five spreading limbs
-    const trunk = P.part('trunk', { break: 'detach', mass: 25, cls: 'plant', attach: 'soil' });
-    trunk.add(taperTube([[0.05, H - 0.06, 0.05], [0.0, 0.6, 0.02], [-0.08, 1.05, -0.04], [-0.02, 1.45, 0.0], [0.04, 1.85, 0.02]], 0.075, 0.03, 12, 24), M.bark, { grain: 'y' });
-    const limbs = [
-      [[0.0, 0.62, 0.02], [0.35, 0.82, -0.05], [0.72, 0.95, -0.12]],
-      [[-0.05, 0.85, -0.02], [-0.42, 1.0, 0.1], [-0.8, 1.08, 0.22]],
-      [[-0.07, 1.1, -0.04], [0.15, 1.3, -0.35], [0.42, 1.42, -0.55]],
-      [[-0.03, 1.4, 0.0], [-0.35, 1.6, -0.25], [-0.62, 1.72, -0.42]],
-      [[0.03, 1.7, 0.02], [0.2, 1.95, 0.25], [0.32, 2.12, 0.4]],
-    ];
-    limbs.forEach(([a, m, b]) => trunk.add(taperTube([a, m, b], 0.032, 0.012, 8, 14), M.bark, { grain: 'y' }));
-    trunk.colBox(-0.1, 0.1, H - 0.06, 1.9, -0.1, 0.1);
-    trunk.debris(3, 'splinter', M.bark, 0.1);
-    // canopy: flat cloud pads of red maple leaf cards at the end of each limb, plus a crown pad
-    const pads = limbs.map(([, , b], i) => [b, [0.42 - i * 0.02, 0.13, 0.36 - i * 0.02]]).concat([[[0.0, 2.02, 0.0], [0.38, 0.16, 0.34]]]);
-    pads.forEach(([c, r], i) => {
-      const cp = P.part('canopy_' + (i + 1), { break: 'detach', mass: 2, cls: 'plant', attach: 'trunk' });
-      cp.add(leafCards([c[0], c[1] + r[1] * 0.4, c[2]], r, 170, 0.3, 70 + i), M.foliageRed);
-      cp.add(leafCards([c[0], c[1] + r[1] * 0.1, c[2]], [r[0] * 0.75, r[1] * 0.7, r[2] * 0.75], 60, 0.26, 170 + i), M.foliageRed);
-      cp.colBox(c[0] - r[0], c[0] + r[0], c[1] - r[1] * 0.4, c[1] + r[1] * 1.3, c[2] - r[2], c[2] + r[2]);
-      cp.debris(4, 'leaf', M.foliageRed, 0.05);
+    bed.debris(5, 'crumb', M.basalt, 0.05);
+
+    // ---------------------------------------------------------------- soil: raked gravel, moss islands, stones
+    const soil = P.part('soil', { break: 'shatter', chunks: 5, bulge: 0.03, collapse: true, attach: 'bed', need: 1, mass: 90, cls: 'plant', health: 400 });
+    soil.add(rbox(-W + T, W - T, F, G - 0.012, -D + T, D - T, 0.004, 1), M.soil, { tile: 0.3 });
+    // gravel layer: UVs projected from above over the whole bed (the raked sheet is laid out in bed coordinates), so
+    // its thin sides and any chunk edges show a sliver of gravel, not a stretched sheet
+    const gr = new THREE.BoxGeometry(2 * (W - T), 0.012, 2 * (D - T)); gr.translate(0, G - 0.006, 0);
+    { const p = gr.attributes.position, u = gr.attributes.uv; for (let i = 0; i < p.count; i++) u.setXY(i, (p.getX(i) + W - T) / (2 * (W - T)), 1 - (p.getZ(i) + D - T) / (2 * (D - T))); }
+    soil.add(gr, M.gravelRaked, { uv: false });
+    // moss mounds: low (about 3 cm), round-shaded, each fringed by a ring of small flat lumps so the green feathers
+    // out into the gravel instead of stopping hard
+    const rm = prng(515);
+    moss.forEach(([x, z, rx, rz], k) => {
+      const n = k ? 3 : 4;
+      for (let i = 0; i < n; i++) {
+        const a = i / n * 6.283 + rm(), d = i === 0 ? 0 : 0.42 + rm() * 0.2, sx = rx * (i ? 0.55 + rm() * 0.2 : 0.75), sz = rz * (i ? 0.55 + rm() * 0.2 : 0.75);
+        const hgt = (i ? 0.018 : 0.024) + rm() * 0.008;
+        soil.add(mplLump([x + Math.cos(a) * d * rx, G - 0.01, z + Math.sin(a) * d * rz], [sx, hgt + 0.01, sz], 56, 0.05, 600 + k * 10 + i, -0.1, 1, 0.18), M.moss);
+      }
+      const nf = k ? 5 : 6;
+      for (let i = 0; i < nf; i++) {
+        const a = (i + rm() * 0.6) / nf * 6.283, e = 0.72 + rm() * 0.1, s0 = (k ? 0.045 : 0.055) * (0.7 + rm() * 0.5);
+        soil.add(mplLump([x + Math.cos(a) * rx * e, G - 0.013, z + Math.sin(a) * rz * e], [s0 * 1.15, 0.024 + rm() * 0.004, s0], 24, 0.05, 640 + k * 20 + i, -0.3, 1, 0.18), M.moss);
+      }
     });
+    // stones: matte weathered garden stone, round-shaded, sunk about 30 % into the gravel, the larger two with a
+    // moss cap on the top
+    stones.forEach(([x, z, rx, rz, h, sd], k) => {
+      soil.add(mplLump([x, G - h * 0.3, z], [rx, h, rz], 60, 0.1, 700 + sd, -0.7, 0.85, 0.35), M.mapleStone);
+      if (k < 2) soil.add(mplLump([x - rx * 0.15, G + h * 0.58, z + rz * 0.1], [rx * 0.55, h * 0.16, rz * 0.5], 24, 0.1, 760 + sd, -0.3, 1, 0.18), M.moss);
+    });
+    // a deliberate group of five stepping pebbles (3 to 5 cm) beside the big stone
+    [[0.25, -0.42, 0.05], [0.16, -0.31, 0.038], [0.28, -0.24, 0.032], [0.08, -0.42, 0.042], [0.36, -0.15, 0.03]].forEach(([x, z, s0], i) => {
+      soil.add(mplLump([x, G - s0 * 0.12, z], [s0, s0 * 0.5, s0 * 0.82], 22, 0.08, 800 + i, -0.5, 0.85, 0.35), M.mapleStone);
+    });
+    soil.colBox(-W + T, W - T, F, G + 0.02, -D + T, D - T);
+    soil.debris(10, 'crumb', M.mapleGravelCrumb, 0.035);
+
+    // ---------------------------------------------------------------- trunk: gnarled, twisting, root flare, limbs
+    const trunk = P.part('trunk', { break: 'detach', mass: 28, cls: 'plant', attach: 'soil' });
+    // leader ends at about 1.98 m still 3 cm thick; the crown pad sits on two short forks from its top
+    const tp = [[-0.1, G - 0.05, -0.05], [-0.09, G + 0.12, -0.05], [0.0, 0.5, 0.0], [0.13, 0.78, -0.01], [0.09, 1.04, -0.07], [-0.06, 1.3, -0.05], [-0.13, 1.56, 0.03], [-0.07, 1.8, 0.07], [-0.03, 1.98, 0.04]];
+    const tr = [0.1, 0.085, 0.074, 0.066, 0.058, 0.052, 0.045, 0.037, 0.03];
+    const pads = [
+      // c: centre; L / w: half length (along the limb) / half width; th: thickness; dr: rim droop; y: where the limb
+      // leaves the trunk; r: limb radius
+      { c: [-0.68, 0.9, 0.14], L: 0.47, w: 0.29, th: 0.11, dr: 0.05, y: 0.56, r: 0.04 },
+      { c: [0.68, 1.12, -0.22], L: 0.43, w: 0.27, th: 0.1, dr: 0.045, y: 0.8, r: 0.036 },
+      { c: [0.3, 1.42, 0.44], L: 0.4, w: 0.25, th: 0.1, dr: 0.04, y: 1.08, r: 0.032 },
+      { c: [-0.52, 1.64, -0.3], L: 0.4, w: 0.25, th: 0.1, dr: 0.04, y: 1.3, r: 0.03 },
+      { c: [0.42, 1.9, -0.12], L: 0.34, w: 0.22, th: 0.09, dr: 0.035, y: 1.62, r: 0.026 },
+      { c: [-0.06, 2.16, 0.05], L: 0.36, w: 0.24, th: 0.1, dr: 0.035, y: 1.98, r: 0.02, ax: [0.94, -0.34] },
+    ];
+    trunk.add(mplGnarl(tp, tr, { seg: 16, steps: 44, flute: 0.07, lobes: 5, twist: 0.55, lump: 0.06, flare: 0.55, flareH: 0.12, seed: 3, calm: pads.slice(0, 5).map((pd) => pd.y) }), M.mapleBark);
+    const tcurve = new THREE.CatmullRomCurve3(tp.map((p) => V3(...p)), false, 'centripetal');
+    const atY = (y) => { let best = 0, bd = 9; for (let i = 0; i <= 200; i++) { const d = Math.abs(tcurve.getPointAt(i / 200).y - y); if (d < bd) { bd = d; best = i; } } return tcurve.getPointAt(best / 200).toArray(); };
+    const rTr = (y) => { const u = clamp01((y - tp[0][1]) / (tp[tp.length - 1][1] - tp[0][1])) * (tr.length - 1), i = Math.min(tr.length - 2, Math.floor(u)); return lerp(tr[i], tr[i + 1], u - i); };
+    // surface roots running out across the gravel before diving in (they now clear the off-centre moss)
+    [[0.6, 0.28], [2.1, 0.24], [3.4, 0.3], [4.7, 0.22]].forEach(([a, L], i) => {
+      const o = [-0.1, G + 0.07, -0.05], ca = Math.cos(a), sa = Math.sin(a);
+      trunk.add(mplGnarl([o, [o[0] + ca * L * 0.4, G + 0.03, o[2] + sa * L * 0.4], [o[0] + ca * L * 0.75, G + 0.016, o[2] + sa * L * 0.75], [o[0] + ca * L, G - 0.02, o[2] + sa * L]], [0.04, 0.026, 0.02, 0.016], { seg: 7, steps: 9, flute: 0.05, lobes: 3, twist: 0.2, lump: 0.08, seed: 20 + i }), M.mapleBark);
+    });
+    const rb = prng(919);
+    pads.forEach((pd, i) => {
+      const crown = i === pads.length - 1, s = atY(pd.y), c = pd.c, under = c[1] - 0.02;
+      const dx = c[0] - s[0], dz = c[2] - s[2], hl = Math.hypot(dx, dz) || 1;
+      const [ux, uz] = pd.ax || [dx / hl, dz / hl], vx = -uz, vz = ux;
+      const tips = [];   // where twigs start, under the pad
+      if (!crown) {
+        // limb: leaves the trunk climbing through a swollen collar, elbows, then runs out level under the pad
+        const e = [c[0] - ux * pd.L * 0.1, under, c[2] - uz * pd.L * 0.1];
+        const m1 = [s[0] + ux * hl * 0.3 - uz * 0.05, s[1] + (under - s[1]) * 0.75, s[2] + uz * hl * 0.3 + ux * 0.05];
+        const m2 = [s[0] + ux * hl * 0.6 + uz * 0.04, under - 0.025, s[2] + uz * hl * 0.6 - ux * 0.04];
+        trunk.add(mplGnarl([s, m1, m2, e], [pd.r, pd.r * 0.8, pd.r * 0.6, pd.r * 0.42], { seg: 9, steps: 13, flute: 0.05, lobes: 3, twist: 0.4, lump: 0.07, seed: 40 + i, collar: 0.3, collarAt: rTr(pd.y) + 0.01 }), M.mapleBark);
+        // secondary branch from the elbow out under the far side of the pad
+        const sd = i % 2 ? 1 : -1, se = [c[0] + ux * pd.L * 0.35 + vx * pd.w * 0.5 * sd, under - 0.005, c[2] + uz * pd.L * 0.35 + vz * pd.w * 0.5 * sd];
+        trunk.add(mplGnarl([m2, [lerp(m2[0], se[0], 0.5), under - 0.015, lerp(m2[2], se[2], 0.5)], se], [pd.r * 0.5, pd.r * 0.38, pd.r * 0.28], { seg: 7, steps: 8, flute: 0.04, lobes: 3, lump: 0.06, seed: 60 + i, collar: 0.2, collarAt: pd.r * 0.6 }), M.mapleBark);
+        tips.push([e, 1], [se, -1], [m2, 0]);
+      } else {
+        // two short forks off the leader top carry the crown pad
+        const top = tp[tp.length - 1];
+        [[1, 0.6], [-1, -0.5]].forEach(([sg, off], k) => {
+          const f = [c[0] + ux * pd.L * 0.42 * sg, c[1] - 0.025, c[2] + uz * pd.L * 0.42 * sg + vz * 0.04 * off];
+          trunk.add(mplGnarl([[top[0], top[1] - 0.04, top[2]], [lerp(top[0], f[0], 0.45), lerp(top[1], f[1], 0.7), lerp(top[2], f[2], 0.45)], f], [0.022, 0.017, 0.011], { seg: 8, steps: 8, flute: 0.04, lobes: 3, lump: 0.05, seed: 70 + k }), M.mapleBark);
+          tips.push([f, sg]);
+        });
+      }
+      // twigs belong to the pad (they leave with it): one or two short, thicker twigs per tip that reach up through
+      // the pad floor, so the pad visibly ties into its limb from below
+      const cp = P.part('canopy_' + (i + 1), { break: 'detach', mass: 2.5, cls: 'plant', attach: 'trunk' });
+      tips.forEach(([t0, side], k) => {
+        const nt = k === 0 ? 2 : 1;
+        for (let j = 0; j < nt; j++) {
+          const s1 = (side * 0.35 + (rb() - 0.5) * 0.5) * pd.L, s2 = (j ? 1 : -1) * (0.15 + rb() * 0.3) * pd.w * (side || 1);
+          const tx = c[0] + ux * s1 + vx * s2, tz = c[2] + uz * s1 + vz * s2, ty = c[1] + pd.th * 0.35;
+          cp.add(mplGnarl([t0, [lerp(t0[0], tx, 0.55), lerp(t0[1], ty, 0.3), lerp(t0[2], tz, 0.55)], [tx, ty, tz]], [pd.r * 0.36, pd.r * 0.24, 0.005], { seg: 5, steps: 4, flute: 0, lump: 0.05, seed: 80 + i * 7 + k * 3 + j }), M.mapleBark);
+        }
+      });
+      const n = Math.round(185 * (pd.L * pd.w) / (0.47 * 0.29) + 40);
+      cp.add(mplPadCards(c, pd.L, pd.w, ux, uz, pd.th + 0.025, pd.dr, n, 0.15, 300 + i * 13), M.mapleLeaf);
+      const ex = Math.abs(ux) * pd.L * 1.15 + Math.abs(vx) * pd.w, ez = Math.abs(uz) * pd.L * 1.15 + Math.abs(vz) * pd.w;
+      cp.colBox(c[0] - ex * 0.9, c[0] + ex * 0.9, c[1] - pd.dr - 0.02, c[1] + pd.th + 0.03, c[2] - ez * 0.9, c[2] + ez * 0.9);
+      cp.debris(4, 'leaf', M.mapleLeafSolid, 0.05);
+    });
+    trunk.colBox(-0.2, 0.06, G - 0.05, 0.6, -0.15, 0.06).colBox(-0.05, 0.2, 0.6, 1.2, -0.13, 0.06).colBox(-0.2, 0.05, 1.2, 2.0, -0.1, 0.12);
+    trunk.debris(3, 'splinter', M.mapleBark, 0.1);
   },
 });
 
