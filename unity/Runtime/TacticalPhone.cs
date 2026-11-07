@@ -208,6 +208,7 @@ public class TacticalPhone : MonoBehaviour
         SetState(State.Waking);
         PlayClip("wake", 0.05f);
         Play(button);
+        Play(wake);
         loopSource.Stop();
         if (onWake != null) onWake.Invoke();
     }
@@ -283,6 +284,7 @@ public class TacticalPhone : MonoBehaviour
         SetState(State.PoweringOff);
         PlayClip("power_off", 0.05f);
         Play(button);
+        Play(powerOff);
         if (onPowerOff != null) onPowerOff.Invoke();
     }
 

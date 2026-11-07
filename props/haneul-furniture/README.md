@@ -7,7 +7,7 @@ in the rain. You place every piece yourself; nothing here is placed in the map. 
 celadon, brass, dark alloy and stone, with tech pieces (render racks, holo console, broadcast desk) in graphite and
 dark alloy with a few purple `#8a4dff` lights. No text, logos, numbers or symbols anywhere.
 
-**34 pieces**, one `.glb` each. Every piece is built from named parts (277 in all) that come apart.
+**37 pieces**, one `.glb` each. Every piece is built from named parts (277 in all) that come apart.
 The 99 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
 (749 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
 grain with saw-toothed ends (board by board), glass breaks radially round an impact (tempered glass dices), screens
@@ -18,6 +18,8 @@ Each part has a material class (for impact sounds and effects), a mass, a health
 
 ![Catalogue](catalogue.png)
 
+**Batch E (added):** `holo_cylinder` (projector plinth with a see-through purple hologram column), `japanese_shrine` (hokora-style wooden shrine on a granite plinth, gabled roof, rope with paper streamers, offering stand) and `maple_tree` (cloud-pruned red Japanese maple in a low basalt bed with a warm LED washer; the leaves are 2D alpha cards). Same naming, parts, chunks and colliders as every other piece; their entries are in `parts.json`.
+
 ## Files
 
 | File | Contents |
@@ -26,7 +28,7 @@ Each part has a material class (for impact sounds and effects), a mass, a health
 | `unity/<id>.glb` | Game-ready copies: meshes merged per node, LOD0–2, `_COL` boxes and `_HULL` convex hulls (one per chunk). Driven in Unity by `../../unity/Runtime/BreakableFurniture.cs`. |
 | `parts.json` | Every piece's metadata: parts, material class, mass, health, break type, support links, bullet stopping, chunks, debris, colliders; plus the class and material tables. `BreakableFurniture.cs` reads it. |
 | `sounds/` | A hit and a break sound for each material class, and rifle, shotgun and frag sounds (44.1 kHz mono WAV), plus `generate_sounds.py`, which makes them. |
-| `catalogue.png` | Contact sheet of all 34 pieces. |
+| `catalogue.png` | Contact sheet of the first 34 pieces (the three batch E pieces are below). |
 | `INTEGRATION.md` | How to place pieces, the naming contract, how breaking works, the Unity script, a parts table for every piece, and how to rebuild. |
 | `viewer.html` | The catalogue viewer, and the procedural source every file is exported from. |
 

@@ -12,7 +12,8 @@ OUT = os.path.join(os.path.dirname(HERE), 'layout.json')
 
 FTF, CEIL, SLAB = 4.2, 3.1, 0.3
 DOOR_H = 2.0          # door heads and the reinforce transom line
-REINF_H = 2.0         # Wall Fortification covers 2.0 m
+WALL_TOP = round(FTF - 0.005, 3)  # 5 mm under the next floor's surface, so no z-fighting
+REINF_H = CEIL        # breakable panels run floor to ceiling (user: less hard wall above them)
 SIZES = {'xl': 4.0, 'large': 3.0, 'standard': 1.5, 'small': 1.0}
 THICK = {'hard': 0.4, 'soft': 0.15, 'reinforceable': 0.2, 'glass': 0.08, 'balustrade': 0.06, 'open': 0.0}
 
@@ -142,9 +143,9 @@ def W(fl, a, b, typ, *ops, **kw):
     horiz = abs(a[1] - b[1]) < 1e-6
     w = {'id': nid('%s_W' % fl), 'floor': fl, 'a': list(a), 'b': list(b), 'length': round(L, 3),
          'type': typ, 'thickness': kw.pop('thickness', THICK[typ]),
-         'y0': 0.0, 'y1': kw.pop('y1', 1.1 if typ == 'balustrade' else CEIL if typ == 'glass' else round(FTF - SLAB, 2))}  # walls close the plenum: up to the slab above
+         'y0': 0.0, 'y1': kw.pop('y1', 1.1 if typ == 'balustrade' else CEIL if typ == 'glass' else WALL_TOP)}  # walls close the plenum and run through the slab (no see-through slot at stair and void slab edges)
     if kw.get('to_slab'):
-        w['y1'] = round(FTF - SLAB, 2)  # 3.9: up to the underside of the slab above
+        w['y1'] = WALL_TOP
     opl = []
     for op in ops:
         kind, c, wd = op
@@ -647,7 +648,6 @@ voids = [
      'spans': ['F2', 'F3'], 'room': 'F2_studio', 'note': 'no F3 slab: Studio is double height; grid catwalks at F3 level'},
 ]
 slab_openings = [
-    {'id': 'SO_spiral', 'floor': 'F2', 'polygon': rect(-15.6, -21.6, -12.4, -18.4), 'for': 'ST_spiral', 'rail': True},
     {'id': 'SO_suite', 'floor': 'F3', 'polygon': rect(-7, 9.4, 0, 10.8), 'for': 'ST_suite', 'rail': True},
     {'id': 'SO_coreA', 'floor': 'all', 'polygon': rect(3, -9, 9, -2), 'for': 'ST_A', 'rail': False},
     {'id': 'SO_coreB', 'floor': 'all', 'polygon': rect(-9, 2, -3, 9), 'for': 'ST_B', 'rail': False},
@@ -802,6 +802,7 @@ hatches = [  # id, slab, x, z, note, reinforce_from: every hatch is reinforced f
     ('H12', 'F3', -22.0, -14.5, 'Edit Bay -> Booth 1', 'above'),
     ('H13', 'F3', -5.0, -10.5, 'Media Hall -> Backstage', 'above'),
     ('H14', 'F3', 2.4, -17.0, 'Control Room floor (S1) -> Green Room; attackers open it from below to shoot up', 'above'),
+    ('H16', 'F2', -14.0, -20.0, 'Noraebang -> Dining Room; replaces the old spiral stair', 'above'),
     ('H15', 'F3', -2.0, -16.5, 'Render Farm floor (S1) -> Makeup; attackers open it from below to shoot up', 'above'),
 ]
 floor_patches = [
@@ -954,8 +955,6 @@ stairs = [
      'note': 'stone stair in the Garden up to the Gallery; its head faces the Lounge Bar XL wall, not the bar glass'},
     {'id': 'ST_studio', 'name': 'Studio Stair', 'kind': 'straight', 'floors': ['F2', 'F3'], 'width': 1.4,
      'path': [[10.5, 4.2, -23.7], [17.0, 8.4, -23.7]], 'note': 'steel stair along the studio north glass up to catwalk B'},
-    {'id': 'ST_spiral', 'name': 'Spiral Stair', 'kind': 'spiral', 'floors': ['F1', 'F2'], 'center': [-14.0, -20.0], 'radius': 1.4,
-     'note': 'restaurant stair from the Dining Room to the Noraebang'},
     {'id': 'ST_suite', 'name': 'Suite Stair', 'kind': 'straight', 'floors': ['F2', 'F3'], 'width': 1.4,
      'path': [[-7.0, 4.2, 10.1], [0.0, 8.4, 10.1]], 'note': 'private stair from Reception up to the Suite Lounge'},
 ]
@@ -1370,7 +1369,7 @@ for sh in shutters:
 surface_types = {
     'hard': {'destructible': False, 'reinforceable': False, 'node_prefix': 'HARD_', 'desc': 'indestructible: core, columns, shear/stone walls, slabs, spandrels'},
     'soft': {'destructible': True, 'reinforceable': False, 'node_prefix': 'SOFT_', 'desc': 'not used for walls (user rule: every breakable wall is reinforceable); soft props only'},
-    'reinforceable': {'destructible': True, 'reinforceable': True, 'node_prefix': 'REINF_', 'desc': 'the only breakable wall type: Wall Fortification-sized panels 0..2.0 m in the straight runs between hard ends (corners and T-junctions hard for 1.0 m); hard trims, jambs and header'},
+    'reinforceable': {'destructible': True, 'reinforceable': True, 'node_prefix': 'REINF_', 'desc': 'the only breakable wall type: Wall Fortification-sized panels floor to ceiling (0..3.1 m) in the straight runs between hard ends (corners and T-junctions hard for 1.0 m); hard trims, jambs and header'},
     'glass': {'destructible': True, 'reinforceable': False, 'node_prefix': 'GLASSI_', 'desc': 'interior glazing, breakable'},
     'balustrade': {'destructible': False, 'reinforceable': False, 'node_prefix': 'RAIL_', 'desc': '1.1 m tempered glass rail at void edges and walkways; shoot and vault over'},
     'open': {'destructible': False, 'reinforceable': False, 'node_prefix': None, 'desc': 'callout boundary only, no geometry'},
@@ -1403,7 +1402,7 @@ layout = {
         'floor_to_floor': FTF, 'ceiling': CEIL, 'slab': SLAB, 'plenum': round(FTF - CEIL - SLAB, 2),
         'door': {'w': 1.0, 'h': DOOR_H}, 'double_door': {'w': 2.0, 'h': DOOR_H},
         'interior_window': {'sill': 1.0, 'head': DOOR_H}, 'facade_entry_window': {'sill': 0.45, 'head': DOOR_H},
-        'reinforce': {'height': REINF_H, 'header': 'hard steel transom from 2.0 m to the ceiling', 'sizes': SIZES, 'hatch': 1.2,
+        'reinforce': {'height': REINF_H, 'header': 'hard only above the ceiling line (plenum); panels are floor to ceiling, so reinforcement units are scaled to 3.1 m high', 'sizes': SIZES, 'hatch': 1.2,
                       'gadget': '/home/user/gunmodls/gadgets/wall-fortification', 'far_side': 'set far_side z to -thickness (0.2 m)',
                       'budget': BUDGET, 'budget_rule': 'per defending team per round; any wall unit or hatch counts 1',
                       'band': BAND, 'trim': TRIM, 'pilaster': PILASTER, 'junction_hard': JUNCTION_HARD, 'min_run': MIN_RUN, 'jamb': JAMB,

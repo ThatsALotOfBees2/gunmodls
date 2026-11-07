@@ -89,7 +89,7 @@ fields listed below. The scene's extras repeat this table (`naming`) and the `su
 | --- | --- | --- |
 | `HARD_` | Indestructible. Hard walls and column wraps are `HARD_<wallId>`; the trim, transom and bulkhead above reinforced units are `HARD_<wallId>_hdr`. Jambs are `HARD_<PLid>`, columns `HARD_C_<colId>_<F>`, slabs `HARD_slab_<F>`, core caps `HARD_core_<F>`. Also the facade frame and fins, spandrels, the bridge portal, hard props `HARD_<propId>` and neighbour structure `HARD_NB_*`. | wall: a, b, length, thickness, y0, y1, n, rooms, openings, core |
 | `SOFT_<propId>` | Destructible built-in prop (only `SOFT_PR05`). No wall is soft any more: every breakable wall is `REINF_` units. | |
-| `REINF_<wallId>_<k>` | One Wall Fortification unit (k = index in the wall's `reinforce.panels`): a breakable, reinforceable panel 0–2.0 m high. Everything else in that wall (junction ends, jambs, trims, header) is `HARD_<wallId>_hdr`. | size, width, height, u0, u1, site, defender_side, defender_room, attack_room, thickness, far_side_z, gadget |
+| `REINF_<wallId>_<k>` | One Wall Fortification unit (k = index in the wall's `reinforce.panels`): a breakable, reinforceable panel, floor to ceiling (0–3.1 m). Everything else in that wall (junction ends, jambs, trims, header) is `HARD_<wallId>_hdr`. | size, width, height, u0, u1, site, defender_side, defender_room, attack_room, thickness, far_side_z, gadget |
 | `HATCH_<id>` | 1.2 × 1.2 m breakable floor hatch. | size, reinforce_from (always `above`), mount {pos, up, far_side_y}, top_room, bottom_room |
 | `SOFTFLOOR_<id>` | 2.4 m destructible floor patch (not reinforceable). | w, d, top_room, bottom_room |
 | `SOFTCEIL_<id>` | Ceiling tile under a hatch or a soft patch; it breaks with it. | |
@@ -100,7 +100,7 @@ fields listed below. The scene's extras repeat this table (`naming`) and the `su
 | `RAIL_*` | Balustrades and rails: shoot and vault over. | |
 | `BARR_D_<openingId>` / `BARR_W_<id>` | Empty: barricade slot at a barricadable door or window. The origin is the opening centre at floor level, and +Z is the wall normal (into the building for facade slots). | w, h, y0, y1, wall, kind, rooms |
 | `OPEN_<openingId>` | Empty: archway, counter or pried lift door. Never barricaded. | |
-| `STAIR_*`, `LADDER_*`, `WALK_*`, `LEDGE_LG_<F>`, `BRIDGE_*`, `TERRACE` | Circulation. Stairs render only; walk on the `COL_STAIR_*` ramps, landings and spiral treads. `BRIDGE_CR_cradle` is the moving cradle. | |
+| `STAIR_*`, `LADDER_*`, `WALK_*`, `LEDGE_LG_<F>`, `BRIDGE_*`, `TERRACE` | Circulation. Stairs render only; walk on the `COL_STAIR_*` ramps, landings. `BRIDGE_CR_cradle` is the moving cradle. | |
 | `SHUTTER_<bayId>` | Blast shutter inside a facade bay (one per bay with glass except a bay with a door, open by default). One mesh: the base is the OPEN state (slats stacked in the plenum housing) with one morph target, `closed` (weight 1 = closed). Origin = the closed curtain's bottom centre at floor level; +X along the bay, +Y up, +Z into the building. It moves: no static flags, no mesh collider. | bay, face, room, site, width, double_height, covers, y_closed, y_open, travel_m, travel_s, slats, default (`open`), collider, clips |
 | `HOLO_stage` / `HOLO_stage_emitter` | Stage hologram: blocks vision, not bullets, and has no collider. Off by default, it is switched from the Control Room console. The emitter ring is destructible. | center, radius, y0, y1, switch {room, pos, who} |
 | `ZONE_EXT_<id>` | Empty: defender reveal zone. Its children `ZONE_EXT_<id>_<k>` are box volumes (scale = size). | kind, ref, polygon or path |
@@ -109,7 +109,7 @@ fields listed below. The scene's extras repeat this table (`naming`) and the `su
 | `COVER_<id>` | Empty: deployable cover spot; +Z faces the yaw. | w, h, yaw_deg |
 | `CALLOUT_<roomId>` | Empty: callout anchor. `extras.name` is the callout name; show it only in UI, never in the world. | name, kind |
 | `PROP_<propId>` | Empty: layout prop marker. If `built_in`, it points at its `HARD_`/`SOFT_` node; otherwise it is a slot for the furniture pack (no mesh, no collider in the map). | pos, size, box, h, cover, type, breaks_sightline, built_in |
-| `COL_*` | Empty box collider: position, rotation, scale = box size (use a BoxCollider of size 1). Covers stairs (`COL_STAIR_*`: flight ramps, `_landing` and `_mid` landing plates, one box per spiral tread), ladders (`COL_LD_*`, climb volumes), built-in props, canopy and roofs, and the closed blast shutters (`COL_SHUTTER_<bayId>`: enable it only while that shutter is closed). | `COL_SHUTTER_`: shutter, active |
+| `COL_*` | Empty box collider: position, rotation, scale = box size (use a BoxCollider of size 1). Covers stairs (`COL_STAIR_*`: flight ramps, `_landing` and `_mid` landing plates, ), ladders (`COL_LD_*`, climb volumes), built-in props, canopy and roofs, and the closed blast shutters (`COL_SHUTTER_<bayId>`: enable it only while that shutter is closed). | `COL_SHUTTER_`: shutter, active |
 | `DECO_*` / `ENV_*` | Decoration merged per floor, kind and material (`DECO_`); scenery bodies of the tower and of the gameplay neighbours (`ENV_`). No gameplay meaning, no collider. | material, kind |
 | `BACKDROP_city` / `BACKDROP_sky` | The city skyline backdrop (one mesh, one baked material, one draw call) and the sky dome. No collider, no shadows, never an occluder. | kind, role |
 
@@ -142,7 +142,7 @@ Counts in the export:
 | --- | --- | --- | --- | --- |
 | hard | `HARD_` | no | no | core, columns and column wraps, shear and stone walls, slabs, spandrels, structure |
 | soft | `SOFT_` | yes | no | not used for walls (user rule: every breakable wall is reinforceable); soft props only |
-| reinforceable | `REINF_` | yes | yes | the only breakable wall type: panel 0–2.0 m sized for Wall Fortification units, between hard junction ends; hard transom above 2.0 m |
+| reinforceable | `REINF_` | yes | yes | the only breakable wall type: panel 0–3.1 m (floor to ceiling) sized for Wall Fortification widths, between hard junction ends; hard only in the plenum above the ceiling |
 | glass | `GLASSI_` | yes | no | interior glazing |
 | balustrade | `RAIL_` | no | no | 1.1 m glass rail: shoot and vault over |
 | hatch | `HATCH_` | yes | yes | 1.2 m floor hatch; `wall-fortification-hatch` fits it |
@@ -155,7 +155,7 @@ Counts in the export:
 | shutter | `SHUTTER_` | no | no | blast shutter inside a facade bay: open by default; closed it blocks vision and bullets over the whole bay |
 | zone_ext | `ZONE_EXT_` | no | no | defender reveal trigger |
 
-**Wall Fortification** (`gadgets/wall-fortification/`) units come in four widths, all 2.0 m high:
+**Wall Fortification** (`gadgets/wall-fortification/`) units come in four widths, all 2.0 m high as shipped; on this map scale them to 3.1 m high (y scale 1.55) so they cover the full floor-to-ceiling panel:
 
 | Size | Width | Gadget file | Units on this map |
 | --- | --- | --- | --- |
@@ -329,7 +329,7 @@ Registry and lookups on `HaneulTowerMap` (also `HaneulTowerMap.Instance`):
   - `FromLayout(x, y, z)`
 
 Destruction itself (holes in `REINF_` panels, glass breaking, hatch breaching) is left to the game. Each wall's `reinforce.panels`
-(u0, u1, 0–2.0 m) are its only breakable parts; `walls[].openings` and the rest of the wall are hard.
+(u0, u1, 0–3.1 m) are its only breakable parts; `walls[].openings` and the rest of the wall are hard.
 
 Materials:
 
