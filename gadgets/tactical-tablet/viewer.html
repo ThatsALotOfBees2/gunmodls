@@ -1146,8 +1146,8 @@ function patchGLB(buf, fn) {
 // Scene name = the file name (a scene named like the root node makes three's loader rename the node); every
 // emissive baked to strength 1 (glTFast ignores KHR_materials_emissive_strength); an identity
 // KHR_texture_transform on the screen atlas so glTFast builds the screen material with texture transforms. Its offset
-// is the 'lock' cell (col 3, row 0: offset [0.75, 0]) so the plain glb shows a lit lock screen, not the black 'off'
-// cell; TacticalPhone.cs takes that cell back out of the imported offset (DefaultCell).
+// is the 'lock' cell (SCREEN_DEFAULT_OFFSET from parts/screen.js; the phone's 4 x 4 atlas falls back to [0.75, 0]) so the
+// plain glb shows a lit lock screen, not the black 'off' cell; the Unity script takes that cell back out (DefaultCell).
 function patchJSON(json, sceneName) {
   if (json.scenes && json.scenes[0]) json.scenes[0].name = sceneName;
   for (const m of json.materials || []) {
@@ -1158,7 +1158,7 @@ function patchJSON(json, sceneName) {
       if (!Object.keys(m.extensions).length) delete m.extensions;
     }
     if (m.name === 'screen' && m.emissiveTexture) {
-      m.emissiveTexture.extensions = Object.assign(m.emissiveTexture.extensions || {}, { KHR_texture_transform: { offset: [0.75, 0], scale: [1, 1] } });
+      m.emissiveTexture.extensions = Object.assign(m.emissiveTexture.extensions || {}, { KHR_texture_transform: { offset: typeof SCREEN_DEFAULT_OFFSET !== 'undefined' ? SCREEN_DEFAULT_OFFSET : [0.75, 0], scale: [1, 1] } });
       json.extensionsUsed = [...new Set([...(json.extensionsUsed || []), 'KHR_texture_transform'])];
     }
   }
@@ -1237,6 +1237,8 @@ function makeDebugSet(ctx) {
 // A believable tablet OS without text or digits: status bar glyphs, wallpaper, rounded app icons with pictograms,
 // grey bars where text would be, gesture pill. One accent (#8a4dff), used where a real product uses its tint.
 const SCREEN_CELL = [320, 512], SCREEN_GRID = [5, 4];
+// the cell the exported glb shows on its own (KHR_texture_transform offset): 'lock' = cell 2, column 2 of 5, row 0
+const SCREEN_DEFAULT_OFFSET = [2 / 5, 0];
 const SCREEN_CELLS = [
   'off', 'boot', 'lock', 'home', 'app_open',
   'map_a', 'map_b', 'scan_a', 'scan_b', 'lock_on',
@@ -1432,7 +1434,7 @@ const CELL_ART = {
   off: (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); },
   boot: (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); arcS(x, w / 2, h * 0.44, 22, 5, UI.wt, -Math.PI / 2 + 0.5, Math.PI * 1.5 - 0.5); line(x, [[w / 2, h * 0.44 - 26], [w / 2, h * 0.44 - 6]], 5, UI.wt); for (let i = 0; i < 3; i++) dot(x, w / 2 - 14 + i * 14, h * 0.78, 3, i === 0 ? UI.wt : UI.wt3); },
   lock: (x, w, h, rnd) => { wallpaper(x, w, h, rnd, 0.25); statusBar(x, w); analogClock(x, w / 2, 130, 62); tbar(x, w / 2 - 50, 206, 100, UI.wt2, 6); fillRR(x, 16, 240, w - 32, 56, 14, 'rgba(30,32,38,0.7)'); fillRR(x, 28, 252, 30, 30, 8, UI.acc); tbar(x, 68, 256, 140, UI.wt2, 6); tbar(x, 68, 270, 100); fillRR(x, w / 2 - 7, h - 62, 14, 11, 2.5, UI.wt); arcS(x, w / 2, h - 63, 5, 2, UI.wt, Math.PI, 0); dot(x, 40, h - 50, 16, 'rgba(255,255,255,0.1)'); dot(x, w - 40, h - 50, 16, 'rgba(255,255,255,0.1)'); pill(x, w, h); },
-  home: (x, w, h, rnd) => { wallpaper(x, w, h, rnd); statusBar(x, w); analogClock(x, 64, 82, 38, 10.15, 9, { face: 'rgba(20,22,28,0.55)' }); fillRR(x, 120, 54, w - 136, 56, 14, 'rgba(20,22,28,0.55)'); tbar(x, 134, 70, 100, UI.wt2, 7); tbar(x, 134, 88, 70); for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) icon(x, 46 + c * 76, 160 + r * 74, r * 4 + c); fillRR(x, 12, h - 88, w - 24, 66, 22, 'rgba(255,255,255,0.12)'); [3, 0, 7, 8].forEach((k, i) => icon(x, 46 + i * 76, h - 55, k)); pill(x, w, h); },
+  home: (x, w, h, rnd) => { wallpaper(x, w, h, rnd); statusBar(x, w); analogClock(x, 64, 82, 38, 10.15, 9, { face: 'rgba(20,22,28,0.55)' }); fillRR(x, 120, 54, w - 136, 56, 14, 'rgba(20,22,28,0.55)'); tbar(x, 134, 70, 100, UI.wt2, 7); tbar(x, 134, 88, 70); [4, 5, 6, 7, 8, 9, 10, 11].forEach((k, i) => icon(x, 46 + (i % 4) * 76, 160 + Math.floor(i / 4) * 74, k)); dot(x, w / 2 - 8, h - 104, 2.6, UI.wt); dot(x, w / 2 + 8, h - 104, 2.6, 'rgba(255,255,255,0.3)'); fillRR(x, 12, h - 88, w - 24, 66, 22, 'rgba(255,255,255,0.12)'); [2, 3, 0, 1].forEach((k, i) => icon(x, 46 + i * 76, h - 55, k)); pill(x, w, h); },
   app_open: (x, w, h, rnd) => { CELL_ART.home(x, w, h, rnd); x.fillStyle = 'rgba(0,0,0,0.35)'; x.fillRect(0, 0, w, h); fillRR(x, 30, 70, w - 60, h - 150, 26, '#1a1d23'); icon(x, w / 2, h / 2 - 20, 0, 64); },
   map_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1); appBar(x, w); navBar(x, w, h); },
   map_b: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 0); appBar(x, w); navBar(x, w, h); },
@@ -1522,6 +1524,7 @@ function tabletMaterials() {
   CHIP.set(M.tpu, M.tpuScuff);
   // frame_alloy: hard-anodised 6063, satin (bead-blast before anodise), no bright edge wear (the bumpers take the knocks)
   M.alloy = T(pbr('frame_alloy', TX.under, 0.1, { color: '#26282d', metalness: 0.7, envMapIntensity: 0.55 }, 0.5));
+  { const o = ormScaled(TX.under.orm.image, 1.55, 'frame_orm'); M.alloy.roughnessMap = o; M.alloy.metalnessMap = o; }      // satin: roughness about 0.65
   M.flash.color.set('#8d877b'); M.flash.roughness = 0.24;
   M.backCover = T(pbr('back_cover', TX.polymer, 0.035, { envMapIntensity: 0.6 }, 0.6));
   M.gripPad = T(pbr('rubber_grip', TX.knurl, 0.02, { envMapIntensity: 0.45 }, 0.9));
@@ -1587,7 +1590,7 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
       parts.push(g);
       for (const [x, y] of [[Bm.x - Bm.t / 2 - 0.1, Bm.y - 21], [Bm.x - 21, Bm.y - Bm.t / 2 - 0.1]]) screws.push(torxScrew(mm(1.3), V3(mm(sx * x), mm(sy * y), mm(Bm.z - 0.25)), V3(0, 0, 1), sx * sy + x * 0.1));
     }
-    add(body, mergeUV(parts), M.tpu, 'body_bumpers', { wear: { k: 140, chip: 0.42, freq: 60, kIn: 300 } });
+    add(body, mergeUV(parts), M.tpu, 'body_bumpers', { wear: { k: 520, chip: 0.5, freq: 45, kIn: 300 } });
     add(body, mergeUV(screws), M.torx, 'body_bumper_screws', { cast: false });
     // TODO(detail): Torx-6 recess instead of hex, 0.3 mm counterbore, mould parting line round the bumper waist, scuffs
   }
