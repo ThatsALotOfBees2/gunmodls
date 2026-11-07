@@ -7,11 +7,12 @@
 //                               with the world point; unlocks a locked tablet
 //   Scan()                      the programmable top key: thermal scan; onScan fires 0.3 s in (ScanOrigin is the
 //                               fx_scan locator at the thermal window), onScanResult at 1.0 s (lock_on cell for 1.5 s)
-//   PttDown() / PttUp()         push-to-talk on the purple side key: key-up chirp, the radio talk screen, the key held
+//   PttDown() / PttUp()         push-to-talk on the violet side key: key-up chirp, the radio talk screen, the key held
 //                               (the ptt clip loops 0.3-1.3 s while held), then the release beep and back to the app
 //   SetAlert(on), LowBattery()  red alert loop / 3 s of the amber battery warning
 //   PowerOff(), ScreenOff()     power menu and shutdown to off / straight to a dark screen
-//   SetFlap(open)               swing the USB-C flap open or shut (any time, on top of the other clips)
+//   SetFlap(open), SetPorts(o)  swing the USB-C flap open or shut (any time, on top of the other clips); SetPorts is the
+//                               phone script's name for the same call
 //   SetStrap(on)                show or hide the back hand strap (hand_strap)
 //   SetApp(app), SetCell(c)     the app idle shows (Map, Drone, Scan, Home, Radio) / force an atlas cell (-1 = automatic)
 //   SetTorch(on)                rear flash as a torch (emission + an optional spot light at fx_flash)
@@ -85,6 +86,9 @@ public class TacticalTablet : MonoBehaviour
     const int Off = 0, Boot = 1, LockCell = 2, HomeCell = 3, AppOpen = 4, MapA = 5, MapB = 6, ScanA = 7, ScanB = 8, LockOn = 9,
         DroneA = 10, DroneB = 11, PttIdle = 12, PttTalk = 13, CallIn = 14, AlertA = 15, AlertB = 16, LowBat = 17, PowerMenu = 18, Shutdown = 19;
     const int GridX = 5, GridY = 4;
+    // each cell's art fills its inner area; an 8 px (of 320) / 13 px (of 512) gutter of edge pixels surrounds it, and the
+    // screen mesh's UVs cover only that inner area (so mip levels never bleed a neighbouring cell into the screen)
+    const float GutterU = 8f / 320f, GutterV = 13f / 512f;
     const int DefaultCell = LockCell;           // the cell the glb's KHR_texture_transform shows without this script
     const float ScreenW = 0.1077f, ScreenH = 0.1723f;
     const float PttHoldFrom = 0.3f, PttHoldTo = 1.3f, PttRelease = 1.4f;
@@ -346,6 +350,9 @@ public class TacticalTablet : MonoBehaviour
         Play(open ? flapOpen : flapClose);
     }
 
+    // the phone's name for the same call (TacticalPhone.SetPorts), so shared code can drive either gadget
+    public void SetPorts(bool open) { SetFlap(open); }
+
     public void SetStrap(bool on) { showStrap = on; if (strap != null) strap.gameObject.SetActive(on); }
 
     public void SetApp(App a) { app = a; }
@@ -488,6 +495,9 @@ public class TacticalTablet : MonoBehaviour
                 // the mesh's UVs cover one cell: stretch the whole feed over that cell's range
                 var s = new Vector2(a.scale.x * GridX, a.scale.y * GridY);
                 var o = new Vector2(a.offset.x * GridX, a.offset.y * GridY - (GridY - 1) * Mathf.Sign(a.scale.y));
+                // the UVs cover the cell's inner area only: stretch that to the whole feed
+                s = new Vector2(s.x / (1f - 2f * GutterU), s.y / (1f - 2f * GutterV));
+                o = new Vector2((o.x - GutterU) / (1f - 2f * GutterU), (o.y - GutterV) / (1f - 2f * GutterV));
                 if (flipFeed) { s.y = -s.y; o.y = 1f - o.y; }
                 Apply(a, a.tex != null ? droneFeed : null, s, o);
             }
