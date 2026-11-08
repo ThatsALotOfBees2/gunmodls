@@ -10,8 +10,8 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 | [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
 | [Recon Tablet](gadgets/recon-tablet/) | Gadgets | `recon-tablet.glb` (left-hand scanner), sounds, Unity ability script |
-| [Tactical Phone](gadgets/tactical-phone/) | Gadgets | `tactical-phone.glb` (rugged left-hand smartphone, 16-cell screen atlas), sounds, Unity script |
-| [Tactical Tablet](gadgets/tactical-tablet/) | Gadgets | `tactical-tablet.glb` (rugged 8" tablet with hand strap, PTT key, thermal camera, 20-cell screen atlas), sounds, Unity script |
+| [Tactical Phone](gadgets/tactical-phone/) | Gadgets | `tactical-phone.glb` (rugged 5.8" phone, the tablet's sibling: TPU overmould on an alloy frame, bonded display, replaceable L-shaped corner bumpers on Torx screws, knurled grip inlays, PTT key, thermal camera; 20-cell screen atlas), sounds, Unity script |
+| [Tactical Tablet](gadgets/tactical-tablet/) | Gadgets | `tactical-tablet.glb` (rugged 8" tablet, the phone's construction at tablet scale: TPU overmould on an alloy frame, replaceable corner bumpers, battery door, hand strap, PTT key, thermal camera; tablet-layout 20-cell screen atlas), sounds, Unity script |
 | [Conductive Lattice](gadgets/conductive-lattice/) | Gadgets | `conductive-lattice-node.glb` (thrown wall electrification; circuit grown at runtime), sounds |
 | [Cameras](gadgets/cameras/) | Gadgets | `security-camera.glb`, `sticky-camera.glb`, sounds |
 | [Scout Drone](gadgets/scout-drone/) | Gadgets | `scout-drone.glb` (thrown four-wheel recon drone: deploy, drive, turn, hop, shutdown), sounds, Unity driver |

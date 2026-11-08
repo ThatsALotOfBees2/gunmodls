@@ -134,7 +134,7 @@
   <div class="eyebrow">Operator gadget</div>
   <h1>Tactical <span>Tablet</span></h1>
   <dl class="specs">
-    <dt>Size</dt><dd>138 × 224 × 16.4 mm, one-piece TPU overmould, about 0.62 kg</dd>
+    <dt>Size</dt><dd>131.6 × 212 × 14.6 mm, aluminium frame, TPU corner bumpers, about 0.55 kg</dd>
     <dt>Screen</dt><dd>8.0" 16:10, 107.7 × 172.3 mm, 20-cell atlas</dd>
     <dt>Hold</dt><dd>Left hand under the back strap</dd>
   </dl>
@@ -194,7 +194,7 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
-import { Brush, Evaluator, SUBTRACTION } from 'three-bvh-csg';
+import { Brush, Evaluator, SUBTRACTION, INTERSECTION } from 'three-bvh-csg';
 
 // Metres, +Y up the phone, the screen faces -Z (toward the holder), the holder's left +X (DESIGN.md 1).
 
@@ -1098,11 +1098,11 @@ function ringShape(outer, holes) { for (const h of holes) outer.holes.push(h); r
 
 /* ------------------------------------------------------------------ clips */
 
-// Samples fn(t) at 30 fps into glTF tracks for list = [[node, ['quaternion' | 'position' | 'scale']], ...].
+// Samples fn(t) at fps (default 30) into glTF tracks for list = [[node, ['quaternion' | 'position' | 'scale']], ...].
 // Quaternions are kept on one hemisphere so a spin never interpolates the long way. stepNodes: names whose
 // tracks use STEP interpolation (LED blinks).
-function sampleClip(name, len, list, fn, stepNodes = []) {
-  const fps = 30, n = Math.round(len * fps), data = list.map(() => ({})), times = [];
+function sampleClip(name, len, list, fn, stepNodes = [], fps = 30) {
+  const n = Math.round(len * fps), data = list.map(() => ({})), times = [];
   for (let i = 0; i <= n; i++) {
     const t = Math.min(len, i / fps); times.push(t); fn(t);
     list.forEach(([o, props], j) => {
@@ -1129,7 +1129,7 @@ function clipsFor(model) {
   return model.order.map((name) => {
     const C = model.clips[name];
     const list = C.keys.map(([n, props]) => { const o = model.nodes[n]; if (!o) throw new Error(`${model.id}: clip ${name} keys a missing node ${n}`); return [o, props]; });
-    return sampleClip(name, C.len, list, (t) => model.pose(name, t), C.step || []);
+    return sampleClip(name, C.len, list, (t) => model.pose(name, t), C.step || [], C.fps || 30);   // C.fps: a clip whose blinks fall on 1/8 s keys samples at 24 fps
   });
 }
 
@@ -1152,7 +1152,7 @@ function patchGLB(buf, fn) {
 // Scene name = the file name (a scene named like the root node makes three's loader rename the node); every
 // emissive baked to strength 1 (glTFast ignores KHR_materials_emissive_strength); an identity
 // KHR_texture_transform on the screen atlas so glTFast builds the screen material with texture transforms. Its offset
-// is the 'lock' cell (SCREEN_DEFAULT_OFFSET from parts/screen.js; the phone's 4 x 4 atlas falls back to [0.75, 0]) so the
+// is the 'lock' cell (SCREEN_DEFAULT_OFFSET from parts/screen.js) so the
 // plain glb shows a lit lock screen, not the black 'off' cell; the Unity script takes that cell back out (DefaultCell).
 function patchJSON(json, sceneName) {
   if (json.scenes && json.scenes[0]) json.scenes[0].name = sceneName;
@@ -1277,9 +1277,12 @@ function tbar(x, x0, y0, w, c = UI.wt3, h = 5) {
 function statusBar(x, w, { batt = 0.72, battCol = null, dim = false } = {}) {
   const c = dim ? UI.wt2 : UI.wt;
   const n = dim ? 'rgba(242,243,245,0.4)' : 'rgba(242,243,245,0.6)';            // notification glyphs, quieter than the system icons
-  dot(x, 16, 13, 1.4, n); for (const r of [3.6, 6.2]) { arcS(x, 16, 13, r, 1.3, n, -0.9, 0.9); arcS(x, 16, 13, r, 1.3, n, Math.PI - 0.9, Math.PI + 0.9); }   // radio
-  x.beginPath(); x.arc(33, 10.5, 3.6, Math.PI, 0); x.lineTo(33, 17); x.closePath(); x.fillStyle = n; x.fill(); dot(x, 33, 10.5, 1.3, dim ? '#000' : 'rgba(10,12,18,0.9)');   // location
-  line(x, [[46, 7.5], [46, 14]], 1.5, n); line(x, [[42.8, 11.3], [46, 14.5], [49.2, 11.3]], 1.5, n); line(x, [[42, 17], [50, 17]], 1.5, n);   // download
+  // the time slot (top left on every Android): a small analog clock glyph instead of digits
+  arcS(x, 15, 12, 5.2, 1.4, c); line(x, [[15, 12], [15, 8.6]], 1.4, c); line(x, [[15, 12], [17.6, 13.2]], 1.4, c);
+  const o = 16;
+  dot(x, 16 + o, 13, 1.4, n); for (const r of [3.6, 6.2]) { arcS(x, 16 + o, 13, r, 1.3, n, -0.9, 0.9); arcS(x, 16 + o, 13, r, 1.3, n, Math.PI - 0.9, Math.PI + 0.9); }   // radio
+  x.beginPath(); x.arc(33 + o, 10.5, 3.6, Math.PI, 0); x.lineTo(33 + o, 17); x.closePath(); x.fillStyle = n; x.fill(); dot(x, 33 + o, 10.5, 1.3, dim ? '#000' : 'rgba(10,12,18,0.9)');   // location
+  line(x, [[46 + o, 7.5], [46 + o, 14]], 1.5, n); line(x, [[42.8 + o, 11.3], [46 + o, 14.5], [49.2 + o, 11.3]], 1.5, n); line(x, [[42 + o, 17], [50 + o, 17]], 1.5, n);   // download
   const bx = w - 70;
   for (let i = 0; i < 4; i++) fillRR(x, bx + i * 4, 16 - (i + 1) * 2.4, 2.6, (i + 1) * 2.4, 0.8, i < 3 ? c : UI.wt3);
   for (const r of [3, 6, 9]) arcS(x, bx + 30, 17, r, 1.6, c, -2.3, -0.84);
@@ -1362,6 +1365,14 @@ const ICONS = [
   ['#2c6e8f', (x, c) => { rr(x, c[0] - 11, c[1] - 8, 22, 16, 2); x.lineWidth = 2.4; x.strokeStyle = '#fff'; x.stroke(); line(x, [[c[0] - 11, c[1] - 7], [c[0], c[1] + 2], [c[0] + 11, c[1] - 7]], 2.2, '#fff'); }], // mail
   ['#c39a22', (x, c) => { for (let i = 0; i < 3; i++) fillRR(x, c[0] - 10, c[1] - 9 + i * 7, i === 2 ? 13 : 20, 3.2, 1.6, '#fff'); }],                                                                           // notes
   ['#3a4a8c', (x, c) => { arcS(x, c[0], c[1], 9, 2.4, '#fff'); line(x, [[c[0], c[1]], [c[0], c[1] - 6]], 2.4, '#fff'); line(x, [[c[0], c[1]], [c[0] + 5, c[1] + 2]], 2.4, '#fff'); }],    // clock
+  ['#2d64b8', (x, c) => { arcS(x, c[0], c[1], 10, 2.2, '#fff'); x.beginPath(); x.ellipse(c[0], c[1], 4.5, 10, 0, 0, Math.PI * 2); x.lineWidth = 2; x.strokeStyle = '#fff'; x.stroke(); line(x, [[c[0] - 10, c[1]], [c[0] + 10, c[1]]], 2, '#fff'); }],   // browser (globe)  12
+  ['#b5476b', (x, c) => { fillRR(x, c[0] - 11, c[1] - 9, 22, 18, 3, '#fff'); x.beginPath(); x.moveTo(c[0] - 9, c[1] + 7); x.lineTo(c[0] - 2, c[1] - 2); x.lineTo(c[0] + 3, c[1] + 3); x.lineTo(c[0] + 6, c[1]); x.lineTo(c[0] + 9, c[1] + 7); x.closePath(); x.fillStyle = '#b5476b'; x.fill(); dot(x, c[0] + 5, c[1] - 4, 2.2, '#b5476b'); }],   // gallery  13
+  ['#d8dade', (x, c) => { fillRR(x, c[0] - 11, c[1] - 9, 22, 20, 3, '#fff'); fillRR(x, c[0] - 11, c[1] - 9, 22, 6, 3, '#d9443a'); for (let i = 0; i < 3; i++) for (let j = 0; j < 2; j++) fillRR(x, c[0] - 8 + i * 6, c[1] + j * 5, 4, 3, 1, '#9aa0aa'); }],   // calendar  14
+  ['#3f7f8f', (x, c) => { dot(x, c[0], c[1] - 4, 5, '#fff'); x.beginPath(); x.ellipse(c[0], c[1] + 9, 9, 6, 0, Math.PI, 0); x.fillStyle = '#fff'; x.fill(); }],   // contacts  15
+  ['#2a8f8a', (x, c) => { rr(x, c[0] - 11, c[1] - 9, 22, 15, 6); x.fillStyle = '#fff'; x.fill(); x.beginPath(); x.moveTo(c[0] - 6, c[1] + 4); x.lineTo(c[0] - 8, c[1] + 11); x.lineTo(c[0] + 1, c[1] + 5); x.closePath(); x.fill(); }],   // messages  16
+  ['#c23b3b', (x, c) => { x.beginPath(); x.moveTo(c[0] - 5, c[1] - 9); x.lineTo(c[0] + 9, c[1]); x.lineTo(c[0] - 5, c[1] + 9); x.closePath(); x.fillStyle = '#fff'; x.fill(); }],   // video player  17
+  ['#4b5262', (x, c) => { fillRR(x, c[0] - 4, c[1] - 2, 8, 13, 2, '#fff'); x.beginPath(); x.moveTo(c[0] - 8, c[1] - 11); x.lineTo(c[0] + 8, c[1] - 11); x.lineTo(c[0] + 4, c[1] - 2); x.lineTo(c[0] - 4, c[1] - 2); x.closePath(); x.fillStyle = '#fff'; x.fill(); }],   // torch  18
+  ['#3d5a3a', (x, c) => { x.beginPath(); x.moveTo(c[0], c[1] - 11); x.lineTo(c[0] + 9, c[1] - 7); x.lineTo(c[0] + 8, c[1] + 3); x.quadraticCurveTo(c[0] + 5, c[1] + 9, c[0], c[1] + 12); x.quadraticCurveTo(c[0] - 5, c[1] + 9, c[0] - 8, c[1] + 3); x.lineTo(c[0] - 9, c[1] - 7); x.closePath(); x.fillStyle = '#fff'; x.fill(); line(x, [[c[0] - 4, c[1]], [c[0] - 1, c[1] + 4], [c[0] + 5, c[1] - 4]], 2.4, '#3d5a3a'); }],   // security  19
 ];
 function icon(x, cx, cy, k, s = 44) {
   let [bg, f] = ICONS[k % ICONS.length];
@@ -1375,111 +1386,153 @@ function analogClock(x, cx, cy, r, hh = 10.15, mm = 9, { face = 'rgba(255,255,25
   line(x, [[cx, cy], [cx + Math.sin(ma) * r * 0.76, cy - Math.cos(ma) * r * 0.76]], 2.6, UI.wt);
   dot(x, cx, cy, 3.4, dotC);
 }
-function appBar(x, w, col = 'rgba(18,19,23,0.92)') { x.fillStyle = col; x.fillRect(0, 0, w, 58); statusBar(x, w); line(x, [[22, 40], [14, 34], [22, 28]], 2.4, UI.wt); tbar(x, 36, 31, 84, UI.wt2, 6); dot(x, w - 20, 34, 2, UI.wt2); dot(x, w - 20, 27, 2, UI.wt2); dot(x, w - 20, 41, 2, UI.wt2); }
+function appBar(x, w, col = 'rgba(18,19,23,0.92)', tools = true) {
+  x.fillStyle = col; x.fillRect(0, 0, w, 50); statusBar(x, w); line(x, [[20, 37], [13, 31], [20, 25]], 2.2, UI.wt); tbar(x, 32, 28, 70, UI.wt2, 6);
+  if (tools) {
+    fillRR(x, w - 150, 23, 92, 18, 9, 'rgba(255,255,255,0.07)'); arcS(x, w - 140, 31.5, 3.6, 1.4, UI.wt2); line(x, [[w - 137.4, 34.1], [w - 134.5, 37]], 1.4, UI.wt2); tbar(x, w - 128, 29, 44, UI.wt3, 4);
+    { const cx = w - 44; x.beginPath(); x.moveTo(cx, 25); x.lineTo(cx + 7, 28.5); x.lineTo(cx, 32); x.lineTo(cx - 7, 28.5); x.closePath(); x.fillStyle = UI.wt2; x.fill(); line(x, [[cx - 7, 32.5], [cx, 36], [cx + 7, 32.5]], 1.5, UI.wt2); }   // map layers
+  }
+  dot(x, w - 18, 26, 1.8, UI.wt2); dot(x, w - 18, 32, 1.8, UI.wt2); dot(x, w - 18, 38, 1.8, UI.wt2);
+}
 function navBar(x, w, h) { x.fillStyle = 'rgba(10,10,12,0.94)'; x.fillRect(0, h - 18, w, 18); pill(x, w, h); }
 
 // a floor plan in plan view (rooms, doors, stairs), the holder's blue arrow and team / hostile markers
-function floorPlan(x, w, h, rnd, phase) {
-  x.fillStyle = '#1a1d23'; x.fillRect(0, 58, w, h - 76);
-  x.strokeStyle = 'rgba(255,255,255,0.04)'; x.lineWidth = 1; for (let i = 0; i < w; i += 16) { x.beginPath(); x.moveTo(i, 58); x.lineTo(i, h); x.stroke(); } for (let j = 58; j < h; j += 16) { x.beginPath(); x.moveTo(0, j); x.lineTo(w, j); x.stroke(); }
-  const ox = 26, oy = 92, R = [[0, 0, 140, 110], [140, 0, 128, 70], [140, 70, 128, 120], [0, 110, 90, 150], [90, 110, 50, 150], [0, 260, 180, 110], [180, 190, 88, 180]];
-  x.fillStyle = '#262a32'; for (const [a, b, c, d] of R) x.fillRect(ox + a, oy + b, c, d);
-  x.strokeStyle = '#c9ced8'; x.lineWidth = 2.4; for (const [a, b, c, d] of R) x.strokeRect(ox + a, oy + b, c, d);
-  x.fillStyle = '#262a32'; for (const [a, b, vert] of [[60, 110, 0], [140, 30, 1], [200, 70, 0], [90, 180, 1], [40, 260, 0], [180, 290, 1], [220, 190, 0]]) vert ? x.fillRect(ox + a - 3, oy + b - 8, 6, 16) : x.fillRect(ox + a - 8, oy + b - 3, 16, 6);
-  x.strokeStyle = 'rgba(201,206,216,0.6)'; x.lineWidth = 1; for (let i = 0; i < 6; i++) { x.beginPath(); x.moveTo(ox + 96 + i * 7, oy + 116); x.lineTo(ox + 96 + i * 7, oy + 160); x.stroke(); }  // stairs
-  // holder: blue arrow with a view cone
-  const hx = ox + 60, hy = oy + 330;
-  x.fillStyle = 'rgba(74,163,255,0.18)'; x.beginPath(); x.moveTo(hx, hy); x.arc(hx, hy, 60, -2.0, -1.1); x.closePath(); x.fill();
-  dot(x, hx, hy, 9, UI.blue); x.beginPath(); x.moveTo(hx, hy - 7); x.lineTo(hx + 5, hy + 4); x.lineTo(hx, hy + 1); x.lineTo(hx - 5, hy + 4); x.closePath(); x.fillStyle = '#fff'; x.fill();
-  for (const [a, b] of [[200, 330], [230, 240]]) { dot(x, ox + a, oy + b, 7, UI.green); arcS(x, ox + a, oy + b, 7, 2, '#fff'); }
-  for (const [a, b, s] of [[60, 40, 1], [210, 120, phase]]) if (s) { x.save(); x.translate(ox + a, oy + b); x.rotate(Math.PI / 4); fillRR(x, -6, -6, 12, 12, 2, UI.red); x.restore(); arcS(x, ox + a, oy + b, 14 + (phase ? 6 : 0), 1.6, 'rgba(255,75,75,0.5)'); }
+function floorPlan(x, w, h, rnd, phase, { sheet = true } = {}) {
+  const top = 50, bot = sheet ? 338 : h - 18;
+  x.fillStyle = '#1a1d23'; x.fillRect(0, top, w, h - top);
+  x.strokeStyle = 'rgba(255,255,255,0.04)'; x.lineWidth = 1; for (let i = 0; i < w; i += 12) { x.beginPath(); x.moveTo(i, top); x.lineTo(i, bot); x.stroke(); } for (let j = top; j < bot; j += 12) { x.beginPath(); x.moveTo(0, j); x.lineTo(w, j); x.stroke(); }
+  // the plan in its own units (268 x 370), scaled into the band above the sheet, left of the floor switcher
+  const k = Math.min((bot - top - 18) / 372, (w - 70) / 270), ox = 14 + ((w - 64) - 270 * k) / 2, oy = top + 8;
+  x.save(); x.translate(ox, oy); x.scale(k, k);
+  const R = [[0, 0, 140, 110], [140, 0, 128, 70], [140, 70, 128, 120], [0, 110, 90, 150], [90, 110, 50, 150], [0, 260, 180, 110], [180, 190, 88, 180]];
+  x.fillStyle = '#262a32'; for (const [a, b, c, d] of R) x.fillRect(a, b, c, d);
+  x.strokeStyle = '#c9ced8'; x.lineWidth = 2.6; for (const [a, b, c, d] of R) x.strokeRect(a, b, c, d);
+  x.fillStyle = '#262a32'; for (const [a, b, vert] of [[60, 110, 0], [140, 30, 1], [200, 70, 0], [90, 180, 1], [40, 260, 0], [180, 290, 1], [220, 190, 0]]) vert ? x.fillRect(a - 3, b - 8, 6, 16) : x.fillRect(a - 8, b - 3, 16, 6);
+  x.strokeStyle = 'rgba(201,206,216,0.6)'; x.lineWidth = 1.2; for (let i = 0; i < 6; i++) { x.beginPath(); x.moveTo(96 + i * 7, 116); x.lineTo(96 + i * 7, 160); x.stroke(); }  // stairs
+  const hx = 60, hy = 330;
+  x.fillStyle = 'rgba(74,163,255,0.18)'; x.beginPath(); x.moveTo(hx, hy); x.arc(hx, hy, 64, -2.0, -1.1); x.closePath(); x.fill();
+  dot(x, hx, hy, 10, UI.blue); x.beginPath(); x.moveTo(hx, hy - 7.5); x.lineTo(hx + 5.5, hy + 4.5); x.lineTo(hx, hy + 1); x.lineTo(hx - 5.5, hy + 4.5); x.closePath(); x.fillStyle = '#fff'; x.fill();
+  for (const [a, b] of [[200, 330], [230, 240], [110, 300]]) { dot(x, a, b, 8, UI.green); arcS(x, a, b, 8, 2.2, '#fff'); }
+  for (const [a, b, s] of [[60, 40, 1], [210, 120, phase]]) if (s) { x.save(); x.translate(a, b); x.rotate(Math.PI / 4); fillRR(x, -7, -7, 14, 14, 2, UI.red); x.restore(); arcS(x, a, b, 16 + (phase ? 6 : 0), 1.8, 'rgba(255,75,75,0.5)'); }
+  x.restore();
   // floor switcher and zoom (right edge), recentre button
-  fillRR(x, w - 46, 120, 32, 92, 10, UI.card); for (let i = 0; i < 3; i++) fillRR(x, w - 40, 128 + i * 28, 20, 20, 6, i === 1 ? UI.acc : 'rgba(255,255,255,0.08)');
-  dot(x, w - 34, h - 60, 20, UI.card); arcS(x, w - 34, h - 60, 7, 2, UI.wt); dot(x, w - 34, h - 60, 2.4, UI.wt);
+  fillRR(x, w - 42, 72, 28, 84, 9, UI.card); for (let i = 0; i < 3; i++) fillRR(x, w - 37, 79 + i * 25, 18, 18, 5, i === 1 ? UI.acc : 'rgba(255,255,255,0.08)');
+  fillRR(x, w - 42, 166, 28, 52, 9, UI.card); line(x, [[w - 33, 180], [w - 23, 180]], 1.8, UI.wt); line(x, [[w - 28, 175], [w - 28, 185]], 1.8, UI.wt); line(x, [[w - 33, 204], [w - 23, 204]], 1.8, UI.wt);
+  dot(x, w - 28, bot - 24, 15, UI.card); arcS(x, w - 28, bot - 24, 5.5, 1.8, UI.wt); dot(x, w - 28, bot - 24, 2, UI.wt);
+  if (!sheet) return;
+  // the bottom sheet: a grab handle, three tabs (team, objectives, intel; the first selected), the team roster
+  fillRR(x, 0, 330, w, h, 18, '#15171c'); fillRR(x, w / 2 - 16, 337, 32, 3.5, 2, 'rgba(255,255,255,0.22)');
+  for (let i = 0; i < 3; i++) { tbar(x, 30 + i * 96, 350, 46, i === 0 ? UI.wt2 : UI.wt3, 5); }
+  fillRR(x, 26, 362, 56, 2.5, 1.2, UI.acc); x.fillStyle = 'rgba(255,255,255,0.06)'; x.fillRect(0, 366, w, 1);
+  const C = [['#3d4f66', '#c9a68a', UI.green, 0.2], ['#4d4436', '#8d6b52', UI.green, 1.4], ['#344a40', '#d8b394', UI.amber, 2.6], ['#463d52', '#a77d63', UI.green, -1.1]];
+  C.forEach(([bg, sk, st, ang], i) => {
+    const yy = 384 + i * 26;
+    avatar(x, 26, yy, 9.5, bg, sk); dot(x, 33, yy + 7, 3.2, '#15171c'); dot(x, 33, yy + 7, 2.2, st);
+    tbar(x, 44, yy - 6, 54 + ((i * 29) % 34), UI.wt2, 5); tbar(x, 44, yy + 3, 40 + ((i * 17) % 30), UI.wt3, 4);
+    // health / armour bar and a bearing arrow toward the teammate
+    fillRR(x, w - 120, yy - 2, 56, 4, 2, 'rgba(255,255,255,0.1)'); fillRR(x, w - 120, yy - 2, 56 * [0.95, 0.7, 0.42, 0.85][i], 4, 2, i === 2 ? UI.amber : 'rgba(242,243,245,0.6)');
+    x.save(); x.translate(w - 34, yy); x.rotate(ang); x.beginPath(); x.moveTo(0, -6); x.lineTo(4.5, 4.5); x.lineTo(0, 2); x.lineTo(-4.5, 4.5); x.closePath(); x.fillStyle = UI.wt2; x.fill(); x.restore();
+  });
 }
-// a thermal frame in the ironbow palette: a low-resolution (about 80 x 110 px) temperature field, blurred and upscaled
-// like a microbolometer image, with NUC column noise and vignetting; the room is cool (black to deep blue), the person
-// warm, the face and hands hottest
-const IRONBOW = [[0, 0, 0], [12, 4, 52], [52, 8, 112], [120, 12, 138], [190, 40, 110], [232, 88, 38], [250, 152, 10], [255, 214, 70], [255, 250, 210]];
+// a thermal frame in the ironbow palette (black -> indigo -> purple -> red -> orange -> yellow-white): a 96-px-wide
+// microbolometer image (about 96 x 160 on this portrait crop of a 160 x 120 core) shown pixel for pixel (nearest
+// neighbour, so the sensor grid reads), with optics blur, a fixed column pattern, temporal noise and vignetting. The
+// art is the family's (the phone draws the same scene): a person kneeling behind a crate, rifle up, facing left; the
+// room near ambient (black to deep blue), a cold window, a radiator, a hot-water pipe, a ceiling lamp, a monitor.
+const IRONBOW = [[0, 0, 0], [14, 6, 58], [52, 8, 112], [120, 12, 138], [190, 40, 110], [232, 88, 38], [250, 152, 10], [255, 214, 70], [255, 250, 210]];
 function ironCol(t) { const s = IRONBOW; t = Math.max(0, Math.min(1, t)) * (s.length - 1); const i = Math.min(s.length - 2, Math.floor(t)), f = t - i; return s[i].map((v, k) => Math.round(v + (s[i + 1][k] - v) * f)); }
 function segD(px, py, ax, ay, bx, by) { const vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / (vx * vx + vy * vy || 1))); return Math.hypot(px - ax - vx * t, py - ay - vy * t); }
-// a person kneeling behind a crate, rifle up, seen from the side: capsules in cell units (u right, v down), [ax, ay, bx, by, r, temp]
+// scene units: u right, v down (0..1 of the family's full thermal frame); x distances are u * TH_SA in v units. Capsules
+// [ax, ay, bx, by, r (v units), temp]. Proportions: head about 1/7 of the standing height on a short wide neck, shoulders
+// about 2.5 head widths, a torso with the plate carrier tapering to the hips, the near thigh forward (knee up), the far
+// knee down on the floor behind the crate; both arms bent round the rifle
+const TH_SA = 0.652;
 const PERSON = [
-  [0.655, 0.200, 0.650, 0.215, 0.036, 0.97],     // head (face hottest)
-  [0.668, 0.180, 0.640, 0.185, 0.030, 0.72],     // helmet, cooler
-  [0.650, 0.245, 0.655, 0.270, 0.020, 0.86],     // neck
-  [0.630, 0.290, 0.700, 0.300, 0.040, 0.60],     // shoulders (jacket)
-  [0.665, 0.300, 0.690, 0.440, 0.058, 0.50],     // torso (plate carrier insulates)
-  [0.680, 0.440, 0.700, 0.470, 0.052, 0.54],     // hips
-  [0.630, 0.300, 0.575, 0.350, 0.021, 0.70],     // upper arm forward
-  [0.575, 0.350, 0.515, 0.320, 0.018, 0.74],     // forearm
-  [0.700, 0.305, 0.655, 0.360, 0.020, 0.70],     // far arm
-  [0.655, 0.360, 0.560, 0.335, 0.017, 0.74],
-  [0.512, 0.318, 0.512, 0.318, 0.017, 0.93],     // hands
-  [0.560, 0.333, 0.560, 0.333, 0.015, 0.92],
-  [0.690, 0.460, 0.620, 0.500, 0.036, 0.5],      // thigh (kneeling, mostly behind the crate)
+  [0.662, 0.198, 0.658, 0.222, 0.031, 1.00],     // head (face side hottest)
+  [0.658, 0.252, 0.661, 0.272, 0.024, 0.84],     // neck, short and wide
+  [0.612, 0.292, 0.722, 0.298, 0.030, 0.50],     // shoulders (jacket)
+  [0.668, 0.300, 0.684, 0.380, 0.052, 0.40],     // chest (the plate carrier insulates)
+  [0.684, 0.380, 0.696, 0.452, 0.044, 0.46],     // waist, tapering
+  [0.696, 0.462, 0.704, 0.478, 0.046, 0.50],     // hips
+  [0.700, 0.476, 0.610, 0.486, 0.034, 0.52],     // near thigh forward to the raised knee
+  [0.610, 0.486, 0.606, 0.600, 0.028, 0.55],     // near shin down to the planted foot
+  [0.712, 0.484, 0.760, 0.600, 0.032, 0.55],     // far thigh down to the knee on the floor
+  [0.760, 0.604, 0.825, 0.610, 0.024, 0.46],     // far shin back along the floor
+  [0.616, 0.298, 0.584, 0.362, 0.021, 0.54],     // near upper arm, elbow down and forward
+  [0.584, 0.362, 0.512, 0.330, 0.018, 0.60],     // near forearm up to the rifle's grip
+  [0.712, 0.302, 0.668, 0.372, 0.020, 0.50],     // far upper arm
+  [0.668, 0.372, 0.592, 0.322, 0.017, 0.58],     // far forearm to the trigger hand
 ];
-function thermalField(fw, fh, asp, rnd, phase) {
-  // a temperature field (0..1 on the palette): the room near ambient (black to the darkest blue), low-contrast warm
-  // patches where real rooms have them, and the person as a smooth temperature field with a soft halo
-  const T = new Float32Array(fw * fh), G = (d, s) => Math.exp(-(d * d) / (2 * s * s));
+const HAIR = [0.672, 0.196, 0.676, 0.214, 0.022, 0.70];                       // the back of the head (hair, cap) cooler than the face
+const RIFLE = [[0.640, 0.294, 0.548, 0.309, 0.015], [0.548, 0.309, 0.470, 0.316, 0.011], [0.470, 0.316, 0.400, 0.320, 0.006], [0.566, 0.312, 0.560, 0.350, 0.010], [0.600, 0.300, 0.596, 0.286, 0.006]];
+const HANDS = [[0.508, 0.330, 0.012, 1.0], [0.592, 0.322, 0.011, 0.98]];       // bare hands, hottest after the face
+// the tablet's crop of the scene (the subject and its cover fill the frame): u 0.36..0.97, v 0.08..0.72
+const TH_VIEW = [0.36, 0.97, 0.08, 0.72];
+function thermalField(fw, fh, rnd, phase) {
+  const T = new Float32Array(fw * fh), G = (d, s) => Math.exp(-(d * d) / (2 * s * s)), [u0, u1, v0, v1] = TH_VIEW, asp = TH_SA;
   for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) {
-    const u = (i + 0.5) / fw, v = (j + 0.5) / fh, uu = u * asp;
-    let t = 0.07 + 0.02 * (1 - v) + 0.006 * Math.sin(u * 4 + v * 3);                       // walls: ambient, warmer up high
+    const u = u0 + (i + 0.5) / fw * (u1 - u0), v = v0 + (j + 0.5) / fh * (v1 - v0), pu = u * asp - phase * 0.011 * asp, pv = v + phase * 0.004;   // scan_b: the person has shifted a little
+    let t = 0.07 + 0.03 * (1 - v) + 0.006 * Math.sin(u * 4 + v * 3);                       // walls: ambient, warmer up high
     if (v > 0.62) t = 0.045 + 0.02 * (v - 0.62);                                           // concrete floor, cold
-    if (u > 0.08 && u < 0.3 && v > 0.1 && v < 0.48) t = 0.025 + 0.01 * v;                  // window: cold glass
     t += 0.07 * G(u - 0.38, 0.012) * (v < 0.62 ? 1 - 0.4 * v : 0);                         // a hot-water pipe down the wall, soft
-    t += 0.06 * G(Math.hypot((u - 0.2) * 1.4, v - 0.62), 0.05);                             // a radiator under the window: a warm patch
-    t += 0.04 * G(Math.hypot(u - 0.2, (v - 0.5) * 2.5), 0.06);                             // warm air rising off it
+    t += 0.06 * G(Math.hypot((u - 0.2) * 1.4, v - 0.62), 0.05);                             // a radiator glow from off frame left
     t = Math.max(t, 0.42 * G(Math.hypot((u - 0.9) * 1.2, v - 0.14), 0.022) + 0.05);           // a ceiling lamp, hot, with bloom
-    if (u > 0.86 && u < 0.97 && v > 0.36 && v < 0.46) t = Math.max(t, 0.2 + 0.05 * (v - 0.36) / 0.1);   // a monitor on a shelf: a warm rectangle
+    if (u > 0.86 && u < 0.97 && v > 0.36 && v < 0.46) t = Math.max(t, 0.2 + 0.05 * (v - 0.36) / 0.1);   // a monitor on a shelf
     t += 0.05 * G(Math.hypot(u - 0.915, v - 0.33), 0.03);                                  // its exhaust warming the wall
-    // the person: each capsule a temperature, edges falling off over about 2 px, a faint halo (warm air) round the body
     let hp = 0, near = 1e9;
     for (const [ax, ay, bx, by, r, ht] of PERSON) {
-      const dd = segD(uu, v, ax * asp, ay, bx * asp, by) - r * asp * 0.9; near = Math.min(near, dd);
-      const k = 1 - sstep(-0.012, 0.004, dd); if (k > 0) hp = Math.max(hp, (0.22 + ht * 0.76) * k + t * (1 - k));
+      const dd = segD(pu, pv, ax * asp, ay, bx * asp, by) - r; near = Math.min(near, dd);
+      const k = 1 - sstep(-0.006, 0.004, dd); if (k > 0) hp = Math.max(hp, (0.22 + ht * 0.76) * k + t * (1 - k));
     }
-    // inside the body: the core of each limb a touch warmer than its edge (clothing over skin)
-    t = Math.max(t, hp, t + 0.09 * Math.exp(-Math.max(0, near) / 0.02));
-    if (u > 0.42 && u < 0.52 && Math.abs(v - 0.31 + (u - 0.47) * 0.06) < 0.008) t = Math.max(t, 0.2);   // the rifle, near ambient
-    if (u > 0.47 && u < 0.86 && v > 0.47 && v < 0.64) {                                    // the crate (cover): cool, a fading handprint
-      t = 0.05 + 0.01 * (v - 0.47) * 6;
-      t += 0.17 * G(Math.hypot((u - 0.56) / 1.4, v - 0.5), 0.018);
+    { const [ax, ay, bx, by, r, ht] = HAIR, dd = segD(pu, pv, ax * asp, ay, bx * asp, by) - r, k = 1 - sstep(-0.006, 0.004, dd); if (k > 0 && hp > 0.5) hp = hp * (1 - k) + (0.22 + ht * 0.76) * k; }
+    t = Math.max(t, hp, t + 0.1 * Math.exp(-Math.max(0, near) / 0.012));                   // the warm-air halo
+    for (const [ax, ay, bx, by, r] of RIFLE) { const dd = segD(pu, pv, ax * asp, ay, bx * asp, by) - r, k = 1 - sstep(-0.004, 0.003, dd); if (k > 0) t = t * (1 - k) + (0.1 + 0.05 * (u > 0.53 ? 1 : 0)) * k; }
+    for (const [cx, cy, r, ht] of HANDS) { const dd = Math.hypot(pu - cx * asp, pv - cy) - r, k = 1 - sstep(-0.005, 0.004, dd); if (k > 0) t = Math.max(t, (0.22 + ht * 0.76) * k + t * (1 - k)); }
+    // the crate over the lower body: a mid-cool block, its edges a little warmer, its top warmed where the person leans
+    if (u > 0.5 && u < 0.84 && v > 0.505 && v < 0.665) {
+      const e = Math.min(u - 0.5, 0.84 - u, (v - 0.505) * 0.7, (0.665 - v) * 0.7);
+      t = 0.13 + 0.015 * (v - 0.505) * 6 + 0.12 * (1 - sstep(0.004, 0.016, e));
+      t += 0.12 * G(Math.hypot((u - 0.62) / 1.6, v - 0.51), 0.016) + 0.06 * G(Math.hypot((u - 0.72) / 2.5, v - 0.515), 0.02);
+      if (Math.abs(v - 0.585) < 0.0025 && e > 0.01) t -= 0.03;                             // a plank seam
     }
+    if (v > 0.665) t += 0.05 * G(Math.hypot((u - 0.68) / 2.2, v - 0.675), 0.02);           // warm reflection on the floor
     T[j * fw + i] = t;
   }
-  // optics blur (two passes), then sensor noise only (no fixed pattern grid): small temporal noise
-  let B = T;
-  for (let pass = 0; pass < 2; pass++) {
-    const O = new Float32Array(fw * fh);
-    for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) { let a = 0, n = 0; for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= fw || jj >= fh) continue; const k = di || dj ? (di && dj ? 0.5 : 1) : 2; a += B[jj * fw + ii] * k; n += k; } O[j * fw + i] = a / n; }
-    B = O;
-  }
-  for (let k = 0; k < B.length; k++) B[k] += (rnd() - 0.5) * 0.012;
-  return B;
+  // optics blur (one pass at this resolution), then the fixed column pattern (non-uniformity left after NUC) and temporal noise
+  const O = new Float32Array(fw * fh);
+  for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) { let a = 0, n = 0; for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= fw || jj >= fh) continue; const k = di || dj ? (di && dj ? 0.5 : 1) : 3; a += T[jj * fw + ii] * k; n += k; } O[j * fw + i] = a / n; }
+  const fpn = prng(4242), col = Array.from({ length: fw }, () => (fpn() - 0.5) * 0.016), row = Array.from({ length: fh }, () => (fpn() - 0.5) * 0.006);
+  for (let j = 0; j < fh; j++) for (let i = 0; i < fw; i++) O[j * fw + i] += col[i] + row[j] + (rnd() - 0.5) * 0.018;
+  return O;
 }
 function thermal(x, w, h, rnd, phase, locked = false) {
-  const y0 = 58, H = h - 128, fw = 120, fh = Math.round(120 * H / w), F = thermalField(fw, fh, w / H, prng(17 + phase * 5), phase), nr = prng(91 + phase * 3);
-  const img = x.createImageData(w, H), d = img.data;
-  for (let j = 0; j < H; j++) for (let i = 0; i < w; i++) {
-    const fx = Math.min(fw - 1.001, Math.max(0, (i + 0.5) / w * fw - 0.5)), fy = Math.min(fh - 1.001, Math.max(0, (j + 0.5) / H * fh - 0.5)), ix = Math.floor(fx), iy = Math.floor(fy), ax = fx - ix, ay = fy - iy;
-    let t = (F[iy * fw + ix] * (1 - ax) + F[iy * fw + ix + 1] * ax) * (1 - ay) + (F[(iy + 1) * fw + ix] * (1 - ax) + F[(iy + 1) * fw + ix + 1] * ax) * ay;
-    const vx = (i / w - 0.5) * 2, vy = (j / H - 0.5) * 2; t *= 1 - 0.12 * (vx * vx + vy * vy) / 2; t += (nr() - 0.5) * 0.012;   // vignetting, pixel noise
-    const c = ironCol(t), k = (j * w + i) * 4; d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = 255;
+  const RAIL = 52, y0 = 50, W = w - RAIL, H = h - 18 - y0, fw = 96, fh = Math.round(fw * H / W), F = thermalField(fw, fh, prng(17 + phase * 5), phase);
+  const img = x.createImageData(W, H), d = img.data;
+  for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+    const ix = Math.min(fw - 1, Math.floor(i / W * fw)), iy = Math.min(fh - 1, Math.floor(j / H * fh));
+    let t = F[iy * fw + ix];
+    const vx = (i / W - 0.5) * 2, vy = (j / H - 0.5) * 2; t *= 1 - 0.12 * (vx * vx + vy * vy) / 2; if (phase) t = 0.015 + t * 1.06;   // vignetting; scan_b: the auto-gain has re-ranged
+    const c = ironCol(t), k = (j * W + i) * 4; d[k] = c[0]; d[k + 1] = c[1]; d[k + 2] = c[2]; d[k + 3] = 255;
   }
   putImg(x, img, 0, y0);
-  // the temperature scale (palette bar with two ticks) and the hot-spot crosshair on the face
-  const g = x.createLinearGradient(0, y0 + 20, 0, y0 + 150); for (let i = 0; i <= 8; i++) { const c = ironCol(1 - i / 8); g.addColorStop(i / 8, `rgb(${c})`); }
-  fillRR(x, w - 20, y0 + 20, 6, 130, 3, g); line(x, [[w - 26, y0 + 22], [w - 22, y0 + 22]], 1.4, UI.wt2); line(x, [[w - 26, y0 + 148], [w - 22, y0 + 148]], 1.4, UI.wt2);
-  const cx = w * 0.655 + (phase ? 1 : 0), cy = y0 + H * 0.2; for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) line(x, [[cx + a * 5, cy + b * 5], [cx + a * 11, cy + b * 11]], 1.6, '#fff');
-  if (locked) { const bx = w * 0.47, by = y0 + H * 0.12, bw = w * 0.3, bh = H * 0.4; for (const [a, b, sa, sb] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) line(x, [[a + sa * 14, b], [a, b], [a, b + sb * 14]], 2.4, '#fff'); }
-  // camera controls: palette, shutter, torch
-  x.fillStyle = '#0c0c0e'; x.fillRect(0, h - 70, w, 52);
-  const pg = x.createLinearGradient(44, 0, 72, 0); for (let i = 0; i <= 4; i++) pg.addColorStop(i / 4, `rgb(${ironCol(i / 4)})`);
-  dot(x, 58, h - 44, 14, 'rgba(255,255,255,0.1)'); dot(x, 58, h - 44, 8, pg);
-  dot(x, w / 2, h - 44, 19, '#fff'); arcS(x, w / 2, h - 44, 15, 2, '#0c0c0e');
-  dot(x, w - 58, h - 44, 14, 'rgba(255,255,255,0.1)'); fillRR(x, w - 61, h - 46, 6, 11, 1.5, UI.wt); x.beginPath(); x.moveTo(w - 64, h - 53); x.lineTo(w - 52, h - 53); x.lineTo(w - 55, h - 46); x.lineTo(w - 61, h - 46); x.closePath(); x.fillStyle = UI.wt; x.fill();
+  const [u0, u1, v0, v1] = TH_VIEW, SX = (u) => (u - u0) / (u1 - u0) * W, SY = (v) => y0 + (v - v0) / (v1 - v0) * H;
+  // the sweep line (the scan in progress), at a different height in a and b
+  if (!locked) { const sy = SY(phase ? 0.46 : 0.26); x.fillStyle = 'rgba(255,255,255,0.10)'; x.fillRect(0, sy - 6, W, 12); line(x, [[0, sy], [W, sy]], 1, 'rgba(255,255,255,0.45)'); }
+  // the spot-meter crosshair on the face (it tracks: a pixel or two apart in a and b)
+  const cx = SX(0.661) + (phase ? -2 : 0), cy = SY(0.212) + (phase ? 1 : 0); for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) line(x, [[cx + a * 5, cy + b * 5], [cx + a * 11, cy + b * 11]], 1.6, '#fff');
+  if (locked) { const bx = SX(0.49), by = SY(0.155), bw = SX(0.85) - bx, bh = SY(0.625) - by; for (const [a, b, sa, sb] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) line(x, [[a + sa * 14, b], [a, b], [a, b + sb * 14]], 2.4, '#fff'); fillRR(x, bx, by + bh + 6, 58, 12, 6, 'rgba(0,0,0,0.55)'); tbar(x, bx + 6, by + bh + 9, 46, UI.wt2, 5); }
+  // the control rail: temperature scale (palette bar with hot / cold ticks and the spot marker), palette, shutter, torch, zoom
+  x.fillStyle = '#0c0c0e'; x.fillRect(W, y0, RAIL, H);
+  const g = x.createLinearGradient(0, y0 + 16, 0, y0 + 156); for (let i = 0; i <= 8; i++) { const c = ironCol(1 - i / 8); g.addColorStop(i / 8, `rgb(${c})`); }
+  fillRR(x, W + 23, y0 + 16, 6, 140, 3, g);
+  for (let i = 0; i <= 6; i++) line(x, [[W + (i % 3 ? 17 : 14), y0 + 18 + i * 22.7], [W + 20, y0 + 18 + i * 22.7]], 1.2, UI.wt2);
+  { const my = y0 + 16 + 140 * 0.04; x.beginPath(); x.moveTo(W + 31, my); x.lineTo(W + 37, my - 4); x.lineTo(W + 37, my + 4); x.closePath(); x.fillStyle = UI.wt; x.fill(); }
+  const cy0 = y0 + H * 0.56, rx = W + RAIL / 2;
+  const pg = x.createLinearGradient(rx - 8, 0, rx + 8, 0); for (let i = 0; i <= 4; i++) pg.addColorStop(i / 4, `rgb(${ironCol(i / 4)})`);
+  dot(x, rx, cy0 - 56, 13, 'rgba(255,255,255,0.1)'); dot(x, rx, cy0 - 56, 7.5, pg);
+  dot(x, rx, cy0, 18, '#fff'); arcS(x, rx, cy0, 14.5, 2, '#0c0c0e');
+  dot(x, rx, cy0 + 56, 13, 'rgba(255,255,255,0.1)'); fillRR(x, rx - 3, cy0 + 54, 6, 10, 1.5, UI.wt); x.beginPath(); x.moveTo(rx - 6, cy0 + 47); x.lineTo(rx + 6, cy0 + 47); x.lineTo(rx + 3, cy0 + 54); x.lineTo(rx - 3, cy0 + 54); x.closePath(); x.fillStyle = UI.wt; x.fill();
+  fillRR(x, rx - 13, y0 + H - 62, 26, 46, 13, 'rgba(255,255,255,0.08)'); dot(x, rx, y0 + H - 50, 3, UI.wt); dot(x, rx, y0 + H - 28, 2, UI.wt2);
 }
 // a drone feed: grainy greyscale corridor with a doorway, reticle, record dot, battery and signal bars
 function droneFeed(x, w, h, rnd, phase) {
@@ -1520,15 +1573,24 @@ function droneFeed(x, w, h, rnd, phase) {
 function avatar(x, cx, cy, r, bg, skin) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.clip(); x.fillStyle = bg; x.fillRect(cx - r, cy - r, 2 * r, 2 * r); dot(x, cx, cy - r * 0.18, r * 0.38, skin); x.beginPath(); x.ellipse(cx, cy + r * 0.78, r * 0.7, r * 0.5, 0, 0, Math.PI * 2); x.fillStyle = skin; x.fill(); x.restore(); }
 function sigBars(x, x0, y0, n, c) { for (let i = 0; i < 4; i++) fillRR(x, x0 + i * 3.6, y0 - (i + 1) * 2.2, 2.4, (i + 1) * 2.2, 0.8, i < n ? c : UI.wt3); }
 function radio(x, w, h, rnd, talk) {
-  x.fillStyle = '#121317'; x.fillRect(0, 0, w, h); appBar(x, w);
-  // channel card: a channel glyph, the channel 'name', a signal chip
-  fillRR(x, 16, 72, w - 32, 64, 14, '#1c1e24'); fillRR(x, 30, 86, 36, 36, 10, '#2a2d35'); for (const r of [7, 12]) arcS(x, 48, 110, r, 2.2, UI.wt, -2.4, -0.74); dot(x, 48, 110, 2.6, UI.wt);
-  tbar(x, 80, 92, 110, UI.wt2, 7); sigBars(x, 82, 120, 3, UI.green); dot(x, 106, 116, 2.4, UI.green);
+  x.fillStyle = '#121317'; x.fillRect(0, 0, w, h); appBar(x, w, 'rgba(18,19,23,0.92)', false);
+  // left column: the channel list (the current channel highlighted with the accent strip)
+  const LW = 112; x.fillStyle = '#16181d'; x.fillRect(0, 50, LW, h - 68); x.fillStyle = 'rgba(255,255,255,0.05)'; x.fillRect(LW, 50, 1, h - 68);
+  for (let i = 0; i < 6; i++) {
+    const yy = 62 + i * 46, cur = i === 0;
+    if (cur) { fillRR(x, 6, yy, LW - 12, 38, 10, 'rgba(138,77,255,0.16)'); fillRR(x, 6, yy + 8, 3, 22, 1.5, UI.acc); }
+    fillRR(x, 16, yy + 8, 22, 22, 7, cur ? '#2c2540' : '#22252c'); for (const r of [4.5, 8]) arcS(x, 27, yy + 23, r, 1.6, cur ? UI.wt : UI.wt2, -2.4, -0.74); dot(x, 27, yy + 23, 1.7, cur ? UI.wt : UI.wt2);
+    tbar(x, 46, yy + 10, 40 + ((i * 23) % 22), cur ? UI.wt2 : UI.wt3, 5); for (let k = 0; k < 2 + (i * 3) % 4; k++) dot(x, 48 + k * 6, yy + 27, 1.8, i < 3 ? 'rgba(47,194,107,0.7)' : UI.wt3);
+  }
+  // right pane: the channel's members (one talking when the holder is not), then the big PTT button
+  const X0 = LW + 14, PW = w - X0 - 12;
+  fillRR(x, X0, 62, PW, 36, 10, '#1c1e24'); sigBars(x, X0 + 12, 86, 3, UI.green); tbar(x, X0 + 34, 74, PW - 50, UI.wt2, 6);
   const C = [['#3d4f66', '#c9a68a'], ['#4d4436', '#8d6b52'], ['#344a40', '#d8b394'], ['#463d52', '#a77d63']];
-  for (let i = 0; i < 4; i++) { const yy = 164 + i * 42; avatar(x, 38, yy, 14, C[i][0], C[i][1]); tbar(x, 62, yy - 4, 70 + ((i * 37) % 50), UI.wt2, 6); if (i === 0 && talk === false) for (let k = 0; k < 6; k++) fillRR(x, w - 76 + k * 5, yy - 2 - (k % 3) * 2, 2.5, 4 + (k % 3) * 4, 1, UI.wt3); sigBars(x, w - 44, yy + 5, 4 - (i % 3), i < 3 ? UI.wt2 : UI.wt3); }
-  const cx = w / 2, cy = h - 120;
-  if (talk) { for (let i = 0; i < 3; i++) arcS(x, cx, cy, 64 + i * 12, 2, `rgba(138,77,255,${0.4 - i * 0.12})`); dot(x, cx, cy, 58, UI.acc); for (let i = -6; i <= 6; i++) { const a = 4 + Math.abs(Math.sin(i * 1.7)) * 16; fillRR(x, cx + i * 7 - 2, cy - a, 4, a * 2, 2, '#fff'); } }
-  else { dot(x, cx, cy, 58, '#22242b'); arcS(x, cx, cy, 58, 3, UI.acc); fillRR(x, cx - 8, cy - 20, 16, 28, 8, UI.wt); line(x, [[cx - 14, cy + 2], [cx - 14, cy + 4], [cx, cy + 16], [cx + 14, cy + 4], [cx + 14, cy + 2]], 2.4, UI.wt); line(x, [[cx, cy + 16], [cx, cy + 24]], 2.4, UI.wt); }
+  for (let i = 0; i < 4; i++) { const yy = 124 + i * 36; avatar(x, X0 + 14, yy, 12, C[i][0], C[i][1]); tbar(x, X0 + 34, yy - 4, 50 + ((i * 37) % 40), UI.wt2, 5); if (i === 0 && talk === false) for (let k = 0; k < 6; k++) fillRR(x, X0 + PW - 44 + k * 5, yy - 2 - (k % 3) * 2, 2.5, 4 + (k % 3) * 4, 1, UI.green); else sigBars(x, X0 + PW - 22, yy + 5, 4 - (i % 3), i < 3 ? UI.wt2 : UI.wt3); }
+  const cx = X0 + PW / 2, cy = h - 128;
+  fillRR(x, X0, cy - 92, PW, 184, 18, '#181a20');
+  if (talk) { for (let i = 0; i < 3; i++) arcS(x, cx, cy, 58 + i * 11, 2, `rgba(138,77,255,${0.4 - i * 0.12})`); dot(x, cx, cy, 52, UI.acc); for (let i = -5; i <= 5; i++) { const a = 4 + Math.abs(Math.sin(i * 1.7)) * 15; fillRR(x, cx + i * 7 - 2, cy - a, 4, a * 2, 2, '#fff'); } }
+  else { dot(x, cx, cy, 52, '#22242b'); arcS(x, cx, cy, 52, 3, UI.acc); fillRR(x, cx - 8, cy - 20, 16, 28, 8, UI.wt); line(x, [[cx - 14, cy + 2], [cx - 14, cy + 4], [cx, cy + 16], [cx + 14, cy + 4], [cx + 14, cy + 2]], 2.4, UI.wt); line(x, [[cx, cy + 16], [cx, cy + 24]], 2.4, UI.wt); }
   pill(x, w, h);
 }
 
@@ -1547,23 +1609,40 @@ const CELL_ART = {
     pill(x, w, h);
   },
   home: (x, w, h, rnd) => {
-    wallpaper(x, w, h, rnd); statusBar(x, w); frost(x, 26, 44, 76, 76, 38, 'rgba(14,16,22,0.45)'); analogClock(x, 64, 82, 38, 10.15, 9, { face: 'rgba(0,0,0,0)' });
-    // a weather-style widget: a moon glyph and two short lines
-    frost(x, 120, 54, w - 136, 56, 14, 'rgba(14,16,22,0.42)'); dot(x, 142, 82, 11, '#d9dce4'); dot(x, 147, 78, 10, 'rgba(26,28,36,1)');
-    // a forecast row: small condition glyphs (cloud, cloud, moon, sun) on a faint temperature curve, no digits
+    wallpaper(x, w, h, rnd); statusBar(x, w);
+    // the widget row across the top: clock, weather with a forecast, team status
+    frost(x, 12, 30, 84, 84, 18, 'rgba(14,16,22,0.45)'); analogClock(x, 54, 72, 33, 10.15, 9, { face: 'rgba(0,0,0,0)' });
+    frost(x, 104, 30, 112, 84, 18, 'rgba(14,16,22,0.42)'); dot(x, 124, 52, 9, '#d9dce4'); dot(x, 128.5, 48.5, 8, 'rgba(26,28,36,1)'); tbar(x, 140, 46, 60, UI.wt2, 5);
     const cloud = (cx, cy, k, a) => { x.fillStyle = `rgba(230,232,240,${a})`; x.beginPath(); x.arc(cx - 3 * k, cy, 3.4 * k, 0, Math.PI * 2); x.arc(cx + 2 * k, cy - 1.5 * k, 4.2 * k, 0, Math.PI * 2); x.arc(cx + 6 * k, cy + 0.5 * k, 2.8 * k, 0, Math.PI * 2); x.fill(); x.fillRect(cx - 6 * k, cy, 12.5 * k, 3.4 * k); };
-    cloud(176, 72, 0.8, 0.75); cloud(206, 74, 0.8, 0.55); dot(x, 236, 72, 4.4, 'rgba(220,224,235,0.7)'); dot(x, 238, 70.5, 3.8, 'rgba(26,28,36,1)'); dot(x, 266, 72, 3.2, '#f2c14e'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; line(x, [[266 + Math.cos(a) * 5, 72 + Math.sin(a) * 5], [266 + Math.cos(a) * 6.8, 72 + Math.sin(a) * 6.8]], 1.1, '#f2c14e'); }
-    line(x, [[166, 96], [186, 93], [206, 94], [226, 98], [246, 96], [272, 90]], 1.4, UI.wt3); for (const [px, py] of [[176, 94.5], [206, 94], [236, 97], [266, 91.5]]) dot(x, px, py, 1.6, UI.wt2);
-    [4, 5, 6, 7, 8, 9, 10, 11].forEach((k, i) => icon(x, 46 + (i % 4) * 76, 160 + Math.floor(i / 4) * 74, k));
-    dot(x, w / 2 - 8, h - 104, 2.6, UI.wt); dot(x, w / 2 + 8, h - 104, 2.6, 'rgba(255,255,255,0.3)');
-    frost(x, 12, h - 88, w - 24, 66, 22, 'rgba(255,255,255,0.09)'); [2, 3, 0, 1].forEach((k, i) => icon(x, 46 + i * 76, h - 55, k)); pill(x, w, h);
+    cloud(124, 82, 0.6, 0.75); cloud(148, 83, 0.6, 0.55); dot(x, 172, 82, 3.4, 'rgba(220,224,235,0.7)'); dot(x, 173.5, 80.8, 3, 'rgba(26,28,36,1)'); dot(x, 196, 82, 2.6, '#f2c14e'); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; line(x, [[196 + Math.cos(a) * 4, 82 + Math.sin(a) * 4], [196 + Math.cos(a) * 5.6, 82 + Math.sin(a) * 5.6]], 1, '#f2c14e'); }
+    line(x, [[116, 103], [136, 100], [158, 101], [180, 104], [204, 98]], 1.3, UI.wt3);
+    frost(x, 224, 30, 84, 84, 18, 'rgba(14,16,22,0.42)');
+    [['#3d4f66', '#c9a68a', UI.green], ['#4d4436', '#8d6b52', UI.green], ['#344a40', '#d8b394', UI.amber], ['#463d52', '#a77d63', UI.green]].forEach(([bg, sk, st], i) => { const ax = 246 + (i % 2) * 40, ay = 54 + Math.floor(i / 2) * 36; avatar(x, ax, ay, 11, bg, sk); dot(x, ax + 8, ay + 8, 3.6, 'rgba(20,22,28,1)'); dot(x, ax + 8, ay + 8, 2.5, st); });
+    // search pill
+    frost(x, 12, 124, w - 24, 26, 13, 'rgba(255,255,255,0.10)'); arcS(x, 28, 136, 4.5, 1.6, UI.wt2); line(x, [[31.2, 139.2], [35, 143]], 1.6, UI.wt2); tbar(x, 44, 133, 70, UI.wt3, 5);
+    fillRR(x, w - 32, 129, 6, 9, 3, UI.wt2); arcS(x, w - 29, 136, 5, 1.2, UI.wt2, 0, Math.PI); line(x, [[w - 29, 141], [w - 29, 144]], 1.2, UI.wt2);
+    // the app grid: 6 columns of 30 px icons with label segments (two full rows and a part row)
+    const grid = [4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 17, 19, 18, 7];
+    grid.forEach((k, i) => { const cx = 33 + (i % 6) * 50.8, cy = 184 + Math.floor(i / 6) * 58; icon(x, cx, cy, k, 31); tbar(x, cx - 13, cy + 20, 26, 'rgba(242,243,245,0.32)', 4); });
+    dot(x, w / 2 - 8, h - 76, 2.4, UI.wt); dot(x, w / 2, h - 76, 2.4, 'rgba(255,255,255,0.3)'); dot(x, w / 2 + 8, h - 76, 2.4, 'rgba(255,255,255,0.3)');
+    // the taskbar (Android 12L+ on a tablet): pinned apps, a divider, the two most recent apps
+    frost(x, 10, h - 62, w - 20, 40, 14, 'rgba(255,255,255,0.10)');
+    [2, 16, 3, 0, 1, 8].forEach((k, i) => icon(x, 32 + i * 37, h - 42, k, 26));
+    x.fillStyle = 'rgba(255,255,255,0.18)'; x.fillRect(244, h - 54, 1, 24);
+    [7, 13].forEach((k, i) => { icon(x, 264 + i * 34, h - 42, k, 26); dot(x, 264 + i * 34, h - 25, 1.4, UI.wt2); });
+    pill(x, w, h);
   },
-  app_open: (x, w, h, rnd) => { CELL_ART.home(x, w, h, rnd); x.fillStyle = 'rgba(0,0,0,0.35)'; x.fillRect(0, 0, w, h); fillRR(x, 30, 70, w - 60, h - 150, 26, '#1a1d23'); icon(x, w / 2, h / 2 - 20, 0, 64); },
-  map_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1); appBar(x, w); navBar(x, w, h); },
-  map_b: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 0); appBar(x, w); navBar(x, w, h); },
-  scan_a: (x, w, h, rnd) => { thermal(x, w, h, rnd, 0); appBar(x, w); navBar(x, w, h); },
-  scan_b: (x, w, h, rnd) => { thermal(x, w, h, rnd, 1); appBar(x, w); navBar(x, w, h); },
-  lock_on: (x, w, h, rnd) => { thermal(x, w, h, rnd, 0, true); appBar(x, w); navBar(x, w, h); },
+  app_open: (x, w, h, rnd) => {
+    // the thermal camera app's card growing out of its taskbar icon (the scan key opens it)
+    CELL_ART.home(x, w, h, rnd); x.fillStyle = 'rgba(0,0,0,0.4)'; x.fillRect(0, 0, w, h);
+    const g = x.createLinearGradient(0, 80, 0, h - 120); g.addColorStop(0, '#22131c'); g.addColorStop(1, '#120c10');
+    fillRR(x, 28, 70, w - 56, h - 150, 24, g); icon(x, w / 2, h / 2 - 24, 8, 58);
+  },
+  map_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1); appBar(x, w); pill(x, w, h); },
+  map_b: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 0); appBar(x, w); pill(x, w, h); },
+  scan_a: (x, w, h, rnd) => { thermal(x, w, h, rnd, 0); appBar(x, w, 'rgba(18,19,23,0.92)', false); navBar(x, w, h); },
+  scan_b: (x, w, h, rnd) => { thermal(x, w, h, rnd, 1); appBar(x, w, 'rgba(18,19,23,0.92)', false); navBar(x, w, h); },
+  lock_on: (x, w, h, rnd) => { thermal(x, w, h, rnd, 0, true); appBar(x, w, 'rgba(18,19,23,0.92)', false); navBar(x, w, h); },
   drone_a: (x, w, h, rnd) => droneFeed(x, w, h, rnd, 1),
   drone_b: (x, w, h, rnd) => droneFeed(x, w, h, rnd, 0),
   ptt_idle: (x, w, h, rnd) => radio(x, w, h, rnd, false),
@@ -1573,10 +1652,22 @@ const CELL_ART = {
     tbar(x, w / 2 - 54, 218, 108, UI.wt2, 8); sigBars(x, w / 2 - 10, 248, 3, UI.wt2); dot(x, w / 2 + 12, 244, 2.5, UI.green);
     dot(x, 80, h - 90, 30, UI.red); dot(x, w - 80, h - 90, 30, UI.green); line(x, [[w - 90, h - 98], [w - 85, h - 86], [w - 70, h - 82]], 5, '#fff'); x.save(); x.translate(80, h - 90); x.rotate(Math.PI * 0.75); line(x, [[-10, -8], [-5, 4], [10, 8]], 5, '#fff'); x.restore(); pill(x, w, h);
   },
-  alert_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1); appBar(x, w); x.fillStyle = 'rgba(80,0,0,0.35)'; x.fillRect(0, 58, w, h); fillRR(x, 20, h / 2 - 90, w - 40, 170, 20, '#2a1416'); x.beginPath(); x.moveTo(w / 2, h / 2 - 66); x.lineTo(w / 2 + 34, h / 2 - 8); x.lineTo(w / 2 - 34, h / 2 - 8); x.closePath(); x.fillStyle = UI.red; x.fill(); fillRR(x, w / 2 - 3, h / 2 - 50, 6, 24, 3, '#fff'); dot(x, w / 2, h / 2 - 18, 3.5, '#fff'); tbar(x, 60, h / 2 + 12, w - 120, UI.wt2, 7); fillRR(x, 50, h / 2 + 46, w - 100, 24, 12, UI.red); navBar(x, w, h); },
+  alert_a: (x, w, h, rnd) => { floorPlan(x, w, h, rnd, 1, { sheet: false }); appBar(x, w); x.fillStyle = 'rgba(80,0,0,0.35)'; x.fillRect(0, 50, w, h); fillRR(x, 36, h / 2 - 90, w - 72, 170, 20, '#2a1416'); x.beginPath(); x.moveTo(w / 2, h / 2 - 66); x.lineTo(w / 2 + 34, h / 2 - 8); x.lineTo(w / 2 - 34, h / 2 - 8); x.closePath(); x.fillStyle = UI.red; x.fill(); fillRR(x, w / 2 - 3, h / 2 - 50, 6, 24, 3, '#fff'); dot(x, w / 2, h / 2 - 18, 3.5, '#fff'); tbar(x, 70, h / 2 + 12, w - 140, UI.wt2, 7); fillRR(x, 66, h / 2 + 46, w - 132, 24, 12, UI.red); navBar(x, w, h); },
   alert_b: (x, w, h, rnd) => { CELL_ART.alert_a(x, w, h, rnd); x.fillStyle = 'rgba(255,40,40,0.16)'; x.fillRect(0, 0, w, h); rr(x, 3, 3, w - 6, h - 6, 24); x.lineWidth = 6; x.strokeStyle = 'rgba(255,75,75,0.7)'; x.stroke(); },
   low_battery: (x, w, h, rnd) => { wallpaper(x, w, h, rnd, 0.7); statusBar(x, w, { batt: 0.08, battCol: UI.red }); fillRR(x, 30, h / 2 - 70, w - 60, 140, 20, '#1d1f25'); rr(x, w / 2 - 30, h / 2 - 46, 56, 28, 5); x.lineWidth = 3; x.strokeStyle = UI.wt; x.stroke(); fillRR(x, w / 2 + 28, h / 2 - 38, 5, 12, 2, UI.wt); fillRR(x, w / 2 - 26, h / 2 - 42, 8, 20, 2, UI.red); tbar(x, 70, h / 2 + 2, w - 140, UI.wt2, 7); fillRR(x, 60, h / 2 + 26, w - 120, 24, 12, UI.amber); tbar(x, w / 2 - 30, h / 2 + 34, 60, 'rgba(30,20,0,0.55)', 6); pill(x, w, h); },
-  power_menu: (x, w, h, rnd) => { CELL_ART.home(x, w, h, rnd); x.fillStyle = 'rgba(0,0,0,0.62)'; x.fillRect(0, 0, w, h); fillRR(x, w - 92, h / 2 - 140, 72, 220, 36, '#2a2c33'); dot(x, w - 56, h / 2 - 100, 24, UI.red); arcS(x, w - 56, h / 2 - 100, 10, 2.6, '#fff', -Math.PI / 2 + 0.6, Math.PI * 1.5 - 0.6); line(x, [[w - 56, h / 2 - 114], [w - 56, h / 2 - 102]], 2.6, '#fff'); dot(x, w - 56, h / 2 - 30, 24, '#3d4049'); arcS(x, w - 56, h / 2 - 30, 10, 2.6, '#fff', -1.2, 4); dot(x, w - 56, h / 2 + 40, 24, '#3d4049'); fillRR(x, w - 64, h / 2 + 32, 16, 16, 3, '#fff'); },
+  power_menu: (x, w, h, rnd) => {
+    // a centred dialog (the tablet power menu) over the dimmed wallpaper: power off, restart, emergency, each a round button over a label
+    wallpaper(x, w, h, rnd, 0.75); x.fillStyle = 'rgba(0,0,0,0.45)'; x.fillRect(0, 0, w, h);   // a dimmed, blurred-looking wallpaper: the menu can open over any app, so it never shows a home screen behind it
+    fillRR(x, 30, h / 2 - 70, w - 60, 132, 22, '#24262c');
+    const B = [[UI.red, 'off'], ['#3d4049', 'restart'], ['#3d4049', 'sos']];
+    B.forEach(([c, k], i) => {
+      const cx = 30 + (w - 60) * (i + 0.5) / 3, cy = h / 2 - 20; dot(x, cx, cy, 24, c);
+      if (k === 'off') { arcS(x, cx, cy, 10, 2.6, '#fff', -Math.PI / 2 + 0.6, Math.PI * 1.5 - 0.6); line(x, [[cx, cy - 14], [cx, cy - 2]], 2.6, '#fff'); }
+      else if (k === 'restart') { arcS(x, cx, cy, 10, 2.6, '#fff', -1.2, 4); x.beginPath(); x.moveTo(cx + 3.5, cy - 13); x.lineTo(cx + 9, cy - 9); x.lineTo(cx + 3, cy - 5.5); x.closePath(); x.fillStyle = '#fff'; x.fill(); }
+      else { x.beginPath(); x.moveTo(cx, cy - 12); x.lineTo(cx + 11, cy + 8); x.lineTo(cx - 11, cy + 8); x.closePath(); x.lineWidth = 2.4; x.strokeStyle = '#fff'; x.lineJoin = 'round'; x.stroke(); fillRR(x, cx - 1.2, cy - 5, 2.4, 7, 1.2, '#fff'); dot(x, cx, cy + 4.5, 1.4, '#fff'); }
+      tbar(x, cx - 18, cy + 34, 36, UI.wt2, 5);
+    });
+  },
   shutdown: (x, w, h) => { x.fillStyle = '#000'; x.fillRect(0, 0, w, h); arcS(x, w / 2, h / 2, 16, 3, UI.wt3); arcS(x, w / 2, h / 2, 16, 3, UI.wt, -1.6, 0.2); },
 };
 
@@ -1611,57 +1702,82 @@ function buildScreen() {
 }
 
 
-/* ------------------------------------------------------------------ the tactical tablet (DESIGN.md 3-5) */
+/* ------------------------------------------------------------------ the tactical tablet, round 3 (DESIGN.md 2-5) */
 // Body space = root space, metres: origin at the centre of the volume, +Y up the long axis (portrait), the screen
-// faces -Z (toward the holder), the rear cameras +Z, the holder's left +X (PTT key side). All dims below are in mm.
-// Construction (round 1): one continuous TPU overmould round the whole perimeter (co-moulded on the aluminium
-// mid-frame, thicker at the corners), a domed PC-GF back cover held by six Torx screws, a battery door with four
-// captive screws, a raised camera island screwed to the cover. The keys sit in pockets moulded into the TPU.
+// faces -Z (toward the holder), the rear cameras +Z, the holder's left +X (PTT side). All dims below are in mm.
+// Construction: the delivered Tactical Phone's kit, part for part, at 8-inch scale. An anodised aluminium mid-frame that
+// shows only as a chamfered band round the glass and round the back cover; one TPU overmould round the whole
+// perimeter (front lip 0.6 mm proud of the glass, side walls with moulded grip ribs, back rim) with the keys in pockets
+// moulded into it; four replaceable TPU corner bumpers keyed into the overmould (0.3 mm proud, a 0.3 mm part line, one
+// Torx screw each from the back); a crowned glass-filled nylon back cover on eight Torx screws with a removable battery
+// door (sliding latch, moulded grip ribs) and two recessed strap bars carrying the hand strap; the phone's black
+// anodised camera deco ring with one black cover-glass window over thermal, main and wide cameras and the flash.
+// Tablet-only: the programmable key on the top edge, stereo front speakers in both bezels, the battery door, the strap.
 const mm = (v) => v / 1000;
+const PTT_COLOR = '#6234d4';      // the family's PTT pigment: the phone's ptt_accent value (a dark violet that renders close to #8a4dff after ACES)
 const TB = {
-  tpu: { x: 67.5, y: 110.5, r: 12, bulge: 1.5, zone: 13, z0: -8.2, z1: 8.2 },  // TPU overmould: straight side walls 2 mm; corner bumpers 1.5 mm proud, blended over 13 mm
-  glass: { x: 60, y: 104.5, r: 6, z0: -7.0, z1: -5.9 },     // 1.1 mm cover glass, 120 x 209, 1.2 mm below the TPU lip
-  active: { w: 107.7, h: 172.3, y: -2.65 },                // 8.0" 16:10 panel, active area
-  frame: { x: 65.5, y: 108.5, r: 11, z0: -5.6, z1: 3.6 },  // anodised aluminium mid-frame (shows in the key and port pockets)
-  back: { x: 60, y: 103, r: 8, z0: 2.6, z1: 6.6, crown: [4, 0.8] },   // PC-GF10 back cover: flat top, edges crowned down 0.8 mm over 4 mm
-  door: { x: 48, y0: -90, y1: -8, r: 5 },                  // battery door on the lower half of the cover
+  wall: { x: 64.8, y: 105.0, r: 12.5, z0: -7.3, z1: 7.3 },          // TPU overmould wall line (front lip face z0, back rim face z1)
+  bump: { step: 1.0, bulge: 0, zone: 0, z0: -7.9, z1: 7.9, ax: 27, ay: 29 },     // corner bumpers (L caps): a constant 1.0 mm proud of the overmould sides, 0.6 mm front and back (the phone's); |x| > wall.x - ax, |y| > wall.y - ay
+  frame: { x: 62.9, y: 103.1, r: 11.8, z0: -6.55, z1: 6.4 },       // 6063 mid-frame (front face z0 shows round the glass, back face z1 round the cover)
+  glass: { x: 60.0, y: 100.2, r: 8, z0: -6.7, z1: -5.8 },          // 0.9 mm cover glass, 120 x 200.4
+  active: { w: 107.7, h: 172.3, y: 0 },                            // 8.0" 16:10 panel, centred: bezels 14.05 mm top and bottom, 6.15 mm sides (on the glass)
+  frontOpen: [62.2, 102.4, 10.0],                                  // the TPU lip's inner edge (2 mm of frame ring shows round the glass)
+  backOpen: [61.4, 101.6, 14.6],                                   // the TPU back rim's inner edge (1.6 mm of frame ring shows round the cover)
+  back: { x: 59.6, y: 99.8, r: 13, z0: 4.4, z1: 7.0, crown: [3.5, 0.8] },   // PA-GF30 back cover, crowned 0.8 mm over its outer 3.5 mm
+  door: { x: 44, y0: -70, y1: 42, r: 6, z0: 5.6 },                 // battery door, inset in the cover (0.3 mm gap), flush with its face
+  cam: { y: 86, hx: 21, hy: 8, r: 4, z0: 6.8, z1: 7.7 },           // the phone's camera deco ring, same size; 0.7 mm proud of the cover, 0.2 mm inside the bumper line
 };
-// hand-strap pockets in the back rim (x = pocket span on the +X side, mirrored), strap bar pin, strap centre y
-const STRAP = { px0: 61.5, px1: 64.9, pz0: 3.9, pinX: 63.2, pinZ: 5.9, y: -22 };
-// lanyard bar position (back-rim slot centre, bottom +X corner)
-const LAN = { x: 62.4, y: -104.4 };
-TB.env = [2 * (TB.tpu.x + TB.tpu.bulge), 2 * (TB.tpu.y + TB.tpu.bulge), TB.tpu.z1 - TB.tpu.z0];
-// the TPU outline (mm -> metres), inset by off: straight, parallel side walls; only the corner bumpers stand `bulge`
-// proud of the wall line, blended into the straight wall with one tangent (smoothstep) run over `zone` mm (the corners
-// take the drops). The middle of every side is dead straight.
-function tpuOutline(off = 0, path = false) {
-  const T = TB.tpu, hx = T.x - off, hy = T.y - off, r = Math.max(0.5, T.r - off), pts = [];
-  const B = (d) => T.bulge * (1 - sstep(0, T.zone, d));
+TB.env = [2 * (TB.wall.x + TB.bump.step + TB.bump.bulge), 2 * (TB.wall.y + TB.bump.step + TB.bump.bulge), TB.bump.z1 - TB.bump.z0];
+// hand-strap pockets in the back cover (x span on the +X side, mirrored), the strap bar, strap centre y
+const STRAP = { px0: 52.4, px1: 56.6, pz0: 4.5, pinX: 54.5, pinZ: 5.75, y: -10, hy: 15.5 };
+// keys: [y0, y1, z0, z1] along the side (the top key: [x0, x1, z0, z1] along the top edge); the pockets are 0.3 mm larger
+const KEY = { ptt: [10, 32, -4.6, 1.8], power: [22, 32, -3.6, 0.6], vdn: [37, 46.6, -3.6, 0.6], vup: [47.4, 57, -3.6, 0.6], sim: [-46, -22, -3.2, 0.6], act: [-15, -4, -3.6, 0.6] };
+const GAP = 0.3;
+// rear camera layout on the deco ring (x mm), the phone's: thermal [x, half side], main / wide [x, r], flash [x, half w, half h]
+const CAM = { th: [-13.6, 3.2], lens: [[-2.8, 3.9], [7.0, 2.9]], fl: [15.6, 1.8, 2.6] };
+const evalI = new Evaluator(); evalI.attributes = ['position', 'normal']; evalI.useGroups = false;
+function intersect(a, b) { const A = new Brush(clean(a)); A.updateMatrixWorld(); const B = new Brush(clean(b)); B.updateMatrixWorld(); return evalI.evaluate(A, B, INTERSECTION).geometry; }
+// the perimeter outline (mm in, metres out), inset by off: straight parallel sides; the corners swell `bulge` proud,
+// blended into the straight run over `zone` mm with one smoothstep (the corners take the drops). The phone's function.
+function perimeter(hx0, hy0, r0, bulge, zone, off = 0, path = false) {
+  const hx = hx0 - off, hy = hy0 - off, r = Math.max(0.5, r0 - off), pts = [];
+  const B = (d) => bulge * (1 - sstep(0, zone, d));
   const C = [[hx - r, hy - r, 0], [-(hx - r), hy - r, Math.PI / 2], [-(hx - r), -(hy - r), Math.PI], [hx - r, -(hy - r), Math.PI * 1.5]];
   for (let c = 0; c < 4; c++) {
     const [cx, cy, a0] = C[c], [nx, ny] = C[(c + 1) % 4];
-    for (let i = 0; i <= 12; i++) { const a = a0 + (i / 12) * Math.PI / 2, rr = r + T.bulge; pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); }
-    // straight side from this corner to the next: outward normal is the direction at a0 + 90 deg
+    for (let i = 0; i <= 16; i++) { const a = a0 + (i / 16) * Math.PI / 2; pts.push([cx + Math.cos(a) * (r + bulge), cy + Math.sin(a) * (r + bulge)]); }
     const na = a0 + Math.PI / 2, ox = Math.cos(na), oy = Math.sin(na), L = Math.hypot(nx - cx, ny - cy);
-    const ds = [0.8, 1.8, 3, 4.5, 6, 7.5, 9, 10.5, 12, T.zone]; const S = [...ds, ...ds.slice().reverse().map((d) => L - d)].filter((d) => d > 0 && d < L);
-    for (const d of S) { const t = d / L, px = cx + (nx - cx) * t + ox * r, py = cy + (ny - cy) * t + oy * r, w = B(Math.min(d, L - d)); pts.push([px + ox * w, py + oy * w]); }
+    const ds = bulge > 0 ? [0.8, 1.8, 3, 4.2, 5.5, 7, 8.5, zone, zone + 4] : [];
+    const S = [...ds, ...ds.slice().reverse().map((d) => L - d)].filter((d) => d > 0 && d < L);
+    for (const d of S) { const t = d / L, w = B(Math.min(d, L - d)); pts.push([cx + (nx - cx) * t + ox * (r + w), cy + (ny - cy) * t + oy * (r + w)]); }
   }
   const s = path ? new THREE.Path() : new THREE.Shape();
   pts.forEach(([x, y], i) => (i ? s.lineTo(mm(x), mm(y)) : s.moveTo(mm(x), mm(y)))); s.closePath();
   return s;
 }
 
-// TPU overmould: a fine mould stipple (VDI-30 like), a slow blotch, roughness 0.66-0.78 (the slight sheen of new TPU)
-function tpuMaps(N, seed, { tone = 0.072, rough = [0.8, 0.9], scuff = false } = {}) {
-  const R = prng(seed), n2 = N * N, g = stretch(fbmT(N, 32, 3, R)), blot = stretch(fbmT(N, 2, 3, R)), st = stretch(fbmT(N, 110, 1, R)), H = new Float32Array(n2);
+// TPU overmould (the phone's map): a fine mould stipple and a faint orange peel, roughness 0.74-0.84, light scuffing
+function tpuMaps(N, seed, { tone = 0.072, rough = [0.74, 0.84], scuff = false } = {}) {
+  const R = prng(seed), n2 = N * N, g = stretch(fbmT(N, 32, 3, R)), blot = stretch(fbmT(N, 2, 3, R)), st = stretch(fbmT(N, 110, 1, R)), peel = stretch(fbmT(N, 12, 2, R)), H = new Float32Array(n2);
   const scr = new Float32Array(n2);
   const sk = scuff === true ? 1 : +scuff || 0;
   if (sk) for (let j = 0; j < Math.round(120 * sk); j++) addScratch(scr, N, R() * N, R() * N, (R() - 0.5) * 0.9, 6 + R() * 30, (R() - 0.5) * 0.01, (0.4 + R() * 0.6) * Math.min(1, sk * 1.4));
-  for (let i = 0; i < n2; i++) H[i] = g[i] * 0.1 + st[i] * 0.2 - scr[i] * 0.3;
+  for (let i = 0; i < n2; i++) H[i] = g[i] * 0.1 + st[i] * 0.2 + peel[i] * 0.25 - scr[i] * 0.3;
   for (let j = 0; j < 500; j++) addDimple(H, N, R() * N, R() * N, 0.8 + R(), 0.15);
-  const map = rgbaCanvas(N, N, (i, o) => { const t = (0.94 + 0.1 * blot[i] + 0.04 * g[i]) * tone + 0.04 * scr[i]; o[0] = t * 0.98; o[1] = t; o[2] = t * 1.04; });
-  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(lerp(rough[0], rough[1], 0.5 + 0.4 * (g[i] - 0.5) + 0.3 * (blot[i] - 0.5)) + 0.12 * scr[i], 0, 1); o[2] = 0; });
+  const map = rgbaCanvas(N, N, (i, o) => { const t = (0.94 + 0.1 * blot[i] + 0.04 * g[i]) * tone + 0.05 * scr[i]; o[0] = t * 0.98; o[1] = t; o[2] = t * 1.04; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(lerp(rough[0], rough[1], 0.5 + 0.4 * (g[i] - 0.5) + 0.3 * (blot[i] - 0.5)) + 0.1 * scr[i], 0, 1); o[2] = 0; });
   return { map, normal: normalFrom(H, N, 2.2), orm };
+}
+// a moulded diamond knurl (the TPU grip inlays on the back, the phone's map): 1.2 mm pyramids on a 9.6 mm tile, rounded tips
+function knurlDiamond(N, seed, { tone = 0.19, k = 8 } = {}) {
+  const R = prng(seed), n2 = N * N, H = new Float32Array(n2), f = stretch(fbmT(N, 96, 1, R));
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const u = (x + y) / N * k, v = (x - y + N) / N * k, a = Math.abs((u % 1) - 0.5), b = Math.abs((v % 1) - 0.5);
+    H[y * N + x] = Math.pow(1 - 2 * Math.max(a, b), 0.8) * 0.9 + 0.1 * f[y * N + x];
+  }
+  const map = rgbaCanvas(N, N, (i, o) => { const t = tone * (0.93 + 0.1 * H[i]); o[0] = t * 0.99; o[1] = t; o[2] = t * 1.03; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.88 - 0.12 * H[i]; o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 3.0), orm };
 }
 // nylon webbing: a 2/2 twill (diagonal ribs) with a little fuzz
 function webbingMaps(N, seed) {
@@ -1671,22 +1787,7 @@ function webbingMaps(N, seed) {
   const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.86 + 0.08 * fz[i]; o[2] = 0; });
   return { map, normal: normalFrom(H, N, 3), orm };
 }
-// TPU grip zone on the back rim: a moulded leather-grain (cells about 0.8 mm), matte
-function grainMaps(N, seed) {
-  const R = prng(seed), n2 = N * N, H = new Float32Array(n2), cells = [], k = 40;
-  for (let i = 0; i < k * k; i++) cells.push([(i % k + 0.15 + 0.7 * R()) * N / k, (Math.floor(i / k) + 0.15 + 0.7 * R()) * N / k]);
-  const blot = stretch(fbmT(N, 3, 3, R));
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const cx = Math.floor(x / (N / k)), cy = Math.floor(y / (N / k)); let d1 = 1e9, d2 = 1e9;
-    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const q = cells[((cy + j + k) % k) * k + ((cx + i + k) % k)]; let dx = x - q[0], dy = y - q[1]; dx -= Math.round(dx / N) * N; dy -= Math.round(dy / N) * N; const d = Math.hypot(dx, dy); if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d; }
-    H[y * N + x] = Math.min(1, (d2 - d1) / (N / k) * 2.2);
-  }
-  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.072 * (0.92 + 0.12 * H[i] + 0.06 * blot[i]); o[0] = t * 0.98; o[1] = t; o[2] = t * 1.04; });
-  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.8 + 0.1 * (1 - H[i]); o[2] = 0; });
-  return { map, normal: normalFrom(H, N, 2.4), orm };
-}
-// back cover: PC-GF10 with a fine spark-erosion mould texture (VDI 27: pits about 0.15-0.3 mm, uniform), matte,
-// dark grey, one notch lighter than the TPU so the part line reads, never stone-like (no blotches, no large relief)
+// back cover (the phone's map): PA-GF30 with a fine spark-erosion texture (VDI 27), matte, a notch lighter than the TPU
 function coverMaps(N, seed) {
   const R = prng(seed), g = stretch(fbmT(N, 96, 1, R)), f = stretch(fbmT(N, 48, 2, R)), H = new Float32Array(N * N);
   for (let i = 0; i < H.length; i++) H[i] = 0.6 * g[i] + 0.4 * f[i];
@@ -1694,92 +1795,130 @@ function coverMaps(N, seed) {
   const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.8 + 0.08 * g[i]; o[2] = 0; });
   return { map, normal: normalFrom(H, N, 1.2), orm };
 }
-// cover glass roughness: clean (0.035) almost everywhere; a few oily thumb prints (ridged whorls) and one wipe arc
+// bead-blasted, hard-anodised aluminium (the phone's map): a fine uniform isotropic grain only (no scratches, no
+// blotches, no leather-like relief), roughness about 0.42; bright metal only where the anodise is chipped (frame_alloy_worn)
+function alloyMaps(N, seed) {
+  const R = prng(seed), n2 = N * N, g = stretch(fbmT(N, 128, 1, R)), f = stretch(fbmT(N, 64, 1, R)), H = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) H[i] = 0.6 * g[i] + 0.4 * f[i];
+  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.985 + 0.03 * g[i]; o[0] = t; o[1] = t; o[2] = t; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.42 + 0.05 * (g[i] - 0.5) + 0.03 * (f[i] - 0.5), 0, 1); o[2] = 1; });
+  return { map, normal: normalFrom(H, N, 0.35), orm };
+}
+// cover glass roughness (box UVs, one tile = 240 mm: on the -Z face u = 0.4483 - x / 240, v = 0.3875 + y / 240, the
+// name offset of 'screen_glass'): clean (0.03) almost everywhere; oily thumb swipes over the lower third (where the thumb
+// works the map and the dock), a palm smear down the holder's left side, prints and a wipe arc. Used for both the base
+// and the clearcoat roughness, so the smudges blur the reflection at grazing angles.
 function glassPrintMap(N, seed) {
   const R = prng(seed), V = new Float32Array(N * N);
-  const prints = [[0.3, 0.72, 0.07], [0.7, 0.3, 0.06], [0.62, 0.62, 0.05], [0.22, 0.25, 0.055], [0.8, 0.82, 0.045]];
-  for (const [u, v, s] of prints) {
-    const cx = u * N, cy = v * N, rx = s * N, ry = s * N * 1.35, a = R() * 3, fade = 0.5 + 0.5 * R();
+  const P = (xm, ym) => [N * (0.4483 - xm / 240), N * (0.3875 + ym / 240)];   // glass mm -> canvas px (the map is not flipped: row 0 = v 0)
+  const put = (x, y, v) => { const i = ((Math.round(y) % N + N) % N) * N + ((Math.round(x) % N + N) % N); V[i] = Math.max(V[i], v); };
+  const pn = stretch(fbmT(128, 16, 2, R));
+  const prints = [[-28, 40, 16], [30, -20, 13], [18, 62, 11], [-35, -55, 12], [40, 78, 10], [-8, -70, 12], [44, 10, 11]];
+  for (const [xm, ym, s] of prints) {
+    const [cx, cy] = P(xm, ym), rx = s / 240 * N, ry = rx * 1.35, a = R() * 3, fade = 0.45 + 0.35 * R();
     for (let y = Math.floor(cy - ry * 1.2); y < cy + ry * 1.2; y++) for (let x = Math.floor(cx - rx * 1.2); x < cx + rx * 1.2; x++) {
       const dx = x - cx, dy = y - cy, ex = (dx * Math.cos(a) + dy * Math.sin(a)) / rx, ey = (-dx * Math.sin(a) + dy * Math.cos(a)) / ry, r = Math.hypot(ex, ey);
       if (r > 1.1) continue;
-      const ridge = 0.5 + 0.5 * Math.sin(r * 34 + Math.atan2(ey, ex) * 0.6), edge = 1 - sstep(0.6, 1.1, r), i = ((y % N + N) % N) * N + ((x % N + N) % N);
-      V[i] = Math.max(V[i], fade * edge * (0.35 + 0.65 * ridge));
+      put(x, y, fade * (1 - sstep(0.5, 1.1, r)) * (0.55 + 0.45 * pn[((y & 127) * 128) + (x & 127)]));   // ridges are finer than a texel: an oily blot, patchy
     }
   }
-  for (let s = 0; s < 1.4; s += 0.002) { const x = N * (0.5 + 0.34 * Math.cos(2.2 + s)), y = N * (0.55 + 0.3 * Math.sin(2.2 + s)); for (let w = -3; w <= 3; w++) { const i = ((Math.round(y + w) % N + N) % N) * N + ((Math.round(x) % N + N) % N); V[i] = Math.max(V[i], 0.35 * (1 - Math.abs(w) / 4)); } }
+  // thumb swipes: arcs swept about a pivot near the lower holder's-left corner (the left thumb), each a 7 mm wide band
+  for (let k = 0; k < 7; k++) {
+    const piv = P(58, -96), rad = (64 + k * 11 + R() * 6) / 240 * N, a0 = 1.7 + R() * 0.25, a1 = a0 + 0.5 + R() * 0.35, w = 3.5 / 240 * N, val = 0.5 + 0.3 * R();
+    for (let a = a0; a < a1; a += 0.5 / rad) for (let d = -w; d <= w; d += 0.7) {
+      const t = (a - a0) / (a1 - a0), fade = Math.sin(Math.PI * t) * (1 - Math.abs(d) / w);
+      put(piv[0] - Math.cos(a) * (rad + d), piv[1] + Math.sin(a) * (rad + d), val * fade * (0.6 + 0.4 * Math.sin(d * 3 + a * 40)));
+    }
+  }
+  // a soft palm smear along the holder's left edge (x +38..+58, y -20..+60)
+  { const [x0, y0] = P(38, 60), [x1, y1] = P(58, -20); const blot = stretch(fbmT(64, 4, 2, R));
+    for (let y = Math.floor(y0); y < y1; y++) for (let x = Math.floor(x0); x < x1; x++) { const u = (x - x0) / (x1 - x0), v = (y - y0) / (y1 - y0), e = Math.sin(Math.PI * u) * Math.sin(Math.PI * v); put(x, y, 0.4 * e * blot[(Math.floor(v * 63)) * 64 + Math.floor(u * 63)]); } }
+  for (let s = 0; s < 1.4; s += 0.002) { const [x, y] = P(-10 + 70 * Math.cos(2.2 + s), 20 + 60 * Math.sin(2.2 + s)); for (let w = -4; w <= 4; w++) put(x, y + w, 0.45 * (1 - Math.abs(w) / 5)); }
   const B = blurW(V, N, 1);
-  return rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.035 + 0.3 * B[i]; o[2] = 0; });
+  // orm: roughness (G) for the base and clearcoat layers; haze: the oily film scatters a little light, a faint grey
+  // veil in the base colour and alpha (the glass is otherwise 16 % of a near-black tint over the panel)
+  return {
+    orm: rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.03 + 0.62 * B[i]; o[2] = 0; }),
+    haze: rgbaCanvas(N, N, (i, o) => { const k = Math.min(1, B[i] * 1.6); o[0] = lerp(0.047, 0.24, k); o[1] = lerp(0.051, 0.245, k); o[2] = lerp(0.07, 0.25, k); o[3] = 0.16 + 0.1 * k; }),
+  };
 }
-// a thin-film (iridescent) dark germanium-like window for the thermal lens
+
 function tabletMaterials() {
-  TX.tpu = texSet('tpu', tpuMaps(256, 401, { scuff: 0.45 }));
+  TX.tpu = texSet('tpu', tpuMaps(256, 401, { scuff: 0.6 }));
   TX.webbing = texSet('webbing', webbingMaps(256, 419));
-  TX.grain = texSet('tpu_grain', grainMaps(256, 431));
+  TX.cover = texSet('back_cover', coverMaps(256, 443));
+  TX.alloy = texSet('alloy', alloyMaps(256, 457));
   const T = (m) => { TILED.add(m); return m; };
   const diel = (m) => { m.metalness = 0; m.metalnessMap = null; return m; };   // dielectrics export metallicFactor 0
-  M.tpu = T(diel(pbr('tpu_bumper', TX.tpu, 0.03, { envMapIntensity: 0.3 }, 0.22)));
-  // frame_alloy: hard-anodised 6063, satin (bead-blast before anodise); seen only in the key and port pockets
-  M.alloy = T(pbr('frame_alloy', TX.under, 0.1, { color: '#24262a', metalness: 0.6, envMapIntensity: 0.45 }, 0.4));
-  { const o = ormScaled(TX.under.orm.image, 1.6, 'frame_orm'); M.alloy.roughnessMap = o; M.alloy.metalnessMap = o; }
-  M.trim = T(pbr('camera_trim', TX.under, 0.1, { color: '#50545c', metalness: 0.7, envMapIntensity: 0.8 }, 0.3));
-  { const o = ormScaled(TX.under.orm.image, 1.15, 'trim_orm'); M.trim.roughnessMap = o; M.trim.metalnessMap = o; }
-  TX.cover = texSet('back_cover', coverMaps(256, 443));
-  M.backCover = T(diel(pbr('back_cover', TX.cover, 0.016, { envMapIntensity: 0.32 }, 0.35)));
-  M.gripPad = T(diel(pbr('rubber_grip', TX.grain, 0.012, { envMapIntensity: 0.4 }, 0.6)));
+  M.tpu = T(diel(pbr('tpu_overmould', TX.tpu, 0.03, { envMapIntensity: 0.3 }, 0.22)));
+  // the corner bumpers take the drops: the same TPU, more scuffed (abrasion streaks a shade lighter and drier)
+  TX.tpuBump = texSet('tpu_bumper', tpuMaps(256, 409, { scuff: 1.3, tone: 0.068, rough: [0.7, 0.8] }));
+  M.tpuBump = T(diel(pbr('tpu_bumper', TX.tpuBump, 0.03, { envMapIntensity: 0.34 }, 0.22)));
+  TX.knurl = texSet('grip_knurl', knurlDiamond(256, 419, { tone: 0.075 }));
+  M.knurl = T(diel(pbr('grip_knurl', TX.knurl, 0.0096, { envMapIntensity: 0.3 }, 0.6)));
+  // frame_alloy: near-black gunmetal hard anodise, satin (the phone's value); edge chips (frame_alloy_worn) on the exposed chamfers
+  M.alloy = T(pbr('frame_alloy', TX.alloy, 0.03, { color: '#2c2e33', metalness: 0.6, envMapIntensity: 0.45 }, 0.3));
+  M.alloyWorn = new THREE.MeshStandardMaterial({ name: 'frame_alloy_worn', color: '#7e828a', roughness: 0.4, metalness: 0.9, envMapIntensity: 0.6 });
+  CHIP.set(M.alloy, M.alloyWorn);
+  // the 0.35 mm machined chamfer on the frame's inner edge round the glass (cut after anodising: satin bare aluminium)
+  M.alloyEdge = new THREE.MeshStandardMaterial({ name: 'frame_chamfer', color: '#5f636b', roughness: 0.38, metalness: 0.85, envMapIntensity: 0.55 });
+  M.trim = T(pbr('camera_trim', TX.alloy, 0.02, { color: '#1b1c1f', metalness: 0.6, envMapIntensity: 0.55 }, 0.3));
+  M.backCover = T(diel(pbr('back_cover', TX.cover, 0.016, { envMapIntensity: 0.32 }, 0.18)));
   M.keys = T(diel(pbr('rubber_keys', TX.tpu, 0.02, { envMapIntensity: 0.5 }, 0.3)));
-  // the one accent: the PTT cap, a dark desaturated violet pigment (not emissive)
-  M.ptt = new THREE.MeshStandardMaterial({ name: 'ptt_accent', color: '#1f1a28', roughness: 0.62, metalness: 0, envMapIntensity: 0.5 });
-  M.ptt.userData.tile = 0.02;
-  M.mask = new THREE.MeshStandardMaterial({ name: 'glass_mask', color: '#040405', roughness: 0.3, metalness: 0 });
-  M.inkEdge = new THREE.MeshStandardMaterial({ name: 'panel_border', color: '#060608', roughness: 0.3, metalness: 0 });
+  // the one accent: the PTT cap, a matte moulded pigment (not emissive); the phone's value
+  M.ptt = new THREE.MeshStandardMaterial({ name: 'ptt_accent', color: PTT_COLOR, roughness: 0.6, metalness: 0, envMapIntensity: 0.45 });
+  M.mask = new THREE.MeshStandardMaterial({ name: 'glass_mask', color: '#09090b', roughness: 0.3, metalness: 0 });
+  M.inkEdge = new THREE.MeshStandardMaterial({ name: 'panel_border', color: '#0c0d10', roughness: 0.55, metalness: 0 });
   M.deco = new THREE.MeshPhysicalMaterial({ name: 'camera_deco', color: '#0b0c0e', roughness: 0.12, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 1.0 });
-  M.thermal = new THREE.MeshPhysicalMaterial({ name: 'thermal_window', color: '#646872', roughness: 0.16, metalness: 0.9, iridescence: 1, iridescenceIOR: 2.0, iridescenceThicknessRange: [320, 560], envMapIntensity: 1.0 });
-  // lens AR coating (the faint green-violet ring seen in a real camera lens) and the moulded strap parts
-  M.coating = new THREE.MeshPhysicalMaterial({ name: 'lens_coating', color: '#14161c', roughness: 0.08, metalness: 0.6, iridescence: 1, iridescenceIOR: 1.6, iridescenceThicknessRange: [380, 620], envMapIntensity: 1.0 });
+  // thermal camera: a germanium window, dark grey-green with a hard specular (the tint is in the base colour: glTFast
+  // ignores the thin-film layer)
+  M.thermal = new THREE.MeshPhysicalMaterial({ name: 'thermal_window', color: '#46564f', roughness: 0.12, metalness: 0.85, iridescence: 0.6, iridescenceIOR: 2.0, iridescenceThicknessRange: [320, 560], envMapIntensity: 1.1 });
+  M.coating = new THREE.MeshPhysicalMaterial({ name: 'lens_coating', color: '#12132a', roughness: 0.04, metalness: 0.7, iridescence: 1, iridescenceIOR: 1.6, iridescenceThicknessRange: [380, 620], envMapIntensity: 1.0 });
+  M.camGlass = new THREE.MeshPhysicalMaterial({ name: 'camera_glass', color: '#08090b', roughness: 0.04, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.03, transparent: true, opacity: 0.2, depthWrite: false, envMapIntensity: 1.1 });
   M.thread = new THREE.MeshStandardMaterial({ name: 'strap_stitch', color: '#3b3c40', roughness: 0.9, metalness: 0 });
   M.buckle = new THREE.MeshStandardMaterial({ name: 'strap_buckle', color: '#141517', roughness: 0.55, metalness: 0, envMapIntensity: 0.5 });
-  M.pogo = new THREE.MeshStandardMaterial({ name: 'pogo_gold', color: '#c9a24a', roughness: 0.3, metalness: 1.0 });
+  M.pogo = new THREE.MeshStandardMaterial({ name: 'pogo_gold', color: '#9c8040', roughness: 0.45, metalness: 1.0, envMapIntensity: 0.5 });
   M.webbing = T(diel(pbr('strap_webbing', TX.webbing, 0.025, { envMapIntensity: 0.35 }, 0.9)));
-  M.torx = new THREE.MeshStandardMaterial({ name: 'fasteners', color: '#3a3c41', roughness: 0.4, metalness: 0.85, envMapIntensity: 0.8 });
+  M.torx = new THREE.MeshStandardMaterial({ name: 'fasteners', color: '#34363b', roughness: 0.42, metalness: 0.85, envMapIntensity: 0.8 });
   M.steel = new THREE.MeshStandardMaterial({ name: 'port_shell', color: '#8b8e94', roughness: 0.35, metalness: 1.0, envMapIntensity: 0.8 });
-  M.vent = new THREE.MeshStandardMaterial({ name: 'vent_membrane', color: '#2b2c2f', roughness: 0.95, metalness: 0 });
-  M.die = new THREE.MeshStandardMaterial({ name: 'flash_led', color: '#e4dcc0', roughness: 0.4, metalness: 0 });
-  M.dieWarm = new THREE.MeshStandardMaterial({ name: 'flash_led_warm', color: '#e2a54e', roughness: 0.4, metalness: 0 });
-  for (const m of [M.mask, M.inkEdge, M.deco, M.thermal, M.coating, M.thread, M.buckle, M.pogo, M.torx, M.steel, M.vent, M.die, M.dieWarm]) m.userData.tile = 0.05;
-  // speaker mesh: black-coated perforated steel (it sits at the bottom of the slots, so it must read as a dark floor)
+  // grime: the grey dust and lint that settles in screw counterbores, the pogo well, the strap pockets, the latch slot
+  M.dust = new THREE.MeshStandardMaterial({ name: 'dust', color: '#2e2c29', roughness: 1, metalness: 0, envMapIntensity: 0.1 });
+  M.lensBarrel = new THREE.MeshStandardMaterial({ name: 'lens_barrel', color: '#151618', roughness: 0.5, metalness: 0.5, envMapIntensity: 0.6 });
+  for (const m of [M.ptt, M.alloyWorn, M.alloyEdge, M.mask, M.inkEdge, M.deco, M.thermal, M.coating, M.camGlass, M.thread, M.buckle, M.pogo, M.torx, M.steel, M.dust, M.lensBarrel]) m.userData.tile = 0.05;
   M.grille.color.set('#5a5a5e');
-  // the crevice reads as a fine shadow line with a little dust in it, not a black outline
-  M.crevice.color.set('#161513'); M.crevice.roughness = 1;
-  // the flash diffuser: a clear PC Fresnel lens over the dies
-  M.flash.color.set('#9a978e'); M.flash.roughness = 0.2; M.flash.transparent = true; M.flash.opacity = 0.55; M.flash.depthWrite = false;
-  // cover glass: AR-coated, clean except a few prints, a softer veil
-  TX.glassPrint = asTex(glassPrintMap(512, 97)); TX.glassPrint.name = 'glass_prints_orm';
-  Object.assign(M.screenGlass, { roughnessMap: TX.glassPrint, roughness: 1, clearcoat: 0.12, clearcoatRoughness: 0.12, specularIntensity: 0.4, envMapIntensity: 0.42, opacity: 0.12 });
+  M.crevice.color.set('#121110'); M.crevice.roughness = 1;
+  // flash: an off-white, slightly yellow Fresnel lens (concentric rings in its normal map), opaque, never emissive at rest
+  M.flash.color.set('#7d776a'); M.flash.roughness = 0.42; M.flash.normalScale.set(1.4, 1.4);
+  // cover glass: a faint clearcoat reflection of the room; thumb swipes, a palm smear and prints in both roughness maps
+  const gp = glassPrintMap(512, 97);
+  TX.glassPrint = asTex(gp.orm); TX.glassPrint.name = 'glass_prints_orm';
+  TX.glassHaze = asTex(gp.haze, { srgb: true }); TX.glassHaze.name = 'glass_haze';
+  Object.assign(M.screenGlass, { color: new THREE.Color('#ffffff'), map: TX.glassHaze, opacity: 1, roughnessMap: TX.glassPrint, roughness: 1, clearcoat: 0.6, clearcoatRoughness: 1, clearcoatRoughnessMap: TX.glassPrint, specularIntensity: 0.8, envMapIntensity: 0.85 });
   M.screenGlass.userData.tile = 0.24;
-  // one status LED, green (scene.js tints it red on alert, amber on low battery)
   M.led.emissive.set('#2fc26b'); M.led.userData.emissive = '#2fc26b';
   M.accent = M.ptt;      // scene.js tints M.led only; the PTT key is pigment, not light
 }
-// Torx (hexalobular) socket screw head, pan head with a 0.3 mm chamfer; built once per size, then copied
+// Torx (hexalobular) socket screw head (the phone's): a pan head with a 0.3 mm chamfer; built once per size, then copied
 const TORX_CACHE = new Map();
 function torxScrew(r, pos, normal, spin = 0) {
   const key = r.toFixed(6);
   if (!TORX_CACHE.has(key)) {
     const h = r * 0.5, prof = [[0, 0], [r, 0], [r, h * 0.55], [r * 0.9, h * 0.92], [r * 0.7, h], [0, h]];
-    let g = new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x, y)), 20);
-    const st = new THREE.Shape(), ro = r * 0.42, ri = r * 0.3, n = 36;
+    let g = new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x, y)), 24);
+    const st = new THREE.Shape(), ro = r * 0.44, ri = r * 0.31, n = 48;
     for (let i = 0; i <= n; i++) { const a = (i / n) * Math.PI * 2, rr = ri + (ro - ri) * Math.pow(0.5 + 0.5 * Math.cos(6 * a), 0.7); const px = Math.cos(a) * rr, py = Math.sin(a) * rr; i ? st.lineTo(px, py) : st.moveTo(px, py); }
-    const cut = new THREE.ExtrudeGeometry(st, { depth: h * 2, bevelEnabled: false }).rotateX(-Math.PI / 2).translate(0, h * 0.35, 0);
+    const cut = new THREE.ExtrudeGeometry(st, { depth: h * 2, bevelEnabled: false }).rotateX(-Math.PI / 2).translate(0, h * 0.38, 0);
     g = subtract(g, cut);
     TORX_CACHE.set(key, creased(g, 35));
   }
   return placeScrew(TORX_CACHE.get(key).clone(), pos, normal, spin);
 }
-// a flat ring (annulus) at z facing -Z or +Z (mm in, metres out)
+// a flat ring (annulus) / disc at z facing +Z (mm in, metres out)
 const ringZ = (cx, cy, r0, r1, z, seg = 28) => new THREE.RingGeometry(mm(r0), mm(r1), seg).translate(mm(cx), mm(cy), mm(z));
 const discZ = (cx, cy, r, z, seg = 28) => new THREE.CircleGeometry(mm(r), seg).translate(mm(cx), mm(cy), mm(z));
 const flipZ = (g) => g.rotateY(Math.PI);    // a +Z-facing ring/disc turned to face -Z (about its own centre only if centred at x = 0)
+// a disc facing +Y (s = 1) or -Y (s = -1) at (x, y, z) mm
+const discY = (x, y, z, r, s, seg = 12) => new THREE.CircleGeometry(mm(r), seg).rotateX(-s * Math.PI / 2).translate(mm(x), mm(y), mm(z));
 
 function buildPhone(K) {           // the template calls buildPhone(); this builds the tablet
   tabletMaterials();
@@ -1787,251 +1926,313 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
   const N = { tactical_tablet: root };
   const reg = (n) => (N[n.name] = n);
   const body = reg(node('body', root));
-  const Tp = TB.tpu, G = TB.glass, A = TB.active, F = TB.frame, B = TB.back, D = TB.door;
+  const W = TB.wall, Bp = TB.bump, F = TB.frame, G = TB.glass, A = TB.active, B = TB.back, D = TB.door;
   const rr = (hx, hy, r) => rect(mm(-hx), mm(hx), mm(-hy), mm(hy), mm(r));
   const rrPath = (hx, hy, r) => roundedPath([[-hx, -hy, r], [hx, -hy, r], [hx, hy, r], [-hx, hy, r]].map(([x, y, q]) => [mm(x), mm(y), mm(q)]));
-  // a rounded slot / pocket cutter along an axis: rect in the two other axes (mm), corner radius r
+  const rrAt = (x0, x1, y0, y1, r) => rect(mm(x0), mm(x1), mm(y0), mm(y1), mm(r));
+  const rrPathAt = (x0, x1, y0, y1, r) => roundedPath([[x0, y0, r], [x1, y0, r], [x1, y1, r], [x0, y1, r]].map(([x, y, q]) => [mm(x), mm(y), mm(q)]));
   const cutX = (x0, x1, y0, y1, z0, z1, r) => slabX(rect(mm(z0), mm(z1), mm(y0), mm(y1), mm(r)), mm(x0), mm(x1), 0, 1, 8);
   const cutY = (y0, y1, x0, x1, z0, z1, r) => slabY(rect(mm(x0), mm(x1), mm(-z1), mm(-z0), mm(r)), mm(y0), mm(y1), 0, 1, 8);
+  const slotP = (x0, x1, y0, y1) => roundedPath([[x0, y0, (y1 - y0) / 2 - 0.01], [x1, y0, (y1 - y0) / 2 - 0.01], [x1, y1, (y1 - y0) / 2 - 0.01], [x0, y1, (y1 - y0) / 2 - 0.01]].map(([x, y, r]) => [mm(x), mm(y), mm(r)]));
+  const ni = (q) => { q = q.index ? q.toNonIndexed() : q; if (q.attributes.uv) q.deleteAttribute('uv'); return q; };
+  const corners = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
 
-  /* mid-frame: aluminium, the structural part; the display, board and battery mount to it. Hidden by the TPU except in the pockets */
-  add(body, subtract(slabZ(rr(F.x, F.y, F.r), mm(F.z0), mm(F.z1), mm(0.4), 1, 12), cutY(-F.y - 1, -F.y + 3.2, -4.45, 4.45, -2.65, 0.65, 1.64)), M.alloy, 'body_frame', { wear: false });
-
-  /* TPU overmould: one continuous part round the whole perimeter, folded over the glass edge at the front (lip) and
-     over the back cover's edge at the back (rim). Front and rear halves overlap in z so their bevels leave no seam. */
+  /* mid-frame: anodised aluminium, the structure; seen as a chamfered ring round the glass and round the cover */
   {
-    const bf = 1.8, br = 1.6;
-    const front = slabZ(ringShape(tpuOutline(0.9 * bf), [rrPath(G.x + 0.3 + 0.9 * bf, G.y + 0.3 + 0.9 * bf, G.r + 0.3 + 0.9 * bf)]), mm(Tp.z0), mm(-1.0), mm(bf), 3, 8);
-    const rear = slabZ(ringShape(tpuOutline(0.9 * br), [rrPath(B.x + 0.3 + 0.9 * br, B.y + 0.3 + 0.9 * br, B.r + 0.3 + 0.9 * br)]), mm(-5.0), mm(Tp.z1), mm(br), 3, 8);
-    let g = mergeGeometries([front.toNonIndexed(), rear.toNonIndexed()].map((q) => { q.deleteAttribute('uv'); return q; }));
-    // key and port pockets, down to the frame face (non-overlapping cutters go together)
+    let g = slabZ(rr(F.x - 0.45, F.y - 0.45, F.r - 0.45), mm(F.z0), mm(F.z1), mm(0.5), 2, 16);
     g = subtract(g,
-      cutX(-72, -F.x + 0.1, 27, 75, -4.4, 2.4, 1.8),             // power + volume (holder's right, -X)
-      cutX(F.x - 0.1, 72, 12.5, 35.5, -5.4, 3.4, 2.2),           // PTT (holder's left, +X)
-      cutY(F.y - 0.1, 116, -27, -9, -4.0, 2.0, 1.6),             // programmable key (top edge)
-      cutY(-116, -F.y + 0.1, -9.4, 9.4, -4.6, 3.0, 1.6),         // USB-C flap well (bottom edge)
-    );
-    // nail notch at the flap's free edge, mic holes
-    g = subtract(g, cylY(mm(1.7), mm(-116), mm(-F.y + 0.2), 20).translate(0, 0, mm(-4.6)),
-      cylY(mm(0.6), mm(F.y - 0.2), mm(116), 12).translate(mm(14), 0, mm(-1.2)), cylY(mm(0.6), mm(-116), mm(-F.y + 0.2), 12).translate(mm(-24), 0, mm(-1.2)));
-    // lanyard bar (bottom +X corner): a 2.5 x 4 mm slot in the back rim meets a 4 x 2.5 mm slot out of the bottom edge;
-    // the 1.8 mm of TPU between them is the bar the cord loops round. Each mouth has a 0.3 mm radius step.
-    const LY = LAN;
-    g = subtract(g,
-      slabZ(rect(mm(LY.x - 1.25), mm(LY.x + 1.25), mm(LY.y - 2), mm(LY.y + 2), mm(1.24)), mm(3.9), mm(9), 0, 1, 10),
-      slabZ(rect(mm(LY.x - 1.55), mm(LY.x + 1.55), mm(LY.y - 2.3), mm(LY.y + 2.3), mm(1.54)), mm(Tp.z1 - 0.3), mm(9), 0, 1, 10),
-      cutY(-118, LY.y + 1.2, LY.x - 2, LY.x + 2, 3.9, 6.4, 1.2));
-    // hand-strap pockets: the strap bars sit recessed in the back rim (nothing stands proud of the wall line)
-    g = subtract(g, ...[1, -1].map((sg) => slabZ(rect(mm(sg > 0 ? STRAP.px0 : -STRAP.px1), mm(sg > 0 ? STRAP.px1 : -STRAP.px0), mm(STRAP.y - 15.5), mm(STRAP.y + 15.5), mm(1.4)), mm(STRAP.pz0), mm(10), mm(0.3), 1, 8)));
-    // no per-triangle wear split here: on the long extruded strips it cut saw-tooth notches into the corners. The wear
-    // is in the TPU texture instead (fine scuff lines, a few lighter rub marks), which reads the same at any distance
-    add(body, g, M.tpu, 'body_bumper', { wear: false });
-    // the back rim's grip zone: a moulded leather-grain texture, 0.15 mm proud, inside the rim's bevel
-    const zone = slabZ(ringShape(tpuOutline(2.2), [rrPath(B.x + 2.0, B.y + 2.0, B.r + 2.0)]), mm(Tp.z1 - 0.3), mm(Tp.z1 + 0.15), mm(0.12), 1, 8);
-    add(body, subtract(zone, slabZ(rect(mm(LY.x - 2.2), mm(LY.x + 2.2), mm(LY.y - 3.0), mm(LY.y + 3.0), mm(2)), mm(7), mm(9), 0, 1, 8),
-      ...[1, -1].map((sg) => slabZ(rect(mm(sg > 0 ? STRAP.px0 - 0.6 : -STRAP.px1 - 0.6), mm(sg > 0 ? STRAP.px1 + 0.6 : -STRAP.px0 + 0.6), mm(STRAP.y - 16.1), mm(STRAP.y + 16.1), mm(2)), mm(7), mm(9), 0, 1, 8))), M.gripPad, 'body_grip_zone', { wear: false });
-    // the lanyard channel floor and the strap-pocket floors read dark
-    add(body, mergeUV([discZ(LY.x, LY.y, 1.0, 3.95, 18), ...[1, -1].map((sg) => slabZ(rect(mm(sg > 0 ? STRAP.px0 : -STRAP.px1), mm(sg > 0 ? STRAP.px1 : -STRAP.px0), mm(STRAP.y - 15.5), mm(STRAP.y + 15.5), mm(1.4)), mm(STRAP.pz0), mm(STRAP.pz0 + 0.04), 0, 1, 8))]), M.crevice, 'body_pocket_floors', { cast: false, uv: 'box' });
-    // strap bars: stainless pins across each pocket, pressed into the pocket ends
-    add(body, mergeUV([1, -1].map((sg) => cylY(mm(0.75), mm(STRAP.y - 15.6), mm(STRAP.y + 15.6), 16).translate(mm(sg * STRAP.pinX), 0, mm(STRAP.pinZ)))), M.steel, 'body_strap_bars', { cast: false });
+      slabZ(rr(G.x + 0.2, G.y + 0.2, G.r + 0.2), mm(F.z0 - 1), mm(G.z1 + 0.9), 0, 1, 16),        // glass + display pocket
+      slabZ(rr(B.x + 0.2, B.y + 0.2, B.r + 0.2), mm(B.z0), mm(F.z1 + 1), 0, 1, 16));           // back-cover pocket
+    g = subtract(g, cutY(-F.y - 1, -F.y + 6.5, -4.45, 4.45, -2.4, 0.8, 1.6));                   // USB-C receptacle bore
+    add(body, g, M.alloy, 'body_frame', { wear: { chip: 0.5, inner: false, mask: (p, n) => Math.abs(n[2]) > 0.25 } });
+    // the machined chamfer on the frame's inner edge round the glass: a 0.35 mm satin bright band
+    add(body, new THREE.ShapeGeometry(ringShape(rr(G.x + 0.55, G.y + 0.55, G.r + 0.55), [rrPath(G.x + 0.2, G.y + 0.2, G.r + 0.2)]), 16).rotateY(Math.PI).translate(0, 0, mm(F.z0 - 0.006)), M.alloyEdge, 'body_frame_chamfer', { cast: false, uv: 'box' });
   }
 
-  /* back cover: PC-GF10, domed, screwed to the frame over a gasket; 0.3 mm part line to the TPU rim */
-  const zB = B.z1, onB = (x, y, dz = 0) => mm(zB + dz), domeAt = () => 0;
+  /* TPU overmould: one part round the whole perimeter, the front lip folded over the frame ring (0.6 mm proud of the
+     glass), the back rim over the frame's back; the four corners cut away for the replaceable bumpers (0.3 mm part
+     line). Front and rear halves overlap in z; every CSG step runs on each half alone. */
+  const cornerBoxes = (grow) => corners.map(([sx, sy]) => {
+    const x0 = W.x - Bp.ax - grow, y0 = W.y - Bp.ay - grow;
+    return rbox(mm(sx > 0 ? x0 : -90), mm(sx > 0 ? 90 : -x0), mm(sy > 0 ? y0 : -130), mm(sy > 0 ? 130 : -y0), mm(-20), mm(20), 0, 1);
+  });
+  const bf = 1.0, br = 1.2, FO = TB.frontOpen, BO = TB.backOpen;
+  const tpuRing = (hx, hy, r, bulge, zone, z0, z1, extra = 0) => {
+    const front = slabZ(ringShape(perimeter(hx, hy, r, bulge, zone, 0.9 * bf), [rrPath(FO[0] + extra + 0.9 * bf, FO[1] + extra + 0.9 * bf, FO[2] + extra + 0.9 * bf)]), mm(z0), mm(-1.0), mm(bf), 3, 10);
+    const rear = slabZ(ringShape(perimeter(hx, hy, r, bulge, zone, 0.9 * br), [rrPath(BO[0] + extra + 0.9 * br, BO[1] + extra + 0.9 * br, BO[2] + extra + 0.9 * br)]), mm(-4.0), mm(z1), mm(br), 3, 10);
+    return [front, rear];
+  };
+  const each = (parts, fn) => mergeGeometries(parts.map((q) => ni(fn(q))));
+  const LAN = { x: 52, y: -102.6 };
+  const MIC = [[-30, 1], [30, 1], [-16, -1]];
   {
-    const [cw, ch] = B.crown;
-    let g = new THREE.ExtrudeGeometry(rr(B.x - cw, B.y - cw, B.r - cw), { depth: mm(B.z1 - B.z0 - 2 * ch), bevelEnabled: true, bevelThickness: mm(ch), bevelSize: mm(cw), bevelSegments: 6, curveSegments: 12 }).translate(0, 0, mm(B.z0 + ch));
-    g = subtract(g, rbox(mm(-9.5), mm(9.5), mm(-98.8), mm(-94.2), mm(zB - 0.6), mm(zB + 2), mm(0.8), 1));   // pogo well, 0.6 deep
-    add(body, g, M.backCover, 'body_back');
-    add(body, slabZ(ringShape(rr(B.x + 0.4, B.y + 0.4, B.r + 0.4), [rrPath(B.x - 0.3, B.y - 0.3, B.r - 0.3)]), mm(5.2), mm(5.4), 0, 1, 12), M.crevice, 'body_back_gap', { cast: false });
-    // battery door: its part line (a 0.3 mm groove) and four captive Torx screws in counterbores
-    const dl = slabZ(ringShape(rect(mm(-D.x - 0.18), mm(D.x + 0.18), mm(D.y0 - 0.18), mm(D.y1 + 0.18), mm(D.r + 0.18)), [roundedPath([[-D.x + 0.18, D.y0 + 0.18, D.r - 0.18], [D.x - 0.18, D.y0 + 0.18, D.r - 0.18], [D.x - 0.18, D.y1 - 0.18, D.r - 0.18], [-D.x + 0.18, D.y1 - 0.18, D.r - 0.18]].map(([x, y, r]) => [mm(x), mm(y), mm(r)]))]), mm(zB - 0.05), mm(zB + 0.012), 0, 1, 10);
-    add(body, dl, M.crevice, 'body_door_line', { cast: false });
-    const cap = [[-42, -14], [42, -14], [-42, -84], [42, -84]], cov = [[-54.5, 97], [54.5, 97], [-54.5, 30], [54.5, 30], [-54.5, -97], [54.5, -97]];
-    add(body, mergeUV([...cap.map(([x, y]) => torxScrew(mm(1.8), V3(mm(x), mm(y), onB(x, y, -0.35)), V3(0, 0, 1), x * 0.13 + y)), ...cov.map(([x, y]) => torxScrew(mm(1.2), V3(mm(x), mm(y), onB(x, y, -0.15)), V3(0, 0, 1), x * 0.3 + y))]), M.torx, 'body_back_screws', { cast: false });
-    add(body, mergeUV([...cap.map(([x, y]) => ringZ(x, y, 1.75, 2.25, zB + domeAt(x, y) + 0.012, 24)), ...cov.map(([x, y]) => ringZ(x, y, 1.15, 1.45, zB + domeAt(x, y) + 0.012, 20))]), M.crevice, 'body_screw_counterbores', { cast: false });
-    // pressure-equalising vent (a Gore-type membrane under a slotted cap)
-    const vc = new THREE.LatheGeometry([[0, 0.45], [2.2, 0.45], [2.8, 0.25], [3.0, -0.2]].map(([r, z]) => new THREE.Vector2(mm(r), mm(z))), 28).rotateX(Math.PI / 2).translate(mm(38), mm(70), mm(zB));
-    add(body, vc, M.backCover, 'body_vent_cap');
-    add(body, mergeUV(Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4; return discZ(38 + Math.cos(a) * 1.4, 70 + Math.sin(a) * 1.4, 0.32, zB + 0.46, 12); })), M.vent, 'body_vent_holes', { cast: false, uv: 'box' });
-    // pogo dock pads at the bottom of the well
-    add(body, mergeUV([-6, -2, 2, 6].map((x) => cylZ(mm(0.9), mm(zB - 0.62), mm(zB - 0.5), 16).translate(mm(x), mm(-96.5), 0))), M.pogo, 'body_pogo_pads', { cast: false });
+    let g = tpuRing(W.x, W.y, W.r, 0, 0, W.z0, W.z1);
+    g = g.map((q) => subtract(q, ...cornerBoxes(GAP / 2)));
+    // key, SIM and port pockets, down to the frame face
+    const pk = (k, side, extra = GAP) => { const [y0, y1, z0, z1] = KEY[k]; return cutX(side > 0 ? F.x - 0.1 : -90, side > 0 ? 90 : -F.x + 0.1, y0 - extra, y1 + extra, z0 - extra, z1 + extra, Math.min(2.0, (z1 - z0) / 2 + extra - 0.01)); };
+    const [a0, a1, c0, c1] = KEY.act;
+    g = g.map((q) => subtract(q, pk('ptt', 1), pk('power', -1), cutX(-90, -F.x + 0.1, KEY.vdn[0] - GAP, KEY.vup[1] + GAP, KEY.vdn[2] - GAP, KEY.vdn[3] + GAP, 1.8 + GAP - 0.01), pk('sim', -1, 0.2),
+      cutY(F.y - 0.1, 130, a0 - GAP, a1 + GAP, c0 - GAP, c1 + GAP, 1.8 + GAP - 0.01),                                 // top key pocket
+      cutY(-130, -F.y + 0.1, -9.6, 9.6, -4.8, 3.2, 1.6)));                                                             // USB-C flap well
+    // nail notch at the flap's free (screen-side) edge, mic holes
+    g = each(g, (q) => subtract(q, cylY(mm(1.6), mm(-130), mm(-F.y - 0.3), 20).translate(0, 0, mm(-4.8)),
+      ...MIC.map(([x, s]) => cylY(mm(0.55), mm(s > 0 ? F.y - 0.5 : -130), mm(s > 0 ? 130 : -F.y + 0.5), 12).translate(mm(x), 0, mm(-1.0)))));
+    add(body, g, M.tpu, 'body_overmould', { wear: false });
+    // PTT guard: a moulded rim round the PTT pocket, 0.6 mm proud of the wall, 0.3 mm gap to the cap (a knock in a
+    // holster lands on the rim, not on the key)
+    const [p0, p1, q0, q1] = KEY.ptt, gw = 1.4;
+    const guard = slabX(ringShape(rect(mm(q0 - GAP - gw + 0.27), mm(q1 + GAP + gw - 0.27), mm(p0 - GAP - gw + 0.27), mm(p1 + GAP + gw - 0.27), mm(2.0 + gw - 0.27)), [roundedPath([[q0 - GAP + 0.27, p0 - GAP + 0.27, 1.73], [q1 + GAP - 0.27, p0 - GAP + 0.27, 1.73], [q1 + GAP - 0.27, p1 + GAP - 0.27, 1.73], [q0 - GAP + 0.27, p1 + GAP - 0.27, 1.73]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(W.x - 0.4), mm(W.x + 0.6), mm(0.3), 2, 10);
+    // grip ribs moulded on both side walls, lower half (14 per side, 0.35 mm proud, 3.3 mm pitch: the phone's ribs)
+    const ribs = [];
+    for (const s of [1, -1]) for (let i = 0; i < 14; i++) { const y = -74 + i * 3.3; ribs.push(rbox(mm(s > 0 ? W.x - 0.3 : -W.x - 0.35), mm(s > 0 ? W.x + 0.35 : -W.x + 0.3), mm(y - 0.5), mm(y + 0.5), mm(-4.6), mm(3.0), mm(0.25), 1, 4)); }
+    add(body, mergeUV([guard, ...ribs]), M.tpu, 'body_overmould_grip', { wear: false });
+    // pocket floors (the frame face round the caps) read dark
+    const fl = [];
+    for (const [k, s] of [['ptt', 1], ['power', -1]]) { const [y0, y1, z0, z1] = KEY[k]; fl.push(slabX(rect(mm(z0 - GAP), mm(z1 + GAP), mm(y0 - GAP), mm(y1 + GAP), mm(1.8)), mm(s * F.x - 0.00002), mm(s * F.x + 0.00004 * s), 0, 1, 8)); }
+    fl.push(slabX(rect(mm(KEY.vdn[2] - GAP), mm(KEY.vdn[3] + GAP), mm(KEY.vdn[0] - GAP), mm(KEY.vup[1] + GAP), mm(1.8)), mm(-F.x - 0.00004), mm(-F.x + 0.00002), 0, 1, 8));
+    fl.push(slabY(rect(mm(a0 - GAP), mm(a1 + GAP), mm(-c1 - GAP), mm(-c0 + GAP), mm(1.8)), mm(F.y - 0.00004), mm(F.y + 0.00002), 0, 1, 8));
+    add(body, mergeUV(fl), M.crevice, 'body_key_wells', { cast: false });
+    add(body, mergeUV(MIC.map(([x, s]) => discY(x, s * (F.y + 0.02), -1.0, 0.56, s, 12))), M.dust, 'body_mic_floors', { cast: false, uv: 'box' });
   }
 
-  /* camera island: a moulded seat (boss) on the cover, the anodised island on it (0.4 mm chamfers, two Torx screws);
-     main + ultrawide lenses in stepped bezels, a recessed germanium thermal window, a dual-tone flash */
+  /* corner bumpers: four TPU parts, each wrapping one corner 13-15 mm along both edges past the corner radius, 0.3 mm
+     proud of the overmould (front, back and side), the corner swelling a further 1.1 mm; the front lip follows the
+     glass, so a bumper never covers the display. One M2 Torx (T6, head 2.8 mm) per bumper from the back, in a
+     counterbore. The lanyard bar is moulded into the bottom +X bumper. Their outer edges carry drop scuffs. */
+  const bumpS = corners.map(([sx, sy]) => [sx * 59.3, sy * 99.5]);
   {
-    const cy = 92, zI0 = zB + 0.2, zI1 = zB + 1.75;
-    add(body, rbox(mm(-27.4), mm(27.4), mm(cy - 9.4), mm(cy + 9.4), mm(zB - 0.3), mm(zB + 0.4), mm(0.4), 2, 10), M.backCover, 'body_cam_seat');
-    let isl = rbox(mm(-26), mm(26), mm(cy - 8), mm(cy + 8), mm(zI0), mm(zI1), mm(0.4), 1, 10);
-    const lens = [[-3.5, 4.5, 'main'], [6.5, 3.5, 'wide']], th = [-14.5, 4.0], fl = [15.5, 3.0];
-    isl = subtract(isl, ...lens.map(([x, r]) => cylZ(mm(r + 0.95), mm(zI1 - 0.25), mm(zI1 + 1), 40).translate(mm(x), mm(cy), 0)), cylZ(mm(th[1]), mm(zI1 - 0.9), mm(zI1 + 1), 32).translate(mm(th[0]), mm(cy), 0), cylZ(mm(fl[1]), mm(zI1 - 0.6), mm(zI1 + 1), 28).translate(mm(fl[0]), mm(cy), 0));
-    add(body, isl, M.trim, 'body_cam_island', { wear: false });
-    add(body, mergeUV([-23, 23].map((x) => torxScrew(mm(1.0), V3(mm(x), mm(cy), mm(zI1 - 0.12)), V3(0, 0, 1), x))), M.torx, 'body_cam_screws', { cast: false });
-    // stepped bezel per lens: a turned ring standing 0.3 mm above the island floor of its counterbore, a 0.2 mm step down
-    // to the cover glass; under the glass the black baffle rings, the coated front element and the iris
-    const zL = zI1 - 0.18;
-    const bez = (x, r) => new THREE.LatheGeometry([[r, zL - 0.3], [r, zI1 + 0.05], [r + 0.15, zI1 + 0.2], [r + 0.75, zI1 + 0.2], [r + 0.92, zI1 + 0.05], [r + 0.92, zI1 - 0.3]].map(([a, z]) => new THREE.Vector2(mm(a), mm(z))), 40).rotateX(Math.PI / 2).translate(mm(x), mm(cy), 0);
-    add(body, mergeUV(lens.map(([x, r]) => bez(x, r))), M.trim, 'body_cam_bezels', { wear: false, crease: 40 });
-    add(body, mergeUV(lens.map(([x, r]) => cylZ(mm(r), mm(zL - 0.2), mm(zL), 40).translate(mm(x), mm(cy), 0))), M.lens, 'body_cam_lenses', { cast: false });
-    const rings = [];
-    for (const [x, r] of lens) { rings.push(ringZ(x, cy, r * 0.86, r * 0.995, zL + 0.004, 40), ringZ(x, cy, r * 0.55, r * 0.66, zL + 0.004, 32), ringZ(x, cy, r * 0.1, r * 0.2, zL + 0.004, 20)); }
-    add(body, mergeUV(rings), M.mask, 'body_cam_baffles', { cast: false, uv: 'box' });
-    add(body, mergeUV(lens.map(([x, r]) => ringZ(x, cy, r * 0.66, r * 0.86, zL + 0.004, 40))), M.coating, 'body_cam_coating', { cast: false, uv: 'box' });
-    add(body, mergeUV(lens.map(([x, r]) => ringZ(x, cy, r * 0.2, r * 0.55, zL + 0.003, 32))), M.deco, 'body_cam_elements', { cast: false, uv: 'box' });
-    // thermal camera: a round chalcogenide window recessed 0.9 mm behind a black bezel ring
-    add(body, ringZ(th[0], cy, th[1] * 0.78, th[1], zI1 - 0.88, 32), M.mask, 'body_thermal_bezel', { cast: false, uv: 'box' });
-    add(body, discZ(th[0], cy, th[1] * 0.8, zI1 - 0.86, 32), M.thermal, 'body_thermal_window', { cast: false, uv: 'box' });
-    // flash: two LED dies (cool and warm white) under a round Fresnel diffuser
-    add(body, rbox(mm(fl[0] - 1.6), mm(fl[0] - 0.2), mm(cy - 0.7), mm(cy + 0.7), mm(zI1 - 0.56), mm(zI1 - 0.5), mm(0.02), 1), M.die, 'body_flash_die_cool', { cast: false });
-    add(body, rbox(mm(fl[0] + 0.2), mm(fl[0] + 1.6), mm(cy - 0.7), mm(cy + 0.7), mm(zI1 - 0.56), mm(zI1 - 0.5), mm(0.02), 1), M.dieWarm, 'body_flash_die_warm', { cast: false });
-    add(body, discZ(fl[0], cy, fl[1] * 0.98, zI1 - 0.57, 28), M.mask, 'body_flash_well', { cast: false, uv: 'box' });
-    add(body, discZ(fl[0], cy, fl[1], zI1 - 0.06, 28), M.flash, 'body_flash', { cast: false, uv: 'keep' });
-  }
-
-  /* front: cover glass (0.45 mm 2.5D edge), black ink mask, the panel's border, earpiece, sensors, loudspeaker */
-  const zG = mm(G.z0);
-  {
-    const ear = slabZ(rect(mm(-7), mm(7), mm(97.9), mm(99.0), mm(0.54)), mm(G.z0 - 1), mm(G.z1 + 1), 0, 1, 8);
-    const spk = [];
-    for (const row of [0, 1]) for (let i = 0; i < 9 - row; i++) { const x = -12.8 + i * 3.2 + (row ? 1.6 : 0), y = -97.2 - row * 1.9; spk.push(slabZ(rect(mm(x - 1.2), mm(x + 1.2), mm(y - 0.45), mm(y + 0.45), mm(0.44)), mm(G.z0 - 1), mm(G.z1 + 1), 0, 1, 6)); }
-    const glass = subtract(slabZ(rr(G.x, G.y, G.r), mm(G.z0), mm(G.z1), mm(0.45), 2, 12), ear, ...spk);
-    add(body, glass, M.screenGlass, 'screen_glass', { cast: false, crease: 50 });
-    const aw = A.w / 2, y0 = A.y - A.h / 2, y1 = A.y + A.h / 2;
-    const win = (o) => roundedPath([[-aw - o, y0 - o, 2 + o], [aw + o, y0 - o, 2 + o], [aw + o, y1 + o, 2 + o], [-aw - o, y1 + o, 2 + o]].map(([x, y, r]) => [mm(x), mm(y), mm(r)]));
-    const slotP = (x0, x1, y0, y1) => roundedPath([[x0, y0, (y1 - y0) / 2 - 0.01], [x1, y0, (y1 - y0) / 2 - 0.01], [x1, y1, (y1 - y0) / 2 - 0.01], [x0, y1, (y1 - y0) / 2 - 0.01]].map(([x, y, r]) => [mm(x), mm(y), mm(r)]));
-    const holes = [win(0.55), slotP(-7, 7, 97.9, 99.0)];
-    for (const row of [0, 1]) for (let i = 0; i < 9 - row; i++) { const x = -12.8 + i * 3.2 + (row ? 1.6 : 0), y = -97.2 - row * 1.9; holes.push(slotP(x - 1.2, x + 1.2, y - 0.45, y + 0.45)); }
-    // the ink runs right out under the glass's 2.5D edge (to the TPU lip wall), so no frame shows through the glass rim
-    // the ink is a print on the glass's back face: one flat sheet with no side walls (a 0.1 mm wall caught the key light as a
-    // dotted bright line along the display's lower edge in high three-quarter views)
-    add(body, new THREE.ShapeGeometry(ringShape(rr(G.x + 0.25, G.y + 0.25, G.r + 0.25), holes), 12).rotateY(Math.PI).translate(0, 0, mm(G.z1 + 0.01)), M.mask, 'body_glass_mask', { cast: false, uv: 'box' });
-    // the panel's own inactive border: a black-matrix band only a shade off the ink. It is one flat sheet (no side walls)
-    // lying behind the ink and in front of the display plane; its inner edge overlaps the display by 0.15 mm so the
-    // display's edge pixels and edge never show as a line
-    add(body, new THREE.ShapeGeometry(ringShape(roundedShape([[-aw - 0.6, y0 - 0.6, 2.6], [aw + 0.6, y0 - 0.6, 2.6], [aw + 0.6, y1 + 0.6, 2.6], [-aw - 0.6, y1 + 0.6, 2.6]].map(([x, y, r]) => [mm(x), mm(y), mm(r)])), [win(-0.15)]), 12).rotateY(Math.PI).translate(0, 0, mm(G.z1 + 0.13)), M.inkEdge, 'body_panel_border', { cast: false, uv: 'box' });
-    // the speaker slots through the glass are lined (their walls read as dark openings, not as lit glass edges)
-    {
-      const sleeve = (x0, x1, y0, y1) => { const r = (y1 - y0) / 2; return slabZ(ringShape(rect(mm(x0 + 0.01), mm(x1 - 0.01), mm(y0 + 0.01), mm(y1 - 0.01), mm(r - 0.011)), [roundedPath([[x0 + 0.06, y0 + 0.06, r - 0.061], [x1 - 0.06, y0 + 0.06, r - 0.061], [x1 - 0.06, y1 - 0.06, r - 0.061], [x0 + 0.06, y1 - 0.06, r - 0.061]].map(([x, y, q]) => [mm(x), mm(y), mm(q)]))]), mm(G.z0 + 0.03), mm(G.z1 + 0.1), 0, 1, 3); };
-      const sl = [sleeve(-7, 7, 97.9, 99.0)];
-      for (const row of [0, 1]) for (let i = 0; i < 9 - row; i++) { const x = -12.8 + i * 3.2 + (row ? 1.6 : 0), y = -97.2 - row * 1.9; sl.push(sleeve(x - 1.2, x + 1.2, y - 0.45, y + 0.45)); }
-      add(body, mergeUV(sl), M.crevice, 'body_speaker_slot_walls', { cast: false, uv: 'box' });
+    let g = tpuRing(W.x + Bp.step, W.y + Bp.step, W.r + Bp.step, Bp.bulge, Bp.zone, Bp.z0, Bp.z1, -Bp.step);
+    const boxes = mergeGeometries(cornerBoxes(-GAP / 2).map(ni));
+    // a 0.45 mm chamfer round each leg's end face (a sharp end face, lit edge-on, reads as a bright hairline): the phone's
+    const c = mm(0.45), L = mm(40), ENDCH = [], ox = W.x + Bp.step, oy = W.y + Bp.step;
+    const edge = (axis, x, y, z) => { const g = axis === 'z' ? new THREE.BoxGeometry(2 * c, 2 * c, L).rotateZ(Math.PI / 4) : axis === 'x' ? new THREE.BoxGeometry(L, 2 * c, 2 * c).rotateX(Math.PI / 4) : new THREE.BoxGeometry(2 * c, L, 2 * c).rotateY(Math.PI / 4); return g.translate(mm(x), mm(y), mm(z)); };
+    for (const [sx, sy] of corners) {
+      const ye = sy * (W.y - Bp.ay + GAP / 2), xe = sx * (W.x - Bp.ax + GAP / 2);
+      ENDCH.push(edge('z', sx * ox, ye, 0), edge('x', sx * (ox - 10), ye, Bp.z0), edge('x', sx * (ox - 10), ye, Bp.z1));
+      ENDCH.push(edge('z', xe, sy * oy, 0), edge('y', xe, sy * (oy - 10), Bp.z0), edge('y', xe, sy * (oy - 10), Bp.z1));
     }
-    // earpiece and loudspeaker: black-coated perforated steel 0.2 mm behind the ink, a dark acoustic felt behind it
-    // (both in front of the frame face at G.z1 + 0.3, so the frame never shows through the holes)
-    const zM = G.z1 + 0.1;
-    add(body, mergeUV([rbox(mm(-7.3), mm(7.3), mm(97.6), mm(99.3), mm(zM + 0.04), mm(zM + 0.07), mm(0.01), 1), rbox(mm(-14.3), mm(14.3), mm(-100.0), mm(-96.3), mm(zM + 0.04), mm(zM + 0.07), mm(0.01), 1)]), M.grille, 'body_speaker_grilles', { cast: false });
-    add(body, mergeUV([rbox(mm(-7.5), mm(7.5), mm(97.4), mm(99.5), mm(zM + 0.12), mm(zM + 0.16), mm(0.01), 1), rbox(mm(-14.5), mm(14.5), mm(-100.2), mm(-96.1), mm(zM + 0.12), mm(zM + 0.16), mm(0.01), 1)]), M.crevice, 'body_speaker_backing', { cast: false });
-    // top bezel: front camera (right of the earpiece), ALS / proximity window (left), status LED
-    add(body, flipZ(discZ(0, 0, 1.9, 0, 24)).translate(mm(17), mm(97.6), zG + mm(0.06)), M.mask, 'body_cam_front_ring', { cast: false, uv: 'box' });
-    add(body, cylZ(mm(1.05), zG + mm(0.02), zG + mm(0.05), 20).translate(mm(17), mm(97.6), 0), M.lens, 'body_cam_front', { cast: false });
-    add(body, rbox(mm(-19.5), mm(-15), mm(96.8), mm(98.4), zG + mm(0.02), zG + mm(0.05), mm(0.02), 1), M.deco, 'body_als_window', { cast: false });
+    g = each(g, (q) => {
+      q = intersect(q, boxes);
+      q = subtract(q, ...bumpS.map(([x, y]) => cylZ(mm(1.75), mm(Bp.z1 - 0.8), mm(Bp.z1 + 1), 28).translate(mm(x), mm(y), 0)), slabZ(rect(mm(LAN.x - 1.4), mm(LAN.x + 1.4), mm(LAN.y - 1.2), mm(LAN.y + 1.2), mm(1.15)), mm(4.2), mm(9.5), 0, 1, 10));
+      q = subtract(q, cutY(-130, LAN.y + 0.4, LAN.x - 1.8, LAN.x + 1.8, 4.2, 5.8, 0.6));
+      return subtract(q, ...ENDCH);
+    });
+    add(body, g, M.tpuBump, 'body_bumpers', { wear: false });
+    add(body, mergeUV(bumpS.map(([x, y], i) => torxScrew(mm(1.4), V3(mm(x), mm(y), mm(Bp.z1 - 0.78)), V3(0, 0, 1), i * 1.7))), M.torx, 'body_bumper_screws', { cast: false });
+    add(body, mergeUV([...bumpS.map(([x, y]) => ringZ(x, y, 1.42, 1.75, Bp.z1 - 0.79, 28)), discZ(LAN.x, LAN.y, 1.1, 4.22, 16)]), M.dust, 'body_bumper_floors', { cast: false, uv: 'box' });
+    // the part line between each bumper and the overmould: a dark floor in the 0.3 mm gap
+    const pl = [], bx = (x0, x1, y0, y1) => rbox(mm(Math.min(x0, x1)), mm(Math.max(x0, x1)), mm(Math.min(y0, y1)), mm(Math.max(y0, y1)), mm(W.z0 + 0.5), mm(W.z1 - 0.5), 0, 1);
+    for (const [sx, sy] of corners) {
+      const xe = sx * (W.x - Bp.ax), ye = sy * (W.y - Bp.ay);
+      pl.push(bx(xe - 0.16, xe + 0.16, sy * (BO[1] - 1.0), sy * (W.y + 0.4)));
+      pl.push(bx(sx * (BO[0] - 1.0), sx * (W.x + 0.4), ye - 0.16, ye + 0.16));
+    }
+    add(body, mergeUV(pl), M.crevice, 'body_part_lines', { cast: false });
   }
-  const ledStatus = reg(node('led_status', root, [mm(-24), mm(97.6), zG + mm(0.03)]));
-  add(ledStatus, cylZ(mm(0.55), mm(-0.02), mm(0.02), 12), M.led, 'led_status_dot', { cast: false });
+
+  /* back cover: glass-filled nylon (PA-GF30), crowned, eight Torx in counterbores; a removable battery door inset in it
+     (0.3 mm gap, moulded grip ribs, a sliding latch above it and a finger scoop below it); two recessed strap pockets
+     with stainless bars (the hand strap hooks on them; the phone's strap-bar language); pogo dock pads */
+  const zB = B.z1, Dc = (D.y0 + D.y1) / 2, Dh = (D.y1 - D.y0) / 2, LATCH = { y: D.y1 + 6, hx: 11, hy: 2.6, sx: -4.5 };
+  const GRIP = [-31, 31];             // the door's two grip inlays' centre lines (x)
+  const cov = [[-54.8, 93.4], [54.8, 93.4], [-55.4, 46], [55.4, 46], [-55.4, -46], [55.4, -46], [-54.8, -93.4], [54.8, -93.4]];
+  {
+    const [cw, ch] = B.crown, C = TB.cam;
+    let g = new THREE.ExtrudeGeometry(rr(B.x - cw, B.y - cw, B.r - cw), { depth: mm(B.z1 - B.z0 - 2 * ch), bevelEnabled: true, bevelThickness: mm(ch), bevelSize: mm(cw), bevelSegments: 6, curveSegments: 14 }).translate(0, 0, mm(B.z0 + ch));
+    g = subtract(g,
+      rbox(mm(-9.5), mm(9.5), mm(-97.4), mm(-93.4), mm(zB - 0.6), mm(zB + 2), mm(0.8), 1),                                      // pogo well
+      ...cov.map(([x, y]) => cylZ(mm(1.5), mm(zB - 0.5), mm(zB + 1), 24).translate(mm(x), mm(y), 0)),                         // screw counterbores
+      ...[1, -1].map((s) => slabZ(rrAt(s > 0 ? STRAP.px0 : -STRAP.px1, s > 0 ? STRAP.px1 : -STRAP.px0, STRAP.y - STRAP.hy, STRAP.y + STRAP.hy, 2.05), mm(STRAP.pz0), mm(zB + 1), 0, 1, 10)),   // strap pockets
+      slabZ(rrAt(-D.x - 0.3, D.x + 0.3, D.y0 - 0.3, D.y1 + 0.3, D.r + 0.3), mm(D.z0), mm(zB + 1), 0, 1, 12),                  // battery door recess
+      slabZ(rrAt(-LATCH.hx, LATCH.hx, LATCH.y - LATCH.hy, LATCH.y + LATCH.hy, LATCH.hy - 0.01), mm(zB - 1.1), mm(zB + 1), 0, 1, 10),   // latch slot
+      cylZ(mm(7), mm(zB - 1.0), mm(zB + 1), 40).scale(1, 0.55, 1).translate(0, mm(D.y0 - 0.3), 0),                             // finger scoop under the door
+      slabZ(rrAt(-C.hx + 0.2, C.hx - 0.2, C.y - C.hy + 0.2, C.y + C.hy - 0.2, C.r - 0.2), mm(5.9), mm(zB + 1), 0, 1, 12));     // camera well
+    add(body, g, M.backCover, 'body_back');
+    add(body, slabZ(ringShape(rr(B.x + 0.2, B.y + 0.2, B.r + 0.2), [rrPath(B.x - 0.15, B.y - 0.15, B.r - 0.15)]), mm(F.z1 - 0.5), mm(F.z1 - 0.3), 0, 1, 12), M.crevice, 'body_back_gap', { cast: false });
+    add(body, mergeUV(cov.map(([x, y], i) => torxScrew(mm(1.2), V3(mm(x), mm(y), mm(zB - 0.48)), V3(0, 0, 1), i * 0.9))), M.torx, 'body_back_screws', { cast: false });
+    add(body, mergeUV(cov.map(([x, y]) => ringZ(x, y, 1.2, 1.5, zB - 0.49, 20))), M.dust, 'body_screw_counterbores', { cast: false, uv: 'box' });
+    // battery door: its own moulding, a 0.4 mm round on its edge, 0.3 mm gap all round to a dark floor; 26 grip ribs
+    // (1.4 mm wide, 0.6 mm proud, rounded ends) across its face
+    add(body, subtract(slabZ(rrAt(-D.x, D.x, D.y0, D.y1, D.r), mm(D.z0 + 0.05), mm(zB), mm(0.4), 2, 12), ...GRIP.map((x) => slabZ(rect(mm(x - 7), mm(x + 7), mm(D.y0 + 6), mm(D.y1 - 6), mm(3)), mm(zB - 0.45), mm(zB + 1), 0, 1, 10))), M.backCover, 'body_battery_door');
+    add(body, slabZ(ringShape(rrAt(-D.x - 0.35, D.x + 0.35, D.y0 - 0.35, D.y1 + 0.35, D.r + 0.35), [rrPathAt(-D.x + 0.4, D.x - 0.4, D.y0 + 0.4, D.y1 - 0.4, D.r - 0.4)]), mm(D.z0), mm(D.z0 + 0.04), 0, 1, 12), M.crevice, 'body_battery_door_gap', { cast: false, uv: 'box' });
+    // grip: two TPU inlays with the phone's moulded diamond knurl, co-moulded into pockets along the door's long edges
+    // (where the fingers wrap round in portrait and the palms sit in landscape): 0.4 mm proud, a dark seam
+    add(body, mergeUV(GRIP.map((x) => rbox(mm(x - 6.75), mm(x + 6.75), mm(D.y0 + 6.25), mm(D.y1 - 6.25), mm(zB - 0.45), mm(zB + 0.4), mm(0.25), 2, 8))), M.knurl, 'body_back_grip', { uv: 'box' });
+    add(body, mergeUV(GRIP.map((x) => slabZ(rect(mm(x - 7), mm(x + 7), mm(D.y0 + 6), mm(D.y1 - 6), mm(3)), mm(zB - 0.46), mm(zB - 0.42), 0, 1, 10))), M.crevice, 'body_back_grip_seam', { cast: false, uv: 'box' });
+    // the latch: a slider in a slot above the door, shown in its locked (left) position, three grip ridges and a
+    // moulded arrow pointing to the unlock end
+    add(body, slabZ(rrAt(-LATCH.hx + 0.05, LATCH.hx - 0.05, LATCH.y - LATCH.hy + 0.05, LATCH.y + LATCH.hy - 0.05, LATCH.hy - 0.06), mm(zB - 1.1), mm(zB - 1.06), 0, 1, 10), M.dust, 'body_latch_slot_floor', { cast: false, uv: 'box' });
+    const sl = [rbox(mm(LATCH.sx - 6), mm(LATCH.sx + 6), mm(LATCH.y - LATCH.hy + 0.3), mm(LATCH.y + LATCH.hy - 0.3), mm(zB - 1.1), mm(zB + 0.1), mm(0.45), 2, 8)];
+    for (const dx of [-2.4, 0, 2.4]) sl.push(rbox(mm(LATCH.sx + dx - 0.4), mm(LATCH.sx + dx + 0.4), mm(LATCH.y - 1.6), mm(LATCH.y + 1.6), mm(zB), mm(zB + 0.45), mm(0.18), 1, 4));
+    add(body, mergeUV(sl), M.keys, 'body_battery_latch', { wear: false });
+    { const s = new THREE.Shape(); s.moveTo(mm(LATCH.hx + 4.6), mm(LATCH.y)); s.lineTo(mm(LATCH.hx + 2.2), mm(LATCH.y + 1.4)); s.lineTo(mm(LATCH.hx + 2.2), mm(LATCH.y - 1.4)); s.closePath();
+      add(body, slabZ(s, mm(zB - 0.05), mm(zB + 0.25), 0, 1, 4), M.backCover, 'body_latch_arrow'); }
+    add(body, mergeUV([1, -1].map((s) => slabZ(rrAt((s > 0 ? STRAP.px0 : -STRAP.px1) + 0.05, (s > 0 ? STRAP.px1 : -STRAP.px0) - 0.05, STRAP.y - STRAP.hy + 0.05, STRAP.y + STRAP.hy - 0.05, 2.0), mm(STRAP.pz0), mm(STRAP.pz0 + 0.04), 0, 1, 10))), M.dust, 'body_strap_pockets', { cast: false, uv: 'box' });
+    add(body, mergeUV([1, -1].map((s) => cylY(mm(0.75), mm(STRAP.y - STRAP.hy - 0.05), mm(STRAP.y + STRAP.hy + 0.05), 16).translate(mm(s * STRAP.pinX), 0, mm(STRAP.pinZ)))), M.steel, 'body_strap_bars', { cast: false });
+    add(body, slabZ(rect(mm(-9.4), mm(9.4), mm(-97.3), mm(-93.5), mm(0.75)), mm(zB - 0.6), mm(zB - 0.56), 0, 1, 8), M.dust, 'body_pogo_well', { cast: false, uv: 'box' });
+    add(body, mergeUV([-6, -2, 2, 6].map((x) => cylZ(mm(0.9), mm(zB - 0.62), mm(zB - 0.48), 16).translate(mm(x), mm(-95.4), 0))), M.pogo, 'body_pogo_pads', { cast: false });
+  }
+
+  /* camera (the phone's part, same size and layout): a black anodised deco ring 0.7 mm proud of the cover (bonded, no
+     screws), one black cover glass flush inside with a clearcoat, a printed black mask under it with clear apertures;
+     under them, left to right: the square germanium thermal window, the round main lens, the round wide lens, the
+     rectangular flash. Each lens: a dark barrel ring, a domed front element with a blue-violet AR coat, a dark iris.
+     The flash: an off-white Fresnel lens, opaque, never lit at rest. */
+  {
+    const C = TB.cam, cy = C.y, zT = C.z1, zGl = zT - 0.15, zL = zT - 0.75;
+    let ring = rbox(mm(-C.hx), mm(C.hx), mm(cy - C.hy), mm(cy + C.hy), mm(C.z0 - 0.6), mm(zT), mm(0.45), 2, 12);
+    ring = subtract(ring, slabZ(rect(mm(-C.hx + 1.2), mm(C.hx - 1.2), mm(cy - C.hy + 1.2), mm(cy + C.hy - 1.2), mm(C.r - 1.2)), mm(zT - 2.0), mm(zT + 1), 0, 1, 12));
+    add(body, ring, M.trim, 'body_cam_deco', { wear: false });
+    const win = (o) => rect(mm(-C.hx + 1.2 - o), mm(C.hx - 1.2 + o), mm(cy - C.hy + 1.2 - o), mm(cy + C.hy - 1.2 + o), mm(C.r - 1.2 + o));
+    const lens = CAM.lens, th = CAM.th, fl = CAM.fl;
+    add(body, slabZ(win(0), mm(zGl - 0.6), mm(zGl), mm(0.12), 1, 12), M.camGlass, 'body_cam_glass', { cast: false, crease: 50 });
+    const maskSh = win(0.05);
+    for (const [x, r] of lens) { const p = new THREE.Path(); p.absarc(mm(x), mm(cy), mm(r + 0.5), 0, Math.PI * 2, true); maskSh.holes.push(p); }
+    const rp = (x, hw, hh, r) => roundedPath([[x - hw, cy - hh, r], [x + hw, cy - hh, r], [x + hw, cy + hh, r], [x - hw, cy + hh, r]].map(([a, b, q]) => [mm(a), mm(b), mm(q)]));
+    maskSh.holes.push(rp(th[0], th[1] + 0.35, th[1] + 0.35, 1.0), rp(fl[0], fl[1] + 0.3, fl[2] + 0.3, 0.8));
+    add(body, new THREE.ShapeGeometry(maskSh, 24).translate(0, 0, mm(zGl - 0.62)), M.mask, 'body_cam_mask', { cast: false, uv: 'box' });
+    add(body, slabZ(win(0), mm(zL - 0.3), mm(zL - 0.25), 0, 1, 12), M.mask, 'body_cam_floor', { cast: false, uv: 'box' });
+    add(body, mergeUV(lens.map(([x, r]) => new THREE.LatheGeometry([[r + 0.45, zL - 0.25], [r + 0.45, zGl - 0.66], [r + 0.15, zGl - 0.64], [r - 0.05, zL + 0.02], [r - 0.35, zL + 0.02], [r - 0.4, zL - 0.1]].map(([a, z]) => new THREE.Vector2(mm(a), mm(z))), 48).rotateX(Math.PI / 2).translate(mm(x), mm(cy), 0))), M.lensBarrel, 'body_cam_lens_rings', { cast: false, crease: 40 });
+    const dome = (x, r) => { const R0 = r * 3.2, h = R0 - Math.sqrt(R0 * R0 - r * r), pts = []; for (let i = 0; i <= 10; i++) { const a = Math.asin(r / R0) * (i / 10); pts.push(new THREE.Vector2(mm(R0 * Math.sin(a)), mm(zL - 0.1 + h - (R0 - R0 * Math.cos(a))))); } return new THREE.LatheGeometry(pts.reverse(), 48).rotateX(Math.PI / 2).translate(mm(x), mm(cy), 0); };
+    add(body, mergeUV(lens.map(([x, r]) => dome(x, r - 0.4))), M.coating, 'body_cam_elements', { cast: false, uv: 'box' });
+    add(body, mergeUV(lens.map(([x, r]) => { const rd = r - 0.4, R0 = rd * 3.2; return discZ(x, cy, r * 0.42, zL - 0.1 + (R0 - Math.sqrt(R0 * R0 - rd * rd)) + 0.004, 32); })), M.deco, 'body_cam_iris', { cast: false, uv: 'box' });
+    add(body, slabZ(ringShape(rect(mm(th[0] - th[1] - 0.35), mm(th[0] + th[1] + 0.35), mm(cy - th[1] - 0.35), mm(cy + th[1] + 0.35), mm(1.0)), [rp(th[0], th[1] - 0.15, th[1] - 0.15, 0.6)]), mm(zL - 0.2), mm(zL + 0.05), 0, 1, 8), M.lensBarrel, 'body_thermal_bezel', { cast: false, uv: 'box' });
+    add(body, rbox(mm(th[0] - th[1] + 0.1), mm(th[0] + th[1] - 0.1), mm(cy - th[1] + 0.1), mm(cy + th[1] - 0.1), mm(zL - 0.25), mm(zL - 0.05), mm(0.05), 1), M.thermal, 'body_thermal_window', { cast: false, uv: 'box' });
+    add(body, slabZ(rect(mm(fl[0] - fl[1] - 0.3), mm(fl[0] + fl[1] + 0.3), mm(cy - fl[2] - 0.3), mm(cy + fl[2] + 0.3), mm(0.9)), mm(zL - 0.3), mm(zL - 0.2), 0, 1, 8), M.mask, 'body_flash_well', { cast: false, uv: 'box' });
+    add(body, new THREE.PlaneGeometry(mm(2 * fl[1]), mm(2 * fl[2]), 1, 1).translate(mm(fl[0]), mm(cy), mm(zL - 0.05)), M.flash, 'body_flash', { cast: false, uv: 'keep' });
+  }
+
+  /* front: cover glass (0.4 mm 2.5D edge), ink mask, the panel's black-matrix border; in each bezel a stereo
+     loudspeaker behind one 18 x 1.2 mm slot through the glass (the phone's slot); top bezel: front camera (right), ALS /
+     proximity window and the status LED (left) */
+  const zG = mm(G.z0);
+  const aw = A.w / 2, ay0 = A.y - A.h / 2, ay1 = A.y + A.h / 2, BZ = (ay1 + G.y) / 2;   // bezel centre line (93.2)
+  const FCAM = [19.5, BZ];
+  const SPK = [1, -1].map((sy) => [-9.0, 9.0, sy * BZ - 0.6, sy * BZ + 0.6]);     // one 18 x 1.2 mm loudspeaker slot in each bezel (the phone's slot, stereo)
+  {
+    const cutS = ([x0, x1, y0, y1]) => slabZ(rect(mm(x0), mm(x1), mm(y0), mm(y1), mm((y1 - y0) / 2 - 0.01)), mm(G.z0 - 1), mm(G.z1 + 1), 0, 1, 6);
+    const glass = subtract(slabZ(rr(G.x - 0.36, G.y - 0.36, G.r - 0.36), mm(G.z0), mm(G.z1), mm(0.4), 2, 14), ...SPK.map(cutS));
+    add(body, glass, M.screenGlass, 'screen_glass', { cast: false, crease: 50, uv: 'box' });
+    const win = (o) => roundedPath([[-aw - o, ay0 - o, 2.5 + o], [aw + o, ay0 - o, 2.5 + o], [aw + o, ay1 + o, 2.5 + o], [-aw - o, ay1 + o, 2.5 + o]].map(([x, y, r]) => [mm(x), mm(y), mm(r)]));
+    add(body, new THREE.ShapeGeometry(ringShape(rr(G.x + 0.2, G.y + 0.2, G.r + 0.2), [win(0.9), ...SPK.map((s) => slotP(...s))]), 12).rotateY(Math.PI).translate(0, 0, mm(G.z1 + 0.01)), M.mask, 'body_glass_mask', { cast: false, uv: 'box' });
+    add(body, new THREE.ShapeGeometry(ringShape(roundedShape([[-aw - 0.95, ay0 - 0.95, 3.4], [aw + 0.95, ay0 - 0.95, 3.4], [aw + 0.95, ay1 + 0.95, 3.4], [-aw - 0.95, ay1 + 0.95, 3.4]].map(([x, y, r]) => [mm(x), mm(y), mm(r)])), [win(-0.15)]), 12).rotateY(Math.PI).translate(0, 0, mm(G.z1 + 0.13)), M.inkEdge, 'body_panel_border', { cast: false, uv: 'box' });
+    const sleeve = ([x0, x1, y0, y1]) => { const r = (y1 - y0) / 2; return slabZ(ringShape(rect(mm(x0 + 0.01), mm(x1 - 0.01), mm(y0 + 0.01), mm(y1 - 0.01), mm(r - 0.011)), [roundedPath([[x0 + 0.06, y0 + 0.06, r - 0.061], [x1 - 0.06, y0 + 0.06, r - 0.061], [x1 - 0.06, y1 - 0.06, r - 0.061], [x0 + 0.06, y1 - 0.06, r - 0.061]].map(([x, y, q]) => [mm(x), mm(y), mm(q)]))]), mm(G.z0 + 0.03), mm(G.z1 + 0.1), 0, 1, 3); };
+    add(body, mergeUV(SPK.map(sleeve)), M.crevice, 'body_speaker_slot_walls', { cast: false, uv: 'box' });
+    const zM = G.z1 + 0.1;
+    add(body, mergeUV([1, -1].map((s) => rbox(mm(-11.4), mm(11.4), mm(s * BZ - 2.0), mm(s * BZ + 2.0), mm(zM + 0.04), mm(zM + 0.07), mm(0.01), 1))), M.grille, 'body_speaker_grilles', { cast: false });
+    add(body, mergeUV([1, -1].map((s) => rbox(mm(-11.6), mm(11.6), mm(s * BZ - 2.2), mm(s * BZ + 2.2), mm(zM + 0.12), mm(zM + 0.16), mm(0.01), 1))), M.crevice, 'body_speaker_backing', { cast: false });
+    // front camera: a dark anodised ring round the lens (a visible module at arm's length), the lens and its coating
+    add(body, flipZ(ringZ(0, 0, 1.15, 2.3, 0, 32)).translate(mm(FCAM[0]), mm(FCAM[1]), zG + mm(0.06)), M.trim, 'body_cam_front_ring', { cast: false, uv: 'box' });
+    add(body, cylZ(mm(1.15), zG + mm(0.02), zG + mm(0.05), 24).translate(mm(FCAM[0]), mm(FCAM[1]), 0), M.lens, 'body_cam_front', { cast: false });
+    add(body, flipZ(ringZ(0, 0, 0.35, 0.7, 0, 16)).translate(mm(FCAM[0]), mm(FCAM[1]), zG + mm(0.015)), M.coating, 'body_cam_front_coating', { cast: false, uv: 'box' });
+    add(body, rbox(mm(-22.4), mm(-17.6), mm(BZ - 0.8), mm(BZ + 0.8), zG + mm(0.02), zG + mm(0.05), mm(0.02), 1), M.deco, 'body_als_window', { cast: false });
+  }
+  const ledStatus = reg(node('led_status', root, [mm(-27.0), mm(BZ), zG + mm(0.03)]));
+  add(ledStatus, cylZ(mm(0.55), mm(-0.02), mm(0.02), 14), M.led, 'led_status_dot', { cast: false });
 
   /* screen: the atlas plane under the glass (UVs cover cell 0's inner area, inside its gutter; v = 0 at the top) */
   const screen = reg(node('screen', root, [0, mm(A.y), mm(G.z1 + 0.17)]));
   {
     const g = new THREE.PlaneGeometry(mm(A.w), mm(A.h), 1, 1); g.rotateY(Math.PI);
-    const [cw, ch] = SCREEN_CELL, [gx, gy] = SCREEN_GRID, [ux, uy] = SCREEN_GUTTER, W = cw * gx, H = ch * gy;
-    const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (ux + uv.getX(i) * (cw - 2 * ux)) / W, (uy + (1 - uv.getY(i)) * (ch - 2 * uy)) / H);
+    const [cw, ch] = SCREEN_CELL, [gx, gy] = SCREEN_GRID, [ux, uy] = SCREEN_GUTTER, Wd = cw * gx, H = ch * gy;
+    const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, (ux + uv.getX(i) * (cw - 2 * ux)) / Wd, (uy + (1 - uv.getY(i)) * (ch - 2 * uy)) / H);
     add(screen, g, K.SCREEN.material, 'screen_display', { uv: 'keep', cast: false });
   }
 
-  /* keys: rubber caps over sealed tact switches in pockets moulded into the TPU; 0.2 mm gap to the frame cut-out */
-  // x keys: at = frame face x (signed), y0..y1 along the side, z0..z1 across it, out = height proud of the frame (signed)
-  const keyX = (name, at, y0, y1, z0, z1, out, mat = M.keys, shape = null, bev = 0.45) => {
-    const n = reg(node(name, root, [mm(at), mm((y0 + y1) / 2), mm((z0 + z1) / 2)]));
-    const hy = (y1 - y0) / 2, hz = (z1 - z0) / 2, s = Math.sign(out);
-    let g = slabX(rect(mm(-hz), mm(hz), mm(-hy), mm(hy), mm(Math.min(hz, 1.6))), mm(Math.min(-s * 0.8, out)), mm(Math.max(-s * 0.8, out)), mm(bev), 3, 8);
-    if (shape) g = shape(g, s, out, hy, hz);
+  /* keys: TPU caps over sealed tact switches, in pockets moulded into the overmould; 0.3 mm gap all round (the phone's keys) */
+  const keyX = (name, s, [y0, y1, z0, z1], out, mat = M.keys, bev = 0.5, r = null) => {
+    const n = reg(node(name, root, [mm(s * F.x), mm((y0 + y1) / 2), mm((z0 + z1) / 2)]));
+    const hy = (y1 - y0) / 2, hz = (z1 - z0) / 2, top = W.x - F.x + out;
+    const g = slabX(rect(mm(-hz + 0.9 * bev), mm(hz - 0.9 * bev), mm(-hy + 0.9 * bev), mm(hy - 0.9 * bev), mm(Math.max(0.05, (r ?? Math.min(hz, 1.8)) - 0.9 * bev))), mm(s > 0 ? -0.6 : -top), mm(s > 0 ? top : 0.6), mm(bev), 4, 10);
     add(n, g, mat, name + '_cap', { wear: false });
-    add(body, slabX(ringShape(rect(mm(z0 - 0.2), mm(z1 + 0.2), mm(y0 - 0.2), mm(y1 + 0.2), mm(Math.min(hz, 1.6) + 0.2)), [roundedPath([[z0, y0, Math.min(hz, 1.6)], [z1, y0, Math.min(hz, 1.6)], [z1, y1, Math.min(hz, 1.6)], [z0, y1, Math.min(hz, 1.6)]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(at + Math.min(0, s * 0.03)), mm(at + Math.max(0, s * 0.03)), 0, 1, 8), M.crevice, name + '_gap', { cast: false });
+    n.userData.top = top;
     return n;
   };
-  // a saddle (cylindrical dip, axis along Z) of depth d centred at local y, on the cap's outer face
-  const saddle = (yc, R, d) => (g, s, out) => subtract(g, cylZ(mm(R), mm(-10), mm(10), 40).translate(mm(out + s * (R - d)), mm(yc), 0));
-  key: {
-    keyX('btn_power', -F.x, 62, 72, -3.2, 1.2, -2.1, M.keys, saddle(0, 9, 0.3));            // holder's right (-X), above the rocker
-    // volume: one 22 mm rocker with a centre saddle; the cap lives on btn_vol_up, btn_vol_down is its lower-half press point
-    keyX('btn_vol_up', -F.x, 30, 52, -3.2, 1.2, -2.1, M.keys, saddle(0, 7, 0.45));
-    reg(node('btn_vol_down', root, [mm(-F.x), mm(35.5), mm(-1)]));
-    // guard rib round the power / volume group (stops accidental presses in a holster)
-    const gy0 = 25.4, gy1 = 76.6, gz0 = -6.0, gz1 = 4.0;
-    add(body, slabX(ringShape(rect(mm(gz0), mm(gz1), mm(gy0), mm(gy1), mm(3.2)), [roundedPath([[gz0 + 1.2, gy0 + 1.2, 2.0], [gz1 - 1.2, gy0 + 1.2, 2.0], [gz1 - 1.2, gy1 - 1.2, 2.0], [gz0 + 1.2, gy1 - 1.2, 2.0]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(-Tp.x - 0.7), mm(-Tp.x + 0.4), mm(0.35), 2, 8), M.tpu, 'body_key_guard', { wear: false });
-    // PTT (holder's left, +X, under the thumb): 20 x 7 mm, 1.3 mm proud of the TPU, one raised centre ridge
-    // a moulded key: 0.75 mm edge radii, the face dished 0.3 mm along its length, one raised cross rib at the centre
-    const ptt = keyX('btn_ptt', F.x, 14, 34, -4.5, 2.5, 3.3, M.ptt, saddle(0, 40, 0.3), 0.75);
-    add(ptt, rbox(mm(2.6), mm(3.32), mm(-0.65), mm(0.65), mm(-2.4), mm(2.4), mm(0.3), 3), M.ptt, 'btn_ptt_ridge', { wear: false });
-  }
-  // top edge: programmable key (the game's scan key)
   {
-    const n = reg(node('btn_action', root, [mm(-18), mm(F.y), mm(-1)]));
-    add(n, slabY(rect(mm(-6), mm(6), mm(-2.2), mm(2.2), mm(1.6)), mm(-0.8), mm(2.1), mm(0.45), 2, 8), M.keys, 'btn_action_cap', { wear: false });
-    add(body, slabY(ringShape(rect(mm(-24.2), mm(-11.8), mm(-1.4), mm(3.4), mm(1.8)), [roundedPath([[-24, -1.2, 1.6], [-12, -1.2, 1.6], [-12, 3.2, 1.6], [-24, 3.2, 1.6]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(F.y), mm(F.y + 0.03), 0, 1, 8), M.crevice, 'btn_action_gap', { cast: false });
+    // PTT: 22 x 6.4 mm, domed (1 mm round-over), five raised ribs, its top 0.15 mm above the guard rim
+    const ptt = keyX('btn_ptt', 1, KEY.ptt, 0.75, M.ptt, 1.0, 2.6), t = ptt.userData.top;
+    add(ptt, mergeUV([-8, -4, 0, 4, 8].map((y) => rbox(mm(t - 0.25), mm(t + 0.45), mm(y - 0.45), mm(y + 0.45), mm(-2.5), mm(2.5), mm(0.22), 2))), M.ptt, 'btn_ptt_ribs', { wear: false });
+    // power: a concave (saddle) face with five fine knurl grooves, found by touch with a glove
+    const pw = keyX('btn_power', -1, KEY.power, 0.75, M.keys, 0.4);
+    { const cap = pw.children[0], tp = pw.userData.top; cap.geometry = boxUV(creaseNormals(fixNormals(dropDegenerate(subtract(cap.geometry, cylZ(mm(14), mm(-10), mm(10), 48).translate(mm(-tp - 14 + 0.3), 0, 0)))), 36), M.keys.userData.tile || 0.3, nameOffset('btn_power_cap')); }
+    add(pw, mergeUV([-3.2, -1.6, 0, 1.6, 3.2].map((y) => rbox(mm(-pw.userData.top + 0.18), mm(-pw.userData.top + 0.5), mm(y - 0.22), mm(y + 0.22), mm(-1.4), mm(1.4), mm(0.05), 1))), M.crevice, 'btn_power_knurl', { cast: false });
+    // volume: two separate keys (down, up), slightly convex; up carries a raised tactile nub
+    keyX('btn_vol_down', -1, KEY.vdn, 0.7, M.keys, 0.6);
+    const vu = keyX('btn_vol_up', -1, KEY.vup, 0.7, M.keys, 0.6);
+    add(vu, cylX(mm(0.55), mm(-vu.userData.top - 0.25), mm(-vu.userData.top + 0.1), 14).translate(0, mm(1.6), 0), M.keys, 'btn_vol_up_nub', { wear: false });
+    // SIM / microSD tray: its own nylon part flush with the wall less 0.1 mm, a 0.2 mm split line, eject pinhole, nail notch
+    const [s0, s1, t0, t1] = KEY.sim;
+    let tray = slabX(rect(mm(t0 + 0.18), mm(t1 - 0.18), mm(s0 + 0.18), mm(s1 - 0.18), mm(1.4)), mm(-W.x + 0.1), mm(-F.x + 0.3), mm(0.2), 1, 10);
+    tray = subtract(tray, cylX(mm(0.5), mm(-W.x - 1), mm(-W.x + 1.4), 14).translate(0, mm(s0 + 2.2), mm((t0 + t1) / 2)), cylY(mm(0.9), mm(s1 - 3.6), mm(s1 - 1.6), 16).translate(mm(-W.x + 0.2), 0, mm(t0 + 0.2)));
+    add(body, tray, M.backCover, 'body_sim_tray');
+    add(body, slabX(rect(mm(t0 - 0.2), mm(t1 + 0.2), mm(s0 - 0.2), mm(s1 + 0.2), mm(1.6)), mm(-F.x - 0.04), mm(-F.x + 0.01), 0, 1, 8), M.crevice, 'body_sim_floor', { cast: false });
   }
-  // mic holes read dark
-  add(body, mergeUV([cylY(mm(0.6), mm(Tp.y - 0.3), mm(Tp.y + 0.02), 12).translate(mm(14), 0, mm(-1.2)), cylY(mm(0.6), mm(-Tp.y - 0.02), mm(-Tp.y + 0.3), 12).translate(mm(-24), 0, mm(-1.2))]), M.crevice, 'body_mic_holes', { cast: false });
+  // top edge: the programmable key (the game's scan key): convex, one locating dimple
+  {
+    const [x0, x1, z0, z1] = KEY.act, hx = (x1 - x0) / 2, hz = (z1 - z0) / 2, top = W.y - F.y + 0.7, bev = 0.6;
+    const n = reg(node('btn_action', root, [mm((x0 + x1) / 2), mm(F.y), mm((z0 + z1) / 2)]));
+    add(n, slabY(rect(mm(-hx + 0.9 * bev), mm(hx - 0.9 * bev), mm(-hz + 0.9 * bev), mm(hz - 0.9 * bev), mm(Math.min(hz, 1.8) - 0.9 * bev)), mm(-0.6), mm(top), mm(bev), 4, 10), M.keys, 'btn_action_cap', { wear: false });
+    add(n, discY(0, top + 0.005, 0, 0.6, 1, 12), M.crevice, 'btn_action_dimple', { cast: false, uv: 'box' });
+  }
 
-  /* USB-C: the receptacle in the frame (8.9 x 3.3 mm mouth, steel shell, tongue) behind a TPU flap */
+  /* USB-C (the phone's port): the receptacle 6.5 mm deep in the frame (8.9 x 3.2 mm steel shell, tongue, contacts)
+     behind a TPU flap: lid, seal lip, a plug with a sealing rib, a raised pull tab over a fingernail notch, a
+     living-hinge strap at the back edge (the flap swings 100 degrees about it and stays attached) */
+  const FLAP_OPEN = 100;
   {
-    const zc = -1.0, y = -F.y;
-    const shell = slabY(ringShape(rect(mm(-4.45), mm(4.45), mm(-zc - 1.65), mm(-zc + 1.65), mm(1.64)), [roundedPath([[-4.1, -zc - 1.3, 1.29], [4.1, -zc - 1.3, 1.29], [4.1, -zc + 1.3, 1.29], [-4.1, -zc + 1.3, 1.29]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(y - 0.04), mm(y + 3.0), 0, 1, 10);
+    const zc = -0.8, y = -F.y;
+    const shell = slabY(ringShape(rect(mm(-4.45), mm(4.45), mm(-zc - 1.6), mm(-zc + 1.6), mm(1.59)), [roundedPath([[-4.1, -zc - 1.25, 1.24], [4.1, -zc - 1.25, 1.24], [4.1, -zc + 1.25, 1.24], [-4.1, -zc + 1.25, 1.24]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(y - 0.02), mm(y + 6.5), 0, 1, 10);
     add(body, shell, M.steel, 'body_usb_shell', { cast: false });
-    add(body, slabY(rect(mm(-4.2), mm(4.2), mm(-zc - 1.4), mm(-zc + 1.4), mm(1.39)), mm(y + 2.9), mm(y + 3.0), 0, 1, 10), M.crevice, 'body_usb_back', { cast: false });
-    add(body, rbox(mm(-3.3), mm(3.3), mm(y + 0.7), mm(y + 2.95), mm(zc - 0.33), mm(zc + 0.33), mm(0.08), 1), M.mask, 'body_usb_tongue', { cast: false });
-    add(body, mergeUV([-1, 1].map((sz) => mergeUV(Array.from({ length: 12 }, (_, i) => rbox(mm(-2.75 + i * 0.5 - 0.12), mm(-2.75 + i * 0.5 + 0.12), mm(y + 0.9), mm(y + 2.4), mm(zc + sz * 0.33 - 0.012), mm(zc + sz * 0.33 + 0.012), 0, 1)), 0.05))), M.pogo, 'body_usb_pins', { cast: false });
-    // flap: lid flush with the bumper, a perimeter seal lip on its inner face, a plug into the mouth, a pull tab, a living hinge
-    const hz = 2.6, hy = -Tp.y + 1.0;         // hinge line: the well's back edge
+    add(body, slabY(rect(mm(-4.2), mm(4.2), mm(-zc - 1.35), mm(-zc + 1.35), mm(1.34)), mm(y + 6.3), mm(y + 6.45), 0, 1, 10), M.crevice, 'body_usb_back', { cast: false });
+    add(body, rbox(mm(-3.3), mm(3.3), mm(y + 1.2), mm(y + 6.3), mm(zc - 0.33), mm(zc + 0.33), mm(0.08), 1), M.mask, 'body_usb_tongue', { cast: false });
+    add(body, mergeUV([...[-2.4, -1.2, 0, 1.2, 2.4].map((x) => rbox(mm(x - 0.25), mm(x + 0.25), mm(y + 1.6), mm(y + 5.6), mm(zc + 0.33), mm(zc + 0.36), 0, 1)), ...[-2.4, -1.2, 0, 1.2, 2.4].map((x) => rbox(mm(x - 0.25), mm(x + 0.25), mm(y + 1.6), mm(y + 5.6), mm(zc - 0.36), mm(zc - 0.33), 0, 1))]), M.pogo, 'body_usb_contacts', { cast: false });
+    // the well floor (the frame face round the port): dark grey with a little dust, not a black void
+    add(body, slabY(ringShape(rect(mm(-9.6), mm(9.6), mm(-3.2), mm(4.8), mm(1.6)), [roundedPath([[-4.45, -zc - 1.6, 1.59], [4.45, -zc - 1.6, 1.59], [4.45, -zc + 1.6, 1.59], [-4.45, -zc + 1.6, 1.59]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(y - 0.03), mm(y + 0.01), 0, 1, 8), M.dust, 'body_usb_well_floor', { cast: false });
+    const hz = 3.3, hy = -W.y + 0.35;
     const flap = reg(node('flap_usb', root, [0, mm(hy), mm(hz)]));
-    const L = (x0, x1, y0, y1, z0, z1) => [mm(x0), mm(x1), mm(y0 - hy), mm(y1 - hy), mm(z0 - hz), mm(z1 - hz)];
-    const lid = slabY(rect(mm(-9.1), mm(9.1), mm(-(2.8 - hz)), mm(-(-4.4 - hz)), mm(1.5)), mm(-Tp.y - hy), mm(-Tp.y + 1.5 - hy), mm(0.4), 2, 8);
-    add(flap, lid, M.tpu, 'flap_usb_cover', { wear: false });
-    add(flap, slabY(ringShape(rect(mm(-8.0), mm(8.0), mm(-(1.8 - hz)), mm(-(-3.4 - hz)), mm(1.2)), [roundedPath([[-7.3, -(1.1 - hz), 0.8], [7.3, -(1.1 - hz), 0.8], [7.3, -(-2.7 - hz), 0.8], [-7.3, -(-2.7 - hz), 0.8]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), mm(-Tp.y + 1.5 - hy), mm(-Tp.y + 2.2 - hy), mm(0.2), 1, 8), M.tpu, 'flap_usb_seal', { wear: false });
-    add(flap, slabY(rect(mm(-4.0), mm(4.0), mm(-(zc + 1.15 - hz)), mm(-(zc - 1.15 - hz)), mm(1.1)), mm(-Tp.y + 1.5 - hy), mm(-F.y + 2.2 - hy), mm(0.3), 1, 8), M.tpu, 'flap_usb_plug', { wear: false });
-    add(flap, rbox(...L(-3, 3, -Tp.y - 0.6, -Tp.y + 0.2, -4.0, -2.9), mm(0.3), 2), M.tpu, 'flap_usb_tab', { wear: false });
-    add(flap, rbox(...L(-6, 6, -Tp.y + 0.3, -Tp.y + 0.8, 2.4, 3.8), mm(0.2), 1), M.tpu, 'flap_usb_hinge', { wear: false });
+    const Y = (v) => mm(v - hy), Z = (v) => mm(v - hz);
+    add(flap, slabY(rect(mm(-9.3), mm(9.3), -Z(2.95), -Z(-4.5), mm(1.5)), Y(-W.y - 0.1), Y(-F.y - 0.25), mm(0.35), 2, 10), M.tpu, 'flap_usb_cover', { wear: false });
+    add(flap, slabY(ringShape(rect(mm(-6.6), mm(6.6), -Z(1.9), -Z(-3.5), mm(1.3)), [roundedPath([[-5.9, -(1.2 - hz), 0.9], [5.9, -(1.2 - hz), 0.9], [5.9, -(-2.8 - hz), 0.9], [-5.9, -(-2.8 - hz), 0.9]].map(([a, b, r]) => [mm(a), mm(b), mm(r)]))]), Y(-F.y - 0.3), Y(-F.y + 0.05), mm(0.12), 1, 8), M.keys, 'flap_usb_seal', { wear: false });
+    add(flap, mergeUV([slabY(rect(mm(-4.0), mm(4.0), -Z(zc + 1.18), -Z(zc - 1.18), mm(1.15)), Y(-F.y - 0.3), Y(-F.y + 2.6), mm(0.3), 1, 10), slabY(rect(mm(-4.35), mm(4.35), -Z(zc + 1.5), -Z(zc - 1.5), mm(1.45)), Y(-F.y + 0.9), Y(-F.y + 1.3), mm(0.18), 1, 10)]), M.tpu, 'flap_usb_plug', { wear: false });
+    // pull tab: a 1.5 mm raised ridge at the free edge (toward the screen) with a fingernail notch under it
+    let tab = rbox(mm(-3.6), mm(3.6), Y(-W.y - 1.5), Y(-W.y + 0.3), Z(-5.8), Z(-4.2), mm(0.4), 2);
+    tab = subtract(tab, cylX(mm(0.5), mm(-4), mm(4), 12).translate(0, Y(-W.y - 1.5), Z(-4.95)));
+    add(flap, tab, M.tpu, 'flap_usb_tab', { wear: false });
+    add(flap, rbox(mm(-5), mm(5), Y(-W.y - 0.05), Y(-W.y + 0.45), Z(2.6), Z(4.0), mm(0.15), 1), M.tpu, 'flap_usb_strap', { wear: false });
   }
 
   /* hand strap: 25 mm nylon webbing looped round the two recessed strap bars (the tail sewn back on itself inside the
-     pocket), a ladder-lock slider for length on the +X side, and a 34 mm neoprene pad under the middle (the side the
-     back of the hand touches), sewn to the webbing along both edges with a bar-tack at each end. At rest the elastic
-     band bows 6 mm off the back and sags a little toward the bottom edge. Node local y = 0 is the strap centre line. */
+     pocket), a ladder-lock slider for length on the +X side, and a 34 mm neoprene pad under the middle, sewn to the
+     webbing along both edges with a bar-tack at each end. At rest the band bows about 5 mm off the back and sags a
+     little toward the bottom edge. Node local y = 0 is the strap centre line. */
   const strap = reg(node('hand_strap', root, [0, mm(STRAP.y), 0]));
   {
-    const X = 61.7, W = 12.5, tW = 1.2, padL = 42, padT = 3.0, padW = 17;
-    // the band's underside height: rim face at the pocket mouths, 6 mm bow at the middle (eased so it leaves the rim flat)
-    const zb = (x) => 8.45 + 6.0 * Math.pow(Math.sin(Math.PI * clamp01((x + X) / (2 * X))), 0.75);
-    const sag = (x) => -1.2 * Math.pow(Math.sin(Math.PI * clamp01((x + X) / (2 * X))), 2);     // y droop (mm), gravity
+    const X = STRAP.pinX - 0.3, Wd = 12.5, tW = 1.2, padL = 40, padT = 3.0, padW = 17;
+    const zb = (x) => zB + 0.75 + 5.0 * Math.pow(Math.sin(Math.PI * clamp01((x + X) / (2 * X))), 0.75);
+    const sag = (x) => -1.2 * Math.pow(Math.sin(Math.PI * clamp01((x + X) / (2 * X))), 2);
     const slope = (x) => (zb(x + 0.5) - zb(x - 0.5));
-    // loft along X (section: loft y = our Z, loft z = our Y), mm in -> metres out, bent by sag()
     const lofted = (o) => {
       const g = loft(o).rotateX(Math.PI / 2), P = g.attributes.position;
       for (let i = 0; i < P.count; i++) { const x = P.getX(i); P.setXYZ(i, mm(x), mm(P.getY(i) + sag(x)), mm(P.getZ(i))); }
       g.computeVertexNormals(); return g;
     };
-    const band = lofted({ x0: -X - 0.6, x1: X + 0.6, bot: (x) => zb(x), top: (x) => zb(x) + tW, hw: () => W, n: () => 8, steps: 44, seg: 20 });
-    // the tail from the slider back to the +X bar (a second layer on top of the band), and the slider itself
-    const bx = 49;
-    const tail = lofted({ x0: bx + 2.5, x1: X + 0.6, bot: (x) => zb(x) + tW + 0.05, top: (x) => zb(x) + 2 * tW - 0.15, hw: () => W - 0.2, n: () => 8, steps: 8, seg: 20 });
+    const band = lofted({ x0: -X - 0.6, x1: X + 0.6, bot: (x) => zb(x), top: (x) => zb(x) + tW, hw: () => Wd, n: () => 8, steps: 44, seg: 20 });
+    const bx = 42;
+    const tail = lofted({ x0: bx + 2.5, x1: X + 0.6, bot: (x) => zb(x) + tW + 0.05, top: (x) => zb(x) + 2 * tW - 0.15, hw: () => Wd - 0.2, n: () => 8, steps: 8, seg: 20 });
     const pad = lofted({ x0: -padL, x1: padL, bot: (x) => zb(x) - padT, top: (x) => zb(x) + 0.02, hw: () => padW, n: () => 3.2, steps: 36, seg: 28, round: 7 });
     add(strap, mergeUV([band, tail]), M.webbing, 'hand_strap_band');
     add(strap, pad, M.webbing, 'hand_strap_pad');
-    // the loops round the strap bars, and the legs up out of the pockets
     const loops = [];
     for (const sg of [1, -1]) {
-      const px = sg * STRAP.pinX, pz = STRAP.pinZ, rI = 0.8, rO = 1.65;
+      const px = sg * STRAP.pinX, pz = STRAP.pinZ, rI = 0.8, rO = 1.25;
       const ring = new THREE.Shape(); ring.absarc(0, 0, mm(rO), 0, Math.PI * 2, false);
       const hole = new THREE.Path(); hole.absarc(0, 0, mm(rI), 0, Math.PI * 2, true); ring.holes.push(hole);
-      // slabY's shape y is -Z: the ring centred at (px, -pz)
-      loops.push(slabY(ring, mm(-W), mm(W), 0, 1, 20).translate(mm(px), 0, mm(pz)));
-      const inX = sg * (STRAP.pinX - rI - 0.42), outX = sg * (STRAP.pinX + rI + 0.42);
-      loops.push(rbox(mm(inX - 0.43), mm(inX + 0.43), mm(-W), mm(W), mm(pz), mm(zb(sg * X) + tW * 0.6), mm(0.2), 1));
-      loops.push(rbox(mm(outX - 0.43), mm(outX + 0.43), mm(-W), mm(W), mm(pz), mm(pz + 1.8), mm(0.2), 1));
+      loops.push(slabY(ring, mm(-Wd), mm(Wd), 0, 1, 20).translate(mm(px), 0, mm(pz)));
+      const inX = sg * (STRAP.pinX - rI - 0.3), outX = sg * (STRAP.pinX + rI + 0.3);
+      loops.push(rbox(mm(inX - 0.35), mm(inX + 0.35), mm(-Wd), mm(Wd), mm(pz), mm(zb(sg * X) + tW * 0.6), mm(0.15), 1));
+      loops.push(rbox(mm(outX - 0.35), mm(outX + 0.35), mm(-Wd), mm(Wd), mm(pz), mm(zB + 0.3), mm(0.15), 1));
     }
     add(strap, mergeUV(loops), M.webbing, 'hand_strap_loops');
-    // ladder-lock slider: a moulded acetal frame with two bars, tipped to the band's slope
     {
       const z0 = zb(bx) + tW - 0.1, a = Math.atan(slope(bx));
       const fr = new THREE.Shape(); roundedShape([[-3.6, -15, 1.4], [3.6, -15, 1.4], [3.6, 15, 1.4], [-3.6, 15, 1.4]], fr);
@@ -2039,47 +2240,49 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
       const g = slabZ(fr, 0, 2.2, 0.45, 2, 6).rotateY(-a).translate(bx, sag(bx), z0); g.scale(0.001, 0.001, 0.001);
       add(strap, g, M.buckle, 'hand_strap_slider');
     }
-    // stitching: two rows along the webbing's edges over the pad, a bar-tack box across each pad end
     const st = [];
     const dash = (x, y, len, ang = 0) => { const z = zb(x) + tW + 0.02; return new THREE.BoxGeometry(mm(len), mm(0.34), mm(0.16)).translate(0, 0, mm(0.02)).rotateZ(ang).rotateY(-Math.atan(slope(x))).translate(mm(x), mm(y + sag(x)), mm(z)); };
-    for (const y of [-W + 1.3, W - 1.3]) for (let x = -padL + 6; x <= padL - 6 + 0.01; x += 2.3) st.push(dash(x, y, 1.5));
-    for (const xe of [-padL + 6, padL - 6]) for (let y = -W + 2.3; y <= W - 2.3 + 0.01; y += 2.3) st.push(dash(xe, y, 1.5, Math.PI / 2));
+    for (const y of [-Wd + 1.3, Wd - 1.3]) for (let x = -padL + 6; x <= padL - 6 + 0.01; x += 2.3) st.push(dash(x, y, 1.5));
+    for (const xe of [-padL + 6, padL - 6]) for (let y = -Wd + 2.3; y <= Wd - 2.3 + 0.01; y += 2.3) st.push(dash(xe, y, 1.5, Math.PI / 2));
     add(strap, mergeUV(st), M.thread, 'hand_strap_stitch', { cast: false, uv: 'box' });
+    TB._strapTop = zb(0) + tW;
   }
 
   /* locators (no mesh) */
   const LOC = {
-    grip_left_hand: [mm(10), mm(-22), mm(Tp.z1 + 0.5)],     // the palm's surface on the back, under the strap pad
+    grip_left_hand: [mm(10), mm(STRAP.y), mm(zB + 0.4)],     // the palm's surface on the battery door, under the strap pad
     fx_touch: [mm(22), mm(-30), zG - mm(0.4)],
-    fx_scan: [mm(-14.5), mm(92), mm(zB + 1.5)],
-    cam_rear: [mm(-3.5), mm(92), mm(zB + 1.5)],
-    cam_thermal: [mm(-14.5), mm(92), mm(zB + 1.5)],
-    cam_front: [mm(17), mm(97.6), zG - mm(0.1)],
-    fx_flash: [mm(15.5), mm(92), mm(zB + 1.5)],
-    fx_ptt: [mm(F.x + 3.6), mm(24), mm(-1)],
+    fx_scan: [mm(CAM.th[0]), mm(TB.cam.y), mm(TB.cam.z1 + 0.1)],
+    cam_rear: [mm(CAM.lens[0][0]), mm(TB.cam.y), mm(TB.cam.z1 + 0.1)],
+    cam_thermal: [mm(CAM.th[0]), mm(TB.cam.y), mm(TB.cam.z1 + 0.1)],
+    cam_front: [mm(FCAM[0]), mm(FCAM[1]), zG - mm(0.1)],
+    fx_flash: [mm(CAM.fl[0]), mm(TB.cam.y), mm(TB.cam.z1 + 0.1)],
+    fx_ptt: [mm(W.x + 1.3), mm((KEY.ptt[0] + KEY.ptt[1]) / 2), mm((KEY.ptt[2] + KEY.ptt[3]) / 2)],
   };
   for (const [n, p] of Object.entries(LOC)) reg(node(n, root, p));
+  TB._loc = LOC;
 
-  /* ------------------------------------------------------------------ clips (DESIGN.md 8) */
+  /* ------------------------------------------------------------------ clips (DESIGN.md 7) */
   const ART = ['btn_power', 'btn_vol_up', 'btn_vol_down', 'btn_ptt', 'btn_action', 'flap_usb', 'led_status'];
   const REST = {}; for (const n of ART) REST[n] = { p: N[n].position.clone(), r: N[n].rotation.clone() };
   const KEYS = [['btn_power', ['position']], ['btn_vol_up', ['position']], ['btn_vol_down', ['position']], ['btn_ptt', ['position']], ['btn_action', ['position']],
     ['flap_usb', ['quaternion']], ['led_status', ['scale']]];
   const STEP = ['led_status'];
   // key travel (m) along the key's axis, into the frame
-  const PRESS = { btn_power: ['x', 0.0006], btn_vol_up: ['x', 0.0005], btn_vol_down: ['x', 0.0005], btn_ptt: ['x', -0.0008], btn_action: ['y', -0.0005] };
+  const PRESS = { btn_power: ['x', 0.0005], btn_vol_up: ['x', 0.0005], btn_vol_down: ['x', 0.0005], btn_ptt: ['x', -0.0008], btn_action: ['y', -0.0005] };
   const press = (t, a, b, k = 0.04) => (t < a || t > b + k) ? 0 : Math.min(seg(t, a, a + k), 1 - seg(t, b, b + k));
   const on = (t, list) => list.some(([a, b]) => t >= a && t < b);
   function rest() { for (const n of ART) { N[n].position.copy(REST[n].p); N[n].rotation.copy(REST[n].r); N[n].scale.setScalar(1); } }
   const CLIPS = {
-    idle: { len: 2.0, loop: true, note: 'status LED double-blinks at 1.55 s', f: (t) => ({ led: !on(t, [[1.55, 1.65], [1.75, 1.85]]) }) },
-    wake: { len: 0.6, note: 'power key press 0.05-0.25 s; LED on at 0.25 s (screen: off -> boot -> lock)', f: (t) => ({ btn_power: press(t, 0.05, 0.25), led: t >= 0.25 }) },
-    unlock: { len: 0.7, note: 'LED blinks once at 0.5 s (screen: lock -> home; the swipe is character-side)', f: (t) => ({ led: !on(t, [[0.5, 0.6]]) }) },
+    idle: { len: 2.0, loop: true, note: 'status LED dark, with a short notification double-blink at 1.55 s', f: (t) => ({ led: on(t, [[1.55, 1.65], [1.75, 1.85]]) }) },
+    wake: { len: 0.6, note: 'power key press 0.05-0.25 s; LED lit 0.25-0.45 s as it boots (screen: off -> boot -> lock)', f: (t) => ({ btn_power: press(t, 0.05, 0.25), led: on(t, [[0.25, 0.45]]) }) },
+    unlock: { len: 0.7, note: 'LED blinks once at 0.5 s (screen: lock -> home; the swipe is character-side)', f: (t) => ({ led: on(t, [[0.5, 0.6]]) }) },
     ptt: { len: 1.6, note: 'PTT key pressed at 0.05 s and held to 1.4 s (screen: ptt_idle -> ptt_talk -> ptt_idle); loop the 0.3-1.3 s span to hold longer', f: (t) => ({ btn_ptt: press(t, 0.05, 1.4) }) },
-    scan: { len: 1.2, note: 'top key press 0.05-0.25 s (screen: app_open -> scan_a/b -> lock_on at 1.0 s)', f: (t) => ({ btn_action: press(t, 0.05, 0.25), led: !on(t, [[1.0, 1.1]]) }) },
-    alert: { len: 1.0, loop: true, note: 'LED blinks 4 Hz (game tints it red)', f: (t) => ({ led: Math.floor(t * 8) % 2 === 0 }) },
-    power_off: { len: 1.2, note: 'power key held 0.05-0.9 s; LED off at 0.95 s (screen: power_menu -> shutdown -> off)', f: (t) => ({ btn_power: press(t, 0.05, 0.9), led: t < 0.95 }) },
-    flap_open: { len: 0.45, note: 'USB-C flap swings open 120 deg about its living hinge at the back edge of the well (play backwards to close)', f: (t) => ({ flap: seg(t, 0, 0.4) }) },
+    scan: { len: 1.2, note: 'top key press 0.05-0.25 s; LED blinks at 1.0 s with the result (screen: app_open -> scan_a/b -> lock_on at 1.0 s)', f: (t) => ({ btn_action: press(t, 0.05, 0.25), led: on(t, [[1.0, 1.1]]) }) },
+    // keyed at 24 fps so every toggle lands on a 1/8 s key: 4 Hz, lit on [0, 0.125), [0.25, 0.375) ... in phase with the screen's 4 Hz alert blink
+    alert: { len: 1.0, loop: true, fps: 24, note: 'LED blinks 4 Hz, lit for the first 1/8 s of every 1/4 s, in phase with the screen (game tints it red)', f: (t) => ({ led: Math.floor(t * 8 + 1e-6) % 2 === 0 }) },
+    power_off: { len: 1.2, note: 'power key held 0.05-0.9 s; LED lit 0.6-0.95 s while it shuts down (screen: power_menu -> shutdown -> off)', f: (t) => ({ btn_power: press(t, 0.05, 0.9), led: on(t, [[0.6, 0.95]]) }) },
+    flap_open: { len: 0.45, note: `USB-C flap swings open ${FLAP_OPEN} deg about its living hinge at the back edge of the well (play backwards to close)`, f: (t) => ({ flap: seg(t, 0, 0.4) }) },
   };
   const ORDER = ['idle', 'wake', 'unlock', 'ptt', 'scan', 'alert', 'power_off', 'flap_open'];
   function pose(clip, t) {
@@ -2087,23 +2290,24 @@ function buildPhone(K) {           // the template calls buildPhone(); this buil
     const C = CLIPS[clip]; if (!C) return;
     const tt = C.loop ? wrap(t, C.len) : clampR(t, 0, C.len), s = C.f(tt);
     for (const [n, [ax, d]] of Object.entries(PRESS)) N[n].position[ax] = REST[n].p[ax] + d * (s[n] || 0);
-    N.flap_usb.rotation.x = -deg(120) * (s.flap || 0);
+    N.flap_usb.rotation.x = -deg(FLAP_OPEN) * (s.flap || 0);
     if (s.led === false) hide(N.led_status);
   }
-  const clips = {}; for (const n of ORDER) clips[n] = { len: CLIPS[n].len, loop: !!CLIPS[n].loop, keys: KEYS, step: STEP, note: CLIPS[n].note };
+  const clips = {}; for (const n of ORDER) clips[n] = { len: CLIPS[n].len, loop: !!CLIPS[n].loop, fps: CLIPS[n].fps, keys: KEYS, step: STEP, note: CLIPS[n].note };
 
   root.userData = {
     units: 'metres', up: '+Y (long axis, portrait)', forward: '+Z (rear cameras; the screen faces -Z, toward the holder)', left: "+X (holder's left: PTT key)",
-    origin: 'centre of the tablet volume; grip_left_hand is an attach socket: the palm surface on the back under the hand strap', envelope_m: TB.env.map(mm), envelope_note: 'over the TPU, without the strap; the camera island and its screws stand 0.5 mm proud of the back rim (16.9 mm deep there); the strap adds 7.6 mm at its middle',
-    rest: 'keys out, flap closed, LED shown, strap at rest',
-    nodes: 'btn_* press into the frame (power/volume +X 0.5-0.6 mm, PTT -X 0.8 mm, btn_action -Y 0.5 mm); btn_vol_up carries the one-piece volume rocker, btn_vol_down is its lower-half press point (no mesh); flap_usb hinges about X at the back edge of its well (open = -120 deg about X, swinging out of the bottom edge); led_status hidden by scale (STEP)',
+    origin: 'centre of the tablet volume; grip_left_hand is an attach socket: the palm surface on the battery door under the hand strap', envelope_m: TB.env.map(mm),
+    envelope_note: `over the corner bumpers, without the strap; the camera deco ring stays 0.2 mm inside the bumper line; the strap's top stands ${(TB._strapTop - Bp.z1).toFixed(1)} mm above it at its middle`,
+    rest: 'keys out, flap closed, LED shown (the clips hide it except when it blinks), strap at rest',
+    nodes: `btn_* press into the frame (power / volume +X 0.5 mm, PTT -X 0.8 mm, btn_action -Y 0.5 mm); btn_vol_up and btn_vol_down are two separate keys; flap_usb hinges about X at the back edge of its well (open = -${FLAP_OPEN} deg about X); led_status (front top bezel) hidden by scale (STEP)`,
   };
   return {
     id: 'tablet', file: 'tactical-tablet.glb', source: 'gadgets/tactical-tablet/viewer.html', root, nodes: N, clips, order: ORDER, pose, rest, dims: TB,
     screen: K.SCREEN,
     extras: () => ({
-      screen_atlas: { texture: 'screen_atlas (the emissive map of material screen)', size_px: [SCREEN_CELL[0] * SCREEN_GRID[0], SCREEN_CELL[1] * SCREEN_GRID[1]], cell_px: SCREEN_CELL, grid: SCREEN_GRID, gutter_px: SCREEN_GUTTER, cells: SCREEN_CELLS, uv: `screen_display covers cell 0's inner area (inside a ${SCREEN_GUTTER[0]} x ${SCREEN_GUTTER[1]} px gutter of edge pixels): u ${(SCREEN_GUTTER[0] / (SCREEN_CELL[0] * SCREEN_GRID[0])).toFixed(5)}..${((SCREEN_CELL[0] - SCREEN_GUTTER[0]) / (SCREEN_CELL[0] * SCREEN_GRID[0])).toFixed(5)}, v ${(SCREEN_GUTTER[1] / (SCREEN_CELL[1] * SCREEN_GRID[1])).toFixed(5)}..${((SCREEN_CELL[1] - SCREEN_GUTTER[1]) / (SCREEN_CELL[1] * SCREEN_GRID[1])).toFixed(5)}, v = 0 at the top edge; select a cell by offset (col / 5, row / 4)` },
-      locators: { grip_left_hand: 'attach socket: the palm surface on the back rim plane, under the strap pad, palm facing -Z (no mesh)', fx_touch: 'thumb tap point on the glass', fx_scan: 'thermal window (scan origin)', cam_rear: 'main rear camera (+Z)', cam_thermal: 'thermal camera (+Z)', cam_front: 'front camera (-Z)', fx_flash: 'rear flash', fx_ptt: 'PTT key face' },
+      screen_atlas: { texture: 'screen_atlas (the emissive map of material screen)', size_px: [SCREEN_CELL[0] * SCREEN_GRID[0], SCREEN_CELL[1] * SCREEN_GRID[1]], cell_px: SCREEN_CELL, grid: SCREEN_GRID, gutter_px: SCREEN_GUTTER, cells: SCREEN_CELLS, uv: `screen_display covers cell 0's inner area (inside a ${SCREEN_GUTTER[0]} x ${SCREEN_GUTTER[1]} px gutter of edge pixels): u ${(SCREEN_GUTTER[0] / (SCREEN_CELL[0] * SCREEN_GRID[0])).toFixed(5)}..${((SCREEN_CELL[0] - SCREEN_GUTTER[0]) / (SCREEN_CELL[0] * SCREEN_GRID[0])).toFixed(5)}, v ${(SCREEN_GUTTER[1] / (SCREEN_CELL[1] * SCREEN_GRID[1])).toFixed(5)}..${((SCREEN_CELL[1] - SCREEN_GUTTER[1]) / (SCREEN_CELL[1] * SCREEN_GRID[1])).toFixed(5)}, v = 0 at the top edge; select a cell by offset (col / ${SCREEN_GRID[0]}, row / ${SCREEN_GRID[1]})` },
+      locators: { grip_left_hand: 'attach socket: the palm surface on the battery door, under the strap pad, palm facing -Z (no mesh)', fx_touch: 'thumb tap point on the glass', fx_scan: 'thermal window (scan origin)', cam_rear: 'main rear camera (+Z)', cam_thermal: 'thermal camera (+Z)', cam_front: 'front camera in the top bezel, right of the speaker (-Z)', fx_flash: 'rear flash', fx_ptt: 'PTT key face' },
     }),
   };
 }
@@ -2457,15 +2661,26 @@ async function exportGLB() {
     after: () => { sceneRefresh(); if (was) setLoop(true); },
   });
 }
-// preview.png: no UI, no glove: the phone alone in a front three-quarter view, filling about 70 % of the frame height,
-// on the studio backdrop with its soft light pool, the map app on screen
+// preview.png: no UI, no glove: a two-up, the tablet in a front three-quarter view (home screen) beside a copy of it
+// turned to show the back (cameras, screws, grip insert, strap), together filling about 70 % of the frame height, on the
+// studio backdrop with its soft light pool
+let previewTwin = null;
 function preview() {
   setLoop(false); setSpin(false);
   document.querySelectorAll('.plate, .bar, .hint').forEach((e) => { e.hidden = true; });
-  setLighting('studio'); PLAY.state = null; setPose('rest'); setHand(false); hold('idle', 0.2); PLAY.cell = 'map_a'; sceneRefresh();
+  setLighting('studio'); PLAY.state = null; setPose('rest'); setHand(false); hold('idle', 0.2); PLAY.cell = 'home'; sceneRefresh();
   goView('34', true);
-  // fit: centre the target on the phone's box and set the distance so its projected height is 70 % of the frame
-  const box = new THREE.Box3().setFromObject(PHONE.root), c = box.getCenter(V3(0, 0, 0)), pts = [];
+  camera.updateMatrixWorld(true);
+  const right = V3(1, 0, 0).applyQuaternion(camera.quaternion).setY(0).normalize(), toCam = camera.position.clone().sub(controls.target).setY(0).normalize();
+  if (!previewTwin) { previewTwin = PHONE.root.clone(true); scene.add(previewTwin); }
+  HOLD.updateMatrixWorld(true);
+  const home = new THREE.Vector3(); PHONE.root.getWorldPosition(home);
+  HOLD.position.addScaledVector(right, -0.085); HOLD.updateMatrixWorld(true);
+  previewTwin.position.copy(home).addScaledVector(right, 0.085).addScaledVector(toCam, 0.02);
+  previewTwin.rotation.set(0.12, Math.atan2(toCam.x, toCam.z) + 0.55, -0.05);   // its back toward the camera, turned to show the keys side
+  previewTwin.updateMatrixWorld(true);
+  // fit: centre the target on both tablets' box and set the distance so the projected height is 70 % of the frame
+  const box = new THREE.Box3().setFromObject(PHONE.root).union(new THREE.Box3().setFromObject(previewTwin)), c = box.getCenter(V3(0, 0, 0)), pts = [];
   for (let i = 0; i < 8; i++) pts.push(V3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
   const dir = camera.position.clone().sub(controls.target).normalize();
   let dist = camera.position.distanceTo(controls.target);
