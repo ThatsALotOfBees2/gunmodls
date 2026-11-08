@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""Synthesises the Tactical Phone sounds (numpy only) and writes 44.1 kHz mono 16-bit WAVs next to this file.
+"""Synthesises the Tactical Phone sounds (shared with the Tactical Tablet: the device set plus the radio key-up / release pair) (numpy only) and writes 44.1 kHz mono 16-bit WAVs next to this file.
 
     wake.wav         soft rising two-tone chime after a click (wake clip 0.25 s; boot cells)
     unlock.wav       short upward sweep with a soft tick (unlock clip 0.42 s)
     tap.wav          a glass tick under the thumb (Tap(), every touch on the screen)
-    scan.wav         rising sweep and four soft pings that match the lug flashes (scan clip 0.3 s: pings at +0, +0.2, +0.4, +0.6 s)
+    scan.wav         rising sweep and four soft pings (the thermal scan) (scan clip 0.3 s: pings at +0, +0.2, +0.4, +0.6 s)
     scan_result.wav  lock-on double tone (scan clip 1.0 s, the lock_on cell)
     alert.wav        urgent 4 Hz pulse, a seamless 1.0 s loop (alert clip / state)
     low_battery.wav  descending triple tone
     power_off.wav    falling sweep into a soft thud (power_off clip 0.6 s)
     button.wav       rubber side-key click (any key press: wake, scan, power_off at 0.05 s)
-    flap_open.wav    rubber port flap popping open (port_open clip)
-    flap_close.wav   flap snapping shut (port_open played backwards)
+    flap_open.wav    rubber port flap popping open (flap_open clip)
+    flap_close.wav   flap snapping shut (flap_open played backwards)
     draw.wav         pulled from a pouch: fabric and grip rustle with a clack (holder's draw)
     holster.wav      put away: rustle and a softer clack (holder's holster)
+    ptt_chirp.wav    radio key-up: a squelch break and a short rising two-tone chirp (ptt clip 0.1 s)
+    ptt_release.wav  key release: a single roger beep and a squelch tail (ptt clip 1.4 s)
 """
 import os, wave
 import numpy as np
@@ -178,6 +180,17 @@ def main():
     x = buf(0.55)
     at(x, click(0.01, 1800, 1.5, 0.002), 0.02, 0.4); at(x, thump(120, 0.08, 0.02), 0.02, 0.5); at(x, rustle(0.45, 1200), 0.05, 0.5)
     write('holster', x, 0.65)
+    # radio key-up: band-passed squelch break, then a 1250 -> 1650 Hz two-tone chirp
+    x = buf(0.26)
+    at(x, biquad(noise(0.05), 'bp', 2200, 0.8) * env(0.05, 0.002, 0.018), 0.0, 0.5)
+    at(x, tone(1250, 0.06, 0.003, 0.05), 0.05, 0.6)
+    at(x, tone(1650, 0.09, 0.003, 0.06), 0.11, 0.6)
+    write('ptt_chirp', x, 0.7)
+    # release: a 1000 Hz roger beep and a short squelch tail
+    x = buf(0.32)
+    at(x, tone(1000, 0.12, 0.003, 0.08), 0.0, 0.6)
+    at(x, biquad(noise(0.16), 'bp', 2600, 0.7) * env(0.16, 0.004, 0.05), 0.13, 0.45)
+    write('ptt_release', x, 0.7)
 
 
 if __name__ == '__main__':

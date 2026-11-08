@@ -1,34 +1,45 @@
-// The tactical phone: a rugged operator smartphone held in the left hand (screen toward the holder, thumb on the
-// glass, the right hand stays on the weapon). Put it on the root of the tactical-phone prefab (built from
-// unity/tactical-phone.glb with Tools > Gunmodls > Build Prefabs From Selection; import with Animation: Legacy).
-//   Draw() / Holster()          the holder's draw and holster: draw sound, Wake() (and Unlock() if autoUnlock);
-//                               holster sound, PowerOff() or ScreenOff() (powerOffOnHolster)
+// The tactical phone: a rugged 5.8" Android phone (80.8 x 169.2 x 16.8 mm: an anodised aluminium mid-frame under a
+// TPU overmould, four replaceable L-shaped TPU corner bumpers on Torx screws, front camera in the top bezel, rear
+// thermal / main / wide cameras and flash under one black glass window), the Tactical Tablet's sibling, held in the left hand, screen toward the holder, thumb on the glass. Put it on the root of the
+// tactical-phone prefab (built from unity/tactical-phone.glb with Tools > Gunmodls > Build Prefabs From Selection;
+// import with Animation: Legacy). Same API shape as TacticalTablet, so shared code can drive either device.
+//   Draw() / Holster()          draw sound, Wake() (which goes on through the lock screen when autoUnlock is on) / holster sound, then PowerOff() (fires
+//                               onPowerOff) only when powerOffOnHolster is on, else ScreenOff() (fires onScreenOff only)
 //   Wake(), Unlock()            boot to the lock screen, then into the current app
-//   Tap(uv)                     a thumb tap on the glass (uv 0..1, (0, 0) = bottom left as the holder sees it):
-//                               tick sound, onTap with the world point; unlocks a locked phone
-//   Scan()                      the action key: the lug flashes, onScan fires 0.3 s in (do the ability's query
-//                               then; ScanOrigin is the fx_scan locator), onScanResult at 1.0 s (lock_on cell 1.5 s)
-//   SetAlert(on)                alert loop: red LEDs, alert cells, alert sound
-//   LowBattery()                3 s of the amber battery cell, then back to the app
-//   PowerOff(), ScreenOff()     shutdown animation to off / straight to a dark screen
-//   SetPorts(open)              swing both rubber port flaps open or shut (any time, on top of the other clips)
-//   SetApp(app), SetCell(c)     the app idle shows (Map, Drone, Scan, Home) / force an atlas cell (-1 = automatic)
-//   SetTorch(on)                rear flash as a torch (emission + an optional spot light at fx_flash)
-// Screen: 4 x 4 atlas cells (272 x 512 px each) on the 'screen' material's emissive map; a cell is shown by
-// moving the texture offset by whole cells on a material copy owned by this component (glTFast applies *_ST with
-// _TEXTURE_TRANSFORM, which the glb's KHR_texture_transform turns on). The glb ships showing the lock cell (offset
-// [0.75, 0]) so it reads without this script; that column is taken back out on start. glTFast flips V on import, so
-// cell (col, row) is the cell-0 offset + (scale.x * col / 4, -scale.y * row / 4). droneFeed (a RenderTexture of
-// the drone camera) replaces the drone cells while the Drone app is up.
-// LEDs: the clips blink led_status / led_lug by scale (STEP keys); their tint comes from here, on copies of the
-// 'led_status' and 'led_accent' materials (emissiveFactor for glTFast shaders, _EmissionColor for Standard / URP
-// Lit, both in linear terms). glTF cannot animate emission.
-// Clips (Legacy Animation): idle (2 s loop), wake 0.6, unlock 0.7, scan 1.2, alert (1 s loop), power_off 1.2,
-// port_open 0.45. glTFast imports every clip as a loop and plays the first one on its own: Awake turns
-// playAutomatically off and sets the wrap modes. Every clip keys all nine moving nodes, so this script drives
-// the port flaps itself in LateUpdate (between the poses sampled from port_open at 0 and its end) and they stay
-// open whatever clip plays. glTFast negates X on import (the holder's left is +X in the glb, -X in Unity; rotations
-// about Y and Z flip sign); everything here reads poses from the imported nodes and clips, so nothing needs a sign.
+//   Tap(uv)                     a thumb tap on the glass (uv 0..1, (0, 0) = bottom left as the holder sees it): tick,
+//                               onTap with the world point; unlocks a locked phone
+//   Scan()                      the programmable key under the PTT key: thermal scan; onScan fires 0.3 s in (ScanOrigin
+//                               is the fx_scan locator at the thermal window), onScanResult at 1.0 s (lock_on cell 1.5 s)
+//   PttDown() / PttUp()         push-to-talk on the violet left-side key: key-up chirp, the radio talk screen, the key
+//                               held (the ptt clip loops 0.3-1.3 s while held), then the release beep and back to the app.
+//                               From Locked the key goes down and the radio keys up without changing the screen (unlocking
+//                               with the key held opens the talk screen); from Alert the radio keys up but the key cap
+//                               does not move (the alert clip owns the nodes and blinks the LED). PowerOff, ScreenOff,
+//                               Holster and LowBattery release a held key first (onPttUp always pairs onPttDown); an
+//                               alert raised while talking sounds at once and takes the screen when the key is released
+//   SetAlert(on), LowBattery()  red alert loop / 3 s of the amber battery warning
+//   PowerOff(), ScreenOff()     power menu and shutdown to off (onPowerOff) / straight to a dark screen (onScreenOff)
+//   SetPorts(open), SetFlap(o)  swing the sealed USB-C flap open or shut (any time, on top of the other clips); SetFlap
+//                               is the tablet script's name for the same call
+//   SetApp(app), SetCell(c)     the app idle shows (Map, Drone, Scan, Home, Radio) / force an atlas cell (-1 = automatic)
+//   SetTorch(on)                rear flash as a torch (emission + an optional spot light at fx_flash); PowerOff,
+//                               ScreenOff and Holster turn it off. screenBrightness edits in the inspector apply live
+// Screen: 5 x 4 atlas cells (256 x 512 px each, art in the inner 240 x 496 px inside an 8 px gutter of edge pixels) on
+// the 'screen' material's emissive map; a cell is shown by moving the texture offset by whole cells on a material copy
+// owned by this component (glTFast applies *_ST with _TEXTURE_TRANSFORM, which the glb's KHR_texture_transform turns
+// on). The glb ships showing the lock cell (offset [0.4, 0]); that column is taken back out on start. glTFast flips V
+// on import, so cell (col, row) is the cell-0 offset + (scale.x * col / 5, -scale.y * row / 4). droneFeed (a
+// RenderTexture) replaces the drone cells while the Drone app is up; a new texture assigned there shows at once.
+// LED: one status LED by the earpiece, off unless a clip lights it (scan: one flash at the lock-on; alert: 4 Hz blink;
+// every other clip keeps it hidden by scale with STEP keys); its tint comes from here, on
+// a copy of the 'led_status' material (emissiveFactor for glTFast shaders, _EmissionColor for Standard / URP Lit, in
+// linear terms). The PTT key is pigment (ptt_accent), not a light. glTF cannot animate emission.
+// Clips (Legacy Animation): idle (2 s loop), wake 0.6, unlock 0.7, ptt 1.6, scan 1.2, alert (1 s loop), power_off 1.2,
+// flap_open 0.45. glTFast imports every clip as a loop and plays the first one on its own: Awake turns
+// playAutomatically off and sets the wrap modes. Every clip keys all seven moving nodes, so this script drives the USB
+// flap itself in LateUpdate (between the poses sampled from flap_open at 0 and its end) and it stays open whatever clip
+// plays. glTFast negates X on import (the holder's left is +X in the glb, -X in Unity); everything here reads poses
+// from the imported nodes and clips, so nothing needs a sign.
 using System;
 using UnityEngine;
 using UnityEngine.Events;
@@ -36,22 +47,22 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Animation))]
 public class TacticalPhone : MonoBehaviour
 {
-    public enum App { Map, Drone, Scan, Home }
-    public enum State { Off, Waking, Locked, Unlocking, Idle, Scanning, Alert, LowBattery, PoweringOff }
+    public enum App { Map, Drone, Scan, Home, Radio }
+    public enum State { Off, Waking, Locked, Unlocking, Idle, Scanning, Talking, Alert, LowBattery, PoweringOff }
 
     [Header("Behaviour")]
     public App app = App.Map;
-    public bool autoUnlock = true;               // Draw() goes straight through the lock screen
+    public bool autoUnlock = true;               // Wake() (and so Draw()) goes on through the lock screen; off: wake to the lock screen
     public bool powerOffOnHolster = false;       // Holster(): the shutdown animation, or just a dark screen
     public bool startOn = false;                 // start in Idle (a phone already out) instead of Off
 
     [Header("Screen")]
-    public float screenBrightness = 1.2f;
+    public float screenBrightness = 1.1f;
     public Texture droneFeed;                    // optional live drone camera; shown instead of the drone cells
     public bool flipFeed;                        // tick if the feed shows upside down on your import
 
-    [Header("LEDs and torch")]
-    public Color ledColor = new Color(0.541f, 0.302f, 1f);         // #8a4dff
+    [Header("LED and torch")]
+    public Color ledColor = new Color(0.184f, 0.761f, 0.420f);     // #2fc26b
     public Color alertColor = new Color(1f, 0.227f, 0.267f);       // #ff3a44
     public Color lowBatteryColor = new Color(1f, 0.702f, 0.278f);  // #ffb347
     public float glowIntensity = 1.5f;
@@ -60,26 +71,36 @@ public class TacticalPhone : MonoBehaviour
     public Light torchLight;                     // optional; made at fx_flash when createTorchLight
 
     [Header("Sound")]
-    public AudioClip wake, unlock, tap, scan, scanResult, alert, lowBattery, powerOff, button, flapOpen, flapClose, draw, holster;
+    public AudioClip wake, unlock, tap, scan, scanResult, alert, lowBattery, powerOff, button, flapOpen, flapClose, draw, holster, pttChirp, pttRelease;
 
     [Header("Events")]
-    public UnityEvent onWake, onUnlock, onScan, onScanResult, onAlert, onPowerOff, onTap;
+    public UnityEvent onWake, onUnlock, onScan, onScanResult, onAlert, onPowerOff, onScreenOff, onTap, onPttDown, onPttUp;
     public event Action<Vector3> Tapped;         // world point on the glass
 
     public State Current { get; private set; }
     public float StateTime { get { return stateT; } }
-    public Transform ScanOrigin { get { return fxScan; } }       // the lug tip
+    public Transform ScanOrigin { get { return fxScan; } }       // the thermal window
     public Transform TouchPoint { get { return fxTouch; } }      // thumb IK target on the glass
-    public Transform Grip { get { return grip; } }               // the palm: parent this to the left hand bone
+    public Transform Grip { get { return grip; } }               // the palm on the back cover: parent this to the left hand bone
     public Transform RearCamera { get { return camRear; } }
+    public Transform ThermalCamera { get { return camThermal; } }
     public Transform FrontCamera { get { return camFront; } }
+    public Transform PttKey { get { return fxPtt; } }            // the PTT key face (right-hand or thumb IK target)
     public bool TorchOn { get { return torchOn; } }
+    public bool Talking { get { return Current == State.Talking; } }
 
-    // atlas cells (DESIGN 7): index = column + 4 * row from the top left
-    public static readonly string[] Cells = { "off", "boot_a", "boot_b", "lock", "home", "map_a", "map_b", "drone_a", "drone_b", "scan_a", "scan_b", "lock_on", "alert_a", "alert_b", "low_battery", "shutdown" };
-    const int Off = 0, BootA = 1, BootB = 2, LockCell = 3, HomeCell = 4, MapA = 5, MapB = 6, DroneA = 7, DroneB = 8, ScanA = 9, ScanB = 10, LockOn = 11, AlertA = 12, AlertB = 13, LowBat = 14, Shutdown = 15;
+    // atlas cells (DESIGN 6): index = column + 5 * row from the top left; the same names and order as the tablet
+    public static readonly string[] Cells = { "off", "boot", "lock", "home", "app_open", "map_a", "map_b", "scan_a", "scan_b", "lock_on",
+        "drone_a", "drone_b", "ptt_idle", "ptt_talk", "call_in", "alert_a", "alert_b", "low_battery", "power_menu", "shutdown" };
+    const int Off = 0, Boot = 1, LockCell = 2, HomeCell = 3, AppOpen = 4, MapA = 5, MapB = 6, ScanA = 7, ScanB = 8, LockOn = 9,
+        DroneA = 10, DroneB = 11, PttIdle = 12, PttTalk = 13, CallIn = 14, AlertA = 15, AlertB = 16, LowBat = 17, PowerMenu = 18, Shutdown = 19;
+    const int GridX = 5, GridY = 4;
+    // each cell's art fills its inner area; an 8 px (of 256 and of 512) gutter of edge pixels surrounds it, and the
+    // screen mesh's UVs cover only that inner area (so mip levels never bleed a neighbouring cell into the screen)
+    const float GutterU = 8f / 256f, GutterV = 8f / 512f;
     const int DefaultCell = LockCell;           // the cell the glb's KHR_texture_transform shows without this script
-    const float ScreenW = 0.068f, ScreenH = 0.128f;
+    const float ScreenW = 0.064f, ScreenH = 0.1323f;      // the 5.8" active area
+    const float PttHoldFrom = 0.3f, PttHoldTo = 1.3f, PttRelease = 1.4f;
 
     static readonly string[] AtlasProps = { "emissiveTexture", "baseColorTexture", "_EmissionMap", "_BaseMap", "_MainTex" };
     struct AtlasSlot { public Material mat; public string prop; public Vector2 scale, offset; public Texture tex; }
@@ -87,17 +108,18 @@ public class TacticalPhone : MonoBehaviour
 
     Animation anim;
     AudioSource oneShot, loopSource;
-    Transform screen, fxScan, fxTouch, fxFlash, grip, camRear, camFront, flapPort, flapSide;
-    Quaternion portClosed, portOpen, sideClosed, sideOpen;
+    Transform screen, fxScan, fxTouch, fxFlash, fxPtt, grip, camRear, camThermal, camFront, flapUsb;
+    Quaternion flapClosed, flapOpenPose;
     readonly System.Collections.Generic.List<AtlasSlot> atlas = new System.Collections.Generic.List<AtlasSlot>();
-    readonly System.Collections.Generic.List<Glow> statusGlow = new System.Collections.Generic.List<Glow>(), accentGlow = new System.Collections.Generic.List<Glow>(), flashGlow = new System.Collections.Generic.List<Glow>();
+    readonly System.Collections.Generic.List<Glow> statusGlow = new System.Collections.Generic.List<Glow>(), flashGlow = new System.Collections.Generic.List<Glow>();
     readonly System.Collections.Generic.List<Material> owned = new System.Collections.Generic.List<Material>();
     State resumeState = State.Idle;
-    float stateT, portT, portTarget, clock;
+    float stateT, flapT, flapTarget, clock;
     int forcedCell = -1, shownCell = -1;
-    bool feedShown, torchOn, scanFired, resultFired;
+    bool feedShown, feedFlip, torchOn, scanFired, resultFired, scanToIdle, pttHeld, pendingUnlock, alertPending;
+    Texture feedTex;                             // the feed texture last applied (a new droneFeed is picked up at once)
     int cues;                                   // timed sound cues already played in this state (bit per cue)
-    Color lastStatus = new Color(-1f, 0f, 0f, 0f), lastAccent = new Color(-1f, 0f, 0f, 0f);
+    Color lastStatus = new Color(-1f, 0f, 0f, 0f);
 
     void Awake()
     {
@@ -116,23 +138,25 @@ public class TacticalPhone : MonoBehaviour
                 case "fx_scan": fxScan = t; break;
                 case "fx_touch": fxTouch = t; break;
                 case "fx_flash": fxFlash = t; break;
+                case "fx_ptt": fxPtt = t; break;
                 case "grip_left_hand": grip = t; break;
                 case "cam_rear": camRear = t; break;
+                case "cam_thermal": camThermal = t; break;
                 case "cam_front": camFront = t; break;
-                case "flap_port": flapPort = t; break;
-                case "flap_side": flapSide = t; break;
+                case "flap_usb": flapUsb = t; break;
             }
         }
         if (screen == null || fxScan == null) Debug.LogWarning("TacticalPhone: screen or fx_scan missing under " + name, this);
-        // the flaps' closed and open poses, read from the clip so the import's mirroring is in them
-        if (anim["port_open"] != null && flapPort != null && flapSide != null)
+        // the flap's closed and open poses, read from the clip so the import's mirroring is in them
+        if (flapUsb != null)
         {
-            SamplePose("port_open", anim["port_open"].length);
-            portOpen = flapPort.localRotation; sideOpen = flapSide.localRotation;
-            SamplePose("port_open", 0f);
-            portClosed = flapPort.localRotation; sideClosed = flapSide.localRotation;
+            if (anim["flap_open"] != null)
+            {
+                SamplePose("flap_open", anim["flap_open"].length); flapOpenPose = flapUsb.localRotation;
+                SamplePose("flap_open", 0f); flapClosed = flapUsb.localRotation;
+            }
+            else flapClosed = flapOpenPose = flapUsb.localRotation;
         }
-        else if (flapPort != null && flapSide != null) { portClosed = portOpen = flapPort.localRotation; sideClosed = sideOpen = flapSide.localRotation; }
         CollectMaterials();
         oneShot = gameObject.AddComponent<AudioSource>(); oneShot.spatialBlend = 1f; oneShot.playOnAwake = false;
         loopSource = gameObject.AddComponent<AudioSource>(); loopSource.spatialBlend = 1f; loopSource.loop = true; loopSource.playOnAwake = false;
@@ -158,7 +182,7 @@ public class TacticalPhone : MonoBehaviour
             {
                 var m = mats[i];
                 if (m == null) continue;
-                var kind = NameIs(m.name, "screen") ? 1 : NameIs(m.name, "led_status") ? 2 : NameIs(m.name, "led_accent") ? 3 : NameIs(m.name, "flash_diffuser") ? 4 : 0;
+                var kind = NameIs(m.name, "screen") ? 1 : NameIs(m.name, "led_status") ? 2 : NameIs(m.name, "flash_diffuser") ? 3 : 0;
                 if (kind == 0) continue;
                 Material copy;
                 if (!copies.TryGetValue(m, out copy))
@@ -167,12 +191,8 @@ public class TacticalPhone : MonoBehaviour
                     copies[m] = copy; owned.Add(copy);
                     copy.EnableKeyword("_EMISSIVE"); copy.EnableKeyword("_EMISSION");
                     if (kind == 1) AddAtlas(copy);
-                    else
-                    {
-                        var g = new Glow { mat = copy, factorMax = MaxOf(ReadLinear(copy, "emissiveFactor")), colorMax = MaxOf(ReadLinear(copy, "_EmissionColor")) };
-                        if (kind == 4) { g.factorMax = 1f; g.colorMax = 1f; flashGlow.Add(g); }
-                        else if (kind == 2) statusGlow.Add(g); else accentGlow.Add(g);
-                    }
+                    else if (kind == 2) statusGlow.Add(new Glow { mat = copy, factorMax = MaxOf(ReadLinear(copy, "emissiveFactor")), colorMax = MaxOf(ReadLinear(copy, "_EmissionColor")) });
+                    else flashGlow.Add(new Glow { mat = copy, factorMax = 1f, colorMax = 1f });
                 }
                 mats[i] = copy;
                 changed = true;
@@ -192,7 +212,7 @@ public class TacticalPhone : MonoBehaviour
             if (!m.HasProperty(p) || (!shared && m.GetTexture(p) == null)) continue;
             // the glb ships showing the lock cell (DefaultCell, row 0): take its column back out so offset is cell 0's
             var sc = m.GetTextureScale(p);
-            atlas.Add(new AtlasSlot { mat = m, prop = p, scale = sc, offset = m.GetTextureOffset(p) - new Vector2(sc.x * (DefaultCell % 4) * 0.25f, 0f), tex = m.GetTexture(p) });
+            atlas.Add(new AtlasSlot { mat = m, prop = p, scale = sc, offset = m.GetTextureOffset(p) - new Vector2(sc.x * (DefaultCell % GridX) / (float)GridX, 0f), tex = m.GetTexture(p) });
         }
         m.EnableKeyword("_TEXTURE_TRANSFORM");
     }
@@ -204,6 +224,8 @@ public class TacticalPhone : MonoBehaviour
     public void Holster()
     {
         Play(holster);
+        if (pttHeld) PttUp();
+        SetTorch(false);
         if (powerOffOnHolster) PowerOff(); else ScreenOff();
     }
 
@@ -225,7 +247,6 @@ public class TacticalPhone : MonoBehaviour
         PlayClip("unlock", 0.1f);             // tap at 0.3 s and unlock at 0.42 s (Update)
         if (onUnlock != null) onUnlock.Invoke();
     }
-    bool pendingUnlock;
 
     public void Tap(Vector2 uv)
     {
@@ -242,26 +263,75 @@ public class TacticalPhone : MonoBehaviour
     public Vector3 TapPoint(Vector2 uv)
     {
         if (screen == null) return transform.position;
-        return screen.TransformPoint(new Vector3((uv.x - 0.5f) * ScreenW, (uv.y - 0.5f) * ScreenH, -0.0006f));
+        return screen.TransformPoint(new Vector3((uv.x - 0.5f) * ScreenW, (uv.y - 0.5f) * ScreenH, -0.00014f));   // the glass front face (the panel is bonded 0.14 mm under it)
     }
 
     public void Scan()
     {
         if (Current != State.Idle && Current != State.Scanning) return;
         SetState(State.Scanning);
-        scanFired = resultFired = false;
+        scanFired = resultFired = scanToIdle = false;
         PlayClip("scan", 0.05f);              // button at 0.05 s, scan 0.3 s, scan_result 1.0 s (Update)
+    }
+
+    // push-to-talk: key down. Works from Idle and Scanning; from Alert and Locked the radio keys up but the screen
+    // stays as it is (rugged PTT phones transmit while locked). On the lock screen the key cap goes down too; in Alert
+    // it does not (the alert clip keeps the nodes).
+    public void PttDown()
+    {
+        if (pttHeld) return;
+        if (Current != State.Idle && Current != State.Scanning && Current != State.Alert && Current != State.Locked) return;
+        if (Current == State.Alert || Current == State.Locked)
+        {
+            pttHeld = true; Play(button); Play(pttChirp);
+            if (Current == State.Locked) PlayClip("ptt", 0.05f);     // the key goes down (Locked plays no other part motion)
+            if (onPttDown != null) onPttDown.Invoke();
+            return;
+        }
+        SetState(State.Talking);
+        pttHeld = true;
+        PlayClip("ptt", 0.05f);               // the key goes down at 0.05 s
+        Play(button); Play(pttChirp);
+        if (onPttDown != null) onPttDown.Invoke();
+    }
+
+    public void PttUp()
+    {
+        if (!pttHeld) return;
+        pttHeld = false;
+        Play(pttRelease);
+        if (onPttUp != null) onPttUp.Invoke();
+        if (Current == State.Locked) { var l = anim["ptt"]; if (l != null && anim.IsPlaying("ptt") && l.time < PttHoldTo) l.time = PttHoldTo; return; }
+        if (Current != State.Talking) return;
+        // jump to the release part of the clip (the key comes back out at 1.4 s)
+        var s = anim["ptt"];
+        if (s != null && s.time < PttHoldTo) s.time = PttHoldTo;
+        stateT = Mathf.Max(stateT, PttHoldTo);
     }
 
     public void SetAlert(bool on)
     {
         if (on)
         {
-            if (Current == State.Off || Current == State.PoweringOff || Current == State.Alert) return;
+            if (Current == State.Off || Current == State.PoweringOff || Current == State.Alert || alertPending) return;
+            if (Current == State.Talking)
+            {
+                // keep transmitting: the PTT key stays held and the radio screen stays up; the alert sounds now and
+                // takes the screen once the key is released (Update, Talking)
+                alertPending = true;
+                if (alert != null) { loopSource.clip = alert; loopSource.Play(); }
+                if (onAlert != null) onAlert.Invoke();
+                return;
+            }
             SetState(State.Alert);
             PlayClip("alert", 0.1f);
             if (alert != null) { loopSource.clip = alert; loopSource.Play(); }
             if (onAlert != null) onAlert.Invoke();
+        }
+        else if (alertPending)
+        {
+            alertPending = false;
+            loopSource.Stop();
         }
         else if (Current == State.Alert)
         {
@@ -271,7 +341,6 @@ public class TacticalPhone : MonoBehaviour
         }
         else if (Current == State.LowBattery && resumeState == State.Alert)
         {
-            // the warning was raised over an alert: end the alert now, the warning resumes to idle
             loopSource.Stop();
             resumeState = State.Idle;
             PlayClip("idle", 0.15f);
@@ -281,7 +350,8 @@ public class TacticalPhone : MonoBehaviour
     public void LowBattery()
     {
         if (Current == State.Off || Current == State.PoweringOff || Current == State.LowBattery) return;
-        // resume where the warning interrupted: an alert stays an alert, a phone still locked (or waking) goes back to the lock screen
+        if (pttHeld) PttUp();
+        if (alertPending) { alertPending = false; resumeState = State.Alert; SetState(State.LowBattery); Play(lowBattery); return; }
         resumeState = Current == State.Alert ? State.Alert : Current == State.Waking || Current == State.Locked ? State.Locked : State.Idle;
         SetState(State.LowBattery);
         Play(lowBattery);
@@ -290,7 +360,9 @@ public class TacticalPhone : MonoBehaviour
     public void PowerOff()
     {
         if (Current == State.Off || Current == State.PoweringOff) return;
-        loopSource.Stop();
+        if (pttHeld) PttUp();                 // close the mic first: onPttUp fires, the release chirp plays
+        SetTorch(false);
+        loopSource.Stop(); alertPending = false;
         SetState(State.PoweringOff);
         PlayClip("power_off", 0.05f);         // button at 0.05 s and power_off at 0.6 s (Update)
         if (onPowerOff != null) onPowerOff.Invoke();
@@ -299,26 +371,30 @@ public class TacticalPhone : MonoBehaviour
     public void ScreenOff()
     {
         if (Current == State.Off) return;
-        loopSource.Stop();
+        if (pttHeld) PttUp();
+        SetTorch(false);
+        loopSource.Stop(); alertPending = false;
         SetState(State.Off);
-        // the end of power_off: keys out, LEDs hidden
-        PlayClip("power_off", 0f);
+        PlayClip("power_off", 0f);            // the end of power_off: keys out, LED hidden
         var s = anim["power_off"]; if (s != null) s.time = s.length;
-        if (onPowerOff != null) onPowerOff.Invoke();
+        if (onScreenOff != null) onScreenOff.Invoke();
     }
 
     public void SetPorts(bool open)
     {
         var target = open ? 1f : 0f;
-        if (Mathf.Approximately(target, portTarget)) return;
-        portTarget = target;
+        if (Mathf.Approximately(target, flapTarget)) return;
+        flapTarget = target;
         Play(open ? flapOpen : flapClose);
     }
 
+    // the tablet's name for the same call (TacticalTablet.SetFlap), so shared code can drive either device
+    public void SetFlap(bool open) { SetPorts(open); }
+
     public void SetApp(App a) { app = a; }
 
-    // force atlas cell 0..15 (or by name); -1 hands the screen back to the state machine
-    public void SetCell(int cell) { forcedCell = cell < 0 ? -1 : Mathf.Clamp(cell, 0, 15); }
+    // force atlas cell 0..19 (or by name); -1 hands the screen back to the state machine
+    public void SetCell(int cell) { forcedCell = cell < 0 ? -1 : Mathf.Clamp(cell, 0, Cells.Length - 1); }
     public void SetCell(string cellName) { SetCell(Array.IndexOf(Cells, cellName)); }
 
     public void SetTorch(bool on)
@@ -339,6 +415,9 @@ public class TacticalPhone : MonoBehaviour
 
     public void SetBrightness(float b) { screenBrightness = b; WriteScreenBrightness(); }
 
+    // inspector edits at runtime (screenBrightness) take effect at once
+    void OnValidate() { if (Application.isPlaying && atlas != null && atlas.Count > 0) WriteScreenBrightness(); }
+
     // ---------------------------------------------------------------- state machine
 
     void Update()
@@ -357,20 +436,52 @@ public class TacticalPhone : MonoBehaviour
                 break;
             case State.Unlocking:
                 Cue(0, 0.3f, tap); Cue(1, 0.42f, unlock);
-                if (stateT >= Length("unlock")) { SetState(State.Idle); PlayClip("idle", 0.1f); }
+                if (stateT >= Length("unlock"))
+                {
+                    // a PTT key held through the unlock: straight into the talk screen, the key held down
+                    if (pttHeld) { SetState(State.Talking); PlayClip("ptt", 0.1f); var p = anim["ptt"]; if (p != null) p.time = PttHoldFrom; stateT = PttHoldFrom; }
+                    else { SetState(State.Idle); PlayClip("idle", 0.1f); }
+                }
+                break;
+            case State.Locked:
+                {
+                    // the PTT key pressed on the lock screen: hold the key-down span, then back to idle after the release
+                    var p = anim["ptt"];
+                    if (p != null && anim.IsPlaying("ptt"))
+                    {
+                        if (pttHeld && p.time >= PttHoldTo) p.time = PttHoldFrom;
+                        else if (!pttHeld && p.time >= p.length - 0.02f) PlayClip("idle", 0f);   // no fade: a cross-fade keeps ptt playing and would restart idle every frame
+                    }
+                }
                 break;
             case State.Scanning:
                 Cue(0, 0.05f, button);
                 if (!scanFired && stateT >= 0.3f) { scanFired = true; Play(scan); if (onScan != null) onScan.Invoke(); }
                 if (!resultFired && stateT >= 1.0f) { resultFired = true; Play(scanResult); if (onScanResult != null) onScanResult.Invoke(); }
-                if (stateT >= Length("scan") && anim["scan"] != null && anim.IsPlaying("scan")) PlayClip("idle", 0.15f);
+                // hand back to idle once: IsPlaying("scan") stays true through the cross-fade, so testing it here every
+                // frame restarted idle at time 0 for the whole fade
+                if (!scanToIdle && stateT >= Length("scan")) { scanToIdle = true; PlayClip("idle", 0.15f); }
                 if (stateT >= 2.5f) SetState(State.Idle);
+                break;
+            case State.Talking:
+                {
+                    var s = anim["ptt"];
+                    // hold: loop the key-down span while the key is held
+                    if (pttHeld && s != null && s.time >= PttHoldTo) { s.time = PttHoldFrom; stateT = PttHoldFrom; }
+                    if (!pttHeld && stateT >= Length("ptt"))
+                    {
+                        // an alert raised while transmitting takes the screen now (its sound is already looping)
+                        if (alertPending) { alertPending = false; SetState(State.Alert); PlayClip("alert", 0.1f); }
+                        else { SetState(State.Idle); PlayClip("idle", 0.15f); }
+                    }
+                }
                 break;
             case State.LowBattery:
                 if (stateT >= 3f)
                 {
                     SetState(resumeState);
-                    if (resumeState != State.Alert && !anim.IsPlaying("idle")) PlayClip("idle", 0.1f);
+                    if (resumeState == State.Alert) { if (!anim.IsPlaying("alert")) PlayClip("alert", 0.1f); }   // an alert pending from a PTT hold starts its clip (LED blink) now
+                    else if (!anim.IsPlaying("idle")) PlayClip("idle", 0.1f);
                     if (resumeState == State.Locked && (pendingUnlock || autoUnlock)) { pendingUnlock = false; Unlock(); }
                 }
                 break;
@@ -381,17 +492,15 @@ public class TacticalPhone : MonoBehaviour
         }
         var cell = forcedCell >= 0 ? forcedCell : CellFor();
         ShowCell(cell);
-        UpdateLeds();
-        if (!Mathf.Approximately(portT, portTarget)) portT = Mathf.MoveTowards(portT, portTarget, dt / 0.45f);
+        UpdateLed();
+        if (!Mathf.Approximately(flapT, flapTarget)) flapT = Mathf.MoveTowards(flapT, flapTarget, dt / 0.45f);
     }
 
     void LateUpdate()
     {
-        // the flaps follow portT on top of whatever clip plays (every clip keys them closed)
-        if (flapPort == null || flapSide == null || portT <= 0f) return;
-        // the same stagger as port_open: the USB flap over 0-0.35 s, the side flap over 0.1-0.45 s
-        flapPort.localRotation = Quaternion.Slerp(portClosed, portOpen, Ease(Lin(portT, 0f, 0.78f)));
-        flapSide.localRotation = Quaternion.Slerp(sideClosed, sideOpen, Ease(Lin(portT, 0.22f, 1f)));
+        // the flap follows flapT on top of whatever clip plays (every clip keys it closed)
+        if (flapUsb == null || flapT <= 0f) return;
+        flapUsb.localRotation = Quaternion.Slerp(flapClosed, flapOpenPose, Ease(Lin(flapT, 0f, 0.9f)));
     }
 
     // DESIGN 7: the cell sequencing table
@@ -401,38 +510,38 @@ public class TacticalPhone : MonoBehaviour
         switch (Current)
         {
             case State.Off: return Off;
-            case State.Waking: return t < 0.25f ? Off : t < 0.5f ? Blink(BootA, BootB, 8f, t) : LockCell;
+            case State.Waking: return t < 0.25f ? Off : t < 0.5f ? Boot : LockCell;
             case State.Locked: return LockCell;
             case State.Unlocking: return t < 0.45f ? LockCell : HomeCell;
-            case State.Scanning: return t < 0.25f ? AppCell(clock, true) : t < 1.0f ? Blink(ScanA, ScanB, 6f, t) : LockOn;
+            case State.Scanning: return t < 0.3f ? AppOpen : t < 1.0f ? Blink(ScanA, ScanB, 6f, t) : LockOn;
+            case State.Talking: return t > 0.12f && t < PttRelease + 0.02f ? PttTalk : PttIdle;
             case State.Alert: return Blink(AlertA, AlertB, 4f, t);
             case State.LowBattery: return Blink(LowBat, Off, 1f, t);
-            case State.PoweringOff: return t < 0.6f ? AppCell(clock, true) : t < 0.95f ? Shutdown : Off;
-            default: return AppCell(clock, false);
+            case State.PoweringOff: return t < 0.6f ? PowerMenu : t < 0.95f ? Shutdown : Off;
+            default: return AppCell(clock);
         }
     }
 
-    int AppCell(float t, bool still)
+    int AppCell(float t)
     {
         switch (app)
         {
-            case App.Drone: return still ? DroneA : Blink(DroneA, DroneB, 6f, t);
-            case App.Scan: return still ? ScanA : Blink(ScanA, ScanB, 6f, t);
+            case App.Drone: return Blink(DroneA, DroneB, 6f, t);
+            case App.Scan: return Blink(ScanA, ScanB, 6f, t);
             case App.Home: return HomeCell;
-            default: return still ? MapA : Blink(MapA, MapB, 2f, t);
+            case App.Radio: return PttIdle;
+            default: return Blink(MapA, MapB, 2f, t);
         }
     }
 
     static int Blink(int a, int b, float hz, float t) { return ((int)Mathf.Floor(t * hz)) % 2 == 1 ? b : a; }
 
-    void UpdateLeds()
+    void UpdateLed()
     {
         var status = Current == State.Alert ? alertColor : Current == State.LowBattery ? lowBatteryColor : ledColor;
-        var accent = Current == State.Alert ? alertColor : ledColor;
         var k = Current == State.Off ? 0f : glowIntensity;
-        var sc = status * k; var ac = accent * k;
+        var sc = status * k;
         if (Changed(sc, lastStatus)) { WriteGlow(statusGlow, status, k); lastStatus = sc; }
-        if (Changed(ac, lastAccent)) { WriteGlow(accentGlow, accent, k); lastAccent = ac; }
     }
 
     // ---------------------------------------------------------------- screen
@@ -442,27 +551,30 @@ public class TacticalPhone : MonoBehaviour
         var feed = droneFeed != null && (cell == DroneA || cell == DroneB);
         if (feed)
         {
-            if (feedShown) return;
-            feedShown = true; shownCell = -1;
+            if (feedShown && feedTex == droneFeed && feedFlip == flipFeed) return;
+            feedShown = true; shownCell = -1; feedTex = droneFeed; feedFlip = flipFeed;
             foreach (var a in atlas)
             {
                 // the mesh's UVs cover one cell: stretch the whole feed over that cell's range
-                var s = new Vector2(a.scale.x * 4f, a.scale.y * 4f);
-                var o = new Vector2(a.offset.x * 4f, a.offset.y * 4f - 3f * Mathf.Sign(a.scale.y));
+                var s = new Vector2(a.scale.x * GridX, a.scale.y * GridY);
+                var o = new Vector2(a.offset.x * GridX, a.offset.y * GridY - (GridY - 1) * Mathf.Sign(a.scale.y));
+                // the UVs cover the cell's inner area only: stretch that to the whole feed
+                s = new Vector2(s.x / (1f - 2f * GutterU), s.y / (1f - 2f * GutterV));
+                o = new Vector2((o.x - GutterU) / (1f - 2f * GutterU), (o.y - GutterV) / (1f - 2f * GutterV));
                 if (flipFeed) { s.y = -s.y; o.y = 1f - o.y; }
-                Apply(a, a.tex != null ? droneFeed : null, s, o);   // slots that held no texture (Standard / URP base map) only take the transform
+                Apply(a, a.tex != null ? droneFeed : null, s, o);
             }
             return;
         }
         if (cell == shownCell && !feedShown) return;
-        feedShown = false; shownCell = cell;
-        float col = cell % 4, row = cell / 4;
-        foreach (var a in atlas) Apply(a, a.tex, a.scale, a.offset + new Vector2(a.scale.x * col * 0.25f, -a.scale.y * row * 0.25f));
+        feedShown = false; feedTex = null; shownCell = cell;
+        float col = cell % GridX, row = cell / GridX;
+        foreach (var a in atlas) Apply(a, a.tex, a.scale, a.offset + new Vector2(a.scale.x * col / GridX, -a.scale.y * row / GridY));
     }
 
     static void Apply(AtlasSlot a, Texture tex, Vector2 s, Vector2 o)
     {
-        if (a.mat.GetTexture(a.prop) != tex) a.mat.SetTexture(a.prop, tex);    // a.tex is the slot's own texture, null included, so this restores it
+        if (a.mat.GetTexture(a.prop) != tex) a.mat.SetTexture(a.prop, tex);
         a.mat.SetTextureScale(a.prop, s);
         a.mat.SetTextureOffset(a.prop, o);
         if (a.mat.HasProperty(a.prop + "_ST")) a.mat.SetVector(a.prop + "_ST", new Vector4(s.x, s.y, o.x, o.y));
@@ -483,7 +595,6 @@ public class TacticalPhone : MonoBehaviour
 
     void SetState(State s) { Current = s; stateT = 0f; cues = 0; if (s == State.Off) pendingUnlock = false; }
 
-    // play c once when the state's clock passes t (bit = this cue's slot in the state)
     void Cue(int bit, float t, AudioClip c) { if ((cues & (1 << bit)) == 0 && stateT >= t) { cues |= 1 << bit; Play(c); } }
 
     void PlayClip(string clip, float fade)
@@ -540,13 +651,16 @@ public class TacticalPhone : MonoBehaviour
     static void WriteGlow(System.Collections.Generic.List<Glow> list, Color hue, float k)
     {
         var h = LinearSpace ? hue.linear : hue;
+        // the hue's own brightness is not applied twice: normalise it, so every tint peaks at factorMax * k (the glb's
+        // LED magnitude) and green, red and amber read equally bright
+        var mx = Mathf.Max(h.r, Mathf.Max(h.g, h.b)); if (mx > 1e-5f) h = h * (1f / mx);
         h.a = 1f;
         foreach (var g in list)
         {
             var f = h * (g.factorMax * k); f.a = 1f;
             var e = h * (g.colorMax * k); e.a = 1f;
-            WriteLinear(g.mat, "emissiveFactor", f);   // glTFast shaders
-            WriteLinear(g.mat, "_EmissionColor", e);   // Standard / URP Lit
+            WriteLinear(g.mat, "emissiveFactor", f);
+            WriteLinear(g.mat, "_EmissionColor", e);
         }
     }
 }

@@ -23,7 +23,8 @@
 //   simplify matching groups gently on LOD1+ (keep at least `keep`, their own error, no pruning unless prune is
 //   set), so a key part never vanishes at range; colliders as above. The skin's first joint is the common
 //   ancestor of all joints (the skeleton root, e.g. the hips).
-//   - rigid files may set { lod: { keep, error, flags } } (three LODs) to override the default LOD targets.
+//   - rigid files may set { lod: { keep, error, flags } } (three LODs) to override the default LOD targets, and
+//     { colliders: { skip: 'regex on node names' } } to leave those nodes without an automatic box.
 //   - collider proxies (nodes named col_*, the furniture convention): a box proxy keeps its node with one child box
 //     <node>_COL; a convex proxy (name ending _hull) keeps its hull as an invisible child <node>_HULL (no LODs); a
 //     node with proxies among its children gets no automatic box of its own. Pre-cut chunks (chunk_* nodes inside a
@@ -291,6 +292,7 @@ window.convert = async (b64, opts) => {
       else cols += addCollider(g, o.name, o.geometry.clone(), 0);
     }
     const isProxy = (o) => /_(COL|HULL)$/.test(o.name);
+    const skipCol = cfg && cfg.colliders && cfg.colliders.skip ? new RegExp(cfg.colliders.skip) : null;
     root.traverse((o) => { if (o.isMesh && !isProxy(o)) { if (!byParent.has(o.parent)) byParent.set(o.parent, []); byParent.get(o.parent).push(o); } });
     const stats = [0, 0, 0];
     for (const [p, meshes] of byParent) {
@@ -303,7 +305,7 @@ window.convert = async (b64, opts) => {
       }
       addLods(p, base, geo, mats, stats, (cfg && cfg.lod) || {}); nodes++;
       if (/^chunk_/.test(base) && p.parent && /^chunks_/.test(p.parent.name)) cols += addHull(p, base, geo);
-      else if (!p.children.some((c) => /^col_/.test(c.name))) cols += addCollider(p, base, geo);
+      else if (!(skipCol && skipCol.test(base)) && !p.children.some((c) => /^col_/.test(c.name))) cols += addCollider(p, base, geo);
     }
     checkPrimitives(root);
     const buf = await new GLTFExporter().parseAsync(root, { binary: true, animations: gltf.animations });
