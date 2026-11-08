@@ -18,7 +18,9 @@ renderer.setClearColor(0x000000, 0);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.AgXToneMapping;
+// fixB: Khronos PBR Neutral keeps near-black dyed nylon near-black (three.js AgX has no Medium-High-Contrast look and
+// lifted the 0.015-albedo cordura to mid-grey next to the Cycles AgX MHC preview)
+renderer.toneMapping = THREE.NeutralToneMapping;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 stage.appendChild(renderer.domElement);

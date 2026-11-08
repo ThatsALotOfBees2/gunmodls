@@ -229,7 +229,10 @@ class Character:
         self.GEAR.update(_j.loads(os.environ.get('ANIM_GEAR', '{}')))
         self.HOLSTER_BELT = dict(self.HOLSTER_BELT)
         self.HOLSTER_BELT.update(_j.loads(os.environ.get('ANIM_HOLSTER_BELT', '{}')))
-        self.HOLSTER = dict(self.HOLSTER); self.HOLSTER.update(_j.loads(os.environ.get('ANIM_HOLSTER', '{}')))       # tuning hooks (pen_rig sweeps)
+        self.HOLSTER = dict(self.HOLSTER); self.HOLSTER.update(_j.loads(os.environ.get('ANIM_HOLSTER', '{}')))
+        self.HOLSTER_BELT.update(_j.loads(os.environ.get('ANIM_HOLSTER_BOTH', '{}'))); self.HOLSTER.update(_j.loads(os.environ.get('ANIM_HOLSTER_BOTH', '{}')))       # tuning hooks (pen_rig sweeps)
+        self.MAG_HAND = dict(self.MAG_HAND); self.MAG_HAND.update(_j.loads(os.environ.get('ANIM_MAG_HAND', '{}')))
+        self.PISTOL_HAND = dict(self.PISTOL_HAND); self.PISTOL_HAND.update(_j.loads(os.environ.get('ANIM_PISTOL_HAND', '{}')))
         self.CROUCH.update(_j.loads(os.environ.get('ANIM_CROUCH', '{}')))
         self.P = P = Pose(rig)
         _calibrate(P)
@@ -310,7 +313,8 @@ class Character:
                 butt_fwd=0.11, butt_out=0.0, butt_up=0.0,      # rifle butt: forward of the front plate bag
                 fore_d=0.60, fore_side=0.11, fore_up=0.075,    # support hand further out on the handguard
                 pole_l=(1.0, -0.15, -0.3), pole_r=(-0.70, 0.10, -0.45),   # elbows down and out
-                look_hips=0.22, look_spine=0.34, look_push=0.06, reload_push=0.08, reload_pole=(1.0, -0.6, -0.2))               # LookAround: turn more from the hips (bag + arms as one)
+                look_hips=0.22, look_spine=0.34, look_push=0.06, reload_push=0.08, reload_pole=(1.0, -0.6, -0.2),
+                reload_arc=0.05, reload_arc_up=0.0, reload_in=0.30)    # LookAround: turn more from the hips; Reload: mag path bows round the bag
 
     def relaxed_target(self, s, swing=0.0, breath=0.0, abd=None):
         G = self.GEAR; sg = 1 if s == 'L' else -1
@@ -344,21 +348,21 @@ class Character:
         self.arm_to(s, W, Rh, pole, self.f_relaxed)
 
     # rifle hold (no rifle): stock in the right shoulder pocket, muzzle depressed ~25 deg (low ready)
-    def rifle_frame(self, muzzle_down=24.0, push=0.0):
+    def rifle_frame(self, muzzle_down=24.0, push=0.0, inboard=0.0):
         """armature-space rifle frame (follows the chest): butt, bore d, up, side (+X = his left).
         push: extra forward offset (m) of the whole rifle (reload, looking right)."""
         G = self.GEAR; sh = self.sh0['R']
         butt = sh + Vector((0.06 - G['butt_out'], -0.08 - G['butt_fwd'] - push, -0.03 + G['butt_up']))
-        d = Vector((0.10, -math.cos(math.radians(muzzle_down)), -math.sin(math.radians(muzzle_down)))).normalized()
+        d = Vector((0.10 + inboard, -math.cos(math.radians(muzzle_down)), -math.sin(math.radians(muzzle_down)))).normalized()
         up = d.cross(X).normalized()
         if up.z < 0: up = -up
         side = up.cross(d).normalized()
         M = self.chest_delta(); Rq = M.to_quaternion()
         return M @ butt, Rq @ d, Rq @ up, Rq @ side
 
-    def rifle_targets(self, muzzle_down=24.0, push=0.0):
+    def rifle_targets(self, muzzle_down=24.0, push=0.0, inboard=0.0):
         G = self.GEAR; P = self.P
-        butt, d, up, side = self.rifle_frame(muzzle_down, push)
+        butt, d, up, side = self.rifle_frame(muzzle_down, push, inboard)
         grip_w = butt + d * 0.215 - up * 0.10 - side * 0.012     # right wrist behind/below the pistol grip
         fore_w = butt + d * G['fore_d'] - up * G['fore_up'] + side * G['fore_side']   # left wrist under the handguard
         fr = (-up * 0.85 + d * 0.35 + side * 0.15); nr = side
@@ -366,9 +370,9 @@ class Character:
         return {'R': (grip_w, hand_rot(P, 'R', fr, nr)), 'L': (fore_w, hand_rot(P, 'L', fl, nl)),
                 'frame': (butt, d, up, side)}
 
-    def rifle(self, muzzle_down=24.0, cant=0.0, left_override=None, push=0.0, pole_l=None):
+    def rifle(self, muzzle_down=24.0, cant=0.0, left_override=None, push=0.0, pole_l=None, inboard=0.0):
         G = self.GEAR
-        T = self.rifle_targets(muzzle_down, push)
+        T = self.rifle_targets(muzzle_down, push, inboard)
         self.arm_to('R', *T['R'], G['pole_r'], self.f_grip)
         if left_override is None:
             self.arm_to('L', *T['L'], pole_l or G['pole_l'], self.f_fore)
@@ -441,8 +445,9 @@ class Character:
 
     # geared crouch: hips less deep and less pitched (thighs stay below the belt line / pistol mags), feet wider,
     # knees pushed out (pole), spine takes more of the bend
-    CROUCH = dict(drop=0.22, back=0.05, bend=19.0, hp=9.0, lx=0.15, ly=-0.12, rx=0.07, ry=0.17, lyaw=-18, ryaw=-30,
-                  knee_out=0.16)
+    # fixB: pistol mags moved to the left hip, so the spine takes less of the bend (belly off the belt front edge)
+    CROUCH = dict(drop=0.22, back=0.05, bend=15.0, hp=6.0, lx=0.15, ly=-0.12, rx=0.07, ry=0.17, lyaw=-18, ryaw=-30,
+                  knee_out=0.12)
 
     def crouch(self, t):
         P = self.P; P.reset(); CR = self.CROUCH
@@ -548,10 +553,14 @@ class Character:
         M = Rm.to_4x4(); M.translation = Vector((-0.29, -0.27, 1.10 + 0.025))
         return M
 
+    # fixB: hold_w = extra wrist offset (pistol frame) while the pistol is still holstered (hand high on the grip, fingers
+    # under the hood / clear of the shell mouth); appr_out / appr_up = the hand comes in from outside and above;
+    # draw_out = where the drawn pistol drifts after clearing the holster (belt: out and back, under the bang pouches)
     HOLSTER = dict(dx=0.05, drop=0.055, side=-24.0, yaw=-14.0, hyaw=12.0, hroll=-3.0, labd=0.25,
-                   rpole=(-1.0, 0.25, 0.1))
+                   rpole=(-1.0, 0.25, 0.1), hold_w=(0.0, -0.025, 0.0), appr_out=0.05, appr_up=0.03)
     HOLSTER_BELT = dict(dx=0.02, drop=-0.02, side=8.0, yaw=-20.0, hyaw=10.0, hroll=-2.0, labd=0.12,
-                        rpole=(-0.8, 0.7, 0.2))
+                        rpole=(-0.8, 0.7, 0.2), hold_w=(-0.01, -0.01, 0.0), appr_out=0.05, appr_up=0.03,
+                        draw_out=(-0.06, 0.03, 0.0))
 
     def holster(self, t, prop='PropPistolDrop', clip='Holster', lift=0.17, HG=None):
         P = self.P; P.reset()
@@ -575,19 +584,26 @@ class Character:
         P.fk()
         Mf = self.prop_follow(prop)
         bore = Mf.to_quaternion() @ Vector((0, 1, 0))
-        Mdrawn = Matrix.Translation(-bore * lift) @ Mf
+        dout = Vector(HG.get('draw_out', (0.0, 0.0, 0.0)))          # fixB: the drawn pistol ends up out from the body
+        Mdrawn = Matrix.Translation(-bore * lift + dout) @ Mf
         if pres <= 0.45:
+            # clears the holster along the bore first, then drifts out (path below the straight line by dout*(d - d^2))
             Mp = self._lerp_M(Mdrawn, self._pistol_rock(Mdrawn), pres / 0.45) if draw >= 1.0 else \
-                self._lerp_M(Mf, Mdrawn, draw)
+                Matrix.Translation(-dout * (draw - draw * draw)) @ self._lerp_M(Mf, Mdrawn, draw) if draw > 0 else Mf
         else:
             Mp = self._lerp_M(self._pistol_rock(Mdrawn), self._pistol_present(0.0), min(1, (pres - 0.45) / 0.2)) \
                 if pres < 0.65 else self._pistol_present((pres - 0.65) / 0.35)
         # right hand: relaxed -> on the grip (holster pose) -> rides the pistol
         rel = self.relaxed_target('R', 0.0, br)
-        on = self.hand_on('R', Mp, self.PISTOL_HAND)
+        hold = reach * (1 - draw)                       # fixB: hand on the still-holstered grip: higher, fingers open
+        spec = dict(self.PISTOL_HAND, w=tuple(Vector(self.PISTOL_HAND['w']) + Vector(HG.get('hold_w', (0, 0, 0))) * hold))
+        on = self.hand_on('R', Mp, spec)
         W, Rh = self._lerp_target(rel[:2], on, reach)
+        arc = math.sin(math.pi * reach) * (1 - draw)     # approach / release: come in from outside and above the hood
+        W = W + Vector((-HG.get('appr_out', 0.0) * arc, 0.0, HG.get('appr_up', 0.0) * arc))
         pole_r = Vector(rel[2]).lerp(Vector(HG['rpole']), reach * (1 - pres)).lerp(Vector((-0.6, 0.3, -0.35)), pres)
-        self.arm_to('R', W, Rh, pole_r, lambda P, s: fingers_mix(P, s, F_RELAXED, F_GRIP, reach))
+        curl = reach * (1 - HG.get('hold_open', 0.0) * hold)
+        self.arm_to('R', W, Rh, pole_r, lambda P, s: fingers_mix(P, s, F_RELAXED, F_GRIP, curl))
         # left hand: relaxed (out a little more while he dips to the holster) -> wraps the right hand
         rel = self.relaxed_target('L', 0.0, br, abd=self.GEAR['abd'] + HG['labd'] * lean)
         on = self.hand_on('L', Mp, self.PISTOL_SUPPORT)
@@ -601,7 +617,7 @@ class Character:
 
     # ---------------------------------------------------------------- Reload: retention reload from the front pouch
     # mag local frame (prop bone): +Y feed end (down in the pouch), -Y baseplate (sticks out of the pouch), +Z mag front
-    MAG_HAND = dict(w=(0.09, -0.150, 0.0), f=(-0.45, 0.89, 0.0), n=(-1.0, 0.0, 0.1))
+    MAG_HAND = dict(w=(0.13, -0.190, 0.0), f=(-0.45, 0.89, 0.0), n=(-1.0, 0.0, 0.1))   # fixB: hand on the baseplate end, clear of the pouch
 
     def _mag_well(self, T):
         butt, d, up, side = T['frame']
@@ -619,7 +635,8 @@ class Character:
         S = self._seg
         self._ready_base(t, br=br)
         tilt = S(t, [(0.2, 0.0), (0.6, 1.0), (3.0, 1.0), (3.4, 0.0)])               # muzzle up for the swap
-        T = self.rifle(muzzle_down=24 + 0.8 * br - 14 * tilt, left_override=True, push=self.GEAR['reload_push'] * tilt)
+        T = self.rifle(muzzle_down=24 + 0.8 * br - 14 * tilt, left_override=True, push=self.GEAR['reload_push'] * tilt,
+                       inboard=self.GEAR['reload_in'] * tilt)
         P.fk()
         go = S(t, [(0.25, 0.0), (0.65, 1.0), (3.05, 1.0), (3.45, 0.0)])            # left hand off the handguard
         pull = S(t, [(0.75, 0.0), (1.05, 1.0), (2.55, 1.0), (2.85, 0.0)])           # mag out of / back into the pouch
@@ -631,7 +648,11 @@ class Character:
         Mw = self._mag_well(T); Mw = Matrix.Translation(T['frame'][2] * 0.015 * seat) @ Mw
         Mbelow = Matrix.Translation(-T['frame'][2] * 0.06) @ Mw
         if well <= 0: Mm = self._lerp_M(Mf, Mout, pull)
-        elif well < 0.75: Mm = self._lerp_M(Mout, Mbelow, well / 0.75)
+        elif well < 0.75:
+            k = well / 0.75; Mm = self._lerp_M(Mout, Mbelow, k)
+            # fixB: bow the path forward and up, round the front-bag / pouch edge instead of through it
+            bow = math.sin(math.pi * k)
+            Mm = Matrix.Translation(Vector((0.0, -self.GEAR['reload_arc'] * bow, self.GEAR['reload_arc_up'] * bow))) @ Mm
         else: Mm = self._lerp_M(Mbelow, Mw, (well - 0.75) / 0.25)
         fore = T['L']
         on = self.hand_on('L', Mm, self.MAG_HAND)

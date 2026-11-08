@@ -20,9 +20,9 @@ flashbang pouches and a knife or multitool. Near-black fabrics and dark alloy; t
 | --- | --- | --- | --- | --- |
 | Body (no gear) | 40,736 | 15,836 | 6,808 | 22 / 14 / 11 |
 | Base (shirt, trousers, boots, gloves) | 48,829 | 18,790 | 8,146 | 33 / 27 / 24 |
-| Light (chest rig, belt kit, headset, glasses) | 76,355 | 31,718 | 14,025 | 80 / 74 / 68 |
-| **Assault** (default) | **100,724** | **42,778** | **18,648** | 126 / 122 / 109 |
-| Full (Assault + neck and groin) | 103,152 | 43,916 | 19,180 | 131 / 127 / 114 |
+| Light (chest rig, belt kit, headset, glasses) | 76,307 | 31,696 | 14,013 | 80 / 74 / 68 |
+| **Assault** (default) | **100,676** | **42,756** | **18,636** | 126 / 122 / 109 |
+| Full (Assault + neck and groin) | 103,104 | 43,894 | 19,168 | 131 / 127 / 114 |
 
 Every module shares one set of 13 tiling PBR materials (1K, the webbing trim sheet 2K) plus the body's skin, hair and
 eye materials, so the draw calls batch well with the SRP Batcher, but they are not merged: see Known weaknesses.
@@ -38,9 +38,9 @@ follow the holster / pouch in every other clip.
 
 | File | Contents |
 | --- | --- |
-| `human-rig.glb` | LOD0: every module / part / variant a separate named skinned node on one skeleton (`carrier`, `carrier-led`, `helmet-cover`, `holster_drop-pistol`, `Body__shirt`, ...), all 8 clips, the 4 sockets, node `extras` with the toggle rules, JPEG/PNG textures embedded (2K max). 30 MB. Origin on the ground between his feet, faces +Z, +Y up. Khronos validator: 0 errors, 0 warnings. |
-| `unity/human-rig.glb` | The game copy: LOD0, LOD1, LOD2 of every node (`*_LOD0/1/2`) on one skeleton, clips, sockets, textures. 38 MB. Validator: 0 errors, 0 warnings. |
-| `viewer.html` | Standalone three.js r0.180.0 viewer with the meshopt-packed GLB (LOD0-2, 1K textures) embedded, works offline (27.5 MB): orbit, clip buttons, loadout panel with a checkbox per module grouped Base / Armour / Load bearing / Sidearm, variant selects (helmet, eyewear, knife, holster drop-leg / belt), presets Body / Base / Light / Assault / Full, Studio / Overcast / Night lighting, LOD Auto / 0 / 1 / 2. At phone width the loadout is a sheet behind the Kit button. |
+| `human-rig.glb` | LOD0: every module / part / variant a separate named skinned node on one skeleton (`carrier`, `carrier-led`, `helmet-cover`, `holster_drop-pistol`, `Body__shirt`, ...), all 8 clips (constant channels stored as 2 keys, every bone keeps a track in every clip), the 4 sockets, node `extras` with the toggle rules, JPEG/PNG textures embedded (2K max). 25.5 MB. Origin on the ground between his feet, faces +Z, +Y up. Khronos validator: 0 errors, 0 warnings. |
+| `unity/human-rig.glb` | The game copy: LOD0, LOD1, LOD2 of every node (`*_LOD0/1/2`) on one skeleton, clips, sockets, textures. 33.7 MB. Validator: 0 errors, 0 warnings. |
+| `viewer.html` | Standalone three.js r0.180.0 viewer with the packed web GLB embedded (LOD0-2, meshopt, WebP textures: normal maps, skin, hair and the webbing trim 1K, other gear albedo / ORM 512; animation keys reduced), works offline: 13.7 MB (GLB 9.8 MB), under a 16 MB hosting limit: orbit, clip buttons, loadout panel with a checkbox per module grouped Base / Armour / Load bearing / Sidearm, variant selects (helmet, eyewear, knife, holster drop-leg / belt), presets Body / Base / Light / Assault / Full, Studio / Overcast / Night lighting, LOD Auto / 0 / 1 / 2. At phone width the loadout is a sheet behind the Kit button. |
 | `textures/` | Every texture as embedded: 13 gear material sets `<mat>_albedo / _normal / _orm` (1024, webbing trim 2048; ORM = AO, roughness, metal; normals OpenGL +Y), `skin_*` (2048), `hair_rgba.png`, `eye_basecolor`. |
 | `preview.png`, `loadouts.png` | Cycles renders (Idle pose). |
 | `INTEGRATION.md` | Rebuilding, the module table, presets and toggle rules, body mask chunks, bone map, sockets, clips, LODs, Unity setup. |
@@ -55,20 +55,23 @@ Avatar with an enforced T-pose).
 - **Draw calls.** Assault is 126 material slots at LOD0 (39 nodes, many with 3 to 6 of the shared materials). Fine for a
   hero character or a handful of players with the SRP Batcher; for crowds, bake a merged-per-material copy of a fixed
   loadout (not shipped) or atlas the gear materials.
-- **Clip penetration that remains** (module vertices more than 1 mm inside the skin, worst checked frame; target 20):
-  `pistol_mags` 644 in `CrouchIdle` (the left thigh folds up through the rigid kydex carriers on the front of the belt;
-  re-weighting toward the thigh or hips did not help, a different crouch or moving the carriers back on the belt would),
-  `belt` 36 in `CrouchIdle`, `carrier` 70 and `rifle_mags` 68 in `Reload` (the support arm crosses the front bag on its
-  way to the magwell), `holster_drop` 34 / `holster_belt` 29 (the hand on the holster hood while it grips the pistol),
-  `admin_hydration` 26 (thumb, Reload). With the optional chest rig the arms still cut the placard (157 in Reload,
-  21-29 in Holster / LookAround). Everything else is at or under 20 in all eight clips.
+- **Clip penetration** (module vertices more than 1 mm inside the skin, worst of 12 frames per clip; target 20): every
+  Assault module and neck / groin is at or under 20 in all eight clips (worst: `bang_pouches` 18 in Walk, `carrier` 17
+  in LookAround, `knife` 17 in CrouchIdle; a 36-frame resample stays at or under 20 too). The pistol-mag carriers now
+  ride on the left hip (+93 / +106.5 degrees, were +40 / +58 on the front of the belt where the thigh folded through
+  them in the crouch: 644 -> 0) and the dump pouch is a compact 72 mm roll behind them. The optional chest rig still
+  meets the arms: 56 in Reload, 21-29 in Holster / HolsterBelt / LookAround (was 157 / 21-29).
 - **No rifle.** Ready, LookAround, CrouchIdle and Reload hold an invisible rifle (attach one to `SOCKET_RightHandGrip`).
   In Reload the magazine goes to where the magwell of that rifle would be.
-- **Holster draw** dips the shoulder hard (24° side bend) so the arm clears the flashbang pouches on the right hip.
+- **Holster draw** dips the shoulder hard (24° side bend) so the arm clears the flashbang pouches on the right hip; the
+  holster hoods are static (the hand sits high on the grip, the hood does not animate open).
 - **Wear.** The per-vertex WEAR channel of the module builds (edge abrasion, dust) is used in the Blender / Cycles
   material only. It is dropped from the realtime files: per-vertex it is too soft to read, and the gear uses shared
   tiling textures, so it cannot be baked into them without unique UVs.
 - **Body hidden-face chunks** are rest-pose masks grown by a clip-frame poke test; a few skin faces at hems (collar,
   cuffs, waist) stay visible on purpose and can still graze the cloth in extreme frames.
-- Realtime fabric reads lighter grey than in Cycles (no sheen in glTF); the skin has no subsurface scattering.
+- Realtime fabric: the glTF sheen is now exported at its real strength (it went out 17x too strong and greyed every
+  fabric) and the viewer uses Khronos PBR Neutral tone mapping, so cordura reads near-black like the Cycles preview;
+  the realtime fabric is still a touch flatter (no WEAR edge lift, no AgX contrast look). The skin has no subsurface
+  scattering.
 - Same body limits as the prototype: shell hair, crude mouth interior, no facial blend shapes.

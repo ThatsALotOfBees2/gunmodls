@@ -1,6 +1,6 @@
 // Runtime setup for the modular human operator rig (operators/human-rig). Put it on the root of the imported
 // unity/human-rig.glb (glTFast, Animation: Legacy). One skeleton, every module / part / variant is its own skinned mesh
-// node (LOD0/1/2 = *_LOD0, *_LOD1, *_LOD2). Assault 100,724 / 42,778 / 18,648 tris.
+// node (LOD0/1/2 = *_LOD0, *_LOD1, *_LOD2). Assault 100,676 / 42,756 / 18,636 tris.
 // On Awake it:
 //   - builds a LODGroup from the *_LOD0/1/2 renderers (only the renderers of modules that are on are shown)
 //   - applies a loadout preset (Assault by default) with module requires / mutual exclusion, the Body mask chunks
@@ -52,7 +52,7 @@ public class HumanRig : MonoBehaviour
         new Module("rifle_mags", "loadbearing", "", new string[0], new string[] { "carrier" }, new string[0], 5388),
         new Module("pistol_mags", "loadbearing", "", new string[0], new string[] { "belt" }, new string[0], 2528),
         new Module("chest_rig", "loadbearing", "", new string[0], new string[0], new string[] { "carrier", "rifle_mags", "admin_hydration", "radio", "bang_pouches", "sling" }, 8208),
-        new Module("dump", "loadbearing", "", new string[0], new string[] { "belt" }, new string[0], 1420),
+        new Module("dump", "loadbearing", "", new string[0], new string[] { "belt" }, new string[0], 1372),
         new Module("ifak", "loadbearing", "", new string[0], new string[] { "belt" }, new string[0], 2636),
         new Module("radio", "loadbearing", "", new string[0], new string[] { "carrier" }, new string[0], 2256),
         new Module("admin_hydration", "loadbearing", "", new string[0], new string[] { "carrier" }, new string[0], 2348),

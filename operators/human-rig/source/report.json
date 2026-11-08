@@ -465,9 +465,9 @@
  },
  "penetration": {
   "admin_hydration": {
-   "worst": 26,
-   "worst_frame": "Reload:30",
-   "frames_over_20": 1,
+   "worst": 9,
+   "worst_frame": "Reload:20",
+   "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
     "CrouchIdle": 0,
@@ -476,10 +476,10 @@
     "Idle": 0,
     "LookAround": 0,
     "Ready": 0,
-    "Reload": 26,
+    "Reload": 9,
     "Walk": 0
    },
-   "who": "LeftThumbDistal"
+   "who": "LeftMiddleProximal"
   },
   "bang_pouches": {
    "worst": 18,
@@ -489,7 +489,7 @@
    "per_clip_worst": {
     "CrouchIdle": 0,
     "Holster": 0,
-    "HolsterBelt": 17,
+    "HolsterBelt": 2,
     "Idle": 0,
     "LookAround": 5,
     "Ready": 0,
@@ -499,14 +499,14 @@
    "who": "RightUpperArmTwist"
   },
   "belt": {
-   "worst": 36,
+   "worst": 8,
    "worst_frame": "CrouchIdle:1",
-   "frames_over_20": 12,
+   "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
-    "CrouchIdle": 36,
+    "CrouchIdle": 8,
     "Holster": 0,
-    "HolsterBelt": 1,
+    "HolsterBelt": 0,
     "Idle": 0,
     "LookAround": 0,
     "Ready": 0,
@@ -533,18 +533,18 @@
    "who": null
   },
   "carrier": {
-   "worst": 70,
-   "worst_frame": "Reload:50",
-   "frames_over_20": 4,
+   "worst": 17,
+   "worst_frame": "LookAround:131",
+   "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
-    "CrouchIdle": 11,
-    "Holster": 4,
+    "CrouchIdle": 2,
+    "Holster": 5,
     "HolsterBelt": 2,
     "Idle": 1,
     "LookAround": 17,
     "Ready": 0,
-    "Reload": 70,
+    "Reload": 2,
     "Walk": 6
    },
    "who": "LeftUpperArmTwist"
@@ -567,18 +567,18 @@
    "who": null
   },
   "elbowpads": {
-   "worst": 7,
+   "worst": 4,
    "worst_frame": "HolsterBelt:35",
    "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
     "CrouchIdle": 0,
     "Holster": 3,
-    "HolsterBelt": 7,
+    "HolsterBelt": 4,
     "Idle": 0,
     "LookAround": 0,
     "Ready": 0,
-    "Reload": 4,
+    "Reload": 3,
     "Walk": 0
    },
    "who": "RightLowerArm"
@@ -589,7 +589,7 @@
    "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
-    "CrouchIdle": 1,
+    "CrouchIdle": 0,
     "Holster": 2,
     "HolsterBelt": 2,
     "Idle": 1,
@@ -635,13 +635,13 @@
    "who": null
   },
   "holster_drop": {
-   "worst": 34,
+   "worst": 13,
    "worst_frame": "Holster:24",
-   "frames_over_20": 1,
+   "frames_over_20": 0,
    "frames": 84,
    "per_clip_worst": {
-    "CrouchIdle": 3,
-    "Holster": 34,
+    "CrouchIdle": 0,
+    "Holster": 13,
     "HolsterBelt": 0,
     "Idle": 8,
     "LookAround": 8,
@@ -649,7 +649,7 @@
     "Reload": 8,
     "Walk": 12
    },
-   "who": "RightMiddleProximal"
+   "who": "LeftUpperLegTwist"
   },
   "headset": {
    "worst": 0,
@@ -704,7 +704,7 @@
   },
   "knife": {
    "worst": 17,
-   "worst_frame": "CrouchIdle:1",
+   "worst_frame": "CrouchIdle:77",
    "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
@@ -720,21 +720,21 @@
    "who": "LeftUpperLeg"
   },
   "pistol_mags": {
-   "worst": 644,
+   "worst": 0,
    "worst_frame": "CrouchIdle:1",
-   "frames_over_20": 12,
+   "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
-    "CrouchIdle": 644,
+    "CrouchIdle": 0,
     "Holster": 0,
     "HolsterBelt": 0,
     "Idle": 0,
-    "LookAround": 8,
+    "LookAround": 0,
     "Ready": 0,
     "Reload": 0,
     "Walk": 0
    },
-   "who": "LeftUpperLeg"
+   "who": null
   },
   "radio": {
    "worst": 16,
@@ -748,58 +748,58 @@
     "Idle": 4,
     "LookAround": 7,
     "Ready": 0,
-    "Reload": 0,
+    "Reload": 3,
     "Walk": 11
    },
    "who": "LeftShoulder"
   },
   "rifle_mags": {
-   "worst": 68,
-   "worst_frame": "Reload:89",
-   "frames_over_20": 5,
+   "worst": 12,
+   "worst_frame": "Reload:20",
+   "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
-    "CrouchIdle": 6,
+    "CrouchIdle": 4,
     "Holster": 0,
     "HolsterBelt": 0,
     "Idle": 0,
     "LookAround": 5,
     "Ready": 2,
-    "Reload": 68,
+    "Reload": 12,
     "Walk": 0
    },
-   "who": "LeftMiddleDistal"
+   "who": "metacarpal1.L"
   },
   "shirt": {
-   "worst": 17,
-   "worst_frame": "Holster:115",
+   "worst": 16,
+   "worst_frame": "Holster:35",
    "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
     "CrouchIdle": 0,
-    "Holster": 17,
+    "Holster": 16,
     "HolsterBelt": 5,
     "Idle": 5,
     "LookAround": 0,
     "Ready": 0,
-    "Reload": 3,
+    "Reload": 2,
     "Walk": 8
    },
    "who": "UpperChest"
   },
   "sling": {
-   "worst": 11,
-   "worst_frame": "Holster:115",
+   "worst": 12,
+   "worst_frame": "Holster:24",
    "frames_over_20": 0,
    "frames": 96,
    "per_clip_worst": {
     "CrouchIdle": 7,
-    "Holster": 11,
+    "Holster": 12,
     "HolsterBelt": 6,
     "Idle": 6,
     "LookAround": 7,
     "Ready": 6,
-    "Reload": 10,
+    "Reload": 6,
     "Walk": 8
    },
    "who": "LeftShoulder"
@@ -822,14 +822,14 @@
    "who": "Spine"
   },
   "holster_belt": {
-   "worst": 29,
+   "worst": 10,
    "worst_frame": "HolsterBelt:24",
-   "frames_over_20": 1,
+   "frames_over_20": 0,
    "frames": 12,
    "per_clip_worst": {
     "CrouchIdle": 0,
     "Holster": 0,
-    "HolsterBelt": 29,
+    "HolsterBelt": 10,
     "Idle": 0,
     "LookAround": 0,
     "Ready": 0,
@@ -839,13 +839,13 @@
    "who": "RightMiddleProximal"
   },
   "neck_groin": {
-   "worst": 3,
-   "worst_frame": "Holster:101",
+   "worst": 2,
+   "worst_frame": "Walk:27",
    "frames_over_20": 0,
    "frames": 48,
    "per_clip_worst": {
     "CrouchIdle": 0,
-    "Holster": 3,
+    "Holster": 1,
     "HolsterBelt": 1,
     "Idle": 1,
     "LookAround": 0,
@@ -856,18 +856,18 @@
    "who": "LeftShoulder"
   },
   "chest_rig": {
-   "worst": 157,
-   "worst_frame": "Reload:65",
-   "frames_over_20": 7,
+   "worst": 56,
+   "worst_frame": "Reload:44",
+   "frames_over_20": 5,
    "frames": 48,
    "per_clip_worst": {
-    "CrouchIdle": 15,
+    "CrouchIdle": 13,
     "Holster": 21,
     "HolsterBelt": 21,
     "Idle": 5,
     "LookAround": 29,
     "Ready": 19,
-    "Reload": 157,
+    "Reload": 56,
     "Walk": 4
    },
    "who": "LeftUpperArmTwist"
@@ -1066,7 +1066,7 @@
     "DUMP_Hardware",
     "DUMP_Roll"
    ],
-   "tris": 1420,
+   "tris": 1372,
    "materials": [
     "MAT_Polymer",
     "MAT_MetalHW",
@@ -1599,51 +1599,51 @@
   },
   "Light": {
    "LOD0": {
-    "tris": 76355,
+    "tris": 76307,
     "draw_calls": 80,
     "nodes": 31
    },
    "LOD1": {
-    "tris": 31718,
+    "tris": 31696,
     "draw_calls": 74,
     "nodes": 25
    },
    "LOD2": {
-    "tris": 14025,
+    "tris": 14013,
     "draw_calls": 68,
     "nodes": 21
    }
   },
   "Assault": {
    "LOD0": {
-    "tris": 100724,
+    "tris": 100676,
     "draw_calls": 126,
     "nodes": 39
    },
    "LOD1": {
-    "tris": 42778,
+    "tris": 42756,
     "draw_calls": 122,
     "nodes": 35
    },
    "LOD2": {
-    "tris": 18648,
+    "tris": 18636,
     "draw_calls": 109,
     "nodes": 29
    }
   },
   "Full": {
    "LOD0": {
-    "tris": 103152,
+    "tris": 103104,
     "draw_calls": 131,
     "nodes": 41
    },
    "LOD1": {
-    "tris": 43916,
+    "tris": 43894,
     "draw_calls": 127,
     "nodes": 37
    },
    "LOD2": {
-    "tris": 19180,
+    "tris": 19168,
     "draw_calls": 114,
     "nodes": 31
    }
@@ -1750,8 +1750,8 @@
   "chest_rig_LOD1": 139,
   "chest_rig_LOD2": 47,
   "dump": 40,
-  "dump_LOD1": 7,
-  "dump_LOD2": 2,
+  "dump_LOD1": 10,
+  "dump_LOD2": 4,
   "elbowpads": 4,
   "eyewear-goggles_LOD1": 7,
   "helmet": 328,
@@ -1782,7 +1782,7 @@
   "belt_LOD2": 10,
   "boots_LOD2": 26,
   "chest_rig_LOD2": 14,
-  "dump_LOD2": 2,
+  "dump_LOD2": 1,
   "eyewear-goggles_LOD2": 8,
   "headset-headband_LOD2": 4,
   "helmet-cover_LOD2": 2,

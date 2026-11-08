@@ -10,12 +10,14 @@ The asset is assembled from 24 module builds (each its own script, `mods/<id>.bl
 shared base (`base/rig_base.blend`: the human-proto Rig, Body, head parts, mounts and fit proxies). The module contract
 is `DESIGN.md` of the working folder; module scripts, `common.py` and `matlib.py` are under `source/build/` only where
 this integration changed them (`matlib.py`: softer 1.5 mm jersey knit; `mod_headset.py`: smooth boom and downlead;
-`common.py`: headset budget). Working folder of the session that made it:
+`common.py`: headset budget; fixB: `mod_pistol_mags.py` / `mod_dump.py` / `make_base.py` with the moved belt
+mounts, `set_belt_mounts.py` that rewrote them in `base/mounts.json` (copy in `source/base/`): pistol mags +93 / +106.5°,
+dump +131°). Working folder of the session that made it:
 `/tmp/claude-0/-home-user/54ae899d-ab9c-5ac8-991a-a7fa61aa138b/scratchpad/human/rig` (`$R`; the prototype `$H` is its
 parent, with the bpy venv and node_modules).
 
     $H/venv/bin/python $R/build/integrate_rig.py --all        # about 1.5 min; or --stage <name>, --from <name>
-    $R/build/post_export.sh                                   # tangent fix, validator, meshopt pack, viewer.html
+    $R/build/post_export.sh                                   # tangent fix, validator, web pack (pack_web_rig.mjs), viewer.html
     $H/venv/bin/python $R/build/make_unity.py                 # HumanRig.cs module table from the report
     $H/venv/bin/python $R/build/render_deliver.py --hero --sheet
     node $R/build/viewer_check_rig.js deliver/.../viewer.html deliver_checks   # (cwd $H)
@@ -27,7 +29,7 @@ parent, with the bpy venv and node_modules).
 | `fix` | corrective weights, skin poke-through masks (`final/extra_masks.json`), penetration scan per module and clip | `3_fix.blend`, `report.json` |
 | `pack` | Body `hidemask` face attribute, hair-shell helmet chunks, one joined skinned mesh per module / part / variant with glTF extras | `4_pack.blend` |
 | `lods` | LOD1 / LOD2 (collapse decimate, open borders and chunk borders protected), Body decimated once then split per level, tris / draw calls per preset | `final/human_rig.blend` |
-| `export` | realtime materials (WEAR dropped), skinned meshes unparented to the root, degenerate faces removed, JPEG textures, 3 GLBs | `deliver/...`, `final/human-rig_web.glb` |
+| `export` | realtime materials (WEAR dropped; fabric sheen weight baked into the exported sheen colour), skinned meshes unparented to the root, degenerate faces removed, JPEG textures, 3 GLBs (sampled animation, constant channels as 2 keys) | `deliver/...`, `final/human-rig_web.glb` |
 
 `pen_rig.py` is the tuning probe (`--rebuild --clips Ready,Reload`; environment overrides `ANIM_GEAR`, `ANIM_CROUCH`,
 `ANIM_HOLSTER`, `ANIM_HOLSTER_BELT` take JSON to sweep the pose parameters). `render_rig.py` renders any loadout / clip /
@@ -55,7 +57,7 @@ distinct deform bones the module is weighted to.
 | `rifle_mags` | `rifle_mags`, `rifle_mags-reload_mag` | 5,388 | Cordura, Elastic, MetalHW, Polymer, Webbing | 4 | Assault | needs carrier |
 | `pistol_mags` | `pistol_mags` | 2,528 | Kydex, MetalHW, Polymer, Rubber | 4 | Assault | needs belt |
 | `chest_rig` | `chest_rig` | 8,208 | Cordura, Elastic, MetalHW, Polymer, Webbing | 7 | off | excl. carrier, rifle_mags, admin_hydration, radio, bang_pouches, sling |
-| `dump` | `dump` | 1,420 | Cordura, Elastic, MetalHW, Polymer, Webbing | 4 | Assault | needs belt |
+| `dump` | `dump` | 1,372 | Cordura, Elastic, MetalHW, Polymer, Webbing | 4 | Assault | needs belt |
 | `ifak` | `ifak-ifak`, `ifak-tq` | 2,636 | Cordura, Elastic, MetalHW, Polymer, Webbing | 6 | Assault | needs belt |
 | `radio` | `radio` | 2,256 | Cordura, Elastic, MetalHW, Polymer, Rubber, Webbing | 5 | Assault | needs carrier |
 | `admin_hydration` | `admin_hydration-admin`, `admin_hydration-hydration` | 2,348 | Cordura, MetalHW, Polymer, Rubber, Webbing | 5 | Assault | needs carrier |
@@ -149,7 +151,13 @@ poles). The geared versions of the proto clips: relaxed arms abducted (left wris
 hand 70 mm forward, elbows pushed out) to clear the cummerbund pouches and the holster grip; rifle 110 mm forward of the
 front plate bag, support hand further out on the handguard (0.60 m along the bore, 110 mm to the left); LookAround
 turns 22 % from the hips and pushes the rifle forward when looking right; CrouchIdle 220 mm deep (was 300), feet 150 mm
-wider, hip pitch 9°, knees out.
+wider, hip pitch 6° and spine bend 15° (fixB, were 9° / 19°: the belly no longer folds onto the belt front), knees
+out. Reload (fixB): the rifle swings 0.30 inboard (muzzle ~17° to his left) while tilted so the magwell comes to the
+support hand, the mag path bows 50 mm forward round the pouch edge, the hand holds the mag at its baseplate end.
+Holster (fixB): the hand comes in from outside and above, sits high on the still-holstered grip (fingers clear of the
+shell mouth and hood) and only closes fully as the pistol clears; from the belt holster the drawn pistol drifts 60 mm out
+and 30 mm back, under the bang pouches. Tuning hooks: `ANIM_GEAR`, `ANIM_CROUCH`, `ANIM_HOLSTER`, `ANIM_HOLSTER_BELT`,
+`ANIM_MAG_HAND`, `ANIM_PISTOL_HAND` (JSON).
 
 | Clip | Length | Notes |
 | --- | --- | --- |
@@ -160,40 +168,43 @@ wider, hip pitch 9°, knees out.
 | `LookAround` | 6 s | scans 55° left and 50° right, eyes lead |
 | `Holster` | 4.2 s | 0.15-0.70 s reach (shoulder dips 24° to clear the bang pouches), 0.80-1.15 draw 170 mm out along the bore, rock to the hip, 1.45-1.85 present (isosceles, two-handed), hold to 2.65, then compress, reholster, release |
 | `HolsterBelt` | 4.2 s | the same from the belt holster (leans the other way, elbow back) |
-| `Reload` | 3.6 s | from Ready: muzzle up 14°, support hand to the left magazine (0.65 s), pull 140 mm out, to the magwell (1.5 s), seat, strip, back into the pouch (2.85 s), hand back to the handguard |
+| `Reload` | 3.6 s | from Ready: muzzle up 14° and rifle tilted inboard, support hand to the left magazine (0.65 s), pull 140 mm out, to the magwell (1.5 s), seat, strip, back into the pouch (2.85 s), hand back to the handguard |
 
 Penetration after the clip work (module vertices > 1 mm inside the skin, worst of 12 frames per clip; base garments
-only count where the skin they cover would be visible; held props excluded). Target ≤ 20, bold = over.
+only count where the skin they cover would be visible; held props excluded). Target ≤ 20, bold = over. Before fixB: `pistol_mags` 644 and `belt` 36 in CrouchIdle,
+`carrier` 70 / `rifle_mags` 68 / `admin_hydration` 26 in Reload, `holster_drop` 34 / `holster_belt` 29, `chest_rig` 157
+in Reload. A 36-frame resample of every clip keeps all Assault modules at or under 20 as well (holsters 13 / 11,
+rifle mags 12).
 
 | Module | Idle | Ready | Walk | CrouchIdle | LookAround | Holster | HolsterBelt | Reload |
 |---|---|---|---|---|---|---|---|---|
-| `shirt` | 5 | 0 | 8 | 0 | 0 | 17 | 5 | 3 |
+| `shirt` | 5 | 0 | 8 | 0 | 0 | 16 | 5 | 2 |
 | `trousers` | 0 | 0 | 4 | 0 | 0 | 5 | 0 | 0 |
 | `boots` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `gloves` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `kneepads` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `elbowpads` | 0 | 0 | 0 | 0 | 0 | 3 | 7 | 4 |
-| `carrier` | 1 | 0 | 6 | 11 | 17 | 4 | 2 | **70** |
+| `elbowpads` | 0 | 0 | 0 | 0 | 0 | 3 | 4 | 3 |
+| `carrier` | 1 | 0 | 6 | 2 | 17 | 5 | 2 | 2 |
 | `helmet` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `neck_groin` | 1 | 0 | 2 | 0 | 0 | 3 | 1 | 0 |
-| `belt` | 0 | 0 | 0 | **36** | 0 | 0 | 1 | 0 |
-| `rifle_mags` | 0 | 2 | 0 | 6 | 5 | 0 | 0 | **68** |
-| `pistol_mags` | 0 | 0 | 0 | **644** | 8 | 0 | 0 | 0 |
-| `chest_rig` | 5 | 19 | 4 | 15 | **29** | **21** | **21** | **157** |
+| `neck_groin` | 1 | 0 | 2 | 0 | 0 | 1 | 1 | 0 |
+| `belt` | 0 | 0 | 0 | 8 | 0 | 0 | 0 | 0 |
+| `rifle_mags` | 0 | 2 | 0 | 4 | 5 | 0 | 0 | 12 |
+| `pistol_mags` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `chest_rig` | 5 | 19 | 4 | 13 | **29** | **21** | **21** | **56** |
 | `dump` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `ifak` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `radio` | 4 | 0 | 11 | 0 | 7 | 16 | 2 | 0 |
-| `admin_hydration` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | **26** |
-| `holster_drop` | 8 | 8 | 12 | 3 | 8 | **34** | 0 | 8 |
-| `holster_belt` | 0 | 0 | 0 | 0 | 0 | 0 | **29** | 0 |
-| `sling` | 6 | 6 | 8 | 7 | 7 | 11 | 6 | 10 |
+| `radio` | 4 | 0 | 11 | 0 | 7 | 16 | 2 | 3 |
+| `admin_hydration` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 9 |
+| `holster_drop` | 8 | 8 | 12 | 0 | 8 | 13 | 0 | 8 |
+| `holster_belt` | 0 | 0 | 0 | 0 | 0 | 0 | 10 | 0 |
+| `sling` | 6 | 6 | 8 | 7 | 7 | 12 | 6 | 6 |
 | `headset` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `eyewear` | 1 | 1 | 1 | 1 | 2 | 2 | 2 | 1 |
-| `bang_pouches` | 0 | 0 | 18 | 0 | 5 | 0 | 17 | 0 |
+| `eyewear` | 1 | 1 | 1 | 0 | 2 | 2 | 2 | 1 |
+| `bang_pouches` | 0 | 0 | 18 | 0 | 5 | 0 | 2 | 0 |
 | `knife` | 0 | 0 | 0 | 17 | 5 | 0 | 0 | 0 |
 
 Corrective weights: belt sleeve / webbing / holster hanger lowest row ramps up to 40 % onto the thigh at the front
-sides; knife and multitool 30 % onto `LeftUpperLeg`. (Pistol mags were tried at 15-45 % thigh or hips: no gain.)
+sides; knife and multitool 30 % onto `LeftUpperLeg`. Pistol mags need none since they moved to the hip.
 
 ## 6. LODs
 
@@ -222,7 +233,9 @@ downlead; hair shells 1, 3, 5 at LOD1 and 1, 4 at LOD2.
 ## 8. Viewer contract
 
 `viewer.html` exposes `window.__model = { id: 'human-rig', ready, exportScenes(), exportGLB(), debug }`.
-`exportGLB()` returns `[{file: 'human-rig-web.glb', base64, bytes}]` (the embedded meshopt GLB); `exportScenes()` lists
+`exportGLB()` returns `[{file: 'human-rig-web.glb', base64, bytes}]` (the embedded web GLB, 9.8 MB: meshopt level high, no TANGENT, WebP textures with
+normal maps / skin / hair / webbing trim at 1K and the other gear albedo / ORM at 512, redundant animation keys removed;
+`pack_web_rig.mjs`); Khronos PBR Neutral tone mapping; `exportScenes()` lists
 the LOD0 nodes each preset shows. `debug`: `set(clip, t)`, `play(clip)`, `clips()`, `preset(name)`, `toggle(id, on)`,
 `loadout()`, `visible()`, `modules()`, `presets()`, `lod(0|1|2|'auto')`, `lights(name)`, `spin(on)`,
 `goView('full'|'face'|'armour'|'back'|'hips')`, `stop()`, `renderOnce()`, `stats()`, `tick(dt)` plus three objects.

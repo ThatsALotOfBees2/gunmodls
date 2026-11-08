@@ -656,6 +656,14 @@ def realtime_materials():
         if mx: L.new(mx.outputs[2], bs.inputs['Base Color'])
         if sp:
             L.new(sp.outputs['Green'], bs.inputs['Roughness'])
+        # fixB: the glTF exporter writes Sheen Tint as sheenColorFactor and ignores Sheen Weight, so the fabrics'
+        # faint 0.06 x 0.08 fuzz went out as a 0.08 grey sheen layer (5x the 0.015 cordura albedo): realtime
+        # fabric read mid-grey. Bake the weight into the tint (the glTF sheen colour is already weight x tint).
+        w = bs.inputs['Sheen Weight'].default_value
+        if 0 < w < 1:
+            t = bs.inputs['Sheen Tint'].default_value
+            bs.inputs['Sheen Tint'].default_value = (t[0] * w, t[1] * w, t[2] * w, 1.0)
+            bs.inputs['Sheen Weight'].default_value = 1.0
         for n in list(N):
             if n.type == 'ATTRIBUTE': N.remove(n)
     for o in bpy.data.objects:
@@ -708,7 +716,10 @@ def export_glb(path, meshes, extra_objs=()):
     bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_yup=True,
                               export_skins=True, export_apply=False, export_animations=True,
                               export_animation_mode='NLA_TRACKS', export_force_sampling=True,
-                              export_optimize_animation_size=False, export_anim_single_armature=True,
+                              # fixB: constant channels collapse to 2 keys (every bone keeps a track in every clip, so
+                              # Unity Legacy / three.js never inherit a pose from the previous clip); was all samples
+                              export_optimize_animation_size=True, export_optimize_animation_keep_anim_armature=True,
+                              export_anim_single_armature=True,
                               export_reset_pose_bones=True, export_def_bones=False, export_extras=True,
                               export_morph=False, export_all_influences=False, export_tangents=True,
                               export_image_format='AUTO', export_vertex_color='MATERIAL')
