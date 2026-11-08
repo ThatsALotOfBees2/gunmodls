@@ -1,0 +1,1799 @@
+{
+ "modules": {
+  "shirt": [
+   "SHRT_Shirt",
+   "SHRT_Pockets",
+   "SHRT_ZipPull"
+  ],
+  "trousers": [
+   "TROU_Trousers",
+   "TROU_Panels"
+  ],
+  "boots": [
+   "BOOT_Upper",
+   "BOOT_Sole",
+   "BOOT_Laces"
+  ],
+  "gloves": [
+   "GLOV_Glove",
+   "GLOV_Knuckles",
+   "GLOV_Cuff"
+  ],
+  "kneepads": [
+   "KNEE_Pad",
+   "KNEE_Cap",
+   "KNEE_Straps"
+  ],
+  "elbowpads": [
+   "ELBW_Pad",
+   "ELBW_Cap",
+   "ELBW_Straps"
+  ],
+  "carrier": [
+   "CARR_FrontBag",
+   "CARR_BackBag",
+   "CARR_DragHandle",
+   "CARR_Cummerbund",
+   "CARR_Straps",
+   "CARR_LED"
+  ],
+  "helmet": [
+   "HELM_Shell",
+   "HELM_Liner",
+   "HELM_Hardware",
+   "HELM_Retention",
+   "HELM_LoopBare",
+   "HELM_Cover",
+   "HELM_CoverCord"
+  ],
+  "neck_groin": [
+   "NKGR_Collar",
+   "NKGR_Groin"
+  ],
+  "belt": [
+   "BELT_Sleeve",
+   "BELT_Webbing",
+   "BELT_Buckle"
+  ],
+  "rifle_mags": [
+   "RMAG_Pouch",
+   "RMAG_PullTabs",
+   "RMAG_Mags",
+   "RMAG_ReloadMag"
+  ],
+  "pistol_mags": [
+   "PMAG_Carriers",
+   "PMAG_Clips",
+   "PMAG_Mags"
+  ],
+  "chest_rig": [
+   "CRIG_Placard",
+   "CRIG_PullTabs",
+   "CRIG_Mags",
+   "CRIG_Admin",
+   "CRIG_AdminPulls",
+   "CRIG_Harness"
+  ],
+  "dump": [
+   "DUMP_Roll",
+   "DUMP_Hardware"
+  ],
+  "ifak": [
+   "IFAK_Pouch",
+   "IFAK_Pulls",
+   "IFAK_TQHolder",
+   "IFAK_Tourniquet"
+  ],
+  "radio": [
+   "RADI_Pouch",
+   "RADI_Radio",
+   "RADI_Antenna",
+   "RADI_Cable",
+   "RADI_PTT"
+  ],
+  "admin_hydration": [
+   "ADMN_Admin",
+   "ADMN_AdminPulls",
+   "ADMN_Hydration",
+   "ADMN_HydWebbing",
+   "ADMN_Tube",
+   "ADMN_HydrationHW"
+  ],
+  "holster_drop": [
+   "HOLD_Shell",
+   "HOLD_Pistol",
+   "HOLD_Platform",
+   "HOLD_Hanger",
+   "HOLD_LegStraps"
+  ],
+  "holster_belt": [
+   "HOLB_Shell",
+   "HOLB_Pistol",
+   "HOLB_Adapter"
+  ],
+  "sling": [
+   "SLNG_Webbing",
+   "SLNG_Hardware"
+  ],
+  "headset": [
+   "HSET_Cups",
+   "HSET_Headband",
+   "HSET_Rails",
+   "HSET_Downlead"
+  ],
+  "eyewear": [
+   "EYEW_Glasses",
+   "EYEW_Goggles",
+   "EYEW_GoggleStrap"
+  ],
+  "bang_pouches": [
+   "BANG_Pouches",
+   "BANG_Bangs"
+  ],
+  "knife": [
+   "KNIF_Sheath",
+   "KNIF_Knife",
+   "KNIF_ToolPouch"
+  ]
+ },
+ "ground_offset_m": 0.025,
+ "props": {
+  "PropPistolDrop": {
+   "mesh": "HOLD_Pistol",
+   "follow": {
+    "RightUpperLegTwist": 0.7713210467797362,
+    "RightUpperLeg": 0.22867895322026383
+   },
+   "parent": "RightUpperLegTwist",
+   "rest_head": [
+    -0.2759777307510376,
+    -0.03146922215819359,
+    0.8035830855369568
+   ],
+   "axis": [
+    -0.11795114725828171,
+    -0.4738578200340271,
+    -0.8726661801338196
+   ]
+  },
+  "PropPistolBelt": {
+   "mesh": "HOLB_Pistol",
+   "follow": {
+    "pelvis.R": 0.30221461799420984,
+    "RightUpperLeg": 0.29821559342420706,
+    "spine04": 0.2161542890048878,
+    "Spine": 0.18341549957669526
+   },
+   "parent": "Hips",
+   "rest_head": [
+    -0.23366369307041168,
+    0.007388133089989424,
+    1.0328471660614014
+   ],
+   "axis": [
+    -0.025776978582143784,
+    -0.293035089969635,
+    -0.9557541608810425
+   ]
+  },
+  "PropMag": {
+   "mesh": "RMAG_ReloadMag",
+   "follow": {
+    "spine02": 0.46920000292062736,
+    "Chest": 0.20660000682473123,
+    "UpperChest": 0.17919999248981544,
+    "spine04": 0.14499999776482603
+   },
+   "parent": "spine02",
+   "rest_head": [
+    0.07984910160303116,
+    -0.2016104906797409,
+    1.2632588148117065
+   ],
+   "axis": [
+    -0.02175067365169525,
+    0.12732896208763123,
+    -0.9916220307350159
+   ]
+  }
+ },
+ "sockets": {
+  "SOCKET_RightHandGrip": {
+   "bone": "RightHand",
+   "pos": [
+    -0.5421,
+    -0.2625,
+    1.1269
+   ]
+  },
+  "SOCKET_PistolHolster": {
+   "bone": "RightUpperLegTwist",
+   "pos": [
+    -0.276,
+    -0.0315,
+    0.8036
+   ]
+  },
+  "SOCKET_PistolBelt": {
+   "bone": "Hips",
+   "pos": [
+    -0.2337,
+    0.0074,
+    1.0328
+   ]
+  },
+  "SOCKET_RifleSling": {
+   "bone": "spine04",
+   "pos": [
+    -0.0841,
+    -0.1476,
+    1.0425
+   ]
+  }
+ },
+ "mounts": {
+  "MNT_admin": [
+   -0.0,
+   -0.2031,
+   1.4218
+  ],
+  "MNT_belt_buckle": [
+   0.0,
+   -0.1679,
+   1.0675
+  ],
+  "MNT_belt_dump": [
+   0.1616,
+   0.0584,
+   1.0675
+  ],
+  "MNT_belt_holster": [
+   -0.1873,
+   -0.0112,
+   1.0675
+  ],
+  "MNT_belt_ifak": [
+   0.0,
+   0.119,
+   1.0675
+  ],
+  "MNT_belt_knife": [
+   0.1906,
+   -0.0681,
+   1.0675
+  ],
+  "MNT_belt_pmag1": [
+   0.0999,
+   -0.1466,
+   1.0675
+  ],
+  "MNT_belt_pmag2": [
+   0.154,
+   -0.1238,
+   1.0675
+  ],
+  "MNT_belt_tq": [
+   -0.0951,
+   0.1135,
+   1.0675
+  ],
+  "MNT_car_back": [
+   0.0,
+   0.1438,
+   1.3589
+  ],
+  "MNT_car_front": [
+   -0.0,
+   -0.2001,
+   1.3369
+  ],
+  "MNT_car_shoulder_L": [
+   0.1,
+   0.0,
+   1.607
+  ],
+  "MNT_car_shoulder_R": [
+   -0.1,
+   0.0,
+   1.607
+  ],
+  "MNT_cumb_bang1": [
+   -0.1879,
+   -0.0653,
+   1.2549
+  ],
+  "MNT_cumb_bang2": [
+   -0.2061,
+   0.0116,
+   1.2549
+  ],
+  "MNT_cumb_radio": [
+   0.2087,
+   0.0046,
+   1.2549
+  ],
+  "MNT_drag": [
+   0.0,
+   0.1501,
+   1.5407
+  ],
+  "MNT_ear_L": [
+   0.0758,
+   -0.0498,
+   1.7183
+  ],
+  "MNT_ear_R": [
+   -0.0758,
+   -0.0498,
+   1.7183
+  ],
+  "MNT_elbow_L": [
+   0.4015,
+   0.0218,
+   1.2832
+  ],
+  "MNT_elbow_R": [
+   -0.4015,
+   0.0218,
+   1.2832
+  ],
+  "MNT_eyes": [
+   0.0,
+   -0.1317,
+   1.7347
+  ],
+  "MNT_helm_crown": [
+   0.0,
+   -0.05,
+   1.8793
+  ],
+  "MNT_helm_rail_L": [
+   0.1,
+   -0.0413,
+   1.796
+  ],
+  "MNT_helm_rail_R": [
+   -0.1,
+   -0.0413,
+   1.796
+  ],
+  "MNT_helm_shroud": [
+   0.0,
+   -0.1699,
+   1.818
+  ],
+  "MNT_hydration": [
+   0.0,
+   0.1436,
+   1.3539
+  ],
+  "MNT_knee_L": [
+   0.1514,
+   -0.1035,
+   0.5997
+  ],
+  "MNT_knee_R": [
+   -0.1514,
+   -0.1034,
+   0.5997
+  ],
+  "MNT_ptt": [
+   0.095,
+   -0.0619,
+   1.5589
+  ],
+  "MNT_rifle_mags": [
+   0.0,
+   -0.1965,
+   1.232
+  ],
+  "MNT_sling_front": [
+   0.097,
+   -0.1923,
+   1.4552
+  ],
+  "MNT_thigh_R": [
+   -0.2324,
+   -0.0445,
+   0.825
+  ]
+ },
+ "clips": {
+  "Idle": {
+   "frames": 121,
+   "seconds": 4.0,
+   "loop": true
+  },
+  "Ready": {
+   "frames": 91,
+   "seconds": 3.0,
+   "loop": true
+  },
+  "Walk": {
+   "frames": 34,
+   "seconds": 1.1,
+   "loop": true
+  },
+  "CrouchIdle": {
+   "frames": 121,
+   "seconds": 4.0,
+   "loop": true
+  },
+  "LookAround": {
+   "frames": 181,
+   "seconds": 6.0,
+   "loop": true
+  },
+  "Holster": {
+   "frames": 127,
+   "seconds": 4.2,
+   "loop": true
+  },
+  "HolsterBelt": {
+   "frames": 127,
+   "seconds": 4.2,
+   "loop": true
+  },
+  "Reload": {
+   "frames": 109,
+   "seconds": 3.6,
+   "loop": true
+  }
+ },
+ "corrective_weights": {
+  "KNIF_Sheath": [
+   "LeftUpperLeg",
+   0.3
+  ],
+  "KNIF_Knife": [
+   "LeftUpperLeg",
+   0.3
+  ],
+  "KNIF_ToolPouch": [
+   "LeftUpperLeg",
+   0.3
+  ],
+  "BELT_Sleeve": "lower-row thigh ramp <= 0.40",
+  "BELT_Webbing": "lower-row thigh ramp <= 0.40",
+  "HOLD_Hanger": "lower-row thigh ramp <= 0.40"
+ },
+ "extra_masks": {
+  "shirt": 89,
+  "trousers": 7,
+  "gloves": 0,
+  "boots": 1
+ },
+ "penetration": {
+  "admin_hydration": {
+   "worst": 26,
+   "worst_frame": "Reload:30",
+   "frames_over_20": 1,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 26,
+    "Walk": 0
+   },
+   "who": "LeftThumbDistal"
+  },
+  "bang_pouches": {
+   "worst": 18,
+   "worst_frame": "Walk:16",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 17,
+    "Idle": 0,
+    "LookAround": 5,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 18
+   },
+   "who": "RightUpperArmTwist"
+  },
+  "belt": {
+   "worst": 36,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 12,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 36,
+    "Holster": 0,
+    "HolsterBelt": 1,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": "spine04"
+  },
+  "boots": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "carrier": {
+   "worst": 70,
+   "worst_frame": "Reload:50",
+   "frames_over_20": 4,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 11,
+    "Holster": 4,
+    "HolsterBelt": 2,
+    "Idle": 1,
+    "LookAround": 17,
+    "Ready": 0,
+    "Reload": 70,
+    "Walk": 6
+   },
+   "who": "LeftUpperArmTwist"
+  },
+  "dump": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "elbowpads": {
+   "worst": 7,
+   "worst_frame": "HolsterBelt:35",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 3,
+    "HolsterBelt": 7,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 4,
+    "Walk": 0
+   },
+   "who": "RightLowerArm"
+  },
+  "eyewear": {
+   "worst": 2,
+   "worst_frame": "Holster:58",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 1,
+    "Holster": 2,
+    "HolsterBelt": 2,
+    "Idle": 1,
+    "LookAround": 2,
+    "Ready": 1,
+    "Reload": 1,
+    "Walk": 1
+   },
+   "who": "Head"
+  },
+  "gloves": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "helmet": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "holster_drop": {
+   "worst": 34,
+   "worst_frame": "Holster:24",
+   "frames_over_20": 1,
+   "frames": 84,
+   "per_clip_worst": {
+    "CrouchIdle": 3,
+    "Holster": 34,
+    "HolsterBelt": 0,
+    "Idle": 8,
+    "LookAround": 8,
+    "Ready": 8,
+    "Reload": 8,
+    "Walk": 12
+   },
+   "who": "RightMiddleProximal"
+  },
+  "headset": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "ifak": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "kneepads": {
+   "worst": 0,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": null
+  },
+  "knife": {
+   "worst": 17,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 17,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 5,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": "LeftUpperLeg"
+  },
+  "pistol_mags": {
+   "worst": 644,
+   "worst_frame": "CrouchIdle:1",
+   "frames_over_20": 12,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 644,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 8,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": "LeftUpperLeg"
+  },
+  "radio": {
+   "worst": 16,
+   "worst_frame": "Holster:35",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 16,
+    "HolsterBelt": 2,
+    "Idle": 4,
+    "LookAround": 7,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 11
+   },
+   "who": "LeftShoulder"
+  },
+  "rifle_mags": {
+   "worst": 68,
+   "worst_frame": "Reload:89",
+   "frames_over_20": 5,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 6,
+    "Holster": 0,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 5,
+    "Ready": 2,
+    "Reload": 68,
+    "Walk": 0
+   },
+   "who": "LeftMiddleDistal"
+  },
+  "shirt": {
+   "worst": 17,
+   "worst_frame": "Holster:115",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 17,
+    "HolsterBelt": 5,
+    "Idle": 5,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 3,
+    "Walk": 8
+   },
+   "who": "UpperChest"
+  },
+  "sling": {
+   "worst": 11,
+   "worst_frame": "Holster:115",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 7,
+    "Holster": 11,
+    "HolsterBelt": 6,
+    "Idle": 6,
+    "LookAround": 7,
+    "Ready": 6,
+    "Reload": 10,
+    "Walk": 8
+   },
+   "who": "LeftShoulder"
+  },
+  "trousers": {
+   "worst": 5,
+   "worst_frame": "Holster:35",
+   "frames_over_20": 0,
+   "frames": 96,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 5,
+    "HolsterBelt": 0,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 4
+   },
+   "who": "Spine"
+  },
+  "holster_belt": {
+   "worst": 29,
+   "worst_frame": "HolsterBelt:24",
+   "frames_over_20": 1,
+   "frames": 12,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 0,
+    "HolsterBelt": 29,
+    "Idle": 0,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 0
+   },
+   "who": "RightMiddleProximal"
+  },
+  "neck_groin": {
+   "worst": 3,
+   "worst_frame": "Holster:101",
+   "frames_over_20": 0,
+   "frames": 48,
+   "per_clip_worst": {
+    "CrouchIdle": 0,
+    "Holster": 3,
+    "HolsterBelt": 1,
+    "Idle": 1,
+    "LookAround": 0,
+    "Ready": 0,
+    "Reload": 0,
+    "Walk": 2
+   },
+   "who": "LeftShoulder"
+  },
+  "chest_rig": {
+   "worst": 157,
+   "worst_frame": "Reload:65",
+   "frames_over_20": 7,
+   "frames": 48,
+   "per_clip_worst": {
+    "CrouchIdle": 15,
+    "Holster": 21,
+    "HolsterBelt": 21,
+    "Idle": 5,
+    "LookAround": 29,
+    "Ready": 19,
+    "Reload": 157,
+    "Walk": 4
+   },
+   "who": "LeftUpperArmTwist"
+  }
+ },
+ "body_chunks": {
+  "Body": {
+   "hidden_by": [],
+   "faces": 4476
+  },
+  "Body__shirt": {
+   "hidden_by": [
+    "shirt"
+   ],
+   "faces": 2402
+  },
+  "Body__trousers": {
+   "hidden_by": [
+    "trousers"
+   ],
+   "faces": 1094
+  },
+  "Body__shirt__trousers": {
+   "hidden_by": [
+    "shirt",
+    "trousers"
+   ],
+   "faces": 4
+  },
+  "Body__gloves": {
+   "hidden_by": [
+    "gloves"
+   ],
+   "faces": 3300
+  },
+  "Body__boots": {
+   "hidden_by": [
+    "boots"
+   ],
+   "faces": 2101
+  },
+  "Body__trousers__boots": {
+   "hidden_by": [
+    "trousers",
+    "boots"
+   ],
+   "faces": 1
+  }
+ },
+ "nodes": {
+  "admin_hydration-admin": {
+   "module": "admin_hydration",
+   "part": "admin",
+   "variant": null,
+   "meshes": [
+    "ADMN_Admin",
+    "ADMN_AdminPulls"
+   ],
+   "tris": 640,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_MetalHW",
+    "MAT_Polymer"
+   ]
+  },
+  "admin_hydration-hydration": {
+   "module": "admin_hydration",
+   "part": "hydration",
+   "variant": null,
+   "meshes": [
+    "ADMN_HydWebbing",
+    "ADMN_Hydration",
+    "ADMN_HydrationHW",
+    "ADMN_Tube"
+   ],
+   "tris": 1708,
+   "materials": [
+    "MAT_Webbing",
+    "MAT_Cordura",
+    "MAT_Rubber",
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "bang_pouches": {
+   "module": "bang_pouches",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "BANG_Bangs",
+    "BANG_Pouches"
+   ],
+   "tris": 1840,
+   "materials": [
+    "MAT_MetalHW",
+    "MAT_Polymer",
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Velcro"
+   ]
+  },
+  "belt": {
+   "module": "belt",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "BELT_Buckle",
+    "BELT_Sleeve",
+    "BELT_Webbing"
+   ],
+   "tris": 3896,
+   "materials": [
+    "MAT_MetalHW",
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Elastic"
+   ]
+  },
+  "boots": {
+   "module": "boots",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "BOOT_Laces",
+    "BOOT_Sole",
+    "BOOT_Upper"
+   ],
+   "tris": 6782,
+   "materials": [
+    "MAT_Elastic",
+    "MAT_MetalHW",
+    "MAT_Cordura",
+    "MAT_Leather",
+    "MAT_Webbing",
+    "MAT_Rubber"
+   ]
+  },
+  "carrier-led": {
+   "module": "carrier",
+   "part": "led",
+   "variant": null,
+   "meshes": [
+    "CARR_LED"
+   ],
+   "tris": 24,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_LED"
+   ]
+  },
+  "carrier": {
+   "module": "carrier",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "CARR_BackBag",
+    "CARR_Cummerbund",
+    "CARR_DragHandle",
+    "CARR_FrontBag",
+    "CARR_Straps"
+   ],
+   "tris": 12240,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Polymer"
+   ]
+  },
+  "chest_rig": {
+   "module": "chest_rig",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "CRIG_Admin",
+    "CRIG_AdminPulls",
+    "CRIG_Harness",
+    "CRIG_Mags",
+    "CRIG_Placard",
+    "CRIG_PullTabs"
+   ],
+   "tris": 8208,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Elastic",
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "dump": {
+   "module": "dump",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "DUMP_Hardware",
+    "DUMP_Roll"
+   ],
+   "tris": 1420,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW",
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Elastic"
+   ]
+  },
+  "elbowpads": {
+   "module": "elbowpads",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "ELBW_Cap",
+    "ELBW_Pad",
+    "ELBW_Straps"
+   ],
+   "tris": 1560,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_Rubber",
+    "MAT_Cordura",
+    "MAT_Webbing"
+   ]
+  },
+  "eyewear-glasses": {
+   "module": "eyewear",
+   "part": "main",
+   "variant": "glasses",
+   "meshes": [
+    "EYEW_Glasses"
+   ],
+   "tris": 752,
+   "materials": [
+    "MAT_Lens",
+    "MAT_Polymer",
+    "MAT_Rubber"
+   ]
+  },
+  "eyewear-goggles": {
+   "module": "eyewear",
+   "part": "main",
+   "variant": "goggles",
+   "meshes": [
+    "EYEW_GoggleStrap",
+    "EYEW_Goggles"
+   ],
+   "tris": 534,
+   "materials": [
+    "MAT_Webbing",
+    "MAT_Polymer",
+    "MAT_Lens",
+    "MAT_Rubber"
+   ]
+  },
+  "gloves": {
+   "module": "gloves",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "GLOV_Cuff",
+    "GLOV_Glove",
+    "GLOV_Knuckles"
+   ],
+   "tris": 4629,
+   "materials": [
+    "MAT_Elastic",
+    "MAT_Rubber",
+    "MAT_Webbing",
+    "MAT_Leather",
+    "MAT_Jersey"
+   ]
+  },
+  "headset-downlead": {
+   "module": "headset",
+   "part": "downlead",
+   "variant": null,
+   "meshes": [
+    "HSET_Downlead"
+   ],
+   "tris": 456,
+   "materials": [
+    "MAT_Rubber",
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "headset-headband": {
+   "module": "headset",
+   "part": "headband",
+   "variant": null,
+   "meshes": [
+    "HSET_Headband"
+   ],
+   "tris": 332,
+   "materials": [
+    "MAT_Rubber",
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "headset": {
+   "module": "headset",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "HSET_Cups"
+   ],
+   "tris": 1900,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_Rubber",
+    "MAT_MetalHW"
+   ]
+  },
+  "headset-rails": {
+   "module": "headset",
+   "part": "rails",
+   "variant": null,
+   "meshes": [
+    "HSET_Rails"
+   ],
+   "tris": 336,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "helmet-bare": {
+   "module": "helmet",
+   "part": "main",
+   "variant": "bare",
+   "meshes": [
+    "HELM_LoopBare",
+    "HELM_Shell"
+   ],
+   "tris": 1774,
+   "materials": [
+    "MAT_Velcro",
+    "MAT_ShellPaint",
+    "MAT_Rubber"
+   ]
+  },
+  "helmet-cover": {
+   "module": "helmet",
+   "part": "main",
+   "variant": "cover",
+   "meshes": [
+    "HELM_Cover",
+    "HELM_CoverCord"
+   ],
+   "tris": 2054,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Velcro",
+    "MAT_Webbing",
+    "MAT_Elastic",
+    "MAT_Polymer"
+   ]
+  },
+  "helmet": {
+   "module": "helmet",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "HELM_Hardware",
+    "HELM_Liner",
+    "HELM_Retention"
+   ],
+   "tris": 3509,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW",
+    "MAT_ShellPaint",
+    "MAT_Jersey",
+    "MAT_Webbing",
+    "MAT_Elastic"
+   ]
+  },
+  "holster_belt": {
+   "module": "holster_belt",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "HOLB_Adapter",
+    "HOLB_Shell"
+   ],
+   "tris": 1698,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW",
+    "MAT_Kydex"
+   ]
+  },
+  "holster_belt-pistol": {
+   "module": "holster_belt",
+   "part": "pistol",
+   "variant": null,
+   "meshes": [
+    "HOLB_Pistol"
+   ],
+   "tris": 912,
+   "materials": [
+    "MAT_MetalHW",
+    "MAT_Polymer"
+   ]
+  },
+  "holster_drop": {
+   "module": "holster_drop",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "HOLD_Hanger",
+    "HOLD_LegStraps",
+    "HOLD_Platform",
+    "HOLD_Shell"
+   ],
+   "tris": 2894,
+   "materials": [
+    "MAT_Webbing",
+    "MAT_MetalHW",
+    "MAT_Kydex",
+    "MAT_Polymer",
+    "MAT_Cordura"
+   ]
+  },
+  "holster_drop-pistol": {
+   "module": "holster_drop",
+   "part": "pistol",
+   "variant": null,
+   "meshes": [
+    "HOLD_Pistol"
+   ],
+   "tris": 912,
+   "materials": [
+    "MAT_MetalHW",
+    "MAT_Polymer"
+   ]
+  },
+  "ifak-ifak": {
+   "module": "ifak",
+   "part": "ifak",
+   "variant": null,
+   "meshes": [
+    "IFAK_Pouch",
+    "IFAK_Pulls"
+   ],
+   "tris": 1596,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Elastic",
+    "MAT_MetalHW",
+    "MAT_Polymer"
+   ]
+  },
+  "ifak-tq": {
+   "module": "ifak",
+   "part": "tq",
+   "variant": null,
+   "meshes": [
+    "IFAK_TQHolder",
+    "IFAK_Tourniquet"
+   ],
+   "tris": 1040,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "kneepads": {
+   "module": "kneepads",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "KNEE_Cap",
+    "KNEE_Pad",
+    "KNEE_Straps"
+   ],
+   "tris": 2048,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_Rubber",
+    "MAT_Cordura",
+    "MAT_Webbing"
+   ]
+  },
+  "knife-knife": {
+   "module": "knife",
+   "part": "main",
+   "variant": "knife",
+   "meshes": [
+    "KNIF_Knife",
+    "KNIF_Sheath"
+   ],
+   "tris": 772,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW",
+    "MAT_Kydex"
+   ]
+  },
+  "knife-multitool": {
+   "module": "knife",
+   "part": "main",
+   "variant": "multitool",
+   "meshes": [
+    "KNIF_ToolPouch"
+   ],
+   "tris": 344,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Velcro"
+   ]
+  },
+  "neck_groin-groin": {
+   "module": "neck_groin",
+   "part": "groin",
+   "variant": null,
+   "meshes": [
+    "NKGR_Groin"
+   ],
+   "tris": 1204,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_MetalHW"
+   ]
+  },
+  "neck_groin-neck": {
+   "module": "neck_groin",
+   "part": "neck",
+   "variant": null,
+   "meshes": [
+    "NKGR_Collar"
+   ],
+   "tris": 1224,
+   "materials": [
+    "MAT_Cordura",
+    "MAT_Webbing"
+   ]
+  },
+  "pistol_mags": {
+   "module": "pistol_mags",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "PMAG_Carriers",
+    "PMAG_Clips",
+    "PMAG_Mags"
+   ],
+   "tris": 2528,
+   "materials": [
+    "MAT_Kydex",
+    "MAT_MetalHW",
+    "MAT_Polymer",
+    "MAT_Rubber"
+   ]
+  },
+  "radio": {
+   "module": "radio",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "RADI_Antenna",
+    "RADI_Cable",
+    "RADI_PTT",
+    "RADI_Pouch",
+    "RADI_Radio"
+   ],
+   "tris": 2256,
+   "materials": [
+    "MAT_Rubber",
+    "MAT_MetalHW",
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Elastic",
+    "MAT_Polymer"
+   ]
+  },
+  "rifle_mags": {
+   "module": "rifle_mags",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "RMAG_Mags",
+    "RMAG_Pouch",
+    "RMAG_PullTabs"
+   ],
+   "tris": 4616,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW",
+    "MAT_Cordura",
+    "MAT_Webbing",
+    "MAT_Elastic"
+   ]
+  },
+  "rifle_mags-reload_mag": {
+   "module": "rifle_mags",
+   "part": "reload_mag",
+   "variant": null,
+   "meshes": [
+    "RMAG_ReloadMag"
+   ],
+   "tris": 772,
+   "materials": [
+    "MAT_Polymer",
+    "MAT_MetalHW"
+   ]
+  },
+  "shirt": {
+   "module": "shirt",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "SHRT_Pockets",
+    "SHRT_Shirt",
+    "SHRT_ZipPull"
+   ],
+   "tris": 8080,
+   "materials": [
+    "MAT_Ripstop",
+    "MAT_Webbing",
+    "MAT_Jersey",
+    "MAT_MetalHW"
+   ]
+  },
+  "sling": {
+   "module": "sling",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "SLNG_Hardware",
+    "SLNG_Webbing"
+   ],
+   "tris": 1286,
+   "materials": [
+    "MAT_MetalHW",
+    "MAT_Polymer",
+    "MAT_Webbing",
+    "MAT_Cordura"
+   ]
+  },
+  "trousers": {
+   "module": "trousers",
+   "part": "main",
+   "variant": null,
+   "meshes": [
+    "TROU_Panels",
+    "TROU_Trousers"
+   ],
+   "tris": 6406,
+   "materials": [
+    "MAT_Ripstop",
+    "MAT_Webbing"
+   ]
+  }
+ },
+ "body_chunk_tris": {
+  "Body": {
+   "0": 8952,
+   "1": 3115,
+   "2": 1283
+  },
+  "Body__shirt": {
+   "0": 4804,
+   "1": 2868,
+   "2": 1330
+  },
+  "Body__trousers": {
+   "0": 2188,
+   "1": 1577,
+   "2": 809
+  },
+  "Body__shirt__trousers": {
+   "0": 8
+  },
+  "Body__gloves": {
+   "0": 6600,
+   "1": 2401,
+   "2": 1003
+  },
+  "Body__boots": {
+   "0": 4202,
+   "1": 2079,
+   "2": 925
+  },
+  "Body__trousers__boots": {
+   "0": 2
+  }
+ },
+ "lod_tris": {
+  "Body": {
+   "LOD0": {
+    "tris": 40736,
+    "draw_calls": 22,
+    "nodes": 21
+   },
+   "LOD1": {
+    "tris": 15836,
+    "draw_calls": 14,
+    "nodes": 13
+   },
+   "LOD2": {
+    "tris": 6808,
+    "draw_calls": 11,
+    "nodes": 10
+   }
+  },
+  "Base": {
+   "LOD0": {
+    "tris": 48829,
+    "draw_calls": 33,
+    "nodes": 19
+   },
+   "LOD1": {
+    "tris": 18790,
+    "draw_calls": 27,
+    "nodes": 13
+   },
+   "LOD2": {
+    "tris": 8146,
+    "draw_calls": 24,
+    "nodes": 10
+   }
+  },
+  "Light": {
+   "LOD0": {
+    "tris": 76355,
+    "draw_calls": 80,
+    "nodes": 31
+   },
+   "LOD1": {
+    "tris": 31718,
+    "draw_calls": 74,
+    "nodes": 25
+   },
+   "LOD2": {
+    "tris": 14025,
+    "draw_calls": 68,
+    "nodes": 21
+   }
+  },
+  "Assault": {
+   "LOD0": {
+    "tris": 100724,
+    "draw_calls": 126,
+    "nodes": 39
+   },
+   "LOD1": {
+    "tris": 42778,
+    "draw_calls": 122,
+    "nodes": 35
+   },
+   "LOD2": {
+    "tris": 18648,
+    "draw_calls": 109,
+    "nodes": 29
+   }
+  },
+  "Full": {
+   "LOD0": {
+    "tris": 103152,
+    "draw_calls": 131,
+    "nodes": 41
+   },
+   "LOD1": {
+    "tris": 43916,
+    "draw_calls": 127,
+    "nodes": 37
+   },
+   "LOD2": {
+    "tris": 19180,
+    "draw_calls": 114,
+    "nodes": 31
+   }
+  }
+ },
+ "textures_game": {
+  "cordura_albedo.png": "cordura_albedo.jpg",
+  "cordura_normal.png": "cordura_normal.jpg",
+  "cordura_orm.png": "cordura_orm.jpg",
+  "elastic_albedo.png": "elastic_albedo.jpg",
+  "elastic_normal.png": "elastic_normal.jpg",
+  "elastic_orm.png": "elastic_orm.jpg",
+  "eye_basecolor.jpg": "eye_basecolor.jpg",
+  "hair_rgba.png.001": "hair_rgba.png",
+  "jersey_albedo.png": "jersey_albedo.jpg",
+  "jersey_normal.png": "jersey_normal.jpg",
+  "jersey_orm.png": "jersey_orm.jpg",
+  "kydex_albedo.png": "kydex_albedo.jpg",
+  "kydex_normal.png": "kydex_normal.jpg",
+  "kydex_orm.png": "kydex_orm.jpg",
+  "leather_albedo.png": "leather_albedo.jpg",
+  "leather_normal.png": "leather_normal.jpg",
+  "leather_orm.png": "leather_orm.jpg",
+  "metalhw_albedo.png": "metalhw_albedo.jpg",
+  "metalhw_normal.png": "metalhw_normal.jpg",
+  "metalhw_orm.png": "metalhw_orm.jpg",
+  "polymer_albedo.png": "polymer_albedo.jpg",
+  "polymer_normal.png": "polymer_normal.jpg",
+  "polymer_orm.png": "polymer_orm.jpg",
+  "ripstop_albedo.png": "ripstop_albedo.jpg",
+  "ripstop_normal.png": "ripstop_normal.jpg",
+  "ripstop_orm.png": "ripstop_orm.jpg",
+  "rubber_albedo.png": "rubber_albedo.jpg",
+  "rubber_normal.png": "rubber_normal.jpg",
+  "rubber_orm.png": "rubber_orm.jpg",
+  "shellpaint_albedo.png": "shellpaint_albedo.jpg",
+  "shellpaint_normal.png": "shellpaint_normal.jpg",
+  "shellpaint_orm.png": "shellpaint_orm.jpg",
+  "skin_basecolor.jpg.001": "skin_basecolor.jpg",
+  "skin_normal.jpg.001": "skin_normal.jpg",
+  "skin_orm.jpg.001": "skin_orm.jpg",
+  "velcro_albedo.png": "velcro_albedo.jpg",
+  "velcro_normal.png": "velcro_normal.jpg",
+  "velcro_orm.png": "velcro_orm.jpg",
+  "webbing_albedo.png": "webbing_albedo.jpg",
+  "webbing_normal.png": "webbing_normal.jpg",
+  "webbing_orm.png": "webbing_orm.jpg"
+ },
+ "textures_web": {
+  "cordura_albedo.png": "cordura_albedo.jpg",
+  "cordura_normal.png": "cordura_normal.jpg",
+  "cordura_orm.png": "cordura_orm.jpg",
+  "elastic_albedo.png": "elastic_albedo.jpg",
+  "elastic_normal.png": "elastic_normal.jpg",
+  "elastic_orm.png": "elastic_orm.jpg",
+  "eye_basecolor.jpg": "eye_basecolor.jpg",
+  "hair_rgba.png.001": "hair_rgba.png",
+  "jersey_albedo.png": "jersey_albedo.jpg",
+  "jersey_normal.png": "jersey_normal.jpg",
+  "jersey_orm.png": "jersey_orm.jpg",
+  "kydex_albedo.png": "kydex_albedo.jpg",
+  "kydex_normal.png": "kydex_normal.jpg",
+  "kydex_orm.png": "kydex_orm.jpg",
+  "leather_albedo.png": "leather_albedo.jpg",
+  "leather_normal.png": "leather_normal.jpg",
+  "leather_orm.png": "leather_orm.jpg",
+  "metalhw_albedo.png": "metalhw_albedo.jpg",
+  "metalhw_normal.png": "metalhw_normal.jpg",
+  "metalhw_orm.png": "metalhw_orm.jpg",
+  "polymer_albedo.png": "polymer_albedo.jpg",
+  "polymer_normal.png": "polymer_normal.jpg",
+  "polymer_orm.png": "polymer_orm.jpg",
+  "ripstop_albedo.png": "ripstop_albedo.jpg",
+  "ripstop_normal.png": "ripstop_normal.jpg",
+  "ripstop_orm.png": "ripstop_orm.jpg",
+  "rubber_albedo.png": "rubber_albedo.jpg",
+  "rubber_normal.png": "rubber_normal.jpg",
+  "rubber_orm.png": "rubber_orm.jpg",
+  "shellpaint_albedo.png": "shellpaint_albedo.jpg",
+  "shellpaint_normal.png": "shellpaint_normal.jpg",
+  "shellpaint_orm.png": "shellpaint_orm.jpg",
+  "skin_basecolor.jpg.001": "skin_basecolor.jpg",
+  "skin_normal.jpg.001": "skin_normal.jpg",
+  "skin_orm.jpg.001": "skin_orm.jpg",
+  "velcro_albedo.png": "velcro_albedo.jpg",
+  "velcro_normal.png": "velcro_normal.jpg",
+  "velcro_orm.png": "velcro_orm.jpg",
+  "webbing_albedo.png": "webbing_albedo.jpg",
+  "webbing_normal.png": "webbing_normal.jpg",
+  "webbing_orm.png": "webbing_orm.jpg"
+ },
+ "uv_nudged": {
+  "admin_hydration-hydration": 104,
+  "admin_hydration-hydration_LOD1": 28,
+  "admin_hydration-hydration_LOD2": 8,
+  "belt": 440,
+  "belt_LOD1": 179,
+  "belt_LOD2": 46,
+  "boots": 4,
+  "carrier": 1232,
+  "carrier_LOD1": 98,
+  "carrier_LOD2": 24,
+  "chest_rig": 352,
+  "chest_rig_LOD1": 139,
+  "chest_rig_LOD2": 47,
+  "dump": 40,
+  "dump_LOD1": 7,
+  "dump_LOD2": 2,
+  "elbowpads": 4,
+  "eyewear-goggles_LOD1": 7,
+  "helmet": 328,
+  "helmet_LOD1": 84,
+  "helmet_LOD2": 26,
+  "holster_drop_LOD1": 14,
+  "holster_drop_LOD2": 5,
+  "ifak-ifak": 44,
+  "ifak-ifak_LOD1": 39,
+  "ifak-ifak_LOD2": 5,
+  "ifak-tq": 124,
+  "ifak-tq_LOD1": 50,
+  "ifak-tq_LOD2": 21,
+  "neck_groin-groin": 184,
+  "neck_groin-groin_LOD1": 16,
+  "neck_groin-groin_LOD2": 1,
+  "rifle_mags": 72,
+  "rifle_mags_LOD1": 38,
+  "rifle_mags_LOD2": 6,
+  "shirt": 1,
+  "sling_LOD1": 8,
+  "sling_LOD2": 4,
+  "trousers": 13,
+  "trousers_LOD1": 2
+ },
+ "cleaned": {
+  "belt": 2,
+  "belt_LOD2": 10,
+  "boots_LOD2": 26,
+  "chest_rig_LOD2": 14,
+  "dump_LOD2": 2,
+  "eyewear-goggles_LOD2": 8,
+  "headset-headband_LOD2": 4,
+  "helmet-cover_LOD2": 2,
+  "holster_belt-pistol_LOD2": 3,
+  "holster_drop-pistol_LOD2": 4,
+  "holster_drop_LOD2": 10,
+  "ifak-tq": 1,
+  "kneepads_LOD1": 2,
+  "kneepads_LOD2": 8,
+  "neck_groin-neck": 2,
+  "radio_LOD2": 6,
+  "sling_LOD2": 8
+ }
+}
