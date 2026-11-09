@@ -6,8 +6,8 @@ form; `../../unity/Runtime/BreakableFurniture.cs` is a Unity runtime for it. The
 LTS through Unity 6 with no extra packages, but it has not been compiled in this repo.
 
 Units are metres, kilograms and seconds. Positions are in glTF space unless a line says Unity. glTFast negates X on
-import: glTF +X is Unity -X, rotations about X stay the same, and rotations about Y and Z flip sign. Nothing in the
-metadata is a coordinate, so the script needs no conversion.
+import: glTF +X is Unity -X, rotations about X stay the same, and rotations about Y and Z flip sign. The only
+coordinate in the metadata is the batch G `spin` axis (the script mirrors it); nothing else needs converting.
 
 ## Placing a piece
 
@@ -31,6 +31,68 @@ metadata is a coordinate, so the script needs no conversion.
   is `fixed`).
 - Use as many copies as you like. Each copy breaks on its own.
 - Use `unity/<id>.glb` in Unity. The plain `glb/<id>.glb` files are for other engines and for checking.
+
+## Exterior pieces (batch G)
+
+Thirty pieces for outside: roof plant for the neighbour roofs where attackers spawn (A2 West Roof at y −1.5 in the
+lee of its plant room, the A4 Crane Deck, the bridge roof), Sky Terrace (A1) and skybridge furniture, and vents for
+roofs, ledges and plant rooms. They follow the same contract as the indoor pieces (origin on the floor, front +Z,
+real size) and are weathered for the steady night rain: up-facing surfaces use darker, smoother `_wet` twins (wet,
+not mirrors), painted, galvanised and concrete sheets carry rain streaks and a grime band at their foot, and rust
+only blooms at fasteners. Purple `#8a4dff` appears only as single status LEDs, the drone dock's lights, the pergola
+drive dot and the holo pylon; the comm mast's aviation beacon is red. No text, signs or numbers anywhere (the BMU
+guard rails carry plain chevron stripes only).
+
+**Cover outside.** Hard cover (parts that stop bullets): `generator_enclosure` (pad, fuel tank and enclosure, to
+3.2 m: the best spawn-roof cover), `hvac_condenser` (dunnage and casing, 0.35–1.6 m), `water_tank` (tank and stand;
+the 1.2 m gap under the tank is open), `roof_hatch_box` (concrete walls and step), `pallet_stack` (the block load,
+1.17 m), `fire_table` (0.58 m: crouch cover), `bamboo_planter` (the 0.6 m trough only; the bamboo hides but does not
+stop rounds), `holo_pylon` (a 0.5 m stone column), `grate_vent` (0.55 m plinth, `breach_only`). The concrete ballast
+of `comm_mast` and the guy anchors of `exhaust_stack` stop bullets but are low. Everything else is sheet metal,
+fabric or wood: soft cover or none. `bollard_light` columns stop bullets but are too slim to hide behind.
+
+**Where they fit.**
+
+- **0.8 m ledges** (outside every floor): only slim pieces. `bollard_light` (0.2 m deep), `relief_vent` (0.55 m),
+  `gooseneck_vents` at ledge ends, `security_camera_pole` with its arm along the ledge (0.84 m), and `wall_louvre`
+  on the plant room openings. **Do not put `ac_cassette_row` on a ledge players run along**: it is 0.45 m deep and
+  leaves less than half the ledge. Use it on the site hut, the plant room and the bridge hall exterior walls, or on
+  wide ledge corners. Keep ledge routes and the rappel lines clear.
+- **Sky Terrace (A1)**: `terrace_sofa`, `parasol_table`, `sun_lounger`, `patio_heater`, `fire_table`,
+  `bamboo_planter`, `pergola_canopy`, `bollard_light` along the paths, `holo_pylon`, and `drone_dock`, `grate_vent`
+  or `relief_vent` in the service corner. Planters and the fire table give attackers low hard cover near the kiosk:
+  keep them off the defenders' spawn-peek sightlines.
+- **A2 West Roof, A4 Crane Deck, bridge roof**: the G1 roof plant, `turbine_vents`, `mushroom_vent`, `upblast_fan`,
+  `louvred_penthouse`, `duct_run` (collar against the plant room wall), `ac_cassette_row` on the hut or plant room
+  wall, `grate_vent`. Leave 2 m or more round `generator_enclosure` (4.05 m) and keep the 3.5 m guy-wire footprint
+  of `exhaust_stack` off routes. Tall pieces (`comm_mast` 6.75 m, `bmu_cradle` ropes to 4.9 m, `water_tank` 4.2 m,
+  `cooling_tower` 3.1 m) are for open roofs only; they read as landmarks from spawn distance.
+- **Wall pieces** (flat back at -Z): `wall_louvre`, `ac_cassette_row`, the collar end of `duct_run`, and the
+  building side of `bmu_cradle`. `wall_louvre`'s origin is at the bottom of its sill: place it at the sill height
+  you want.
+- `cable_tray_run` (batch F) is an indoor ceiling tray; there is no exterior cable tray. Outdoor cables belong to
+  their pieces: the coax run up `comm_mast` (`cables`, one detach strip), the drum and tail of `pallet_stack`, and the
+  conduits of the camera pole and the isolators.
+
+**Ropes, wires and masts.** `bmu_cradle`'s hoist and safety ropes are `fixed` parts that end at 4.9 m: put the cradle
+under a facade edge or overhang so the cut ends are out of view. It is a parked cradle; the map's moving cradle
+between the F2 and F3 ledges is a map mechanic, not this piece. `exhaust_stack`'s three guy wires are one detach part
+with thin hull colliders (a player can catch on them). `comm_mast`'s lattice is fixed; its panels and dishes detach.
+
+**Moving parts.** Parts with a `spin` hint turn while they are in place: the three `turbine_vents` heads about +Y
+(clockwise from above, 1.5 / 1.91 / 2.25 rev/s, smaller heads faster) and the three `ac_cassette_row` fans about +Z
+(8 rev/s). The axis passes through the part node's origin (its pivot). Scale or stop them for calm weather; they stop
+when the part is shot loose. The condenser and cooling tower fans have no hint (their motor bars are in the same
+part). `upblast_fan`'s `base` is pivoted on its hinge pins at -X, so a game can tilt it open.
+
+**Steam.** `grate_vent`'s `steam_1..3` (`fx: "steam"`) are crossed soft cards (blended `steam_card` material, no
+depth write) rising off the grate. Give them no physics (their tiny collider proxies sit inside the shaft; the Unity
+script switches them off) and animate them: scroll or stretch upward, sway, fade the material in and out. `size_m`
+includes the steam (1.59 m); the solid plinth is 0.55 m.
+
+**Lights.** The `patio_heater` and `fire_table` flames and the `holo_pylon` hologram are light-only shatter parts with
+no chunks (the batch E hologram convention): they switch off when their tube, pan or lenses break. Lamp lenses
+(`bollard_light`, `roof_hatch_box`, the comm mast beacon) shatter and go dark.
 
 ## What is in a file (the naming contract)
 
@@ -85,12 +147,14 @@ floor_contact, mass_kg, parts, debris (count), triangles { intact, chunks }, hid
 | `health` | Hit points (see the health scale). |
 | `break` | `shatter`: swaps to its chunks at 0 hp. `detach`: comes loose whole. `fixed`: never breaks (an anchor). |
 | `attach`, `need` | Support: the part comes loose when fewer than `need` of the parts in `attach` are still in place. `ground` means it stands on the floor. |
-| `stops_bullets` | True only for hard-cover cores (render rack frame and blades, vault frame and boxes, planter basin, garden bench plinths; batch F: CEO desk steel core, boardroom table spine and core, safe body and door, server rack frame and servers, storage carcass and shelves, UPS battery bay). |
+| `stops_bullets` | True only for hard-cover cores (render rack frame and blades, vault frame and boxes, planter basin, garden bench plinths; batch F: CEO desk steel core, boardroom table spine and core, safe body and door, server rack frame and servers, storage carcass and shelves, UPS battery bay). Batch G: generator pad, fuel tank and body; condenser dunnage and casing; water tank and stand; mast ballast; stack anchors; hatch walls and step; pallet block load; fire table body and top; planter trough; bollard and pylon stone; grate plinth. |
 | `chunks` | How many chunks the part has (0 if it does not shatter). |
 | `fixed_chunks` | Torn paper only: the 1-based numbers of its chunks that stay put (the border strip glued to the frame). They stay on the part named first in `attach` and go with it. |
 | `collapse` | A shatter part that shatters (instead of coming loose) when its support goes: the soil in `planter_large` and `potted_tree`, the aquarium water. |
 | `liquid` | Batch F, the aquarium `water` only: its chunks drain away instead of tumbling (no colliders, gone within a second). Play a splash on its break. It has 9999 hp, so only `collapse` (any pane breaking) lets it go. |
 | `breach_only` | Batch F, the `office_safe` door only: bullets, melee and landings do nothing while it is in place; only explosions count (480 hp: one breach charge, or two frags at contact). |
+| `spin` | Batch G, optional: `{ axis: [x, y, z], rps }`. While the part is in place it turns `rps` revolutions per second about `axis` (glTF space, through the part node's origin; right-hand rule, so a negative `rps` turns the other way). The `turbine_vents` heads and the `ac_cassette_row` fans. |
+| `fx` | Batch G, optional: `"steam"` marks an FX card (the `grate_vent` steam): no physics, no damage, animate it. |
 | `debris` | Names of its `debris_<i>` nodes. |
 | `colliders` | Names of its `col_*` proxies. |
 
@@ -207,6 +271,94 @@ grey satin, and `glass_dark` is the dark tinted clear glass used where `glass_cl
 | `f3Water` | `water` | glass | `glass_edge` |
 | `f3AquaLeaf` | `aquatic_leaf` | plant | `aquatic_leaf` |
 | `f3LedRed` | `led_red` | electronics | `electronics_inner` |
+| `gxGalv` | `steel_galvanised` | metal | `metal_inner` |
+| `gxGalvWet` | `steel_galvanised_wet` | metal | `metal_inner` |
+| `gxConc` | `concrete_weathered` | stone | `stone_inner` |
+| `gxConcWet` | `concrete_weathered_wet` | stone | `stone_inner` |
+| `gxRust` | `rust_bloom` | metal | `metal_inner` |
+| `g1Paint` | `powder_coat_grey` | metal | `metal_inner` |
+| `g1PaintWet` | `powder_coat_grey_wet` | metal | `metal_inner` |
+| `g1Dark` | `powder_coat_graphite` | metal | `metal_inner` |
+| `g1DarkWet` | `powder_coat_graphite_wet` | metal | `metal_inner` |
+| `g1Sage` | `powder_coat_sage` | metal | `metal_inner` |
+| `g1SageWet` | `powder_coat_sage_wet` | metal | `metal_inner` |
+| `g1Soot` | `steel_sooted` | metal | `metal_inner` |
+| `g1Fins` | `coil_fins` | metal | `metal_inner` |
+| `g1Radome` | `plastic_radome` | plastic | `plastic_radome` |
+| `g1Ochre` | `paint_safety_ochre` | metal | `metal_inner` |
+| `g1Red` | `plastic_red` | plastic | `plastic_red` |
+| `g1Tarp` | `fabric_tarp_faded` | fabric | `foam_inner` |
+| `g1Canvas` | `fabric_canvas` | fabric | `foam_inner` |
+| `g1Wrap` | `plastic_shrinkwrap` | plastic | `plastic_shrinkwrap` |
+| `g1Pine` | `wood_pallet` | wood | `oak_inner` |
+| `g1Ply` | `wood_plywood` | wood | `oak_inner` |
+| `g1Alu` | `aluminium_weathered` | metal | `metal_inner` |
+| `g1Hole` | `cavity_dark` | metal | `metal_inner` |
+| `g1Lens` | `glass_lamp_warm` | glass | `glass_edge` |
+| `g2Teak` | `wood_teak_weathered` | wood | `oak_inner` |
+| `g2TeakWet` | `wood_teak_wet` | wood | `oak_inner` |
+| `g2Concrete` | `concrete_cast` | stone | `stone_inner` |
+| `g2ConcreteWet` | `concrete_wet` | stone | `stone_inner` |
+| `g2ConcreteGrime` | `concrete_grime` | stone | `stone_inner` |
+| `g2Corten` | `steel_corten` | metal | `metal_inner` |
+| `g2CortenWet` | `steel_corten_wet` | metal | `metal_inner` |
+| `g2Powder` | `powdercoat_graphite` | metal | `metal_inner` |
+| `g2PowderWet` | `powdercoat_graphite_wet` | metal | `metal_inner` |
+| `g2PowderGrey` | `powdercoat_grey` | metal | `metal_inner` |
+| `g2SteelWet` | `steel_brushed_wet` | metal | `metal_inner` |
+| `g2GraniteWet` | `stone_granite_wet` | stone | `stone_inner` |
+| `g2BasaltWet` | `stone_basalt_wet` | stone | `stone_inner` |
+| `g2GraniteGrime` | `stone_granite_grime` | stone | `stone_inner` |
+| `g2Rope` | `rope_woven` | fabric | `foam_inner` |
+| `g2Fab` | `fabric_outdoor_stone` | fabric | `foam_inner` |
+| `g2FabWet` | `fabric_outdoor_wet` | fabric | `foam_inner` |
+| `g2FabOchre` | `fabric_outdoor_ochre` | fabric | `foam_inner` |
+| `g2Towel` | `fabric_towel_slate` | fabric | `foam_inner` |
+| `g2TowelWet` | `fabric_towel_wet` | fabric | `foam_inner` |
+| `g2Canopy` | `fabric_canopy` | fabric | `foam_inner` |
+| `g2CanopyWet` | `fabric_canopy_wet` | fabric | `foam_inner` |
+| `g2Lava` | `stone_lava` | stone | `stone_inner` |
+| `g2Culm` | `bamboo_culm` | plant | `wood_inner` |
+| `g2Sheath` | `bamboo_sheath` | plant | `wood_inner` |
+| `g2Leaf` | `foliage_bamboo` | plant | `foliage_bamboo` |
+| `g2LitWarm` | `glass_lit_warm` | glass | `glass_edge` |
+| `g2LedIR` | `led_ir` | electronics | `electronics_inner` |
+| `g2Lens` | `holo_lens_pylon` | electronics | `electronics_inner` |
+| `g2FlameCol` | `flame_column` | electronics | `electronics_inner` |
+| `g2Flame` | `flame_tongue` | electronics | `electronics_inner` |
+| `g2Glow` | `glow_warm` | electronics | `electronics_inner` |
+| `g2GlowLow` | `glow_warm_low` | electronics | `electronics_inner` |
+| `g2Ribbon` | `holo_ribbon` | electronics | `electronics_inner` |
+| `g2Ribbon2` | `holo_ribbon_cool` | electronics | `electronics_inner` |
+| `g2Beam` | `holo_beam_pylon` | electronics | `electronics_inner` |
+| `g2Spark` | `holo_spark` | electronics | `electronics_inner` |
+| `g3GalvOld` | `steel_galvanised_old` | metal | `metal_inner` |
+| `g3Alu` | `aluminium_spun` | metal | `metal_inner` |
+| `g3AluGrease` | `aluminium_greasy` | metal | `metal_inner` |
+| `g3Clad` | `aluminium_cladding` | metal | `metal_inner` |
+| `g3Anth` | `powder_anthracite` | metal | `metal_inner` |
+| `g3Grey` | `powder_grey` | metal | `metal_inner` |
+| `g3Ivory` | `powder_ivory` | metal | `metal_inner` |
+| `g3Fins` | `condenser_fins` | metal | `metal_inner` |
+| `g3Lead` | `lead_flashing` | metal | `metal_inner` |
+| `g3Copper` | `copper_tarnished` | metal | `metal_inner` |
+| `g3Dark` | `steel_interior_dark` | metal | `metal_inner` |
+| `g3ConcreteDirty` | `concrete_stained` | stone | `stone_inner` |
+| `g3PvcGrey` | `pvc_grey` | plastic | `pvc_grey` |
+| `g3Red` | `plastic_red_handle` | plastic | `plastic_red_handle` |
+| `g3PvcWhite` | `pvc_white` | plastic | `pvc_white` |
+| `g3Epdm` | `epdm_black` | plastic | `epdm_black` |
+| `g3Mesh` | `wire_mesh` | metal | `metal_inner` |
+| `g3Steam` | `steam_card` | plastic | `steam_card` |
+
+Batch G materials (the rows from `gxGalv` on) are defined once per glTF name. `steel_galvanised` (and `_wet`),
+`concrete_weathered` (and `_wet`) and `rust_bloom` are shared by all three exterior sets and defined in one place
+(`batchG0_ext.js` in the source), so a piece looks the same whichever pieces share a scene. The galvanised sheet is
+deliberately dull (roughness about 0.6, a shade darker than new zinc) and its wet twin only a little glossier, so
+up-facing roof metal reads as weathered galvanised at night instead of flaring under overhead lights; spun aluminium
+(`aluminium_spun`, the mushroom hood and upblast windband) and the condenser coil fins are toned the same way.
+Weathered sheets put their grime band at v 0, which the exterior pieces line up with each item's foot. `wire_mesh`
+and `foliage_bamboo` are alpha-tested; `steam_card` and the flame and hologram materials are blended (no depth write).
 
 ## How a piece breaks
 
@@ -233,6 +385,8 @@ grey satin, and `glass_dark` is the dark tinted clear glass used where `glass_cl
    **Batch F**: a `breach_only` part (the safe door) ignores hits that are not explosions while it is in place.
    A `liquid` part (the aquarium water) is never shot apart; when it collapses its chunks fall without colliders
    and are gone in under a second.
+   **Batch G**: a part with a `spin` hint turns about its axis while it is in place and stops when it breaks or comes
+   loose; `fx` parts (steam cards) take no damage and have no colliders.
 5. **Landing**: a loose glass, ceramic or electronic part that lands faster than 2 m/s takes (speed - 2) × 25
    damage. A vase knocked off its stand breaks; a monitor knocked off a desk usually does.
 6. **Lights out**: broken screens, LEDs and lit hanji go dark. Their chunks are stored with the unlit materials
@@ -302,13 +456,15 @@ the class base.
 | `onPartDamaged (part, class, health left)` | UnityEvent after every hit that lands. |
 | `onPartBroken (part, class, point)` | UnityEvent when a part shatters or comes loose (by damage, or because its support went). |
 | `static AnyPartBroken (furniture, BreakInfo)` | The same for every piece: `part`, `materialClass`, `shattered`, `liquid` (the aquarium water: play a splash), `point`. |
+| `animateSpin`, `spinScale` | Batch G: turn parts with a `spin` hint (turbine heads, AC fans) at `rps` × `spinScale` while they are in place (on, 1). The axis is mirrored for glTFast (x negated); the signed rate is used as is. |
+| `animateFx` | Batch G: `fx` "steam" cards breathe (slow stretch up to ±12 % and a ±6° sway about Y). Their colliders are switched off and they ignore damage. Fading the `steam_card` material is left to the game. |
 | `liquidLifetime`, `liquidFade` | `liquid` chunks and debris (aquarium water) get no colliders, fall for 0.35 s and shrink away over 0.4 s. |
 | `ApplyDamage(Collider hit, amount, point, force)` | Damage the part that owns the collider. `force` is an impulse in N s, world space. Returns true if the part broke. |
 | `ApplyDamage(string part, amount, point, force)` | The same, by part name. |
 | `ApplyExplosion(centre, radius, damage, force)` | Damage × (1 - distance / radius), with distance measured to each part's collider bounds. The only damage a `breach_only` part (the safe door) takes while in place: call it for breach charges. Also pushes the bodies that were already loose, scaled by min(1, mass) so light bits do not fly off. |
 | `static Owner(Collider)` | The piece a collider belongs to: a part in place or loose, a chunk or a debris bit (they leave the hierarchy, so do not use `GetComponentInParent`). Route hits with `Owner(hit.collider)?.ApplyDamage(hit.collider, ...)`. |
 | `static StopsBullet(Collider)` | True for a bullet-stopping part that has not shattered (and for colliders that are not furniture). False for chunks and debris. |
-| `GetPart(name)`, `FindPart(collider)`, `parts`, `Cover` | Live state: `Part { name, materialClass, mass, health, maxHealth, breakType, attach, need, stopsBullets, liquid, breachOnly, state (Intact, Loose, Shattered), body, colliders }`. |
+| `GetPart(name)`, `FindPart(collider)`, `parts`, `Cover` | Live state: `Part { name, materialClass, mass, health, maxHealth, breakType, attach, need, stopsBullets, liquid, breachOnly, spinAxis, spinRps, fx, state (Intact, Loose, Shattered), body, colliders }`. |
 | `static BuildColliders(root)` | Box proxies become BoxColliders and hulls become convex MeshColliders; their meshes are removed. It is safe to call more than once. |
 
 Notes:
@@ -317,6 +473,8 @@ Notes:
   lists their renderers, so it switches them with the piece. If that matters at range, remove the LODGroup or give
   loose bodies their own.
 - To put a piece back, destroy it and instantiate the prefab again.
+- Spinning parts are moved by their transform while the piece is static, so their colliders move with them every
+  frame. With many turbine vents in view, turn `animateSpin` off at range or drive the heads from your own LOD code.
 - A part's Rigidbody uses `ContinuousDynamic` collision. Chunks use the default, with `maxDepenetrationVelocity` 1.
 - Sibling chunks never collide with each other. A freed part or chunk ignores the piece's colliders it overlaps at
   that moment, and the pairs are turned back on (checked every 0.5 s for 4 s) once they no longer overlap.
@@ -1437,6 +1595,517 @@ Three sets built to the same contract: F1 the CEO office and boardroom, F2 serve
 | `extinguisher` | metal | detach | – | 6 | 265 | cabinet (1) |  | `col_extinguisher_hull` | 0 |
 | `blanket` | fabric | detach | – | 1.2 | 50 | cabinet (1) |  | `col_blanket` | 0 |
 
+### Batch G: Exterior (roof plant, terrace, vents)
+
+Thirty outdoor pieces built to the same contract, weathered for the night rain: G1 roof plant for the attacker spawn roofs, G2 Sky Terrace and skybridge furniture, G3 vents. See **Exterior pieces (batch G)** above for placement and cover. Batch G adds two optional part fields, `spin` and `fx`.
+
+**G1: Roof plant (neighbour roofs, plant rooms, Crane Deck)**
+
+#### `hvac_condenser`: Rooftop condenser unit on dunnage
+
+3.07 × 1.82 × 1.22 m, 715 kg, cover hard, 12,148 / 0 triangles, 0 debris bits, 25 textures. Rooms: A2 West Roof (plant room lee), A3 Bridge Roof, A4 Crane Deck, F1 Sky Terrace service corner. Air-cooled condenser: two top fans in venturi collars under wire guards, fin coils front and back behind guard rods, a compressor bay with latched service panels, on spring mounts over two galvanised I-beams on concrete pads; isolator on a strut post, insulated refrigerant lines down to a roof support. The casing and compressor block are the hard-cover core (0.35-1.6 m). Place on a roof slab in the lee of a plant room (A2 West Roof spawn), long side along the wall with 1 m clear behind it. The casing and compressor block stop bullets from 0.35 to 1.6 m: the best low hard cover on A2 after the generator. The two top fans are separate parts but carry no spin hint (their motor bars are in the same part).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `dunnage` | metal | fixed | – | 170 | 750 | ground | yes | `col_dunnage_1`, `col_dunnage_2`, `col_dunnage_3` | 0 |
+| `casing` | metal | fixed | – | 420 | 750 | ground | yes | `col_casing_1`, `col_casing_2`, `col_casing_3`, `col_casing_4`, `col_casing_5`, `col_casing_6`, `col_casing_7`, `col_casing_8`, `col_casing_9` | 0 |
+| `coil_f` | metal | detach | – | 32 | 150 | casing (1) |  | `col_coil_f` | 0 |
+| `coil_b` | metal | detach | – | 32 | 150 | casing (1) |  | `col_coil_b` | 0 |
+| `panel_f` | metal | detach | – | 8 | 120 | casing (1) |  | `col_panel_f` | 0 |
+| `panel_b` | metal | detach | – | 8 | 120 | casing (1) |  | `col_panel_b` | 0 |
+| `panel_r` | metal | detach | – | 7 | 120 | casing (1) |  | `col_panel_r` | 0 |
+| `fan_1` | plastic | detach | – | 9 | 60 | casing (1) |  | `col_fan_1` | 0 |
+| `guard_1` | metal | detach | – | 4 | 90 | casing (1) |  | `col_guard_1` | 0 |
+| `fan_2` | plastic | detach | – | 9 | 60 | casing (1) |  | `col_fan_2` | 0 |
+| `guard_2` | metal | detach | – | 4 | 90 | casing (1) |  | `col_guard_2` | 0 |
+| `isolator` | metal | detach | – | 6 | 110 | dunnage (1) |  | `col_isolator` | 0 |
+| `pipes` | metal | detach | – | 6 | 90 | casing (1) |  | `col_pipes` | 0 |
+
+#### `cooling_tower`: Packaged cooling tower
+
+2.18 × 3.08 × 1.78 m, 613 kg, cover soft, 8,616 / 452 triangles, 12 debris bits, 15 textures. Rooms: A2 West Roof (beside the plant room), A4 Crane Deck, A3 Bridge Roof. Counterflow packaged tower: galvanised cold-water basin on two channels, louvred air-inlet band on four sides, ribbed casing with a bolted seam, fan stack with a wire guard over a six-blade fan; hot-water inlet, outlet and make-up stubs with flanges and valves. Thin sheet and water: soft cover only. Roof plant beside the plant room or on the Crane Deck. 3.1 m tall: it blocks sightlines but is soft cover (thin sheet and water). The louvre bands shatter blade by blade.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `base` | metal | fixed | – | 60 | 570 | ground |  | `col_base` | 0 |
+| `basin` | metal | fixed | – | 180 | 750 | ground |  | `col_basin` | 0 |
+| `casing` | metal | fixed | – | 240 | 750 | ground |  | `col_casing_1`, `col_casing_2`, `col_casing_3`, `col_casing_4`, `col_casing_5` | 0 |
+| `louvre_f` | plastic | shatter | 9 | 9 | 60 | casing (1) |  | `col_louvre_f` | 3 |
+| `louvre_b` | plastic | shatter | 9 | 9 | 60 | casing (1) |  | `col_louvre_b` | 3 |
+| `louvre_r` | plastic | shatter | 9 | 9 | 60 | casing (1) |  | `col_louvre_r` | 3 |
+| `louvre_l` | plastic | shatter | 10 | 9 | 60 | casing (1) |  | `col_louvre_l` | 3 |
+| `fan_stack` | plastic | detach | – | 40 | 160 | casing (1) |  | `col_fan_stack_1`, `col_fan_stack_2`, `col_fan_stack_3`, `col_fan_stack_4` | 0 |
+| `fan` | plastic | detach | – | 14 | 70 | fan_stack (1) |  | `col_fan` | 0 |
+| `guard` | metal | detach | – | 7 | 90 | fan_stack (1) |  | `col_guard` | 0 |
+| `access_door` | metal | detach | – | 6 | 110 | casing (1) |  | `col_access_door` | 0 |
+| `pipes` | metal | detach | – | 30 | 200 | casing (1) |  | `col_pipes_1`, `col_pipes_2`, `col_pipes_3` | 0 |
+
+#### `water_tank`: Elevated sectional water tank
+
+3.00 × 4.21 × 2.64 m, 1,668 kg, cover hard, 12,036 / 0 triangles, 0 debris bits, 18 textures. Rooms: A2 West Roof (by the plant room), A4 Crane Deck, A3 Bridge Roof. Pressed-steel sectional tank, 2 x 2 x 2 m of 1 m panels with pressed square bulges and bolted outside flanges (8 t full), on a galvanised grillage and four legs with rod X-bracing and turnbuckles, concrete pier pads; caged ladder with gooseneck stiles, hinged manhole, mushroom vent, overflow down to a splash block and an inlet riser with a gate valve. Tank and stand stop bullets; under it is a 1.2 m crawl gap. Elevated tank on a stand: put it where the 1.2 m crawl gap under the tank is meant to be a sightline (prone peeks under it). Tank and stand stop bullets. Roofs only (4.2 m).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `stand` | metal | fixed | – | 620 | 750 | ground | yes | `col_stand_1`, `col_stand_2`, `col_stand_3`, `col_stand_4`, `col_stand_5`, `col_stand_6` | 0 |
+| `tank` | metal | fixed | – | 950 | 750 | ground | yes | `col_tank` | 0 |
+| `manhole_lid` | metal | detach | – | 12 | 150 | tank (1) |  | `col_manhole_lid` | 0 |
+| `vent` | metal | detach | – | 4 | 90 | tank (1) |  | `col_vent` | 0 |
+| `ladder` | metal | detach | – | 55 | 300 | tank, stand (1) |  | `col_ladder_1`, `col_ladder_2`, `col_ladder_3` | 0 |
+| `overflow` | plastic | detach | – | 9 | 90 | tank (1) |  | `col_overflow_1`, `col_overflow_2` | 0 |
+| `inlet` | metal | detach | – | 18 | 160 | tank (1) |  | `col_inlet` | 0 |
+
+#### `comm_mast`: Lattice communications mast
+
+2.08 × 6.75 × 2.08 m, 1,566.4 kg, cover soft, 14,428 / 1,555 triangles, 9 debris bits, 24 textures. Rooms: A2 West Roof, A4 Crane Deck, A3 Bridge Roof (east tower). Ballasted rooftop lattice mast, 0.4 m triangular, 6 m: three panel antennas on stand-off pipes, two radome microwave dishes, a cable ladder with coax runs over an ice bridge to the equipment cabinet, red aviation beacon and a lightning finial at the top. The concrete ballast stops bullets; the cabinet is soft cover. Rooftop only (6.75 m): A2 West Roof corner, Crane Deck, the East Tower roof seen from the bridge. The concrete ballast blocks stop bullets; the lattice and cabinet are soft. The coax `cables` part is one detach strip up the cable ladder; the red aviation beacon is the only red light in the batch besides the IR lamp.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `base` | metal | fixed | – | 140 | 750 | ground |  | `col_base` | 0 |
+| `ballast` | stone | shatter | 8 | 880 | 900 | ground | yes | `col_ballast_1`, `col_ballast_2` | 3 |
+| `mast` | metal | fixed | – | 280 | 750 | ground |  | `col_mast` | 0 |
+| `panel_1` | plastic | detach | – | 16 | 80 | mast (1) |  | `col_panel_1` | 0 |
+| `panel_2` | plastic | detach | – | 16 | 80 | mast (1) |  | `col_panel_2` | 0 |
+| `panel_3` | plastic | detach | – | 16 | 80 | mast (1) |  | `col_panel_3` | 0 |
+| `dish_1` | metal | detach | – | 26 | 140 | mast (1) |  | `col_dish_1` | 0 |
+| `dish_2` | metal | detach | – | 15 | 140 | mast (1) |  | `col_dish_2` | 0 |
+| `cables` | plastic | detach | – | 45 | 200 | mast (1) |  | `col_cables_1`, `col_cables_2` | 0 |
+| `beacon` | electronics | detach | – | 3 | 60 | mast (1) |  | `col_beacon` | 0 |
+| `beacon_lens` | glass | shatter | 5 | 0.4 | 25 | beacon (1) |  | `col_beacon_lens` | 6 |
+| `cabinet` | metal | fixed | – | 120 | 720 | ground |  | `col_cabinet` | 0 |
+| `cabinet_door` | metal | detach | – | 9 | 120 | cabinet (1) |  | `col_cabinet_door` | 0 |
+
+#### `bmu_cradle`: Window-cleaning cradle on its roof rail
+
+3.56 × 4.90 × 1.20 m, 842 kg, cover none, 8,604 / 0 triangles, 0 debris bits, 21 textures. Rooms: A3 Bridge Roof, F2-F3 ledges (the moving cradle), A2 West Roof. Aluminium BMU gondola parked on a short length of galvanised rail on concrete sleepers: grating floor, guard rails with toe boards (plain chevron stripes), A-frame stirrups with traction hoists and fall-arrest blocks, hoist and safety ropes rising out of frame, rope bags, a control pendant with an emergency stop, rubber facade rollers on the building side (-z). Open frame: no cover. Parked window-cleaning cradle on a short length of its roof rail, building side at -Z against the parapet. Its hoist and safety ropes are fixed parts that stop at 4.9 m: place it under a facade edge or overhang so the rope ends are out of view. This is a static parked cradle; the map's moving cradle between the F2 and F3 ledges is a map mechanic, not this piece. Cover none.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `track` | metal | fixed | – | 420 | 750 | ground |  | `col_track` | 0 |
+| `deck` | metal | fixed | – | 260 | 750 | ground |  | `col_deck_1`, `col_deck_2`, `col_deck_3` | 0 |
+| `guard_f` | metal | detach | – | 18 | 160 | deck (1) |  | `col_guard_f` | 0 |
+| `guard_b` | metal | detach | – | 18 | 160 | deck (1) |  | `col_guard_b` | 0 |
+| `hoist_l` | metal | detach | – | 48 | 300 | deck (1) |  | `col_hoist_l` | 0 |
+| `ropes_l` | metal | fixed | – | 4 | 230 | ground |  | `col_ropes_l` | 0 |
+| `bag_l` | fabric | detach | – | 9 | 60 | deck (1) |  | `col_bag_l` | 0 |
+| `hoist_r` | metal | detach | – | 48 | 300 | deck (1) |  | `col_hoist_r` | 0 |
+| `ropes_r` | metal | fixed | – | 4 | 230 | ground |  | `col_ropes_r` | 0 |
+| `bag_r` | fabric | detach | – | 9 | 60 | deck (1) |  | `col_bag_r` | 0 |
+| `controls` | electronics | detach | – | 4 | 60 | guard_b (1) |  | `col_controls` | 0 |
+
+#### `exhaust_stack`: Guyed exhaust stacks on a louvred plenum
+
+3.54 × 3.67 × 3.32 m, 398.9 kg, cover soft, 5,160 / 0 triangles, 0 debris bits, 15 textures. Rooms: A2 West Roof (plant room), A4 Crane Deck, A3 Bridge Roof. Three galvanised flue stacks of different bore with banded joints, sooted tips and cone or disc rain caps, rising from a louvred intake plenum on a curb; the tallest is held by three guy wires with turnbuckles to concrete anchor blocks. Sheet-metal plenum: soft cover. Plant room roof. The tallest stack is guyed by three wires to concrete anchor blocks, so its footprint is 3.5 x 3.3 m although the plenum is 1.2 m: keep routes clear of the guy wires (thin hull colliders a player can snag on). Anchors stop bullets; plenum soft.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `plenum` | metal | fixed | – | 110 | 700 | ground |  | `col_plenum_1`, `col_plenum_2` | 0 |
+| `louvre_f` | metal | detach | – | 7.2 | 120 | plenum (1) |  | `col_louvre_f` | 0 |
+| `louvre_r` | metal | detach | – | 3.84 | 120 | plenum (1) |  | `col_louvre_r` | 0 |
+| `louvre_l` | metal | detach | – | 3.84 | 120 | plenum (1) |  | `col_louvre_l` | 0 |
+| `stack_1` | metal | detach | – | 70 | 260 | plenum (1) |  | `col_stack_1` | 0 |
+| `cap_1` | metal | detach | – | 9 | 90 | stack_1 (1) |  | `col_cap_1` | 0 |
+| `stack_2` | metal | detach | – | 40 | 260 | plenum (1) |  | `col_stack_2` | 0 |
+| `cap_2` | metal | detach | – | 5 | 90 | stack_2 (1) |  | `col_cap_2` | 0 |
+| `stack_3` | metal | detach | – | 20 | 260 | plenum (1) |  | `col_stack_3` | 0 |
+| `cap_3` | metal | detach | – | 2 | 90 | stack_3 (1) |  | `col_cap_3` | 0 |
+| `tie` | metal | detach | – | 2 | 80 | stack_1, stack_2 (2) |  | `col_tie` | 0 |
+| `guys` | metal | detach | – | 6 | 60 | stack_1 (1) |  | `col_guys_1_hull`, `col_guys_2_hull`, `col_guys_3_hull` | 0 |
+| `anchors` | stone | fixed | – | 120 | 1155 | ground | yes | `col_anchors_1`, `col_anchors_2`, `col_anchors_3` | 0 |
+
+#### `generator_enclosure`: Containerised standby generator
+
+4.05 × 3.24 × 1.84 m, 3,553.6 kg, cover hard, 6,164 / 322 triangles, 6 debris bits, 21 textures. Rooms: A2 West Roof (plant room lee), A4 Crane Deck, A3 Bridge Roof. Acoustic generator enclosure on a double-wall base fuel tank and a concrete housekeeping pad: three gasketed side doors with flush handles (the middle one with the controller window, a purple status dot and the emergency stop), deep intake louvre at one end, discharge louvre under a rain hood at the other, roof silencer with a sooted tail and rain flap, lifting eyes, fuel fill, gauge, vent gooseneck and valved fuel stubs. Pad, tank and enclosure stop bullets: the map's best roof cover. The best hard cover on a spawn roof: pad, base tank and enclosure all stop bullets (0 to 3.2 m). 4.05 m wide: leave 2 m+ to walk round it. Its only shatter part is the controller window in the middle door.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `pad` | stone | fixed | – | 950 | 1200 | ground | yes | `col_pad` | 0 |
+| `base_tank` | metal | fixed | – | 520 | 750 | ground | yes | `col_base_tank` | 0 |
+| `body` | metal | fixed | – | 1,900 | 750 | ground | yes | `col_body` | 0 |
+| `door_1` | metal | detach | – | 24 | 220 | body (1) |  | `col_door_1` | 0 |
+| `door_2` | metal | detach | – | 24 | 220 | body (1) |  | `col_door_2` | 0 |
+| `window` | glass | shatter | 12 | 1.6 | 20 | door_2 (1) |  | `col_window` | 6 |
+| `door_3` | metal | detach | – | 24 | 220 | body (1) |  | `col_door_3` | 0 |
+| `louvre_in` | metal | detach | – | 28 | 220 | body (1) |  | `col_louvre_in` | 0 |
+| `louvre_out` | metal | detach | – | 28 | 220 | body (1) |  | `col_louvre_out` | 0 |
+| `silencer` | metal | detach | – | 45 | 260 | body (1) |  | `col_silencer` | 0 |
+| `fuel` | metal | detach | – | 9 | 160 | base_tank (1) |  | `col_fuel_1`, `col_fuel_2`, `col_fuel_3` | 0 |
+
+#### `drone_dock`: Drone dock with parked quadcopter
+
+1.73 × 1.62 × 1.58 m, 191.5 kg, cover soft, 7,384 / 4,709 triangles, 3 debris bits, 18 textures. Rooms: A3 Bridge Roof, F1 Sky Terrace, A4 Crane Deck, A2 West Roof. Weatherproof delivery / security drone dock on levelling feet: clamshell lid halves open on gas struts, rubber landing pad with a plain ring and four charging contacts, a parked quad drone (camera gimbal, folded props), louvred sides, service door, weather mast with cup anemometer and a GNSS puck, a few purple status lights. Soft cover to 0.75 m. Bridge roof, Sky Terrace service corner or Crane Deck. Soft cover to 0.75 m; the open lids lean out to 1.73 m. The parked drone shatters into small pieces.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `housing` | metal | fixed | – | 150 | 750 | ground |  | `col_housing` | 0 |
+| `lid_l` | metal | detach | – | 14 | 160 | housing (1) |  | `col_lid_l_hull` | 0 |
+| `lid_r` | metal | detach | – | 14 | 160 | housing (1) |  | `col_lid_r_hull` | 0 |
+| `drone` | plastic | shatter | 4 | 6.5 | 60 | housing (1) |  | `col_drone` | 3 |
+| `mast` | metal | detach | – | 3 | 70 | housing (1) |  | `col_mast` | 0 |
+| `door` | metal | detach | – | 4 | 110 | housing (1) |  | `col_door` | 0 |
+
+#### `roof_hatch_box`: Roof access stair box
+
+1.76 × 2.85 × 2.19 m, 5,637.3 kg, cover hard, 2,492 / 733 triangles, 6 debris bits, 21 textures. Rooms: A2 West Roof (plant room door), A4 Crane Deck, A3 Bridge Roof, F1 Sky Terrace. Cast-concrete stair penthouse on a membrane-flashed upstand: mono-pitch standing-seam roof, steel door with kick plate, lever and closer (the door comes off), safety-ochre grab rails, a caged bulkhead lamp under a drip hood, a smoke-vent louvre, an outside step; the landing and stair rail inside. Concrete walls and step stop bullets. Concrete stair penthouse: walls and step stop bullets. It is a closed landmark and cover block (the stair inside is only implied); do not put it over a real opening expecting a route. Its door detaches.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `walls` | stone | fixed | – | 5,200 | 1200 | ground | yes | `col_walls_1`, `col_walls_2`, `col_walls_3`, `col_walls_4`, `col_walls_5`, `col_walls_6`, `col_walls_7` | 0 |
+| `roof` | metal | fixed | – | 180 | 750 | ground |  | `col_roof_1_hull`, `col_roof_2` | 0 |
+| `door` | metal | detach | – | 48 | 300 | walls (1) |  | `col_door` | 0 |
+| `grab_l` | metal | detach | – | 4 | 140 | walls (1) |  | `col_grab_l` | 0 |
+| `grab_r` | metal | detach | – | 4 | 140 | walls (1) |  | `col_grab_r` | 0 |
+| `lamp` | electronics | detach | – | 2 | 50 | walls (1) |  | `col_lamp_1`, `col_lamp_2` | 0 |
+| `lamp_lens` | glass | shatter | 4 | 0.3 | 20 | lamp (1) |  | `col_lamp_lens` | 6 |
+| `vent` | metal | detach | – | 9 | 140 | walls (1) |  | `col_vent` | 0 |
+| `step` | stone | fixed | – | 190 | 1200 | ground | yes | `col_step` | 0 |
+
+#### `pallet_stack`: Pallet of blocks, cable drum and tarp
+
+2.13 × 1.19 × 1.67 m, 1,018 kg, cover hard, 13,068 / 2,006 triangles, 6 debris bits, 27 textures. Rooms: A4 Crane Deck, A2 West Roof, A3 Bridge Roof, F1 Sky Terrace (works corner). Maintenance laydown: a T11 pallet of hollow concrete blocks, shrink-wrapped and ratchet-strapped, under a faded tarp dragged over the back and held down on the roof by a block and a sandbag; a plywood cable drum of black cable on edge beside it, chocked, its tail run out on the deck. The block load (1.17 m) stops bullets; the drum is soft. Works laydown on the Crane Deck or a roof corner. The shrink-wrapped block load (1.17 m) is hard cover; the cable drum beside it is soft; the tarp and wrap fall away when the load breaks.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `pallet` | wood | shatter | 7 | 24 | 120 | ground |  | `col_pallet` | 3 |
+| `load` | stone | shatter | 10 | 650 | 700 | ground | yes | `col_load` | 3 |
+| `wrap` | plastic | detach | – | 1 | 20 | load (1) |  | `col_wrap_1`, `col_wrap_2`, `col_wrap_3`, `col_wrap_4` | 0 |
+| `strap` | fabric | detach | – | 1 | 30 | load (1) |  | `col_strap_1`, `col_strap_2`, `col_strap_3`, `col_strap_4` | 0 |
+| `tarp` | fabric | detach | – | 6 | 60 | load (1) |  | `col_tarp_1`, `col_tarp_2`, `col_tarp_3` | 0 |
+| `weight` | stone | detach | – | 13 | 300 | ground |  | `col_weight` | 0 |
+| `sandbag` | fabric | detach | – | 20 | 90 | ground |  | `col_sandbag` | 0 |
+| `drum` | wood | detach | – | 140 | 260 | ground |  | `col_drum_1_hull`, `col_drum_2_hull` | 0 |
+| `cable` | plastic | detach | – | 160 | 200 | drum (1) |  | `col_cable_1_hull`, `col_cable_2` | 0 |
+| `chocks` | wood | detach | – | 3 | 90 | ground |  | `col_chocks_1`, `col_chocks_2` | 0 |
+
+**G2: Sky Terrace, skybridge and bridge roof**
+
+#### `terrace_sofa`: Terrace sofa, weatherproof three-seat module
+
+2.11 × 0.86 × 0.94 m, 51.9 kg, cover soft, 10,884 / 0 triangles, 0 debris bits, 15 textures. Rooms: F1 Sky Terrace, F1 Sky Terrace (A1 canopy), Bridge roof lounge. Graphite powder-coated aluminium sled frame with woven rope arm and back panels, weathered teak arm caps, quick-dry outdoor cushions whose tops are rain-dark, one ochre pillow. Sky Terrace (A1) lounge, under the kiosk canopy or in the open. Soft cover.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `frame` | metal | detach | – | 26 | 435 | ground |  | `col_frame_1`, `col_frame_2`, `col_frame_3`, `col_frame_4`, `col_frame_5`, `col_frame_6`, `col_frame_7`, `col_frame_8`, `col_frame_9`, `col_frame_10` | 0 |
+| `side_l` | fabric | detach | – | 1.6 | 55 | frame (1) |  | `col_side_l` | 0 |
+| `side_r` | fabric | detach | – | 1.6 | 55 | frame (1) |  | `col_side_r` | 0 |
+| `back_panel` | fabric | detach | – | 2.4 | 65 | frame (1) |  | `col_back_panel` | 0 |
+| `cap_l` | wood | detach | – | 2.2 | 90 | frame (1) |  | `col_cap_l` | 0 |
+| `cap_r` | wood | detach | – | 2.2 | 90 | frame (1) |  | `col_cap_r` | 0 |
+| `cap_back` | wood | detach | – | 2.2 | 90 | frame (1) |  | `col_cap_back` | 0 |
+| `seat_l` | fabric | detach | – | 2.6 | 65 | frame (1) |  | `col_seat_l` | 0 |
+| `back_l` | fabric | detach | – | 1.8 | 55 | frame (1) |  | `col_back_l` | 0 |
+| `seat_c` | fabric | detach | – | 2.6 | 65 | frame (1) |  | `col_seat_c` | 0 |
+| `back_c` | fabric | detach | – | 1.8 | 55 | frame (1) |  | `col_back_c` | 0 |
+| `seat_r` | fabric | detach | – | 2.6 | 65 | frame (1) |  | `col_seat_r` | 0 |
+| `back_r` | fabric | detach | – | 1.8 | 55 | frame (1) |  | `col_back_r` | 0 |
+| `pillow` | fabric | detach | – | 0.5 | 40 | frame (1) |  | `col_pillow` | 0 |
+
+#### `parasol_table`: Cantilever parasol, half-closed in the rain, with an outdoor table
+
+2.77 × 2.69 × 1.83 m, 190.1 kg, cover soft, 7,808 / 3,231 triangles, 6 debris bits, 27 textures. Rooms: F1 Sky Terrace, Bridge roof lounge, A2 West Roof (helipad edge). Cantilever parasol on a cross base weighted with four granite slabs, crank housing on the mast, curved arm and strut; eight-rib canopy half lowered against the rain, wet on top, drips at the rib tips; round slatted teak table on a graphite pedestal; assembled in place (2.4 m across). Sky Terrace or bridge-roof lounge; 2.8 m across, assembled in place. Soft cover; the granite weights shatter.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `base` | metal | fixed | – | 32 | 465 | ground |  | `col_base_1`, `col_base_2`, `col_base_3` | 0 |
+| `weights` | stone | shatter | 10 | 120 | 1155 | base (1) |  | `col_weights_1`, `col_weights_2`, `col_weights_3`, `col_weights_4` | 3 |
+| `mast` | metal | detach | – | 9 | 305 | base (1) |  | `col_mast` | 0 |
+| `crank` | metal | detach | – | 0.6 | 125 | mast (1) |  | `col_crank` | 0 |
+| `arm` | metal | detach | – | 6 | 265 | mast (1) |  | `col_arm_1`, `col_arm_2` | 0 |
+| `ribs` | metal | detach | – | 3.5 | 220 | arm (1) |  | `col_ribs` | 0 |
+| `canopy` | fabric | detach | – | 3 | 65 | ribs (1) |  | `col_canopy_hull` | 0 |
+| `table_base` | metal | detach | – | 9 | 305 | ground |  | `col_table_base_1`, `col_table_base_2` | 0 |
+| `table_top` | wood | shatter | 9 | 7 | 135 | table_base (1) |  | `col_table_top_hull` | 3 |
+
+#### `sun_lounger`: Sun lounger, teak and aluminium
+
+0.84 × 0.90 × 1.96 m, 24.9 kg, cover soft, 7,988 / 2,916 triangles, 6 debris bits, 21 textures. Rooms: F1 Sky Terrace, F1 Veranda, Bridge roof lounge. Brushed aluminium rails on fixed foot legs and two head-end wheels, weathered teak slats (rain-dark), back raised on a ratchet strut, a folded slate towel at the foot. Sky Terrace, in rows of two or three. Low soft cover.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `frame` | metal | detach | – | 9 | 305 | ground |  | `col_frame_1`, `col_frame_2`, `col_frame_3` | 0 |
+| `wheel_l` | plastic | detach | – | 0.8 | 35 | frame (1) |  | `col_wheel_l` | 0 |
+| `wheel_r` | plastic | detach | – | 0.8 | 35 | frame (1) |  | `col_wheel_r` | 0 |
+| `slats` | wood | shatter | 17 | 7 | 135 | frame (1) |  | `col_slats` | 3 |
+| `back_frame` | metal | detach | – | 2.5 | 200 | frame (1) |  | `col_back_frame_1_hull`, `col_back_frame_2_hull` | 0 |
+| `back_slats` | wood | shatter | 10 | 3.5 | 105 | back_frame (1) |  | `col_back_slats_hull` | 3 |
+| `strut` | metal | detach | – | 0.6 | 125 | back_frame (1) |  | `col_strut_1_hull`, `col_strut_2_hull` | 0 |
+| `towel` | fabric | detach | – | 0.7 | 40 | slats (1) |  | `col_towel` | 0 |
+
+#### `patio_heater`: Patio heater, glass flame column
+
+0.60 × 2.29 × 0.60 m, 48.3 kg, cover none, 2,816 / 1,504 triangles, 6 debris bits, 11 textures. Rooms: F1 Sky Terrace, F1 Sky Terrace (A1 canopy), Bridge roof lounge. Brushed stainless pyramid heater: square base cabinet (vented door, gas bottle inside, control knob and igniter, two back wheels), four converging posts with guard rings, quartz tube with a flickering flame column, pyramid reflector cap with a warm glow under it; the flame goes out when the tube breaks. Sky Terrace near seating. Cover none. Its flame is a light-only part that goes out when the quartz tube breaks (the batch E hologram convention).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `base` | metal | detach | – | 22 | 410 | ground |  | `col_base_1`, `col_base_2` | 0 |
+| `door` | metal | detach | – | 2.5 | 200 | base (1) |  | `col_door` | 0 |
+| `tank` | metal | detach | – | 14 | 350 | base (1) |  | `col_tank` | 0 |
+| `frame` | metal | detach | – | 4 | 230 | base (1) |  | `col_frame_1_hull`, `col_frame_2_hull`, `col_frame_3_hull`, `col_frame_4_hull` | 0 |
+| `tube` | glass | shatter | 7 | 2.2 | 15 | frame (1) |  | `col_tube` | 6 |
+| `cap` | metal | detach | – | 3.5 | 220 | frame (1) |  | `col_cap_hull` | 0 |
+| `flame` | electronics | shatter (collapse) | 0 | 0.05 | 1 | tube (1) |  | `col_flame` | 0 |
+
+#### `fire_table`: Gas fire table, cast concrete
+
+1.55 × 0.58 × 0.87 m, 254.4 kg, cover hard, 5,374 / 8,435 triangles, 24 debris bits, 20 textures. Rooms: F1 Sky Terrace, F1 Sky Terrace (A1 canopy), Bridge roof lounge. Hollow cast-concrete fire table (shadow-gap plinth, splash grime at the foot, wet top) with a stainless burner pan of lava rock, a low gas flame, a tempered glass wind guard in a steel channel, a GFRC access door at the back and a control knob at the end; the concrete stops bullets (low cover, 0.42 m). Sky Terrace centrepiece. The concrete body and top stop bullets but it is only 0.58 m tall: crouch cover. Keep it off the defenders' spawn-peek sightlines.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `body` | stone | shatter | 10 | 150 | 1200 | ground | yes | `col_body_1`, `col_body_2`, `col_body_3`, `col_body_4`, `col_body_5`, `col_body_6`, `col_body_7` | 3 |
+| `top` | stone | shatter | 8 | 70 | 965 | body (1) | yes | `col_top_1`, `col_top_2`, `col_top_3`, `col_top_4` | 3 |
+| `pan` | metal | detach | – | 9 | 305 | top (1) |  | `col_pan_1`, `col_pan_2`, `col_pan_3`, `col_pan_4`, `col_pan_5` | 0 |
+| `rocks` | stone | detach | – | 12 | 535 | pan (1) |  | `col_rocks` | 6 |
+| `guard_f` | glass | shatter | 9 | 2.4 | 15 | pan (1) |  | `col_guard_f` | 3 |
+| `guard_b` | glass | shatter | 13 | 2.4 | 15 | pan (1) |  | `col_guard_b` | 3 |
+| `guard_l` | glass | shatter | 11 | 1.1 | 10 | pan (1) |  | `col_guard_l` | 3 |
+| `guard_r` | glass | shatter | 9 | 1.1 | 10 | pan (1) |  | `col_guard_r` | 3 |
+| `flame` | electronics | shatter (collapse) | 0 | 0.05 | 1 | pan (1) |  | `col_flame` | 0 |
+| `door` | stone | detach | – | 6 | 425 | body (1) |  | `col_door` | 0 |
+| `knob` | metal | detach | – | 0.3 | 125 | body (1) |  | `col_knob` | 0 |
+
+#### `bamboo_planter`: Long cast-stone planter with bamboo
+
+2.54 × 3.12 × 1.38 m, 640.8 kg, cover hard, 13,688 / 9,949 triangles, 17 debris bits, 34 textures. Rooms: F1 Sky Terrace, F1 Garden, Bridge roof lounge, A2 West Roof. Two-metre cast-concrete trough on a shadow-gap foot with a weathering-steel coping and splash grime, black pebble mulch, a drip-irrigation loop fed over the back edge from a valve box, and three clumps of rain-heavy bamboo (2.3-3.1 m, card leaf sprays); the concrete trough stops bullets, the bamboo only hides. Sky Terrace edges, the Garden, the bridge-roof lounge, the helipad edge on A2. The concrete trough (0.6 m) stops bullets; the bamboo above it only hides (bullets pass). Good for breaking long terrace sightlines without adding hard cover.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `basin` | stone | shatter | 9 | 340 | 1200 | ground | yes | `col_basin_1`, `col_basin_2`, `col_basin_3`, `col_basin_4`, `col_basin_5` | 3 |
+| `coping` | metal | detach | – | 22 | 410 | basin (1) |  | `col_coping_1`, `col_coping_2`, `col_coping_3`, `col_coping_4` | 0 |
+| `soil` | plant | shatter (collapse) | 7 | 260 | 400 | basin (1) |  | `col_soil` | 5 |
+| `drip` | plastic | detach | – | 0.8 | 35 | soil (1) |  | `col_drip` | 0 |
+| `culms_1` | plant | detach | – | 6 | 30 | soil (1) |  | `col_culms_1` | 3 |
+| `culms_2` | plant | detach | – | 6 | 30 | soil (1) |  | `col_culms_2` | 3 |
+| `culms_3` | plant | detach | – | 6 | 30 | soil (1) |  | `col_culms_3` | 3 |
+
+#### `pergola_canopy`: Louvred pergola, 3 x 3 m
+
+3.12 × 2.70 × 3.14 m, 240.2 kg, cover none, 7,120 / 0 triangles, 0 debris bits, 15 textures. Rooms: F1 Sky Terrace, Bridge roof lounge, A2 West Roof. Freestanding graphite aluminium pergola: four posts on bolted base plates (rust only at the washers), a beam ring with integrated rain gutters, fourteen motorised louvre blades closed down against the rain, a downpipe with brackets and a shoe, warm LED strips under the beams, a drive housing with one purple status dot; assembled in place. Freestanding 3 x 3 m louvred pergola over a terrace seating group; assembled in place. Cover none (slim posts); the closed louvres hide a player from above.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `post_fl` | metal | detach | – | 28 | 445 | ground |  | `col_post_fl` | 0 |
+| `post_fr` | metal | detach | – | 28 | 445 | ground |  | `col_post_fr` | 0 |
+| `post_bl` | metal | detach | – | 28 | 445 | ground |  | `col_post_bl` | 0 |
+| `post_br` | metal | detach | – | 28 | 445 | ground |  | `col_post_br` | 0 |
+| `beams` | metal | detach | – | 60 | 570 | post_fl, post_fr, post_bl, post_br (2) |  | `col_beams_1`, `col_beams_2`, `col_beams_3`, `col_beams_4` | 0 |
+| `louvres_1` | metal | detach | – | 30 | 455 | beams (1) |  | `col_louvres_1` | 0 |
+| `louvres_2` | metal | detach | – | 30 | 455 | beams (1) |  | `col_louvres_2` | 0 |
+| `downpipe` | metal | detach | – | 4 | 230 | post_bl (1) |  | `col_downpipe_1`, `col_downpipe_2` | 0 |
+| `lights` | electronics | detach | – | 1.2 | 25 | beams (1) |  | `col_lights` | 0 |
+| `motor` | electronics | detach | – | 3 | 35 | beams (1) |  | `col_motor` | 0 |
+
+#### `bollard_light`: Path bollard lights, pair
+
+1.20 × 0.84 × 0.20 m, 106.4 kg, cover none, 1,872 / 2,208 triangles, 12 debris bits, 15 textures. Rooms: F1 Sky Terrace, Skybridge approach, A2 West Roof (helipad edge), Bridge roof. Two granite path bollards on stainless shadow-gap bases, each with a louvred stainless lamp head glowing warm on four sides under a wet cap; dense stone (stops bullets) but too slim to hide behind; placed 1 m apart as one piece. A pair of path bollards 1 m apart as one piece, 0.2 m deep: fits the 0.8 m ledges and lines terrace paths. Granite columns stop bullets but are too slim to hide behind (cover none).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `column_l` | stone | shatter | 7 | 48 | 850 | ground | yes | `col_column_l` | 3 |
+| `head_l` | metal | detach | – | 4 | 230 | column_l (1) |  | `col_head_l_1`, `col_head_l_2`, `col_head_l_3`, `col_head_l_4`, `col_head_l_5`, `col_head_l_6` | 0 |
+| `lens_l` | glass | shatter | 4 | 1.2 | 10 | head_l (1) |  | `col_lens_l` | 3 |
+| `column_r` | stone | shatter | 5 | 48 | 850 | ground | yes | `col_column_r` | 3 |
+| `head_r` | metal | detach | – | 4 | 230 | column_r (1) |  | `col_head_r_1`, `col_head_r_2`, `col_head_r_3`, `col_head_r_4`, `col_head_r_5`, `col_head_r_6` | 0 |
+| `lens_r` | glass | shatter | 4 | 1.2 | 10 | head_r (1) |  | `col_lens_r` | 3 |
+
+#### `security_camera_pole`: Exterior security camera pole
+
+0.30 × 3.42 × 0.84 m, 92.7 kg, cover none, 5,364 / 1,196 triangles, 12 debris bits, 15 textures. Rooms: A2 West Roof (plant room), Skybridge mouth, NW gantry, F1 Sky Terrace (kiosk). Galvanised tapered pole on a gusseted base plate with four anchor bolts (rust at the washers) and a hand-hole cover; strapped junction box with conduit and one purple status light; arm with a pendant dome camera, a bullet camera with a sun hood on a swivel mount and an IR illuminator. Plant room corner, skybridge mouth, NW gantry, terrace kiosk. 0.84 m deep with the arm: on a 0.8 m ledge mount it with the arm along the ledge. Cover none.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `pole` | metal | fixed | – | 75 | 615 | ground |  | `col_pole_1`, `col_pole_2` | 0 |
+| `box` | metal | detach | – | 6 | 265 | pole (1) |  | `col_box` | 0 |
+| `conduit` | plastic | detach | – | 0.4 | 30 | box (1) |  | `col_conduit` | 0 |
+| `arm` | metal | detach | – | 5 | 250 | pole (1) |  | `col_arm_1`, `col_arm_2_hull` | 0 |
+| `dome` | electronics | detach | – | 2.2 | 30 | arm (1) |  | `col_dome` | 0 |
+| `dome_glass` | glass | shatter | 5 | 0.3 | 10 | dome (1) |  | `col_dome_glass` | 6 |
+| `bullet` | electronics | detach | – | 2.5 | 30 | pole (1) |  | `col_bullet_hull` | 0 |
+| `bullet_glass` | glass | shatter | 4 | 0.1 | 10 | bullet (1) |  | `col_bullet_glass_hull` | 6 |
+| `ir_lamp` | electronics | detach | – | 1.2 | 25 | pole (1) |  | `col_ir_lamp` | 0 |
+
+#### `holo_pylon`: Exterior holo advert pylon
+
+0.72 × 3.50 × 0.66 m, 401.6 kg, cover hard, 4,112 / 6,224 triangles, 15 debris bits, 24 textures. Rooms: F1 Sky Terrace, Skybridge approach (East Tower hall), Bridge roof, A2 West Roof. Basalt plinth with a purple shadow-gap line, a granite-clad steel column (1.5 m) and a slim graphite mast to an emitter crown at 3.5 m; between the lower and upper emitter lenses two twisting light ribbons, a faint beam and data motes (abstract, no text); the hologram is light only and goes out with the lenses; the stone column stops bullets but is only 0.5 m wide. Exterior advert pylon for the terrace, bridge approach or bridge roof. The stone column stops bullets but is only 0.5 m wide. The hologram is light only and goes out with its lenses.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `plinth` | stone | shatter | 6 | 140 | 1200 | ground | yes | `col_plinth` | 3 |
+| `spine` | metal | fixed | – | 120 | 720 | ground | yes | `col_spine_1`, `col_spine_2`, `col_spine_3` | 0 |
+| `clad_l` | stone | shatter | 7 | 70 | 965 | spine (1) | yes | `col_clad_l_1`, `col_clad_l_2`, `col_clad_l_3` | 3 |
+| `clad_r` | stone | shatter | 5 | 70 | 965 | spine (1) | yes | `col_clad_r_1`, `col_clad_r_2`, `col_clad_r_3` | 3 |
+| `lens` | glass | shatter | 2 | 1.5 | 15 | spine (1) |  | `col_lens_1`, `col_lens_2` | 6 |
+| `holo` | electronics | shatter (collapse) | 0 | 0.05 | 1 | lens (1) |  | `col_holo` | 0 |
+
+**G3: Vents for roofs, ledges and plant rooms**
+
+#### `turbine_vents`: Turbine ventilators, cluster of three
+
+1.63 × 1.08 × 1.27 m, 70.6 kg, cover soft, 14,604 / 0 triangles, 0 debris bits, 12 textures. Rooms: A2 West Roof (plant room lee), Bridge Roof, A4 Crane Deck, West Roof plant room exterior. Three wind-driven whirlybird extract ventilators (600, 400 and 300 mm throats) on galvanised curbs bolted to the slab; spun galvanised vanes, bearing spider and spindle, crimped throats. Each head_k is one part that spins about +Y through its pivot. Roof slab near the plant room, bridge roof, Crane Deck. Each `head_k` carries a spin hint (+Y through its pivot, clockwise from above, 1.5 / 1.9 / 2.25 rev/s). Soft cover to 1.1 m.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `curb_1` | metal | fixed | – | 16.8 | 375 | ground |  | `col_curb_1` | 0 |
+| `throat_1` | metal | detach | – | 5 | 250 | curb_1 (1) |  | `col_throat_1` | 0 |
+| `head_1` | metal | detach (spin +Y, -1.5 rev/s) | – | 6.3 | 270 | throat_1 (1) |  | `col_head_1_hull` | 0 |
+| `curb_2` | metal | fixed | – | 14.1 | 355 | ground |  | `col_curb_2` | 0 |
+| `throat_2` | metal | detach | – | 4 | 230 | curb_2 (1) |  | `col_throat_2` | 0 |
+| `head_2` | metal | detach (spin +Y, -1.91 rev/s) | – | 4.74 | 245 | throat_2 (1) |  | `col_head_2_hull` | 0 |
+| `curb_3` | metal | fixed | – | 12.3 | 335 | ground |  | `col_curb_3` | 0 |
+| `throat_3` | metal | detach | – | 3.5 | 220 | curb_3 (1) |  | `col_throat_3` | 0 |
+| `head_3` | metal | detach (spin +Y, -2.25 rev/s) | – | 3.9 | 230 | throat_3 (1) |  | `col_head_3_hull` | 0 |
+
+#### `mushroom_vent`: Mushroom-cap roof exhaust fan
+
+1.25 × 1.02 × 1.25 m, 91.5 kg, cover soft, 7,872 / 0 triangles, 0 debris bits, 19 textures. Rooms: A2 West Roof (plant room lee), West Roof plant room exterior, Bridge Roof, A1 Sky Terrace (service corner). Centrifugal down-blast exhaust fan: spun aluminium mushroom hood on four flat-bar brackets over a 150 mm discharge gap closed by bird mesh, spun venturi neck, base plate on an insulated galvanised curb; weatherproof isolator box with flexible conduit. Roof slab or plant room exterior. Soft cover.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `curb` | metal | fixed | – | 38 | 490 | ground |  | `col_curb_1`, `col_curb_2` | 0 |
+| `base` | metal | detach | – | 34 | 475 | curb (1) |  | `col_base` | 0 |
+| `mesh` | metal | detach | – | 3 | 210 | base (1) |  | `col_mesh` | 0 |
+| `hood` | metal | detach | – | 14 | 350 | base (1) |  | `col_hood_hull` | 0 |
+| `isolator` | metal | detach | – | 2.5 | 200 | curb (1) |  | `col_isolator` | 0 |
+
+#### `upblast_fan`: Kitchen upblast exhaust fan
+
+1.13 × 1.18 × 0.91 m, 92.2 kg, cover soft, 7,188 / 0 triangles, 0 debris bits, 19 textures. Rooms: A2 West Roof (plant room lee), West Roof plant room exterior, F1 Kitchen roof / Sky Terrace service yard. Grease-rated upblast fan: spun aluminium windband with a rolled bead and bird screen over the motor cover, square base shroud with hinge kit, grease trap box with drain spout, tall galvanised curb; grease runs down the curb under the trap. Kitchen-extract fan on the Sky Terrace service yard roof or the plant room. `base` tilts open on its hinge pins at -X. Soft cover.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `curb` | metal | fixed | – | 42 | 510 | ground |  | `col_curb` | 0 |
+| `base` | metal | detach | – | 30 | 455 | curb (1) |  | `col_base` | 0 |
+| `windband` | metal | detach | – | 16 | 370 | base (1) |  | `col_windband` | 0 |
+| `screen` | metal | detach | – | 1.2 | 155 | windband (1) |  | `col_screen` | 0 |
+| `grease_box` | metal | detach | – | 3 | 210 | base (1) |  | `col_grease_box` | 0 |
+
+#### `gooseneck_vents`: Gooseneck intakes and J-pipe
+
+1.38 × 0.98 × 0.87 m, 44.6 kg, cover none, 10,900 / 0 triangles, 0 debris bits, 16 textures. Rooms: A2 West Roof (plant room lee), Bridge Roof, F2/F3 ledge ends, NW gantry landing. Two galvanised gooseneck intakes (250 and 200 mm) with gored 180 degree bends, lock seams, brace straps and bird mesh in the downturned mouths, one on a curb, one through a cone flashing with a storm collar; a 100 mm J-pipe through an EPDM boot. Roof slabs and ledge ends where the ledge is wider. Cover none (under 1 m, thin pipes).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `curb_a` | metal | fixed | – | 16 | 370 | ground |  | `col_curb_a` | 0 |
+| `neck_a` | metal | detach | – | 9 | 305 | curb_a (1) |  | `col_neck_a_1`, `col_neck_a_2`, `col_neck_a_3` | 0 |
+| `mesh_a` | metal | detach | – | 0.3 | 125 | neck_a (1) |  | `col_mesh_a` | 0 |
+| `flashing_b` | metal | fixed | – | 7 | 280 | ground |  | `col_flashing_b` | 0 |
+| `neck_b` | metal | detach | – | 8 | 290 | flashing_b (1) |  | `col_neck_b_1`, `col_neck_b_2`, `col_neck_b_3` | 0 |
+| `mesh_b` | metal | detach | – | 0.3 | 125 | neck_b (1) |  | `col_mesh_b` | 0 |
+| `boot_j` | plastic | fixed | – | 1.5 | 40 | ground |  | `col_boot_j` | 0 |
+| `jpipe` | metal | detach | – | 2.5 | 200 | boot_j (1) |  | `col_jpipe` | 0 |
+
+#### `louvred_penthouse`: Louvred intake penthouse
+
+1.31 × 1.21 × 1.11 m, 163 kg, cover soft, 4,056 / 0 triangles, 0 debris bits, 16 textures. Rooms: A2 West Roof (plant room lee), West Roof plant room exterior, Bridge Roof, A4 Crane Deck. Rectangular fresh-air intake penthouse: drainable J-gutter blade louvres on all four sides between formed corner posts, bird screen behind, hipped galvanised cap with standing seams and a drip edge, on a galvanised base channel bolted to the slab. Fresh-air intake on a roof slab. Soft cover (sheet louvres).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `base` | metal | fixed | – | 40 | 500 | ground |  | `col_base` | 0 |
+| `frame` | metal | fixed | – | 45 | 520 | ground |  | `col_frame` | 0 |
+| `louvre_s` | metal | detach | – | 14 | 350 | frame (1) |  | `col_louvre_s` | 0 |
+| `louvre_n` | metal | detach | – | 14 | 350 | frame (1) |  | `col_louvre_n` | 0 |
+| `louvre_e` | metal | detach | – | 12 | 335 | frame (1) |  | `col_louvre_e` | 0 |
+| `louvre_w` | metal | detach | – | 12 | 335 | frame (1) |  | `col_louvre_w` | 0 |
+| `screen` | metal | detach | – | 4 | 230 | frame (1) |  | `col_screen_1`, `col_screen_2`, `col_screen_3`, `col_screen_4` | 0 |
+| `roof` | metal | detach | – | 22 | 410 | frame (1) |  | `col_roof_hull` | 0 |
+
+#### `duct_run`: Clad rooftop duct run
+
+3.19 × 2.30 × 0.98 m, 102.3 kg, cover soft, 7,084 / 0 triangles, 0 debris bits, 21 textures. Rooms: A2 West Roof (plant room lee), West Roof plant room exterior, Bridge Roof, A4 Crane Deck. Insulated 550 x 450 mm supply duct with stucco-embossed aluminium jacketing, draw bands with screws, dents; strut-channel stands on rubber roof pads with hold-down straps; elbow up into a riser and a second elbow back into a flanged wall collar (flat back at -Z). Along a plant room wall: the flanged collar is flat at -Z and goes against the wall at the riser end. 3.19 m long, 2.3 m tall at the riser. The strut stands are loose parts on rubber pads. Soft cover.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `stand_1` | plastic | detach | – | 9 | 75 | ground |  | `col_stand_1` | 0 |
+| `stand_2` | plastic | detach | – | 9 | 75 | ground |  | `col_stand_2` | 0 |
+| `stand_3` | plastic | detach | – | 9 | 75 | ground |  | `col_stand_3` | 0 |
+| `run_1` | metal | detach | – | 17.5 | 380 | stand_1, stand_2 (1) |  | `col_run_1` | 0 |
+| `run_2` | metal | detach | – | 16.8 | 375 | stand_2, stand_3 (1) |  | `col_run_2` | 0 |
+| `end_cap` | metal | detach | – | 3 | 210 | run_1 (1) |  | `col_end_cap` | 0 |
+| `elbow` | metal | detach | – | 9 | 305 | run_2 (1) |  | `col_elbow_hull` | 0 |
+| `riser` | metal | detach | – | 8 | 290 | elbow, elbow_top (1) |  | `col_riser` | 0 |
+| `elbow_top` | metal | detach | – | 9 | 305 | collar (1) |  | `col_elbow_top` | 0 |
+| `collar` | metal | fixed | – | 12 | 335 | ground |  | `col_collar` | 0 |
+
+#### `wall_louvre`: Facade louvre panel
+
+2.04 × 1.51 × 0.20 m, 95.8 kg, cover none, 2,422 / 0 triangles, 0 debris bits, 13 textures. Rooms: West Roof plant room walls, F1 Plant Room exterior wall, F2/F3 ledge plant-room openings, A4 Crane Deck site hut. Two-bay drainable blade louvre, 2.0 x 1.5 m: extruded aluminium perimeter frame and mullion in anthracite powder coat, 24 J-gutter blades clipped into the jambs, bird screen behind, sloped sill flashing with a drip; flat back at -Z goes on the wall. Each blade is a part that comes loose (bending is not modelled). Wall piece: flat back at -Z. Its origin is under the panel at the bottom of the sill (y 0): to mount it up a wall, place the origin at the sill height you want. 24 blades come loose one by one. Cover none.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `frame` | metal | fixed | – | 38 | 490 | ground |  | `col_frame_1`, `col_frame_2`, `col_frame_3`, `col_frame_4`, `col_frame_5` | 0 |
+| `blade_1` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_1` | 0 |
+| `blade_2` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_2` | 0 |
+| `blade_3` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_3` | 0 |
+| `blade_4` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_4` | 0 |
+| `blade_5` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_5` | 0 |
+| `blade_6` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_6` | 0 |
+| `blade_7` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_7` | 0 |
+| `blade_8` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_8` | 0 |
+| `blade_9` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_9` | 0 |
+| `blade_10` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_10` | 0 |
+| `blade_11` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_11` | 0 |
+| `blade_12` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_12` | 0 |
+| `blade_13` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_13` | 0 |
+| `blade_14` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_14` | 0 |
+| `blade_15` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_15` | 0 |
+| `blade_16` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_16` | 0 |
+| `blade_17` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_17` | 0 |
+| `blade_18` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_18` | 0 |
+| `blade_19` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_19` | 0 |
+| `blade_20` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_20` | 0 |
+| `blade_21` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_21` | 0 |
+| `blade_22` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_22` | 0 |
+| `blade_23` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_23` | 0 |
+| `blade_24` | metal | detach | – | 2.2 | 120 | frame (1) |  | `col_blade_24` | 0 |
+| `screen` | metal | detach | – | 5 | 250 | frame (1) |  | `col_screen` | 0 |
+
+#### `relief_vent`: Plumbing vent stacks through flashing boots
+
+1.01 × 0.76 × 0.55 m, 17.6 kg, cover none, 4,458 / 0 triangles, 0 debris bits, 13 textures. Rooms: A2 West Roof, Bridge Roof, A1 Sky Terrace (service corner), F1/F2 ledge corners. Three soil-and-vent pipes through the roof: 110 mm PVC through a dressed lead slate with a cast cowl on three legs, 75 mm PVC through an EPDM boot with a rain cap over a mesh band, 50 mm galvanised pipe through an EPDM boot with a wire-mesh cage cap; worm-drive clamps, sealant. Three small soil-vent stacks: roof slabs, terrace service corner, ledge corners (0.55 m deep fits a 0.8 m ledge). Cover none.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `flashing_a` | metal | fixed | – | 9 | 305 | ground |  | `col_flashing_a` | 0 |
+| `pipe_a` | plastic | detach | – | 1.65 | 40 | flashing_a (1) |  | `col_pipe_a` | 0 |
+| `cap_a` | metal | detach | – | 1.4 | 165 | pipe_a (1) |  | `col_cap_a` | 0 |
+| `boot_b` | plastic | fixed | – | 1.2 | 35 | ground |  | `col_boot_b` | 0 |
+| `pipe_b` | plastic | detach | – | 1.2 | 35 | boot_b (1) |  | `col_pipe_b` | 0 |
+| `cap_b` | metal | detach | – | 0.8 | 135 | pipe_b (1) |  | `col_cap_b` | 0 |
+| `boot_c` | plastic | fixed | – | 1.2 | 35 | ground |  | `col_boot_c` | 0 |
+| `pipe_c` | metal | detach | – | 0.9 | 140 | boot_c (1) |  | `col_pipe_c` | 0 |
+| `cap_c` | metal | detach | – | 0.3 | 125 | pipe_c (1) |  | `col_cap_c` | 0 |
+
+#### `ac_cassette_row`: Split-AC outdoor units on a ledge stand
+
+2.87 × 1.20 × 0.45 m, 160.8 kg, cover soft, 14,922 / 0 triangles, 0 debris bits, 21 textures. Rooms: A4 Crane Deck site hut wall, West Roof plant room exterior, A3 Skybridge hall exterior, F2/F3 ledge corners (only where the ledge is wider). Three small inverter condensers on anti-vibration pads on a galvanised ledge stand bolted to the wall (flat back at -Z): wire-guarded condenser coils, front fan grilles over spinnable propeller fans, insulated refrigerant pipes and cables into ivory PVC trunking, condensate hoses down to the ledge; one purple status LED per unit. Wall piece (rack flat at -Z): the Crane Deck site hut, the plant room exterior, the bridge hall exterior. 0.45 m deep, so it blocks more than half of a 0.8 m ledge route: do not put it on ledges players run along, only on wide ledge corners. Each `fan_k` carries a spin hint (+Z, 8 rev/s by default; scale it down).
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `rack` | metal | fixed | – | 48 | 530 | ground |  | `col_rack_1`, `col_rack_2`, `col_rack_3`, `col_rack_4`, `col_rack_5` | 0 |
+| `unit_1` | metal | detach | – | 34 | 475 | rack (1) |  | `col_unit_1_1`, `col_unit_1_2`, `col_unit_1_3`, `col_unit_1_4`, `col_unit_1_5` | 0 |
+| `grille_1` | plastic | detach | – | 0.8 | 35 | unit_1 (1) |  | `col_grille_1` | 0 |
+| `fan_1` | plastic | detach (spin +Z, 8 rev/s) | – | 0.6 | 30 | unit_1 (1) |  | `col_fan_1` | 0 |
+| `unit_2` | metal | detach | – | 34 | 475 | rack (1) |  | `col_unit_2_1`, `col_unit_2_2`, `col_unit_2_3`, `col_unit_2_4`, `col_unit_2_5` | 0 |
+| `grille_2` | plastic | detach | – | 0.8 | 35 | unit_2 (1) |  | `col_grille_2` | 0 |
+| `fan_2` | plastic | detach (spin +Z, 8 rev/s) | – | 0.6 | 30 | unit_2 (1) |  | `col_fan_2` | 0 |
+| `unit_3` | metal | detach | – | 34 | 475 | rack (1) |  | `col_unit_3_1`, `col_unit_3_2`, `col_unit_3_3`, `col_unit_3_4`, `col_unit_3_5` | 0 |
+| `grille_3` | plastic | detach | – | 0.8 | 35 | unit_3 (1) |  | `col_grille_3` | 0 |
+| `fan_3` | plastic | detach (spin +Z, 8 rev/s) | – | 0.6 | 30 | unit_3 (1) |  | `col_fan_3` | 0 |
+| `trunking` | plastic | detach | – | 6 | 65 | rack (1) |  | `col_trunking_1`, `col_trunking_2` | 0 |
+| `drains` | plastic | detach | – | 0.6 | 30 | rack (1) |  | `col_drains_1`, `col_drains_2`, `col_drains_3` | 0 |
+
+#### `grate_vent`: Exhaust grate on a concrete plinth
+
+1.65 × 1.59 × 1.00 m, 1,257.1 kg, cover hard, 2,196 / 2,921 triangles, 3 debris bits, 25 textures. Rooms: A1 Sky Terrace (service corner), A2 West Roof (plant room lee), Bridge Roof, A4 Crane Deck. Cast concrete plinth (120 mm walls, chamfered arrises, stained foot) over a ventilation shaft: galvanised angle nosing, walk-over bearing-bar grating with hold-down clips, dark lined shaft with damper blades; steam_1..3 are soft translucent cards the game can animate (scroll / scale / fade) and should ignore for physics. Ventilation shaft grate on a 0.55 m concrete plinth: A1 service corner, A2 plant room lee, Crane Deck. The plinth stops bullets and is `breach_only`: only explosions damage it. `steam_1..3` are FX cards (`fx: steam`): no physics, the game animates them. size_m height (1.59 m) includes the steam; the solid plinth is 0.55 m.
+
+| Part | Class | Break | Chunks | kg | hp | Attached to (need) | Stops bullets | Colliders | Debris |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `plinth` | stone | shatter (breach only) | 12 | 1,150 | 1200 | ground | yes | `col_plinth_1`, `col_plinth_2`, `col_plinth_3`, `col_plinth_4` | 3 |
+| `frame` | metal | fixed | – | 30 | 455 | ground |  | `col_frame_1`, `col_frame_2` | 0 |
+| `shaft` | metal | fixed | – | 25 | 425 | ground |  | `col_shaft` | 0 |
+| `grate` | metal | detach | – | 52 | 600 | frame (1) |  | `col_grate` | 0 |
+| `steam_1` | plastic | fixed (fx steam) | – | 0.05 | 30 | ground |  | `col_steam_1` | 0 |
+| `steam_2` | plastic | fixed (fx steam) | – | 0.05 | 30 | ground |  | `col_steam_2` | 0 |
+| `steam_3` | plastic | fixed (fx steam) | – | 0.05 | 30 | ground |  | `col_steam_3` | 0 |
+
 ## Changing and rebuilding
 
 `viewer.html` is the source: everything is procedural three.js r0.180.0 inlined in one module. It has these
@@ -1448,7 +2117,7 @@ sections in order:
 - **Builder.** `defPiece`, `Piece` and `Part`.
 - **Fracture.** Voronoi cells cut by plane clipping for convex meshes, or three-bvh-csg for others. Wood cells
   stretch along the grain; glass cells are radial round an impact point.
-- **Pieces.** Batch 0 and A–F, one `defPiece({ id, name, batch, rooms, cover, note, build(P) })` each.
+- **Pieces.** Batch 0 and A–G (G0 holds the materials the exterior sets share), one `defPiece({ id, name, batch, rooms, cover, note, build(P) })` each.
 - **Viewer.**
 
 A piece is built like this:
@@ -1469,7 +2138,8 @@ boards breaks board by board; on by default), `pivot` (hinges), `mass`, `health`
 (boxes in piece coordinates to cut along, such as an upholstered body's build lines; items within `snap`, 18 mm, of
 a cut stay whole), `bulge` and `recess` (lumps on the cuts and how far the cap sinks behind the cover; fabric 0.005
 and 0.012), `teeth: false` (straight wood cuts), `tear: false` (paper cracks like the rest), `collapse`, `liquid` (a collapse
-part whose chunks drain away) and `breachOnly` (only explosions damage it; written as `breach_only`). Wood teeth that would cost more than max(6000, 5 × the
+part whose chunks drain away), `breachOnly` (only explosions damage it; written as `breach_only`), `spin: [ax, ay, az, rps]`
+(written as `spin: { axis, rps }`) and `fx` (`'steam'`). Wood teeth that would cost more than max(6000, 5 × the
 part's own) triangles fall back to straight cuts. Masses default to volume × class density, and health to the
 scale above. Debris: shatter parts get 3 bits (paper 5, glass 6, fabric 6, tempered glass 24 cubes); detach parts none unless they ask for
 some. After building, the piece is moved so the footprint of its render meshes (not the collider proxies) is

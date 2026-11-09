@@ -631,6 +631,480 @@
    "name": "led_red",
    "cls": "electronics",
    "inner": "pcb"
+  },
+  {
+   "key": "gxGalv",
+   "name": "steel_galvanised",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "gxGalvWet",
+   "name": "steel_galvanised_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "gxConc",
+   "name": "concrete_weathered",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "gxConcWet",
+   "name": "concrete_weathered_wet",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "gxRust",
+   "name": "rust_bloom",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Paint",
+   "name": "powder_coat_grey",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1PaintWet",
+   "name": "powder_coat_grey_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Dark",
+   "name": "powder_coat_graphite",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1DarkWet",
+   "name": "powder_coat_graphite_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Sage",
+   "name": "powder_coat_sage",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1SageWet",
+   "name": "powder_coat_sage_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Soot",
+   "name": "steel_sooted",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Fins",
+   "name": "coil_fins",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Radome",
+   "name": "plastic_radome",
+   "cls": "plastic",
+   "inner": "g1Radome"
+  },
+  {
+   "key": "g1Ochre",
+   "name": "paint_safety_ochre",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Red",
+   "name": "plastic_red",
+   "cls": "plastic",
+   "inner": "g1Red"
+  },
+  {
+   "key": "g1Tarp",
+   "name": "fabric_tarp_faded",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g1Canvas",
+   "name": "fabric_canvas",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g1Wrap",
+   "name": "plastic_shrinkwrap",
+   "cls": "plastic",
+   "inner": "g1Wrap"
+  },
+  {
+   "key": "g1Pine",
+   "name": "wood_pallet",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "g1Ply",
+   "name": "wood_plywood",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "g1Alu",
+   "name": "aluminium_weathered",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Hole",
+   "name": "cavity_dark",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g1Lens",
+   "name": "glass_lamp_warm",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "g2Teak",
+   "name": "wood_teak_weathered",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "g2TeakWet",
+   "name": "wood_teak_wet",
+   "cls": "wood",
+   "inner": "oakInner"
+  },
+  {
+   "key": "g2Concrete",
+   "name": "concrete_cast",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2ConcreteWet",
+   "name": "concrete_wet",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2ConcreteGrime",
+   "name": "concrete_grime",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2Corten",
+   "name": "steel_corten",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g2CortenWet",
+   "name": "steel_corten_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g2Powder",
+   "name": "powdercoat_graphite",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g2PowderWet",
+   "name": "powdercoat_graphite_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g2PowderGrey",
+   "name": "powdercoat_grey",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g2SteelWet",
+   "name": "steel_brushed_wet",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g2GraniteWet",
+   "name": "stone_granite_wet",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2BasaltWet",
+   "name": "stone_basalt_wet",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2GraniteGrime",
+   "name": "stone_granite_grime",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2Rope",
+   "name": "rope_woven",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2Fab",
+   "name": "fabric_outdoor_stone",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2FabWet",
+   "name": "fabric_outdoor_wet",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2FabOchre",
+   "name": "fabric_outdoor_ochre",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2Towel",
+   "name": "fabric_towel_slate",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2TowelWet",
+   "name": "fabric_towel_wet",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2Canopy",
+   "name": "fabric_canopy",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2CanopyWet",
+   "name": "fabric_canopy_wet",
+   "cls": "fabric",
+   "inner": "foam"
+  },
+  {
+   "key": "g2Lava",
+   "name": "stone_lava",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g2Culm",
+   "name": "bamboo_culm",
+   "cls": "plant",
+   "inner": "woodInner"
+  },
+  {
+   "key": "g2Sheath",
+   "name": "bamboo_sheath",
+   "cls": "plant",
+   "inner": "woodInner"
+  },
+  {
+   "key": "g2Leaf",
+   "name": "foliage_bamboo",
+   "cls": "plant",
+   "inner": "g2Leaf"
+  },
+  {
+   "key": "g2LitWarm",
+   "name": "glass_lit_warm",
+   "cls": "glass",
+   "inner": "glassEdge"
+  },
+  {
+   "key": "g2LedIR",
+   "name": "led_ir",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Lens",
+   "name": "holo_lens_pylon",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2FlameCol",
+   "name": "flame_column",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Flame",
+   "name": "flame_tongue",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Glow",
+   "name": "glow_warm",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2GlowLow",
+   "name": "glow_warm_low",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Ribbon",
+   "name": "holo_ribbon",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Ribbon2",
+   "name": "holo_ribbon_cool",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Beam",
+   "name": "holo_beam_pylon",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g2Spark",
+   "name": "holo_spark",
+   "cls": "electronics",
+   "inner": "pcb"
+  },
+  {
+   "key": "g3GalvOld",
+   "name": "steel_galvanised_old",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Alu",
+   "name": "aluminium_spun",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3AluGrease",
+   "name": "aluminium_greasy",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Clad",
+   "name": "aluminium_cladding",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Anth",
+   "name": "powder_anthracite",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Grey",
+   "name": "powder_grey",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Ivory",
+   "name": "powder_ivory",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Fins",
+   "name": "condenser_fins",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Lead",
+   "name": "lead_flashing",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Copper",
+   "name": "copper_tarnished",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Dark",
+   "name": "steel_interior_dark",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3ConcreteDirty",
+   "name": "concrete_stained",
+   "cls": "stone",
+   "inner": "stoneInner"
+  },
+  {
+   "key": "g3PvcGrey",
+   "name": "pvc_grey",
+   "cls": "plastic",
+   "inner": "g3PvcGrey"
+  },
+  {
+   "key": "g3Red",
+   "name": "plastic_red_handle",
+   "cls": "plastic",
+   "inner": "g3Red"
+  },
+  {
+   "key": "g3PvcWhite",
+   "name": "pvc_white",
+   "cls": "plastic",
+   "inner": "g3PvcWhite"
+  },
+  {
+   "key": "g3Epdm",
+   "name": "epdm_black",
+   "cls": "plastic",
+   "inner": "g3Epdm"
+  },
+  {
+   "key": "g3Mesh",
+   "name": "wire_mesh",
+   "cls": "metal",
+   "inner": "metalInner"
+  },
+  {
+   "key": "g3Steam",
+   "name": "steam_card",
+   "cls": "plastic",
+   "inner": "g3Steam"
   }
  ],
  "pieces": [
@@ -18142,6 +18616,7564 @@
    },
    "hidden_scale": 0.0001,
    "note": "stainless cabinet against the wall, red-painted header with a pilot lamp and a plain alarm button; glazed upper door over a swinging hose reel, angle valve and nozzle; glazed lower door over a red extinguisher with a plain gauge and a fire blanket pouch; no text"
+  },
+  {
+   "id": "hvac_condenser",
+   "name": "Rooftop condenser unit on dunnage",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "A3 Bridge Roof",
+    "A4 Crane Deck",
+    "F1 Sky Terrace service corner"
+   ],
+   "cover": "hard",
+   "size_m": [
+    3.07,
+    1.825,
+    1.215
+   ],
+   "floor_contact": 0,
+   "mass_kg": 715,
+   "parts": [
+    {
+     "part": "dunnage",
+     "material": "metal",
+     "materials": [
+      "concrete_weathered",
+      "rubber",
+      "steel_galvanised",
+      "plastic_dark",
+      "rust_bloom"
+     ],
+     "mass": 170,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_dunnage_1",
+      "col_dunnage_2",
+      "col_dunnage_3"
+     ]
+    },
+    {
+     "part": "casing",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "powder_coat_grey",
+      "powder_coat_grey_wet",
+      "cavity_dark",
+      "steel_galvanised"
+     ],
+     "mass": 420,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_casing_1",
+      "col_casing_2",
+      "col_casing_3",
+      "col_casing_4",
+      "col_casing_5",
+      "col_casing_6",
+      "col_casing_7",
+      "col_casing_8",
+      "col_casing_9"
+     ],
+     "note": "compressors, receiver and coil bundles behind the panels: stops bullets"
+    },
+    {
+     "part": "coil_f",
+     "material": "metal",
+     "materials": [
+      "coil_fins",
+      "brass",
+      "powder_coat_graphite"
+     ],
+     "mass": 32,
+     "health": 150,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_coil_f"
+     ]
+    },
+    {
+     "part": "coil_b",
+     "material": "metal",
+     "materials": [
+      "coil_fins",
+      "brass",
+      "powder_coat_graphite"
+     ],
+     "mass": 32,
+     "health": 150,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_coil_b"
+     ]
+    },
+    {
+     "part": "panel_f",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "steel_brushed",
+      "cavity_dark",
+      "powder_coat_graphite",
+      "screen",
+      "led_purple"
+     ],
+     "mass": 8,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_panel_f"
+     ]
+    },
+    {
+     "part": "panel_b",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "steel_brushed",
+      "cavity_dark"
+     ],
+     "mass": 8,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_panel_b"
+     ]
+    },
+    {
+     "part": "panel_r",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "steel_brushed",
+      "cavity_dark"
+     ],
+     "mass": 7,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_panel_r"
+     ]
+    },
+    {
+     "part": "fan_1",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark",
+      "powder_coat_graphite"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan_1"
+     ]
+    },
+    {
+     "part": "guard_1",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite"
+     ],
+     "mass": 4,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_guard_1"
+     ]
+    },
+    {
+     "part": "fan_2",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark",
+      "powder_coat_graphite"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan_2"
+     ]
+    },
+    {
+     "part": "guard_2",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite"
+     ],
+     "mass": 4,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_guard_2"
+     ]
+    },
+    {
+     "part": "isolator",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "paint_safety_ochre",
+      "plastic_red",
+      "plastic_dark"
+     ],
+     "mass": 6,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "dunnage"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_isolator"
+     ]
+    },
+    {
+     "part": "pipes",
+     "material": "metal",
+     "materials": [
+      "rubber",
+      "brass",
+      "steel_galvanised"
+     ],
+     "mass": 6,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pipes"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 12148,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "air-cooled condenser: two top fans in venturi collars under wire guards, fin coils front and back behind guard rods, a compressor bay with latched service panels, on spring mounts over two galvanised I-beams on concrete pads; isolator on a strut post, insulated refrigerant lines down to a roof support. The casing and compressor block are the hard-cover core (0.35-1.6 m)"
+  },
+  {
+   "id": "cooling_tower",
+   "name": "Packaged cooling tower",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (beside the plant room)",
+    "A4 Crane Deck",
+    "A3 Bridge Roof"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.176,
+    3.084,
+    1.78
+   ],
+   "floor_contact": 0,
+   "mass_kg": 613,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised"
+     ],
+     "mass": 60,
+     "health": 570,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "basin",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_wet",
+      "plastic_red"
+     ],
+     "mass": 180,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_basin"
+     ],
+     "note": "cold-water basin (holds about 0.4 t of water)"
+    },
+    {
+     "part": "casing",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_wet",
+      "rust_bloom",
+      "cavity_dark"
+     ],
+     "mass": 240,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_casing_1",
+      "col_casing_2",
+      "col_casing_3",
+      "col_casing_4",
+      "col_casing_5"
+     ]
+    },
+    {
+     "part": "louvre_f",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "shatter",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_louvre_f"
+     ]
+    },
+    {
+     "part": "louvre_b",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "shatter",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_louvre_b"
+     ]
+    },
+    {
+     "part": "louvre_r",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "shatter",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_louvre_r"
+     ]
+    },
+    {
+     "part": "louvre_l",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "shatter",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_louvre_l"
+     ]
+    },
+    {
+     "part": "fan_stack",
+     "material": "plastic",
+     "materials": [
+      "powder_coat_graphite",
+      "cavity_dark",
+      "steel_galvanised"
+     ],
+     "mass": 40,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan_stack_1",
+      "col_fan_stack_2",
+      "col_fan_stack_3",
+      "col_fan_stack_4"
+     ]
+    },
+    {
+     "part": "fan",
+     "material": "plastic",
+     "materials": [
+      "plastic_radome",
+      "powder_coat_graphite"
+     ],
+     "mass": 14,
+     "health": 70,
+     "break": "detach",
+     "attach": [
+      "fan_stack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan"
+     ]
+    },
+    {
+     "part": "guard",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised"
+     ],
+     "mass": 7,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "fan_stack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_guard"
+     ]
+    },
+    {
+     "part": "access_door",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "powder_coat_graphite"
+     ],
+     "mass": 6,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_access_door"
+     ]
+    },
+    {
+     "part": "pipes",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_galvanised",
+      "brass",
+      "plastic_red"
+     ],
+     "mass": 30,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "casing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pipes_1",
+      "col_pipes_2",
+      "col_pipes_3"
+     ]
+    }
+   ],
+   "debris": 12,
+   "triangles": {
+    "intact": 8616,
+    "chunks": 452
+   },
+   "hidden_scale": 0.0001,
+   "note": "counterflow packaged tower: galvanised cold-water basin on two channels, louvred air-inlet band on four sides, ribbed casing with a bolted seam, fan stack with a wire guard over a six-blade fan; hot-water inlet, outlet and make-up stubs with flanges and valves. Thin sheet and water: soft cover only"
+  },
+  {
+   "id": "water_tank",
+   "name": "Elevated sectional water tank",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (by the plant room)",
+    "A4 Crane Deck",
+    "A3 Bridge Roof"
+   ],
+   "cover": "hard",
+   "size_m": [
+    2.998,
+    4.207,
+    2.64
+   ],
+   "floor_contact": 0,
+   "mass_kg": 1668,
+   "parts": [
+    {
+     "part": "stand",
+     "material": "metal",
+     "materials": [
+      "concrete_weathered",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 620,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stand_1",
+      "col_stand_2",
+      "col_stand_3",
+      "col_stand_4",
+      "col_stand_5",
+      "col_stand_6"
+     ]
+    },
+    {
+     "part": "tank",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "steel_galvanised",
+      "rust_bloom",
+      "powder_coat_grey_wet",
+      "cavity_dark"
+     ],
+     "mass": 950,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tank"
+     ],
+     "note": "pressed steel panels with 1 m of water behind them"
+    },
+    {
+     "part": "manhole_lid",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey_wet",
+      "steel_galvanised",
+      "brass"
+     ],
+     "mass": 12,
+     "health": 150,
+     "break": "detach",
+     "attach": [
+      "tank"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_manhole_lid"
+     ]
+    },
+    {
+     "part": "vent",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "cavity_dark",
+      "powder_coat_grey_wet"
+     ],
+     "mass": 4,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "tank"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_vent"
+     ]
+    },
+    {
+     "part": "ladder",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised"
+     ],
+     "mass": 55,
+     "health": 300,
+     "break": "detach",
+     "attach": [
+      "tank",
+      "stand"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_ladder_1",
+      "col_ladder_2",
+      "col_ladder_3"
+     ]
+    },
+    {
+     "part": "overflow",
+     "material": "plastic",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_galvanised",
+      "concrete_weathered"
+     ],
+     "mass": 9,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "tank"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_overflow_1",
+      "col_overflow_2"
+     ]
+    },
+    {
+     "part": "inlet",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "powder_coat_graphite",
+      "plastic_red"
+     ],
+     "mass": 18,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "tank"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_inlet"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 12036,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "pressed-steel sectional tank, 2 x 2 x 2 m of 1 m panels with pressed square bulges and bolted outside flanges (8 t full), on a galvanised grillage and four legs with rod X-bracing and turnbuckles, concrete pier pads; caged ladder with gooseneck stiles, hinged manhole, mushroom vent, overflow down to a splash block and an inlet riser with a gate valve. Tank and stand stop bullets; under it is a 1.2 m crawl gap"
+  },
+  {
+   "id": "comm_mast",
+   "name": "Lattice communications mast",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof",
+    "A4 Crane Deck",
+    "A3 Bridge Roof (east tower)"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.08,
+    6.75,
+    2.08
+   ],
+   "floor_contact": 0,
+   "mass_kg": 1566.4,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 140,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "ballast",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered"
+     ],
+     "mass": 880,
+     "health": 900,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 8,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_ballast_1",
+      "col_ballast_2"
+     ]
+    },
+    {
+     "part": "mast",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_brushed"
+     ],
+     "mass": 280,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mast"
+     ]
+    },
+    {
+     "part": "panel_1",
+     "material": "plastic",
+     "materials": [
+      "plastic_radome",
+      "plastic_dark",
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 16,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_panel_1"
+     ]
+    },
+    {
+     "part": "panel_2",
+     "material": "plastic",
+     "materials": [
+      "plastic_radome",
+      "plastic_dark",
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 16,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_panel_2"
+     ]
+    },
+    {
+     "part": "panel_3",
+     "material": "plastic",
+     "materials": [
+      "plastic_radome",
+      "plastic_dark",
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 16,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_panel_3"
+     ]
+    },
+    {
+     "part": "dish_1",
+     "material": "metal",
+     "materials": [
+      "plastic_radome",
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 26,
+     "health": 140,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_dish_1"
+     ]
+    },
+    {
+     "part": "dish_2",
+     "material": "metal",
+     "materials": [
+      "plastic_radome",
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 15,
+     "health": 140,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_dish_2"
+     ]
+    },
+    {
+     "part": "cables",
+     "material": "plastic",
+     "materials": [
+      "steel_galvanised",
+      "rubber"
+     ],
+     "mass": 45,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cables_1",
+      "col_cables_2"
+     ]
+    },
+    {
+     "part": "beacon",
+     "material": "electronics",
+     "materials": [
+      "powder_coat_graphite",
+      "rubber"
+     ],
+     "mass": 3,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_beacon"
+     ]
+    },
+    {
+     "part": "beacon_lens",
+     "material": "glass",
+     "materials": [
+      "led_red"
+     ],
+     "mass": 0.4,
+     "health": 25,
+     "break": "shatter",
+     "attach": [
+      "beacon"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_beacon_lens"
+     ]
+    },
+    {
+     "part": "cabinet",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "powder_coat_grey_wet",
+      "cavity_dark"
+     ],
+     "mass": 120,
+     "health": 720,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cabinet"
+     ]
+    },
+    {
+     "part": "cabinet_door",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "powder_coat_graphite",
+      "steel_galvanised",
+      "led_purple"
+     ],
+     "mass": 9,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "cabinet"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cabinet_door"
+     ]
+    }
+   ],
+   "debris": 9,
+   "triangles": {
+    "intact": 14428,
+    "chunks": 1555
+   },
+   "hidden_scale": 0.0001,
+   "note": "ballasted rooftop lattice mast, 0.4 m triangular, 6 m: three panel antennas on stand-off pipes, two radome microwave dishes, a cable ladder with coax runs over an ice bridge to the equipment cabinet, red aviation beacon and a lightning finial at the top. The concrete ballast stops bullets; the cabinet is soft cover"
+  },
+  {
+   "id": "bmu_cradle",
+   "name": "Window-cleaning cradle on its roof rail",
+   "batch": "G",
+   "rooms": [
+    "A3 Bridge Roof",
+    "F2-F3 ledges (the moving cradle)",
+    "A2 West Roof"
+   ],
+   "cover": "none",
+   "size_m": [
+    3.56,
+    4.9,
+    1.2
+   ],
+   "floor_contact": 0,
+   "mass_kg": 842,
+   "parts": [
+    {
+     "part": "track",
+     "material": "metal",
+     "materials": [
+      "concrete_weathered",
+      "steel_galvanised",
+      "paint_safety_ochre",
+      "rubber"
+     ],
+     "mass": 420,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_track"
+     ]
+    },
+    {
+     "part": "deck",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_brushed",
+      "aluminium_weathered",
+      "rubber"
+     ],
+     "mass": 260,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_deck_1",
+      "col_deck_2",
+      "col_deck_3"
+     ]
+    },
+    {
+     "part": "guard_f",
+     "material": "metal",
+     "materials": [
+      "aluminium_weathered",
+      "powder_coat_graphite",
+      "paint_safety_ochre"
+     ],
+     "mass": 18,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_guard_f"
+     ]
+    },
+    {
+     "part": "guard_b",
+     "material": "metal",
+     "materials": [
+      "aluminium_weathered",
+      "powder_coat_graphite"
+     ],
+     "mass": 18,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_guard_b"
+     ]
+    },
+    {
+     "part": "hoist_l",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "powder_coat_graphite",
+      "steel_brushed",
+      "paint_safety_ochre",
+      "led_purple"
+     ],
+     "mass": 48,
+     "health": 300,
+     "break": "detach",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_hoist_l"
+     ]
+    },
+    {
+     "part": "ropes_l",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "powder_coat_graphite"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_ropes_l"
+     ]
+    },
+    {
+     "part": "bag_l",
+     "material": "fabric",
+     "materials": [
+      "fabric_canvas",
+      "steel_brushed"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_bag_l"
+     ]
+    },
+    {
+     "part": "hoist_r",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "powder_coat_graphite",
+      "steel_brushed",
+      "paint_safety_ochre",
+      "led_purple"
+     ],
+     "mass": 48,
+     "health": 300,
+     "break": "detach",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_hoist_r"
+     ]
+    },
+    {
+     "part": "ropes_r",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "powder_coat_graphite"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_ropes_r"
+     ]
+    },
+    {
+     "part": "bag_r",
+     "material": "fabric",
+     "materials": [
+      "fabric_canvas",
+      "steel_brushed"
+     ],
+     "mass": 9,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "deck"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_bag_r"
+     ]
+    },
+    {
+     "part": "controls",
+     "material": "electronics",
+     "materials": [
+      "paint_safety_ochre",
+      "steel_brushed",
+      "plastic_red",
+      "plastic_dark",
+      "led_purple",
+      "rubber"
+     ],
+     "mass": 4,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "guard_b"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_controls"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 8604,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "aluminium BMU gondola parked on a short length of galvanised rail on concrete sleepers: grating floor, guard rails with toe boards (plain chevron stripes), A-frame stirrups with traction hoists and fall-arrest blocks, hoist and safety ropes rising out of frame, rope bags, a control pendant with an emergency stop, rubber facade rollers on the building side (-z). Open frame: no cover"
+  },
+  {
+   "id": "exhaust_stack",
+   "name": "Guyed exhaust stacks on a louvred plenum",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room)",
+    "A4 Crane Deck",
+    "A3 Bridge Roof"
+   ],
+   "cover": "soft",
+   "size_m": [
+    3.542,
+    3.668,
+    3.323
+   ],
+   "floor_contact": 0,
+   "mass_kg": 398.9,
+   "parts": [
+    {
+     "part": "plenum",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_wet",
+      "cavity_dark"
+     ],
+     "mass": 110,
+     "health": 700,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_plenum_1",
+      "col_plenum_2"
+     ]
+    },
+    {
+     "part": "louvre_f",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite"
+     ],
+     "mass": 7.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "plenum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_f"
+     ]
+    },
+    {
+     "part": "louvre_r",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite"
+     ],
+     "mass": 3.84,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "plenum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_r"
+     ]
+    },
+    {
+     "part": "louvre_l",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite"
+     ],
+     "mass": 3.84,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "plenum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_l"
+     ]
+    },
+    {
+     "part": "stack_1",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_sooted"
+     ],
+     "mass": 70,
+     "health": 260,
+     "break": "detach",
+     "attach": [
+      "plenum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stack_1"
+     ]
+    },
+    {
+     "part": "cap_1",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_wet"
+     ],
+     "mass": 9,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "stack_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_1"
+     ]
+    },
+    {
+     "part": "stack_2",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_sooted"
+     ],
+     "mass": 40,
+     "health": 260,
+     "break": "detach",
+     "attach": [
+      "plenum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stack_2"
+     ]
+    },
+    {
+     "part": "cap_2",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_wet"
+     ],
+     "mass": 5,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "stack_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_2"
+     ]
+    },
+    {
+     "part": "stack_3",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_sooted"
+     ],
+     "mass": 20,
+     "health": 260,
+     "break": "detach",
+     "attach": [
+      "plenum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stack_3"
+     ]
+    },
+    {
+     "part": "cap_3",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_wet"
+     ],
+     "mass": 2,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "stack_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_3"
+     ]
+    },
+    {
+     "part": "tie",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised"
+     ],
+     "mass": 2,
+     "health": 80,
+     "break": "detach",
+     "attach": [
+      "stack_1",
+      "stack_2"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tie"
+     ]
+    },
+    {
+     "part": "guys",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "steel_galvanised"
+     ],
+     "mass": 6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "stack_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_guys_1_hull",
+      "col_guys_2_hull",
+      "col_guys_3_hull"
+     ]
+    },
+    {
+     "part": "anchors",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 120,
+     "health": 1155,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_anchors_1",
+      "col_anchors_2",
+      "col_anchors_3"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 5160,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "three galvanised flue stacks of different bore with banded joints, sooted tips and cone or disc rain caps, rising from a louvred intake plenum on a curb; the tallest is held by three guy wires with turnbuckles to concrete anchor blocks. Sheet-metal plenum: soft cover"
+  },
+  {
+   "id": "generator_enclosure",
+   "name": "Containerised standby generator",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "A4 Crane Deck",
+    "A3 Bridge Roof"
+   ],
+   "cover": "hard",
+   "size_m": [
+    4.05,
+    3.244,
+    1.84
+   ],
+   "floor_contact": 0,
+   "mass_kg": 3553.6,
+   "parts": [
+    {
+     "part": "pad",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered"
+     ],
+     "mass": 950,
+     "health": 1200,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pad"
+     ]
+    },
+    {
+     "part": "base_tank",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "cavity_dark"
+     ],
+     "mass": 520,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base_tank"
+     ],
+     "note": "double-wall diesel tank under the set"
+    },
+    {
+     "part": "body",
+     "material": "metal",
+     "materials": [
+      "powder_coat_sage",
+      "cavity_dark",
+      "powder_coat_sage_wet",
+      "steel_galvanised",
+      "screen",
+      "powder_coat_graphite",
+      "plastic_dark"
+     ],
+     "mass": 1900,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_body"
+     ],
+     "note": "engine and alternator block behind 2 mm skins and acoustic lining"
+    },
+    {
+     "part": "door_1",
+     "material": "metal",
+     "materials": [
+      "powder_coat_sage",
+      "steel_brushed",
+      "cavity_dark",
+      "powder_coat_graphite"
+     ],
+     "mass": 24,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_1"
+     ]
+    },
+    {
+     "part": "door_2",
+     "material": "metal",
+     "materials": [
+      "powder_coat_sage",
+      "steel_brushed",
+      "cavity_dark",
+      "powder_coat_graphite",
+      "rubber",
+      "paint_safety_ochre",
+      "plastic_red",
+      "led_purple"
+     ],
+     "mass": 24,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_2"
+     ]
+    },
+    {
+     "part": "window",
+     "material": "glass",
+     "materials": [
+      "glass_tint"
+     ],
+     "mass": 1.6,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "door_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 12,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_window"
+     ]
+    },
+    {
+     "part": "door_3",
+     "material": "metal",
+     "materials": [
+      "powder_coat_sage",
+      "steel_brushed",
+      "cavity_dark",
+      "powder_coat_graphite"
+     ],
+     "mass": 24,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door_3"
+     ]
+    },
+    {
+     "part": "louvre_in",
+     "material": "metal",
+     "materials": [
+      "powder_coat_sage",
+      "cavity_dark"
+     ],
+     "mass": 28,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_in"
+     ]
+    },
+    {
+     "part": "louvre_out",
+     "material": "metal",
+     "materials": [
+      "powder_coat_sage",
+      "cavity_dark"
+     ],
+     "mass": 28,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_out"
+     ]
+    },
+    {
+     "part": "silencer",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_galvanised",
+      "steel_brushed",
+      "steel_sooted"
+     ],
+     "mass": 45,
+     "health": 260,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_silencer"
+     ]
+    },
+    {
+     "part": "fuel",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "paint_safety_ochre",
+      "steel_brushed",
+      "porcelain",
+      "plastic_red",
+      "steel_galvanised",
+      "brass"
+     ],
+     "mass": 9,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "base_tank"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fuel_1",
+      "col_fuel_2",
+      "col_fuel_3"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 6164,
+    "chunks": 322
+   },
+   "hidden_scale": 0.0001,
+   "note": "acoustic generator enclosure on a double-wall base fuel tank and a concrete housekeeping pad: three gasketed side doors with flush handles (the middle one with the controller window, a purple status dot and the emergency stop), deep intake louvre at one end, discharge louvre under a rain hood at the other, roof silencer with a sooted tail and rain flap, lifting eyes, fuel fill, gauge, vent gooseneck and valved fuel stubs. Pad, tank and enclosure stop bullets: the map's best roof cover"
+  },
+  {
+   "id": "drone_dock",
+   "name": "Drone dock with parked quadcopter",
+   "batch": "G",
+   "rooms": [
+    "A3 Bridge Roof",
+    "F1 Sky Terrace",
+    "A4 Crane Deck",
+    "A2 West Roof"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.73,
+    1.62,
+    1.577
+   ],
+   "floor_contact": 0,
+   "mass_kg": 191.5,
+   "parts": [
+    {
+     "part": "housing",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "powder_coat_graphite_wet",
+      "rubber",
+      "plastic_radome",
+      "brass",
+      "led_purple",
+      "steel_galvanised",
+      "cavity_dark",
+      "led_purple_dim",
+      "plastic_dark"
+     ],
+     "mass": 150,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_housing"
+     ]
+    },
+    {
+     "part": "lid_l",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_brushed"
+     ],
+     "mass": 14,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "housing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_lid_l_hull"
+     ]
+    },
+    {
+     "part": "lid_r",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_brushed"
+     ],
+     "mass": 14,
+     "health": 160,
+     "break": "detach",
+     "attach": [
+      "housing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_lid_r_hull"
+     ]
+    },
+    {
+     "part": "drone",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark",
+      "rubber",
+      "powder_coat_graphite",
+      "steel_brushed",
+      "plastic_radome",
+      "glass_smoked",
+      "led_purple"
+     ],
+     "mass": 6.5,
+     "health": 60,
+     "break": "shatter",
+     "attach": [
+      "housing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_drone"
+     ]
+    },
+    {
+     "part": "mast",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "plastic_radome",
+      "plastic_dark"
+     ],
+     "mass": 3,
+     "health": 70,
+     "break": "detach",
+     "attach": [
+      "housing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mast"
+     ]
+    },
+    {
+     "part": "door",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "steel_brushed"
+     ],
+     "mass": 4,
+     "health": 110,
+     "break": "detach",
+     "attach": [
+      "housing"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door"
+     ]
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 7384,
+    "chunks": 4709
+   },
+   "hidden_scale": 0.0001,
+   "note": "weatherproof delivery / security drone dock on levelling feet: clamshell lid halves open on gas struts, rubber landing pad with a plain ring and four charging contacts, a parked quad drone (camera gimbal, folded props), louvred sides, service door, weather mast with cup anemometer and a GNSS puck, a few purple status lights. Soft cover to 0.75 m"
+  },
+  {
+   "id": "roof_hatch_box",
+   "name": "Roof access stair box",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room door)",
+    "A4 Crane Deck",
+    "A3 Bridge Roof",
+    "F1 Sky Terrace"
+   ],
+   "cover": "hard",
+   "size_m": [
+    1.76,
+    2.85,
+    2.192
+   ],
+   "floor_contact": 0,
+   "mass_kg": 5637.3,
+   "parts": [
+    {
+     "part": "walls",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered",
+      "rubber",
+      "steel_brushed",
+      "powder_coat_graphite",
+      "steel_galvanised",
+      "led_warm"
+     ],
+     "mass": 5200,
+     "health": 1200,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_walls_1",
+      "col_walls_2",
+      "col_walls_3",
+      "col_walls_4",
+      "col_walls_5",
+      "col_walls_6",
+      "col_walls_7"
+     ],
+     "note": "150 mm cast concrete"
+    },
+    {
+     "part": "roof",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite_wet",
+      "powder_coat_graphite"
+     ],
+     "mass": 180,
+     "health": 750,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_roof_1_hull",
+      "col_roof_2"
+     ]
+    },
+    {
+     "part": "door",
+     "material": "metal",
+     "materials": [
+      "powder_coat_grey",
+      "steel_brushed",
+      "powder_coat_graphite",
+      "rust_bloom"
+     ],
+     "mass": 48,
+     "health": 300,
+     "break": "detach",
+     "attach": [
+      "walls"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door"
+     ]
+    },
+    {
+     "part": "grab_l",
+     "material": "metal",
+     "materials": [
+      "paint_safety_ochre"
+     ],
+     "mass": 4,
+     "health": 140,
+     "break": "detach",
+     "attach": [
+      "walls"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grab_l"
+     ]
+    },
+    {
+     "part": "grab_r",
+     "material": "metal",
+     "materials": [
+      "paint_safety_ochre"
+     ],
+     "mass": 4,
+     "health": 140,
+     "break": "detach",
+     "attach": [
+      "walls"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grab_r"
+     ]
+    },
+    {
+     "part": "lamp",
+     "material": "electronics",
+     "materials": [
+      "powder_coat_graphite"
+     ],
+     "mass": 2,
+     "health": 50,
+     "break": "detach",
+     "attach": [
+      "walls"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_lamp_1",
+      "col_lamp_2"
+     ]
+    },
+    {
+     "part": "lamp_lens",
+     "material": "glass",
+     "materials": [
+      "glass_lamp_warm"
+     ],
+     "mass": 0.3,
+     "health": 20,
+     "break": "shatter",
+     "attach": [
+      "lamp"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_lamp_lens"
+     ]
+    },
+    {
+     "part": "vent",
+     "material": "metal",
+     "materials": [
+      "powder_coat_graphite",
+      "cavity_dark"
+     ],
+     "mass": 9,
+     "health": 140,
+     "break": "detach",
+     "attach": [
+      "walls"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_vent"
+     ]
+    },
+    {
+     "part": "step",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered_wet"
+     ],
+     "mass": 190,
+     "health": 1200,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_step"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 2492,
+    "chunks": 733
+   },
+   "hidden_scale": 0.0001,
+   "note": "cast-concrete stair penthouse on a membrane-flashed upstand: mono-pitch standing-seam roof, steel door with kick plate, lever and closer (the door comes off), safety-ochre grab rails, a caged bulkhead lamp under a drip hood, a smoke-vent louvre, an outside step; the landing and stair rail inside. Concrete walls and step stop bullets"
+  },
+  {
+   "id": "pallet_stack",
+   "name": "Pallet of blocks, cable drum and tarp",
+   "batch": "G",
+   "rooms": [
+    "A4 Crane Deck",
+    "A2 West Roof",
+    "A3 Bridge Roof",
+    "F1 Sky Terrace (works corner)"
+   ],
+   "cover": "hard",
+   "size_m": [
+    2.133,
+    1.193,
+    1.669
+   ],
+   "floor_contact": 0,
+   "mass_kg": 1018,
+   "parts": [
+    {
+     "part": "pallet",
+     "material": "wood",
+     "materials": [
+      "wood_pallet"
+     ],
+     "mass": 24,
+     "health": 120,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_pallet"
+     ]
+    },
+    {
+     "part": "load",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered"
+     ],
+     "mass": 650,
+     "health": 700,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 10,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_load"
+     ],
+     "note": "50 hollow concrete blocks"
+    },
+    {
+     "part": "wrap",
+     "material": "plastic",
+     "materials": [
+      "plastic_shrinkwrap"
+     ],
+     "mass": 1,
+     "health": 20,
+     "break": "detach",
+     "attach": [
+      "load"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wrap_1",
+      "col_wrap_2",
+      "col_wrap_3",
+      "col_wrap_4"
+     ]
+    },
+    {
+     "part": "strap",
+     "material": "fabric",
+     "materials": [
+      "fabric_ochre",
+      "steel_brushed"
+     ],
+     "mass": 1,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "load"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_strap_1",
+      "col_strap_2",
+      "col_strap_3",
+      "col_strap_4"
+     ]
+    },
+    {
+     "part": "tarp",
+     "material": "fabric",
+     "materials": [
+      "fabric_tarp_faded",
+      "brass"
+     ],
+     "mass": 6,
+     "health": 60,
+     "break": "detach",
+     "attach": [
+      "load"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tarp_1",
+      "col_tarp_2",
+      "col_tarp_3"
+     ]
+    },
+    {
+     "part": "weight",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered"
+     ],
+     "mass": 13,
+     "health": 300,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_weight"
+     ]
+    },
+    {
+     "part": "sandbag",
+     "material": "fabric",
+     "materials": [
+      "fabric_canvas"
+     ],
+     "mass": 20,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_sandbag"
+     ]
+    },
+    {
+     "part": "drum",
+     "material": "wood",
+     "materials": [
+      "wood_plywood",
+      "steel_galvanised",
+      "cavity_dark"
+     ],
+     "mass": 140,
+     "health": 260,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drum_1_hull",
+      "col_drum_2_hull"
+     ]
+    },
+    {
+     "part": "cable",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "fabric_ochre"
+     ],
+     "mass": 160,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "drum"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cable_1_hull",
+      "col_cable_2"
+     ]
+    },
+    {
+     "part": "chocks",
+     "material": "wood",
+     "materials": [
+      "wood_pallet"
+     ],
+     "mass": 3,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_chocks_1",
+      "col_chocks_2"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 13068,
+    "chunks": 2006
+   },
+   "hidden_scale": 0.0001,
+   "note": "maintenance laydown: a T11 pallet of hollow concrete blocks, shrink-wrapped and ratchet-strapped, under a faded tarp dragged over the back and held down on the roof by a block and a sandbag; a plywood cable drum of black cable on edge beside it, chocked, its tail run out on the deck. The block load (1.17 m) stops bullets; the drum is soft"
+  },
+  {
+   "id": "terrace_sofa",
+   "name": "Terrace sofa, weatherproof three-seat module",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "F1 Sky Terrace (A1 canopy)",
+    "Bridge roof lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.108,
+    0.861,
+    0.935
+   ],
+   "floor_contact": 0,
+   "mass_kg": 51.9,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "rubber",
+      "steel_corten"
+     ],
+     "mass": 26,
+     "health": 435,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5",
+      "col_frame_6",
+      "col_frame_7",
+      "col_frame_8",
+      "col_frame_9",
+      "col_frame_10"
+     ]
+    },
+    {
+     "part": "side_l",
+     "material": "fabric",
+     "materials": [
+      "rope_woven"
+     ],
+     "mass": 1.6,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_side_l"
+     ]
+    },
+    {
+     "part": "side_r",
+     "material": "fabric",
+     "materials": [
+      "rope_woven"
+     ],
+     "mass": 1.6,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_side_r"
+     ]
+    },
+    {
+     "part": "back_panel",
+     "material": "fabric",
+     "materials": [
+      "rope_woven"
+     ],
+     "mass": 2.4,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_panel"
+     ]
+    },
+    {
+     "part": "cap_l",
+     "material": "wood",
+     "materials": [
+      "wood_teak_wet",
+      "wood_teak_weathered"
+     ],
+     "mass": 2.2,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_l"
+     ]
+    },
+    {
+     "part": "cap_r",
+     "material": "wood",
+     "materials": [
+      "wood_teak_wet",
+      "wood_teak_weathered"
+     ],
+     "mass": 2.2,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_r"
+     ]
+    },
+    {
+     "part": "cap_back",
+     "material": "wood",
+     "materials": [
+      "wood_teak_wet",
+      "wood_teak_weathered"
+     ],
+     "mass": 2.2,
+     "health": 90,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_back"
+     ]
+    },
+    {
+     "part": "seat_l",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_wet",
+      "fabric_outdoor_stone"
+     ],
+     "mass": 2.6,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat_l"
+     ]
+    },
+    {
+     "part": "back_l",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_wet",
+      "fabric_outdoor_stone"
+     ],
+     "mass": 1.8,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_l"
+     ]
+    },
+    {
+     "part": "seat_c",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_wet",
+      "fabric_outdoor_stone"
+     ],
+     "mass": 2.6,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat_c"
+     ]
+    },
+    {
+     "part": "back_c",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_wet",
+      "fabric_outdoor_stone"
+     ],
+     "mass": 1.8,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_c"
+     ]
+    },
+    {
+     "part": "seat_r",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_wet",
+      "fabric_outdoor_stone"
+     ],
+     "mass": 2.6,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_seat_r"
+     ]
+    },
+    {
+     "part": "back_r",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_wet",
+      "fabric_outdoor_stone"
+     ],
+     "mass": 1.8,
+     "health": 55,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_r"
+     ]
+    },
+    {
+     "part": "pillow",
+     "material": "fabric",
+     "materials": [
+      "fabric_outdoor_ochre"
+     ],
+     "mass": 0.5,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pillow"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 10884,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "graphite powder-coated aluminium sled frame with woven rope arm and back panels, weathered teak arm caps, quick-dry outdoor cushions whose tops are rain-dark, one ochre pillow"
+  },
+  {
+   "id": "parasol_table",
+   "name": "Cantilever parasol, half-closed in the rain, with an outdoor table",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "Bridge roof lounge",
+    "A2 West Roof (helipad edge)"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.766,
+    2.688,
+    1.833
+   ],
+   "floor_contact": 0,
+   "mass_kg": 190.1,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "rubber",
+      "steel_galvanised"
+     ],
+     "mass": 32,
+     "health": 465,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base_1",
+      "col_base_2",
+      "col_base_3"
+     ]
+    },
+    {
+     "part": "weights",
+     "material": "stone",
+     "materials": [
+      "stone_granite",
+      "stone_granite_wet"
+     ],
+     "mass": 120,
+     "health": 1155,
+     "break": "shatter",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_weights_1",
+      "col_weights_2",
+      "col_weights_3",
+      "col_weights_4"
+     ]
+    },
+    {
+     "part": "mast",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite",
+      "powdercoat_graphite_wet"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mast"
+     ]
+    },
+    {
+     "part": "crank",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "rubber"
+     ],
+     "mass": 0.6,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_crank"
+     ]
+    },
+    {
+     "part": "arm",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite",
+      "powdercoat_graphite_wet",
+      "steel_brushed"
+     ],
+     "mass": 6,
+     "health": 265,
+     "break": "detach",
+     "attach": [
+      "mast"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_arm_1",
+      "col_arm_2"
+     ]
+    },
+    {
+     "part": "ribs",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite",
+      "rubber",
+      "glass_tint"
+     ],
+     "mass": 3.5,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "arm"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_ribs"
+     ]
+    },
+    {
+     "part": "canopy",
+     "material": "fabric",
+     "materials": [
+      "fabric_canopy_wet",
+      "fabric_canopy"
+     ],
+     "mass": 3,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "ribs"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_canopy_hull"
+     ]
+    },
+    {
+     "part": "table_base",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite",
+      "powdercoat_graphite_wet",
+      "rubber"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_table_base_1",
+      "col_table_base_2"
+     ]
+    },
+    {
+     "part": "table_top",
+     "material": "wood",
+     "materials": [
+      "wood_teak_wet",
+      "wood_teak_weathered"
+     ],
+     "mass": 7,
+     "health": 135,
+     "break": "shatter",
+     "attach": [
+      "table_base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_table_top_hull"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 7808,
+    "chunks": 3231
+   },
+   "hidden_scale": 0.0001,
+   "note": "cantilever parasol on a cross base weighted with four granite slabs, crank housing on the mast, curved arm and strut; eight-rib canopy half lowered against the rain, wet on top, drips at the rib tips; round slatted teak table on a graphite pedestal; assembled in place (2.4 m across)"
+  },
+  {
+   "id": "sun_lounger",
+   "name": "Sun lounger, teak and aluminium",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "F1 Veranda",
+    "Bridge roof lounge"
+   ],
+   "cover": "soft",
+   "size_m": [
+    0.84,
+    0.902,
+    1.96
+   ],
+   "floor_contact": 0,
+   "mass_kg": 24.9,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "steel_brushed_wet",
+      "steel_brushed",
+      "rubber",
+      "plastic_dark",
+      "steel_corten"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3"
+     ]
+    },
+    {
+     "part": "wheel_l",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "alloy_dark",
+      "steel_brushed"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wheel_l"
+     ]
+    },
+    {
+     "part": "wheel_r",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "alloy_dark",
+      "steel_brushed"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_wheel_r"
+     ]
+    },
+    {
+     "part": "slats",
+     "material": "wood",
+     "materials": [
+      "wood_teak_wet"
+     ],
+     "mass": 7,
+     "health": 135,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 17,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_slats"
+     ]
+    },
+    {
+     "part": "back_frame",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 2.5,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_back_frame_1_hull",
+      "col_back_frame_2_hull"
+     ]
+    },
+    {
+     "part": "back_slats",
+     "material": "wood",
+     "materials": [
+      "wood_teak_wet"
+     ],
+     "mass": 3.5,
+     "health": 105,
+     "break": "shatter",
+     "attach": [
+      "back_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 10,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_back_slats_hull"
+     ]
+    },
+    {
+     "part": "strut",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 0.6,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "back_frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_strut_1_hull",
+      "col_strut_2_hull"
+     ]
+    },
+    {
+     "part": "towel",
+     "material": "fabric",
+     "materials": [
+      "fabric_towel_wet",
+      "fabric_towel_slate",
+      "fabric_ochre"
+     ],
+     "mass": 0.7,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "slats"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_towel"
+     ]
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 7988,
+    "chunks": 2916
+   },
+   "hidden_scale": 0.0001,
+   "note": "brushed aluminium rails on fixed foot legs and two head-end wheels, weathered teak slats (rain-dark), back raised on a ratchet strut, a folded slate towel at the foot"
+  },
+  {
+   "id": "patio_heater",
+   "name": "Patio heater, glass flame column",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "F1 Sky Terrace (A1 canopy)",
+    "Bridge roof lounge"
+   ],
+   "cover": "none",
+   "size_m": [
+    0.6,
+    2.29,
+    0.6
+   ],
+   "floor_contact": 0,
+   "mass_kg": 48.3,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "steel_brushed_wet",
+      "rubber",
+      "plastic_dark"
+     ],
+     "mass": 22,
+     "health": 410,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base_1",
+      "col_base_2"
+     ]
+    },
+    {
+     "part": "door",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "plastic_dark"
+     ],
+     "mass": 2.5,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door"
+     ]
+    },
+    {
+     "part": "tank",
+     "material": "metal",
+     "materials": [
+      "powdercoat_grey",
+      "brass"
+     ],
+     "mass": 14,
+     "health": 350,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_tank"
+     ]
+    },
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "steel_brushed"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1_hull",
+      "col_frame_2_hull",
+      "col_frame_3_hull",
+      "col_frame_4_hull"
+     ]
+    },
+    {
+     "part": "tube",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 2.2,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_tube"
+     ]
+    },
+    {
+     "part": "cap",
+     "material": "metal",
+     "materials": [
+      "steel_brushed_wet",
+      "steel_brushed"
+     ],
+     "mass": 3.5,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_hull"
+     ]
+    },
+    {
+     "part": "flame",
+     "material": "electronics",
+     "materials": [
+      "flame_column",
+      "glow_warm"
+     ],
+     "mass": 0.05,
+     "health": 1,
+     "break": "shatter",
+     "attach": [
+      "tube"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_flame"
+     ],
+     "note": "light only: casts no shadow, blocks nothing; goes out (0 chunks, collapse) when the tube breaks",
+     "collapse": true,
+     "light": true
+    }
+   ],
+   "debris": 6,
+   "triangles": {
+    "intact": 2816,
+    "chunks": 1504
+   },
+   "hidden_scale": 0.0001,
+   "note": "brushed stainless pyramid heater: square base cabinet (vented door, gas bottle inside, control knob and igniter, two back wheels), four converging posts with guard rings, quartz tube with a flickering flame column, pyramid reflector cap with a warm glow under it; the flame goes out when the tube breaks"
+  },
+  {
+   "id": "fire_table",
+   "name": "Gas fire table, cast concrete",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "F1 Sky Terrace (A1 canopy)",
+    "Bridge roof lounge"
+   ],
+   "cover": "hard",
+   "size_m": [
+    1.55,
+    0.584,
+    0.874
+   ],
+   "floor_contact": 0,
+   "mass_kg": 254.4,
+   "parts": [
+    {
+     "part": "body",
+     "material": "stone",
+     "materials": [
+      "concrete_grime",
+      "concrete_cast"
+     ],
+     "mass": 150,
+     "health": 1200,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 10,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_body_1",
+      "col_body_2",
+      "col_body_3",
+      "col_body_4",
+      "col_body_5",
+      "col_body_6",
+      "col_body_7"
+     ]
+    },
+    {
+     "part": "top",
+     "material": "stone",
+     "materials": [
+      "concrete_cast",
+      "concrete_wet"
+     ],
+     "mass": 70,
+     "health": 965,
+     "break": "shatter",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 8,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_top_1",
+      "col_top_2",
+      "col_top_3",
+      "col_top_4"
+     ]
+    },
+    {
+     "part": "pan",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "steel_brushed_wet"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pan_1",
+      "col_pan_2",
+      "col_pan_3",
+      "col_pan_4",
+      "col_pan_5"
+     ]
+    },
+    {
+     "part": "rocks",
+     "material": "stone",
+     "materials": [
+      "stone_lava"
+     ],
+     "mass": 12,
+     "health": 535,
+     "break": "detach",
+     "attach": [
+      "pan"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_rocks"
+     ]
+    },
+    {
+     "part": "guard_f",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 2.4,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "pan"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_guard_f"
+     ]
+    },
+    {
+     "part": "guard_b",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 2.4,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "pan"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 13,
+     "debris": [
+      "debris_16",
+      "debris_17",
+      "debris_18"
+     ],
+     "colliders": [
+      "col_guard_b"
+     ]
+    },
+    {
+     "part": "guard_l",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 1.1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "pan"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 11,
+     "debris": [
+      "debris_19",
+      "debris_20",
+      "debris_21"
+     ],
+     "colliders": [
+      "col_guard_l"
+     ]
+    },
+    {
+     "part": "guard_r",
+     "material": "glass",
+     "materials": [
+      "glass_clear"
+     ],
+     "mass": 1.1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "pan"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 9,
+     "debris": [
+      "debris_22",
+      "debris_23",
+      "debris_24"
+     ],
+     "colliders": [
+      "col_guard_r"
+     ]
+    },
+    {
+     "part": "flame",
+     "material": "electronics",
+     "materials": [
+      "flame_tongue",
+      "glow_warm_low"
+     ],
+     "mass": 0.05,
+     "health": 1,
+     "break": "shatter",
+     "attach": [
+      "pan"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_flame"
+     ],
+     "note": "light only: casts no shadow, blocks nothing; goes out (0 chunks, collapse) when the pan comes loose",
+     "collapse": true,
+     "light": true
+    },
+    {
+     "part": "door",
+     "material": "stone",
+     "materials": [
+      "concrete_cast",
+      "steel_brushed",
+      "plastic_dark"
+     ],
+     "mass": 6,
+     "health": 425,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_door"
+     ]
+    },
+    {
+     "part": "knob",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "rubber"
+     ],
+     "mass": 0.3,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "body"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_knob"
+     ]
+    }
+   ],
+   "debris": 24,
+   "triangles": {
+    "intact": 5374,
+    "chunks": 8435
+   },
+   "hidden_scale": 0.0001,
+   "note": "hollow cast-concrete fire table (shadow-gap plinth, splash grime at the foot, wet top) with a stainless burner pan of lava rock, a low gas flame, a tempered glass wind guard in a steel channel, a GFRC access door at the back and a control knob at the end; the concrete stops bullets (low cover, 0.42 m)"
+  },
+  {
+   "id": "bamboo_planter",
+   "name": "Long cast-stone planter with bamboo",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "F1 Garden",
+    "Bridge roof lounge",
+    "A2 West Roof"
+   ],
+   "cover": "hard",
+   "size_m": [
+    2.544,
+    3.121,
+    1.383
+   ],
+   "floor_contact": 0,
+   "mass_kg": 640.8,
+   "parts": [
+    {
+     "part": "basin",
+     "material": "stone",
+     "materials": [
+      "concrete_grime",
+      "concrete_cast"
+     ],
+     "mass": 340,
+     "health": 1200,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 9,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_basin_1",
+      "col_basin_2",
+      "col_basin_3",
+      "col_basin_4",
+      "col_basin_5"
+     ]
+    },
+    {
+     "part": "coping",
+     "material": "metal",
+     "materials": [
+      "steel_corten_wet",
+      "steel_corten",
+      "steel_galvanised"
+     ],
+     "mass": 22,
+     "health": 410,
+     "break": "detach",
+     "attach": [
+      "basin"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_coping_1",
+      "col_coping_2",
+      "col_coping_3",
+      "col_coping_4"
+     ]
+    },
+    {
+     "part": "soil",
+     "material": "plant",
+     "materials": [
+      "soil",
+      "stone_lava",
+      "stone_basalt_wet"
+     ],
+     "mass": 260,
+     "health": 400,
+     "break": "shatter",
+     "attach": [
+      "basin"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 7,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6",
+      "debris_7",
+      "debris_8"
+     ],
+     "colliders": [
+      "col_soil"
+     ],
+     "collapse": true
+    },
+    {
+     "part": "drip",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "plastic_dark"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drip"
+     ]
+    },
+    {
+     "part": "culms_1",
+     "material": "plant",
+     "materials": [
+      "bamboo_culm",
+      "bamboo_sheath",
+      "foliage_bamboo"
+     ],
+     "mass": 6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_9",
+      "debris_10",
+      "debris_11"
+     ],
+     "colliders": [
+      "col_culms_1"
+     ]
+    },
+    {
+     "part": "culms_2",
+     "material": "plant",
+     "materials": [
+      "bamboo_culm",
+      "bamboo_sheath",
+      "foliage_bamboo"
+     ],
+     "mass": 6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_12",
+      "debris_13",
+      "debris_14"
+     ],
+     "colliders": [
+      "col_culms_2"
+     ]
+    },
+    {
+     "part": "culms_3",
+     "material": "plant",
+     "materials": [
+      "bamboo_culm",
+      "bamboo_sheath",
+      "foliage_bamboo"
+     ],
+     "mass": 6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "soil"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [
+      "debris_15",
+      "debris_16",
+      "debris_17"
+     ],
+     "colliders": [
+      "col_culms_3"
+     ]
+    }
+   ],
+   "debris": 17,
+   "triangles": {
+    "intact": 13688,
+    "chunks": 9949
+   },
+   "hidden_scale": 0.0001,
+   "note": "two-metre cast-concrete trough on a shadow-gap foot with a weathering-steel coping and splash grime, black pebble mulch, a drip-irrigation loop fed over the back edge from a valve box, and three clumps of rain-heavy bamboo (2.3-3.1 m, card leaf sprays); the concrete trough stops bullets, the bamboo only hides"
+  },
+  {
+   "id": "pergola_canopy",
+   "name": "Louvred pergola, 3 x 3 m",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "Bridge roof lounge",
+    "A2 West Roof"
+   ],
+   "cover": "none",
+   "size_m": [
+    3.12,
+    2.7,
+    3.14
+   ],
+   "floor_contact": 0,
+   "mass_kg": 240.2,
+   "parts": [
+    {
+     "part": "post_fl",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "steel_corten",
+      "steel_galvanised",
+      "concrete_grime"
+     ],
+     "mass": 28,
+     "health": 445,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_post_fl"
+     ]
+    },
+    {
+     "part": "post_fr",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "steel_corten",
+      "steel_galvanised",
+      "concrete_grime"
+     ],
+     "mass": 28,
+     "health": 445,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_post_fr"
+     ]
+    },
+    {
+     "part": "post_bl",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "steel_corten",
+      "steel_galvanised",
+      "concrete_grime"
+     ],
+     "mass": 28,
+     "health": 445,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_post_bl"
+     ]
+    },
+    {
+     "part": "post_br",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "steel_corten",
+      "steel_galvanised",
+      "concrete_grime"
+     ],
+     "mass": 28,
+     "health": 445,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_post_br"
+     ]
+    },
+    {
+     "part": "beams",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "plastic_dark"
+     ],
+     "mass": 60,
+     "health": 570,
+     "break": "detach",
+     "attach": [
+      "post_fl",
+      "post_fr",
+      "post_bl",
+      "post_br"
+     ],
+     "need": 2,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_beams_1",
+      "col_beams_2",
+      "col_beams_3",
+      "col_beams_4"
+     ]
+    },
+    {
+     "part": "louvres_1",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "steel_brushed"
+     ],
+     "mass": 30,
+     "health": 455,
+     "break": "detach",
+     "attach": [
+      "beams"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvres_1"
+     ]
+    },
+    {
+     "part": "louvres_2",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "steel_brushed"
+     ],
+     "mass": 30,
+     "health": 455,
+     "break": "detach",
+     "attach": [
+      "beams"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvres_2"
+     ]
+    },
+    {
+     "part": "downpipe",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite",
+      "steel_galvanised",
+      "glass_tint"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "post_bl"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_downpipe_1",
+      "col_downpipe_2"
+     ]
+    },
+    {
+     "part": "lights",
+     "material": "electronics",
+     "materials": [
+      "led_warm"
+     ],
+     "mass": 1.2,
+     "health": 25,
+     "break": "detach",
+     "attach": [
+      "beams"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_lights"
+     ]
+    },
+    {
+     "part": "motor",
+     "material": "electronics",
+     "materials": [
+      "powdercoat_graphite",
+      "led_purple"
+     ],
+     "mass": 3,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "beams"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_motor"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 7120,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "freestanding graphite aluminium pergola: four posts on bolted base plates (rust only at the washers), a beam ring with integrated rain gutters, fourteen motorised louvre blades closed down against the rain, a downpipe with brackets and a shoe, warm LED strips under the beams, a drive housing with one purple status dot; assembled in place"
+  },
+  {
+   "id": "bollard_light",
+   "name": "Path bollard lights, pair",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "Skybridge approach",
+    "A2 West Roof (helipad edge)",
+    "Bridge roof"
+   ],
+   "cover": "none",
+   "size_m": [
+    1.2,
+    0.84,
+    0.2
+   ],
+   "floor_contact": 0,
+   "mass_kg": 106.4,
+   "parts": [
+    {
+     "part": "column_l",
+     "material": "stone",
+     "materials": [
+      "steel_brushed",
+      "stone_granite_grime",
+      "stone_granite"
+     ],
+     "mass": 48,
+     "health": 850,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 7,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_column_l"
+     ]
+    },
+    {
+     "part": "head_l",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "steel_brushed_wet"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "column_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_head_l_1",
+      "col_head_l_2",
+      "col_head_l_3",
+      "col_head_l_4",
+      "col_head_l_5",
+      "col_head_l_6"
+     ]
+    },
+    {
+     "part": "lens_l",
+     "material": "glass",
+     "materials": [
+      "glass_lit_warm"
+     ],
+     "mass": 1.2,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "head_l"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_lens_l"
+     ]
+    },
+    {
+     "part": "column_r",
+     "material": "stone",
+     "materials": [
+      "steel_brushed",
+      "stone_granite_grime",
+      "stone_granite"
+     ],
+     "mass": 48,
+     "health": 850,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 5,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_column_r"
+     ]
+    },
+    {
+     "part": "head_r",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "steel_brushed_wet"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "column_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_head_r_1",
+      "col_head_r_2",
+      "col_head_r_3",
+      "col_head_r_4",
+      "col_head_r_5",
+      "col_head_r_6"
+     ]
+    },
+    {
+     "part": "lens_r",
+     "material": "glass",
+     "materials": [
+      "glass_lit_warm"
+     ],
+     "mass": 1.2,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "head_r"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_lens_r"
+     ]
+    }
+   ],
+   "debris": 12,
+   "triangles": {
+    "intact": 1872,
+    "chunks": 2208
+   },
+   "hidden_scale": 0.0001,
+   "note": "two granite path bollards on stainless shadow-gap bases, each with a louvred stainless lamp head glowing warm on four sides under a wet cap; dense stone (stops bullets) but too slim to hide behind; placed 1 m apart as one piece"
+  },
+  {
+   "id": "security_camera_pole",
+   "name": "Exterior security camera pole",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room)",
+    "Skybridge mouth",
+    "NW gantry",
+    "F1 Sky Terrace (kiosk)"
+   ],
+   "cover": "none",
+   "size_m": [
+    0.3,
+    3.423,
+    0.836
+   ],
+   "floor_contact": 0,
+   "mass_kg": 92.7,
+   "parts": [
+    {
+     "part": "pole",
+     "material": "metal",
+     "materials": [
+      "steel_brushed_wet",
+      "steel_galvanised",
+      "steel_corten"
+     ],
+     "mass": 75,
+     "health": 615,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pole_1",
+      "col_pole_2"
+     ]
+    },
+    {
+     "part": "box",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "powdercoat_grey",
+      "plastic_dark",
+      "led_purple"
+     ],
+     "mass": 6,
+     "health": 265,
+     "break": "detach",
+     "attach": [
+      "pole"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_box"
+     ]
+    },
+    {
+     "part": "conduit",
+     "material": "plastic",
+     "materials": [
+      "rubber",
+      "plastic_dark"
+     ],
+     "mass": 0.4,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "box"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_conduit"
+     ]
+    },
+    {
+     "part": "arm",
+     "material": "metal",
+     "materials": [
+      "steel_brushed",
+      "powdercoat_graphite_wet",
+      "powdercoat_graphite",
+      "powdercoat_grey"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "pole"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_arm_1",
+      "col_arm_2_hull"
+     ]
+    },
+    {
+     "part": "dome",
+     "material": "electronics",
+     "materials": [
+      "powdercoat_grey",
+      "powdercoat_graphite",
+      "plastic_dark",
+      "screen_off"
+     ],
+     "mass": 2.2,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "arm"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_dome"
+     ]
+    },
+    {
+     "part": "dome_glass",
+     "material": "glass",
+     "materials": [
+      "glass_smoked"
+     ],
+     "mass": 0.3,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "dome"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 5,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3",
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_dome_glass"
+     ]
+    },
+    {
+     "part": "bullet",
+     "material": "electronics",
+     "materials": [
+      "powdercoat_grey",
+      "screen_off",
+      "rubber"
+     ],
+     "mass": 2.5,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "pole"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_bullet_hull"
+     ]
+    },
+    {
+     "part": "bullet_glass",
+     "material": "glass",
+     "materials": [
+      "glass_smoked"
+     ],
+     "mass": 0.1,
+     "health": 10,
+     "break": "shatter",
+     "attach": [
+      "bullet"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 4,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9",
+      "debris_10",
+      "debris_11",
+      "debris_12"
+     ],
+     "colliders": [
+      "col_bullet_glass_hull"
+     ]
+    },
+    {
+     "part": "ir_lamp",
+     "material": "electronics",
+     "materials": [
+      "powdercoat_graphite",
+      "steel_brushed",
+      "plastic_dark",
+      "led_ir",
+      "glass_smoked"
+     ],
+     "mass": 1.2,
+     "health": 25,
+     "break": "detach",
+     "attach": [
+      "pole"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_ir_lamp"
+     ]
+    }
+   ],
+   "debris": 12,
+   "triangles": {
+    "intact": 5364,
+    "chunks": 1196
+   },
+   "hidden_scale": 0.0001,
+   "note": "galvanised tapered pole on a gusseted base plate with four anchor bolts (rust at the washers) and a hand-hole cover; strapped junction box with conduit and one purple status light; arm with a pendant dome camera, a bullet camera with a sun hood on a swivel mount and an IR illuminator"
+  },
+  {
+   "id": "holo_pylon",
+   "name": "Exterior holo advert pylon",
+   "batch": "G",
+   "rooms": [
+    "F1 Sky Terrace",
+    "Skybridge approach (East Tower hall)",
+    "Bridge roof",
+    "A2 West Roof"
+   ],
+   "cover": "hard",
+   "size_m": [
+    0.72,
+    3.5,
+    0.655
+   ],
+   "floor_contact": 0,
+   "mass_kg": 401.6,
+   "parts": [
+    {
+     "part": "plinth",
+     "material": "stone",
+     "materials": [
+      "powdercoat_graphite",
+      "led_purple",
+      "stone_basalt",
+      "stone_basalt_wet"
+     ],
+     "mass": 140,
+     "health": 1200,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 6,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_plinth"
+     ]
+    },
+    {
+     "part": "spine",
+     "material": "metal",
+     "materials": [
+      "powdercoat_graphite",
+      "powdercoat_graphite_wet",
+      "steel_brushed"
+     ],
+     "mass": 120,
+     "health": 720,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_spine_1",
+      "col_spine_2",
+      "col_spine_3"
+     ]
+    },
+    {
+     "part": "clad_l",
+     "material": "stone",
+     "materials": [
+      "stone_granite_grime",
+      "stone_granite"
+     ],
+     "mass": 70,
+     "health": 965,
+     "break": "shatter",
+     "attach": [
+      "spine"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 7,
+     "debris": [
+      "debris_4",
+      "debris_5",
+      "debris_6"
+     ],
+     "colliders": [
+      "col_clad_l_1",
+      "col_clad_l_2",
+      "col_clad_l_3"
+     ]
+    },
+    {
+     "part": "clad_r",
+     "material": "stone",
+     "materials": [
+      "stone_granite_grime",
+      "stone_granite"
+     ],
+     "mass": 70,
+     "health": 965,
+     "break": "shatter",
+     "attach": [
+      "spine"
+     ],
+     "need": 1,
+     "stops_bullets": true,
+     "chunks": 5,
+     "debris": [
+      "debris_7",
+      "debris_8",
+      "debris_9"
+     ],
+     "colliders": [
+      "col_clad_r_1",
+      "col_clad_r_2",
+      "col_clad_r_3"
+     ]
+    },
+    {
+     "part": "lens",
+     "material": "glass",
+     "materials": [
+      "holo_lens_pylon"
+     ],
+     "mass": 1.5,
+     "health": 15,
+     "break": "shatter",
+     "attach": [
+      "spine"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 2,
+     "debris": [
+      "debris_10",
+      "debris_11",
+      "debris_12",
+      "debris_13",
+      "debris_14",
+      "debris_15"
+     ],
+     "colliders": [
+      "col_lens_1",
+      "col_lens_2"
+     ]
+    },
+    {
+     "part": "holo",
+     "material": "electronics",
+     "materials": [
+      "holo_ribbon",
+      "holo_ribbon_cool",
+      "holo_beam_pylon",
+      "holo_spark"
+     ],
+     "mass": 0.05,
+     "health": 1,
+     "break": "shatter",
+     "attach": [
+      "lens"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_holo"
+     ],
+     "note": "light only: casts no shadow, blocks nothing; goes out (0 chunks, collapse) when the lens breaks",
+     "collapse": true,
+     "light": true
+    }
+   ],
+   "debris": 15,
+   "triangles": {
+    "intact": 4112,
+    "chunks": 6224
+   },
+   "hidden_scale": 0.0001,
+   "note": "basalt plinth with a purple shadow-gap line, a granite-clad steel column (1.5 m) and a slim graphite mast to an emitter crown at 3.5 m; between the lower and upper emitter lenses two twisting light ribbons, a faint beam and data motes (abstract, no text); the hologram is light only and goes out with the lenses; the stone column stops bullets but is only 0.5 m wide"
+  },
+  {
+   "id": "turbine_vents",
+   "name": "Turbine ventilators, cluster of three",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "Bridge Roof",
+    "A4 Crane Deck",
+    "West Roof plant room exterior"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.63,
+    1.085,
+    1.27
+   ],
+   "floor_contact": 0,
+   "mass_kg": 70.6,
+   "parts": [
+    {
+     "part": "curb_1",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 16.8,
+     "health": 375,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_curb_1"
+     ],
+     "note": "galvanised curb bolted to the roof slab"
+    },
+    {
+     "part": "throat_1",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old",
+      "steel_brushed"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "curb_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_throat_1"
+     ]
+    },
+    {
+     "part": "head_1",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "steel_interior_dark"
+     ],
+     "mass": 6.3,
+     "health": 270,
+     "break": "detach",
+     "attach": [
+      "throat_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_head_1_hull"
+     ],
+     "spin": {
+      "axis": [
+       0,
+       1,
+       0
+      ],
+      "rps": -1.5
+     },
+     "note": "turbine head: spins about +Y through the part pivot (the throat axis), clockwise from above, about 1-3 rev/s in wind"
+    },
+    {
+     "part": "curb_2",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 14.1,
+     "health": 355,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_curb_2"
+     ],
+     "note": "galvanised curb bolted to the roof slab"
+    },
+    {
+     "part": "throat_2",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old",
+      "steel_brushed"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "curb_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_throat_2"
+     ]
+    },
+    {
+     "part": "head_2",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "steel_interior_dark"
+     ],
+     "mass": 4.74,
+     "health": 245,
+     "break": "detach",
+     "attach": [
+      "throat_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_head_2_hull"
+     ],
+     "spin": {
+      "axis": [
+       0,
+       1,
+       0
+      ],
+      "rps": -1.91
+     },
+     "note": "turbine head: spins about +Y through the part pivot (the throat axis), clockwise from above, about 1-3 rev/s in wind"
+    },
+    {
+     "part": "curb_3",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised"
+     ],
+     "mass": 12.3,
+     "health": 335,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_curb_3"
+     ],
+     "note": "galvanised curb bolted to the roof slab"
+    },
+    {
+     "part": "throat_3",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old",
+      "steel_brushed"
+     ],
+     "mass": 3.5,
+     "health": 220,
+     "break": "detach",
+     "attach": [
+      "curb_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_throat_3"
+     ]
+    },
+    {
+     "part": "head_3",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "steel_interior_dark"
+     ],
+     "mass": 3.9,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "throat_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_head_3_hull"
+     ],
+     "spin": {
+      "axis": [
+       0,
+       1,
+       0
+      ],
+      "rps": -2.25
+     },
+     "note": "turbine head: spins about +Y through the part pivot (the throat axis), clockwise from above, about 1-3 rev/s in wind"
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 14604,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "three wind-driven whirlybird extract ventilators (600, 400 and 300 mm throats) on galvanised curbs bolted to the slab; spun galvanised vanes, bearing spider and spindle, crimped throats. Each head_k is one part that spins about +Y through its pivot"
+  },
+  {
+   "id": "mushroom_vent",
+   "name": "Mushroom-cap roof exhaust fan",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "West Roof plant room exterior",
+    "Bridge Roof",
+    "A1 Sky Terrace (service corner)"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.252,
+    1.019,
+    1.252
+   ],
+   "floor_contact": 0,
+   "mass_kg": 91.5,
+   "parts": [
+    {
+     "part": "curb",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 38,
+     "health": 490,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_curb_1",
+      "col_curb_2"
+     ]
+    },
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "aluminium_spun",
+      "steel_interior_dark",
+      "steel_brushed",
+      "rust_bloom"
+     ],
+     "mass": 34,
+     "health": 475,
+     "break": "detach",
+     "attach": [
+      "curb"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ],
+     "note": "fan base, motor and wheel inside"
+    },
+    {
+     "part": "mesh",
+     "material": "metal",
+     "materials": [
+      "wire_mesh",
+      "steel_galvanised"
+     ],
+     "mass": 3,
+     "health": 210,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mesh"
+     ]
+    },
+    {
+     "part": "hood",
+     "material": "metal",
+     "materials": [
+      "aluminium_spun",
+      "steel_interior_dark",
+      "aluminium_greasy",
+      "steel_brushed"
+     ],
+     "mass": 14,
+     "health": 350,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_hood_hull"
+     ]
+    },
+    {
+     "part": "isolator",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "powder_grey",
+      "powder_ivory",
+      "plastic_red_handle",
+      "epdm_black",
+      "steel_brushed"
+     ],
+     "mass": 2.5,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "curb"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_isolator"
+     ],
+     "note": "weatherproof isolator switch, plain rotary handle"
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 7872,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "centrifugal down-blast exhaust fan: spun aluminium mushroom hood on four flat-bar brackets over a 150 mm discharge gap closed by bird mesh, spun venturi neck, base plate on an insulated galvanised curb; weatherproof isolator box with flexible conduit"
+  },
+  {
+   "id": "upblast_fan",
+   "name": "Kitchen upblast exhaust fan",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "West Roof plant room exterior",
+    "F1 Kitchen roof / Sky Terrace service yard"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.126,
+    1.184,
+    0.907
+   ],
+   "floor_contact": 0,
+   "mass_kg": 92.2,
+   "parts": [
+    {
+     "part": "curb",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "rust_bloom",
+      "aluminium_greasy",
+      "steel_brushed"
+     ],
+     "mass": 42,
+     "health": 510,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_curb"
+     ]
+    },
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "aluminium_spun",
+      "steel_brushed",
+      "aluminium_greasy"
+     ],
+     "mass": 30,
+     "health": 455,
+     "break": "detach",
+     "attach": [
+      "curb"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ],
+     "note": "tilts open on the hinge kit at -X for duct cleaning (pivot at the hinge pins)"
+    },
+    {
+     "part": "windband",
+     "material": "metal",
+     "materials": [
+      "aluminium_spun",
+      "steel_interior_dark",
+      "aluminium_greasy",
+      "steel_brushed"
+     ],
+     "mass": 16,
+     "health": 370,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_windband"
+     ]
+    },
+    {
+     "part": "screen",
+     "material": "metal",
+     "materials": [
+      "wire_mesh",
+      "steel_galvanised"
+     ],
+     "mass": 1.2,
+     "health": 155,
+     "break": "detach",
+     "attach": [
+      "windband"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_screen"
+     ]
+    },
+    {
+     "part": "grease_box",
+     "material": "metal",
+     "materials": [
+      "aluminium_spun",
+      "aluminium_greasy",
+      "pvc_grey",
+      "steel_brushed"
+     ],
+     "mass": 3,
+     "health": 210,
+     "break": "detach",
+     "attach": [
+      "base"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grease_box"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 7188,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "grease-rated upblast fan: spun aluminium windband with a rolled bead and bird screen over the motor cover, square base shroud with hinge kit, grease trap box with drain spout, tall galvanised curb; grease runs down the curb under the trap"
+  },
+  {
+   "id": "gooseneck_vents",
+   "name": "Gooseneck intakes and J-pipe",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "Bridge Roof",
+    "F2/F3 ledge ends",
+    "NW gantry landing"
+   ],
+   "cover": "none",
+   "size_m": [
+    1.38,
+    0.985,
+    0.87
+   ],
+   "floor_contact": 0,
+   "mass_kg": 44.6,
+   "parts": [
+    {
+     "part": "curb_a",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 16,
+     "health": 370,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_curb_a"
+     ]
+    },
+    {
+     "part": "neck_a",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "curb_a"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_neck_a_1",
+      "col_neck_a_2",
+      "col_neck_a_3"
+     ]
+    },
+    {
+     "part": "mesh_a",
+     "material": "metal",
+     "materials": [
+      "wire_mesh"
+     ],
+     "mass": 0.3,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "neck_a"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mesh_a"
+     ]
+    },
+    {
+     "part": "flashing_b",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "steel_brushed",
+      "epdm_black"
+     ],
+     "mass": 7,
+     "health": 280,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_flashing_b"
+     ]
+    },
+    {
+     "part": "neck_b",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old"
+     ],
+     "mass": 8,
+     "health": 290,
+     "break": "detach",
+     "attach": [
+      "flashing_b"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_neck_b_1",
+      "col_neck_b_2",
+      "col_neck_b_3"
+     ]
+    },
+    {
+     "part": "mesh_b",
+     "material": "metal",
+     "materials": [
+      "wire_mesh"
+     ],
+     "mass": 0.3,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "neck_b"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_mesh_b"
+     ]
+    },
+    {
+     "part": "boot_j",
+     "material": "plastic",
+     "materials": [
+      "epdm_black",
+      "steel_brushed"
+     ],
+     "mass": 1.5,
+     "health": 40,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_boot_j"
+     ]
+    },
+    {
+     "part": "jpipe",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "wire_mesh"
+     ],
+     "mass": 2.5,
+     "health": 200,
+     "break": "detach",
+     "attach": [
+      "boot_j"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_jpipe"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 10900,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "two galvanised gooseneck intakes (250 and 200 mm) with gored 180 degree bends, lock seams, brace straps and bird mesh in the downturned mouths, one on a curb, one through a cone flashing with a storm collar; a 100 mm J-pipe through an EPDM boot"
+  },
+  {
+   "id": "louvred_penthouse",
+   "name": "Louvred intake penthouse",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "West Roof plant room exterior",
+    "Bridge Roof",
+    "A4 Crane Deck"
+   ],
+   "cover": "soft",
+   "size_m": [
+    1.309,
+    1.212,
+    1.108
+   ],
+   "floor_contact": 0,
+   "mass_kg": 163,
+   "parts": [
+    {
+     "part": "base",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised_old",
+      "steel_galvanised",
+      "rust_bloom"
+     ],
+     "mass": 40,
+     "health": 500,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_base"
+     ]
+    },
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_brushed",
+      "steel_interior_dark"
+     ],
+     "mass": 45,
+     "health": 520,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame"
+     ],
+     "note": "plenum box inside goes down into the duct riser"
+    },
+    {
+     "part": "louvre_s",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "powder_grey"
+     ],
+     "mass": 14,
+     "health": 350,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_s"
+     ],
+     "note": "blade bank, drainable J-gutter blades at 45 degrees"
+    },
+    {
+     "part": "louvre_n",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "powder_grey"
+     ],
+     "mass": 14,
+     "health": 350,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_n"
+     ],
+     "note": "blade bank, drainable J-gutter blades at 45 degrees"
+    },
+    {
+     "part": "louvre_e",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "powder_grey"
+     ],
+     "mass": 12,
+     "health": 335,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_e"
+     ],
+     "note": "blade bank, drainable J-gutter blades at 45 degrees"
+    },
+    {
+     "part": "louvre_w",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "powder_grey"
+     ],
+     "mass": 12,
+     "health": 335,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_louvre_w"
+     ],
+     "note": "blade bank, drainable J-gutter blades at 45 degrees"
+    },
+    {
+     "part": "screen",
+     "material": "metal",
+     "materials": [
+      "wire_mesh"
+     ],
+     "mass": 4,
+     "health": 230,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_screen_1",
+      "col_screen_2",
+      "col_screen_3",
+      "col_screen_4"
+     ]
+    },
+    {
+     "part": "roof",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_interior_dark"
+     ],
+     "mass": 22,
+     "health": 410,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_roof_hull"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 4056,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "rectangular fresh-air intake penthouse: drainable J-gutter blade louvres on all four sides between formed corner posts, bird screen behind, hipped galvanised cap with standing seams and a drip edge, on a galvanised base channel bolted to the slab"
+  },
+  {
+   "id": "duct_run",
+   "name": "Clad rooftop duct run",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof (plant room lee)",
+    "West Roof plant room exterior",
+    "Bridge Roof",
+    "A4 Crane Deck"
+   ],
+   "cover": "soft",
+   "size_m": [
+    3.186,
+    2.3,
+    0.985
+   ],
+   "floor_contact": 0,
+   "mass_kg": 102.3,
+   "parts": [
+    {
+     "part": "stand_1",
+     "material": "plastic",
+     "materials": [
+      "epdm_black",
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old"
+     ],
+     "mass": 9,
+     "health": 75,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stand_1"
+     ],
+     "note": "strut-channel stand on rubber pads, not fixed into the membrane"
+    },
+    {
+     "part": "stand_2",
+     "material": "plastic",
+     "materials": [
+      "epdm_black",
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old",
+      "rust_bloom"
+     ],
+     "mass": 9,
+     "health": 75,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stand_2"
+     ],
+     "note": "strut-channel stand on rubber pads, not fixed into the membrane"
+    },
+    {
+     "part": "stand_3",
+     "material": "plastic",
+     "materials": [
+      "epdm_black",
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old"
+     ],
+     "mass": 9,
+     "health": 75,
+     "break": "detach",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_stand_3"
+     ],
+     "note": "strut-channel stand on rubber pads, not fixed into the membrane"
+    },
+    {
+     "part": "run_1",
+     "material": "metal",
+     "materials": [
+      "aluminium_cladding",
+      "steel_brushed",
+      "aluminium_spun"
+     ],
+     "mass": 17.5,
+     "health": 380,
+     "break": "detach",
+     "attach": [
+      "stand_1",
+      "stand_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_run_1"
+     ],
+     "note": "jacketed duct section (insulation inside)"
+    },
+    {
+     "part": "run_2",
+     "material": "metal",
+     "materials": [
+      "aluminium_cladding",
+      "steel_brushed",
+      "aluminium_spun"
+     ],
+     "mass": 16.8,
+     "health": 375,
+     "break": "detach",
+     "attach": [
+      "stand_2",
+      "stand_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_run_2"
+     ],
+     "note": "jacketed duct section (insulation inside)"
+    },
+    {
+     "part": "end_cap",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "steel_brushed",
+      "rust_bloom"
+     ],
+     "mass": 3,
+     "health": 210,
+     "break": "detach",
+     "attach": [
+      "run_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_end_cap"
+     ]
+    },
+    {
+     "part": "elbow",
+     "material": "metal",
+     "materials": [
+      "aluminium_cladding",
+      "aluminium_spun",
+      "steel_brushed"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "run_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_elbow_hull"
+     ]
+    },
+    {
+     "part": "riser",
+     "material": "metal",
+     "materials": [
+      "aluminium_cladding",
+      "aluminium_spun",
+      "steel_brushed"
+     ],
+     "mass": 8,
+     "health": 290,
+     "break": "detach",
+     "attach": [
+      "elbow",
+      "elbow_top"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_riser"
+     ]
+    },
+    {
+     "part": "elbow_top",
+     "material": "metal",
+     "materials": [
+      "aluminium_cladding",
+      "aluminium_spun",
+      "steel_brushed"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "detach",
+     "attach": [
+      "collar"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_elbow_top"
+     ]
+    },
+    {
+     "part": "collar",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "rust_bloom",
+      "epdm_black"
+     ],
+     "mass": 12,
+     "health": 335,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_collar"
+     ],
+     "note": "wall sleeve flange: the flat back sits on the wall plane at -Z"
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 7084,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "insulated 550 x 450 mm supply duct with stucco-embossed aluminium jacketing, draw bands with screws, dents; strut-channel stands on rubber roof pads with hold-down straps; elbow up into a riser and a second elbow back into a flanged wall collar (flat back at -Z)"
+  },
+  {
+   "id": "wall_louvre",
+   "name": "Facade louvre panel",
+   "batch": "G",
+   "rooms": [
+    "West Roof plant room walls",
+    "F1 Plant Room exterior wall",
+    "F2/F3 ledge plant-room openings",
+    "A4 Crane Deck site hut"
+   ],
+   "cover": "none",
+   "size_m": [
+    2.04,
+    1.508,
+    0.196
+   ],
+   "floor_contact": 0,
+   "mass_kg": 95.8,
+   "parts": [
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_galvanised_old",
+      "steel_brushed",
+      "epdm_black"
+     ],
+     "mass": 38,
+     "health": 490,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2",
+      "col_frame_3",
+      "col_frame_4",
+      "col_frame_5"
+     ],
+     "note": "perimeter frame and mullion, anchored into the wall opening"
+    },
+    {
+     "part": "blade_1",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_1"
+     ]
+    },
+    {
+     "part": "blade_2",
+     "material": "metal",
+     "materials": [
+      "powder_grey",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_2"
+     ]
+    },
+    {
+     "part": "blade_3",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_3"
+     ]
+    },
+    {
+     "part": "blade_4",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_4"
+     ]
+    },
+    {
+     "part": "blade_5",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_5"
+     ]
+    },
+    {
+     "part": "blade_6",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_6"
+     ]
+    },
+    {
+     "part": "blade_7",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_7"
+     ]
+    },
+    {
+     "part": "blade_8",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_8"
+     ]
+    },
+    {
+     "part": "blade_9",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_9"
+     ]
+    },
+    {
+     "part": "blade_10",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_10"
+     ]
+    },
+    {
+     "part": "blade_11",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_11"
+     ]
+    },
+    {
+     "part": "blade_12",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_12"
+     ]
+    },
+    {
+     "part": "blade_13",
+     "material": "metal",
+     "materials": [
+      "powder_grey",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_13"
+     ]
+    },
+    {
+     "part": "blade_14",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_14"
+     ]
+    },
+    {
+     "part": "blade_15",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_15"
+     ]
+    },
+    {
+     "part": "blade_16",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_16"
+     ]
+    },
+    {
+     "part": "blade_17",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_17"
+     ]
+    },
+    {
+     "part": "blade_18",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_18"
+     ]
+    },
+    {
+     "part": "blade_19",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_19"
+     ]
+    },
+    {
+     "part": "blade_20",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_20"
+     ]
+    },
+    {
+     "part": "blade_21",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_21"
+     ]
+    },
+    {
+     "part": "blade_22",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_22"
+     ]
+    },
+    {
+     "part": "blade_23",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_23"
+     ]
+    },
+    {
+     "part": "blade_24",
+     "material": "metal",
+     "materials": [
+      "powder_grey",
+      "steel_interior_dark"
+     ],
+     "mass": 2.2,
+     "health": 120,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_blade_24"
+     ]
+    },
+    {
+     "part": "screen",
+     "material": "metal",
+     "materials": [
+      "wire_mesh"
+     ],
+     "mass": 5,
+     "health": 250,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_screen"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 2422,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "two-bay drainable blade louvre, 2.0 x 1.5 m: extruded aluminium perimeter frame and mullion in anthracite powder coat, 24 J-gutter blades clipped into the jambs, bird screen behind, sloped sill flashing with a drip; flat back at -Z goes on the wall. Each blade is a part that comes loose (bending is not modelled)"
+  },
+  {
+   "id": "relief_vent",
+   "name": "Plumbing vent stacks through flashing boots",
+   "batch": "G",
+   "rooms": [
+    "A2 West Roof",
+    "Bridge Roof",
+    "A1 Sky Terrace (service corner)",
+    "F1/F2 ledge corners"
+   ],
+   "cover": "none",
+   "size_m": [
+    1.015,
+    0.756,
+    0.55
+   ],
+   "floor_contact": 0,
+   "mass_kg": 17.6,
+   "parts": [
+    {
+     "part": "flashing_a",
+     "material": "metal",
+     "materials": [
+      "lead_flashing"
+     ],
+     "mass": 9,
+     "health": 305,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_flashing_a"
+     ]
+    },
+    {
+     "part": "pipe_a",
+     "material": "plastic",
+     "materials": [
+      "pvc_grey",
+      "steel_interior_dark",
+      "pvc_white"
+     ],
+     "mass": 1.65,
+     "health": 40,
+     "break": "detach",
+     "attach": [
+      "flashing_a"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pipe_a"
+     ]
+    },
+    {
+     "part": "cap_a",
+     "material": "metal",
+     "materials": [
+      "powder_anthracite"
+     ],
+     "mass": 1.4,
+     "health": 165,
+     "break": "detach",
+     "attach": [
+      "pipe_a"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_a"
+     ]
+    },
+    {
+     "part": "boot_b",
+     "material": "plastic",
+     "materials": [
+      "epdm_black",
+      "steel_brushed"
+     ],
+     "mass": 1.2,
+     "health": 35,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_boot_b"
+     ]
+    },
+    {
+     "part": "pipe_b",
+     "material": "plastic",
+     "materials": [
+      "pvc_grey",
+      "steel_interior_dark",
+      "pvc_white"
+     ],
+     "mass": 1.2,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "boot_b"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pipe_b"
+     ]
+    },
+    {
+     "part": "cap_b",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "wire_mesh",
+      "steel_interior_dark"
+     ],
+     "mass": 0.8,
+     "health": 135,
+     "break": "detach",
+     "attach": [
+      "pipe_b"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_b"
+     ]
+    },
+    {
+     "part": "boot_c",
+     "material": "plastic",
+     "materials": [
+      "epdm_black",
+      "steel_brushed"
+     ],
+     "mass": 1.2,
+     "health": 35,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_boot_c"
+     ]
+    },
+    {
+     "part": "pipe_c",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_interior_dark",
+      "steel_galvanised_old"
+     ],
+     "mass": 0.9,
+     "health": 140,
+     "break": "detach",
+     "attach": [
+      "boot_c"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_pipe_c"
+     ]
+    },
+    {
+     "part": "cap_c",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "wire_mesh"
+     ],
+     "mass": 0.3,
+     "health": 125,
+     "break": "detach",
+     "attach": [
+      "pipe_c"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_cap_c"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 4458,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "three soil-and-vent pipes through the roof: 110 mm PVC through a dressed lead slate with a cast cowl on three legs, 75 mm PVC through an EPDM boot with a rain cap over a mesh band, 50 mm galvanised pipe through an EPDM boot with a wire-mesh cage cap; worm-drive clamps, sealant"
+  },
+  {
+   "id": "ac_cassette_row",
+   "name": "Split-AC outdoor units on a ledge stand",
+   "batch": "G",
+   "rooms": [
+    "A4 Crane Deck site hut wall",
+    "West Roof plant room exterior",
+    "A3 Skybridge hall exterior",
+    "F2/F3 ledge corners (only where the ledge is wider)"
+   ],
+   "cover": "soft",
+   "size_m": [
+    2.87,
+    1.2,
+    0.454
+   ],
+   "floor_contact": 0,
+   "mass_kg": 160.8,
+   "parts": [
+    {
+     "part": "rack",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "epdm_black",
+      "rust_bloom"
+     ],
+     "mass": 48,
+     "health": 530,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_rack_1",
+      "col_rack_2",
+      "col_rack_3",
+      "col_rack_4",
+      "col_rack_5"
+     ],
+     "note": "galvanised square-tube stand; wall plates bolted to the slab edge"
+    },
+    {
+     "part": "unit_1",
+     "material": "metal",
+     "materials": [
+      "powder_ivory",
+      "steel_interior_dark",
+      "steel_brushed",
+      "condenser_fins",
+      "steel_galvanised_old",
+      "led_purple"
+     ],
+     "mass": 34,
+     "health": 475,
+     "break": "detach",
+     "attach": [
+      "rack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_unit_1_1",
+      "col_unit_1_2",
+      "col_unit_1_3",
+      "col_unit_1_4",
+      "col_unit_1_5"
+     ],
+     "note": "inverter outdoor unit; the compressor (steel, about 15 kg) is not modelled separately"
+    },
+    {
+     "part": "grille_1",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "unit_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grille_1"
+     ]
+    },
+    {
+     "part": "fan_1",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "unit_1"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan_1"
+     ],
+     "spin": {
+      "axis": [
+       0,
+       0,
+       1
+      ],
+      "rps": 8
+     },
+     "note": "propeller fan: spins about +Z through the part pivot (counter-clockwise seen from the front), about 10-14 rev/s running"
+    },
+    {
+     "part": "unit_2",
+     "material": "metal",
+     "materials": [
+      "powder_ivory",
+      "steel_interior_dark",
+      "steel_brushed",
+      "condenser_fins",
+      "steel_galvanised_old",
+      "rust_bloom",
+      "led_purple"
+     ],
+     "mass": 34,
+     "health": 475,
+     "break": "detach",
+     "attach": [
+      "rack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_unit_2_1",
+      "col_unit_2_2",
+      "col_unit_2_3",
+      "col_unit_2_4",
+      "col_unit_2_5"
+     ],
+     "note": "inverter outdoor unit; the compressor (steel, about 15 kg) is not modelled separately"
+    },
+    {
+     "part": "grille_2",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "unit_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grille_2"
+     ]
+    },
+    {
+     "part": "fan_2",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "unit_2"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan_2"
+     ],
+     "spin": {
+      "axis": [
+       0,
+       0,
+       1
+      ],
+      "rps": 8
+     },
+     "note": "propeller fan: spins about +Z through the part pivot (counter-clockwise seen from the front), about 10-14 rev/s running"
+    },
+    {
+     "part": "unit_3",
+     "material": "metal",
+     "materials": [
+      "powder_ivory",
+      "steel_interior_dark",
+      "steel_brushed",
+      "condenser_fins",
+      "steel_galvanised_old",
+      "led_purple"
+     ],
+     "mass": 34,
+     "health": 475,
+     "break": "detach",
+     "attach": [
+      "rack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_unit_3_1",
+      "col_unit_3_2",
+      "col_unit_3_3",
+      "col_unit_3_4",
+      "col_unit_3_5"
+     ],
+     "note": "inverter outdoor unit; the compressor (steel, about 15 kg) is not modelled separately"
+    },
+    {
+     "part": "grille_3",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.8,
+     "health": 35,
+     "break": "detach",
+     "attach": [
+      "unit_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grille_3"
+     ]
+    },
+    {
+     "part": "fan_3",
+     "material": "plastic",
+     "materials": [
+      "plastic_dark"
+     ],
+     "mass": 0.6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "unit_3"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_fan_3"
+     ],
+     "spin": {
+      "axis": [
+       0,
+       0,
+       1
+      ],
+      "rps": 8
+     },
+     "note": "propeller fan: spins about +Z through the part pivot (counter-clockwise seen from the front), about 10-14 rev/s running"
+    },
+    {
+     "part": "trunking",
+     "material": "plastic",
+     "materials": [
+      "pvc_white",
+      "pvc_grey",
+      "epdm_black",
+      "brass",
+      "copper_tarnished"
+     ],
+     "mass": 6,
+     "health": 65,
+     "break": "detach",
+     "attach": [
+      "rack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_trunking_1",
+      "col_trunking_2"
+     ],
+     "note": "PVC cable trunking with the insulated refrigerant pipes and interconnect cables"
+    },
+    {
+     "part": "drains",
+     "material": "plastic",
+     "materials": [
+      "pvc_white",
+      "pvc_grey"
+     ],
+     "mass": 0.6,
+     "health": 30,
+     "break": "detach",
+     "attach": [
+      "rack"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_drains_1",
+      "col_drains_2",
+      "col_drains_3"
+     ]
+    }
+   ],
+   "debris": 0,
+   "triangles": {
+    "intact": 14922,
+    "chunks": 0
+   },
+   "hidden_scale": 0.0001,
+   "note": "three small inverter condensers on anti-vibration pads on a galvanised ledge stand bolted to the wall (flat back at -Z): wire-guarded condenser coils, front fan grilles over spinnable propeller fans, insulated refrigerant pipes and cables into ivory PVC trunking, condensate hoses down to the ledge; one purple status LED per unit"
+  },
+  {
+   "id": "grate_vent",
+   "name": "Exhaust grate on a concrete plinth",
+   "batch": "G",
+   "rooms": [
+    "A1 Sky Terrace (service corner)",
+    "A2 West Roof (plant room lee)",
+    "Bridge Roof",
+    "A4 Crane Deck"
+   ],
+   "cover": "hard",
+   "size_m": [
+    1.65,
+    1.59,
+    1
+   ],
+   "floor_contact": 0,
+   "mass_kg": 1257.1,
+   "parts": [
+    {
+     "part": "plinth",
+     "material": "stone",
+     "materials": [
+      "concrete_weathered",
+      "concrete_stained"
+     ],
+     "mass": 1150,
+     "health": 1200,
+     "break": "shatter",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": true,
+     "chunks": 12,
+     "debris": [
+      "debris_1",
+      "debris_2",
+      "debris_3"
+     ],
+     "colliders": [
+      "col_plinth_1",
+      "col_plinth_2",
+      "col_plinth_3",
+      "col_plinth_4"
+     ],
+     "breach_only": true,
+     "note": "reinforced concrete: hard cover; damaged only by explosives"
+    },
+    {
+     "part": "frame",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "pvc_grey",
+      "rust_bloom"
+     ],
+     "mass": 30,
+     "health": 455,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_frame_1",
+      "col_frame_2"
+     ]
+    },
+    {
+     "part": "shaft",
+     "material": "metal",
+     "materials": [
+      "steel_interior_dark",
+      "steel_galvanised",
+      "steel_brushed"
+     ],
+     "mass": 25,
+     "health": 425,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_shaft"
+     ],
+     "note": "shaft liner and damper"
+    },
+    {
+     "part": "grate",
+     "material": "metal",
+     "materials": [
+      "steel_galvanised",
+      "steel_galvanised_old",
+      "rust_bloom"
+     ],
+     "mass": 52,
+     "health": 600,
+     "break": "detach",
+     "attach": [
+      "frame"
+     ],
+     "need": 1,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_grate"
+     ],
+     "note": "heavy steel grating, walkable"
+    },
+    {
+     "part": "steam_1",
+     "material": "plastic",
+     "materials": [
+      "steam_card"
+     ],
+     "mass": 0.05,
+     "health": 30,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_steam_1"
+     ],
+     "fx": "steam",
+     "note": "FX card: no physics, ignore the tiny proxy; animate (rise/scroll, sway, fade)"
+    },
+    {
+     "part": "steam_2",
+     "material": "plastic",
+     "materials": [
+      "steam_card"
+     ],
+     "mass": 0.05,
+     "health": 30,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_steam_2"
+     ],
+     "fx": "steam",
+     "note": "FX card: no physics, ignore the tiny proxy; animate (rise/scroll, sway, fade)"
+    },
+    {
+     "part": "steam_3",
+     "material": "plastic",
+     "materials": [
+      "steam_card"
+     ],
+     "mass": 0.05,
+     "health": 30,
+     "break": "fixed",
+     "attach": [
+      "ground"
+     ],
+     "need": 0,
+     "stops_bullets": false,
+     "chunks": 0,
+     "debris": [],
+     "colliders": [
+      "col_steam_3"
+     ],
+     "fx": "steam",
+     "note": "FX card: no physics, ignore the tiny proxy; animate (rise/scroll, sway, fade)"
+    }
+   ],
+   "debris": 3,
+   "triangles": {
+    "intact": 2196,
+    "chunks": 2921
+   },
+   "hidden_scale": 0.0001,
+   "note": "cast concrete plinth (120 mm walls, chamfered arrises, stained foot) over a ventilation shaft: galvanised angle nosing, walk-over bearing-bar grating with hold-down clips, dark lined shaft with damper blades; steam_1..3 are soft translucent cards the game can animate (scroll / scale / fade) and should ignore for physics"
   }
  ]
 }

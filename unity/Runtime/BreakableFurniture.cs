@@ -35,7 +35,13 @@
 // Freshly freed bodies do not collide with colliders of the same piece they start inside (sibling chunks, a drawer in
 // its carcass) until they have moved apart. Loose chunks and debris fade out after debrisLifetime; at most
 // maxLooseBodies stay alive per piece.
-// glTFast negates X on import (glTF +X is Unity -X); nothing here reads glTF coordinates, so no conversion is needed.
+// Exterior batch G adds two optional hints. A part with `spin` { axis, rps } (turbine vent heads about +Y, the split-AC
+// fans about +Z) turns rps revolutions per second about that axis through its node while it is still in place
+// (animateSpin, spinScale; it stops when the part breaks or comes loose). A part with `fx` "steam" (the grate vent's
+// steam cards) is an FX card: its colliders are switched off, it ignores damage, and while animateFx is on it breathes
+// (slow rise/stretch and sway). Fading its material is left to the game (the cards use their own blended material).
+// glTFast negates X on import (glTF +X is Unity -X). The spin axis is the one place glTF coordinates are read: it is
+// mirrored to (-x, y, z), and because the mirror also flips handedness the signed rps is used as is with Rotate.
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -60,6 +66,10 @@ public class BreakableFurniture : MonoBehaviour
     public bool landingDamage = true;        // a loose glass, ceramic or electronic part that lands hard takes damage
     public float liquidLifetime = 0.35f;     // liquid chunks (aquarium water) fall this long, without colliders ...
     public float liquidFade = 0.4f;          // ... then shrink away over this long
+    [Header("Exterior hints (batch G)")]
+    public bool animateSpin = true;          // turn parts with a spin hint (turbine heads, AC fans)
+    public float spinScale = 1f;             // multiplies every spin rate (0.2 for a calm night, 1.5 for a gale)
+    public bool animateFx = true;            // breathe the steam cards (fx "steam")
     [Header("Layers (-1 leaves them as imported)")]
     public int softLayer = -1;               // parts that never stop bullets (soft cover, as in Siege)
     public int hardLayer = -1;               // parts with stops_bullets
@@ -89,6 +99,10 @@ public class BreakableFurniture : MonoBehaviour
         public bool collapse;                    // shatters (instead of coming loose) when its support goes
         public bool liquid;                      // its chunks drain away (no colliders, short fade)
         public bool breachOnly;                  // only explosions damage it
+        public Vector3 spinAxis;                 // Unity space, normalised; zero when the part does not spin
+        public float spinRps;                    // signed rev/s (see the header)
+        public string fx;                        // "steam": an FX card (no colliders, no damage)
+        public Vector3 restScale; public Quaternion restRot;
         public bool debrisOut;                   // its debris has been let out
         public Transform node, chunks;
         public PartState state = PartState.Intact;
@@ -99,7 +113,8 @@ public class BreakableFurniture : MonoBehaviour
     // parts.json, as JsonUtility reads it (the classes and materials tables are not needed here)
     [Serializable] class PackJson { public PieceJson[] pieces; }
     [Serializable] class PieceJson { public string id, cover; public PartJson[] parts; }
-    [Serializable] class PartJson { public string part, material; public float mass, health; public string @break; public string[] attach; public int need; public bool stops_bullets; public int chunks; public string[] debris; public int[] fixed_chunks; public bool collapse, liquid, breach_only; }
+    [Serializable] class PartJson { public string part, material; public float mass, health; public string @break; public string[] attach; public int need; public bool stops_bullets; public int chunks; public string[] debris; public int[] fixed_chunks; public bool collapse, liquid, breach_only; public SpinJson spin; public string fx; }
+    [Serializable] class SpinJson { public float[] axis; public float rps; }
 
     public readonly Dictionary<string, Part> parts = new Dictionary<string, Part>();
     public string Cover { get; private set; }
@@ -177,6 +192,9 @@ public class BreakableFurniture : MonoBehaviour
             p.attach = j.attach != null && j.attach.Length > 0 ? j.attach : new[] { "ground" };
             p.need = j.need; p.stopsBullets = j.stops_bullets; p.debris = j.debris ?? new string[0];
             p.fixedChunks = j.fixed_chunks ?? new int[0]; p.collapse = j.collapse; p.liquid = j.liquid; p.breachOnly = j.breach_only;
+            if (j.spin != null && j.spin.axis != null && j.spin.axis.Length == 3 && j.spin.rps != 0f)
+            { p.spinAxis = new Vector3(-j.spin.axis[0], j.spin.axis[1], j.spin.axis[2]).normalized; p.spinRps = j.spin.rps; }
+            p.fx = string.IsNullOrEmpty(j.fx) ? null : j.fx;
         }
         else
         {
@@ -185,8 +203,11 @@ public class BreakableFurniture : MonoBehaviour
             p.breakType = host.Find("chunks_" + p.name) != null ? BreakType.Shatter : BreakType.Detach;
             p.maxHealth = p.health = ClassHealth.TryGetValue(p.materialClass, out var h) ? h : 100f;
         }
+        p.restScale = node.localScale; p.restRot = node.localRotation;
+        if (p.fx != null) { p.breakType = BreakType.Fixed; foreach (var c in node.GetComponentsInChildren<Collider>(true)) c.enabled = false; }
         foreach (var c in node.GetComponentsInChildren<Collider>(true))
         {
+            if (p.fx != null) continue;   // FX cards: no hits
             p.colliders.Add(c); byCollider[c] = p; Own(c);
             var layer = p.stopsBullets ? hardLayer : softLayer;
             if (layer >= 0) c.gameObject.layer = layer;
@@ -585,6 +606,7 @@ public class BreakableFurniture : MonoBehaviour
     void Update()
     {
         var now = Time.time;
+        Animate(now);
         for (var i = loose.Count - 1; i >= 0; i--)
         {
             var l = loose[i];
@@ -594,6 +616,22 @@ public class BreakableFurniture : MonoBehaviour
             if (age < 0) continue;
             if (age >= fade) { Release(l.t); Destroy(l.t.gameObject); loose.RemoveAt(i); continue; }
             l.t.localScale = l.scale * (1f - age / fade);   // shrink away: works with any shader
+        }
+    }
+
+    // batch G hints: spinning parts while in place, breathing steam cards
+    void Animate(float now)
+    {
+        foreach (var p in parts.Values)
+        {
+            if (p.state != PartState.Intact || p.node == null) continue;
+            if (animateSpin && p.spinRps != 0f) p.node.Rotate(p.spinAxis, p.spinRps * spinScale * 360f * Time.deltaTime, Space.Self);
+            if (animateFx && p.fx == "steam")
+            {
+                var ph = (p.name.GetHashCode() & 255) * 0.05f;
+                p.node.localScale = Vector3.Scale(p.restScale, new Vector3(1f + 0.06f * Mathf.Sin(now * 0.9f + ph), 1f + 0.12f * Mathf.Sin(now * 0.6f + ph), 1f));
+                p.node.localRotation = p.restRot * Quaternion.Euler(0f, 6f * Mathf.Sin(now * 0.35f + ph), 0f);
+            }
         }
     }
 

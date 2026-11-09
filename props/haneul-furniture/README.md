@@ -5,16 +5,17 @@
 Breakable furniture for the Haneul Tower map: the upper floors of a 2111 Seoul supertall by the river, at night,
 in the rain. You place every piece yourself; nothing here is placed in the map. Warm wood, hanji paper panels,
 celadon, brass, dark alloy and stone, with tech pieces (render racks, holo console, broadcast desk) in graphite and
-dark alloy with a few purple `#8a4dff` lights. No text, logos, numbers or symbols anywhere.
+dark alloy with a few purple `#8a4dff` lights. Batch G adds the outside: roof plant, terrace furniture and vents,
+weathered for the rain. No text, logos, numbers or symbols anywhere.
 
-**64 pieces**, one `.glb` each. Every piece is built from named parts (644 in all) that come apart.
-The 182 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
-(1,537 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
+**94 pieces** (64 interior, 30 exterior), one `.glb` each. Every piece is built from named parts (935 in all) that
+come apart. The 217 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
+(1,814 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
 grain with saw-toothed ends (board by board), glass breaks radially round an impact (tempered glass dices), screens
 crack in their housings, hanji tears into ragged strips (a border strip stays on the frame), upholstery tears along
 its seams with recessed foam, and chunks of lights and screens are dark.
 Each part has a material class (for impact sounds and effects), a mass, a health value and collider proxies.
-564,664 triangles intact across the pack, 368,345 in the chunk sets.
+797,492 triangles intact across the pack, 416,706 in the chunk sets.
 
 ![Catalogue](catalogue.png)
 
@@ -58,22 +59,68 @@ Each part has a material class (for impact sounds and effects), a mass, a health
 | `wine_fridge` | Dual-zone wine cooler | 0.60 × 1.85 × 0.74 | 185 | soft | 14,952 / 12,227 | 23 |
 | `fire_cabinet` | Fire hose and extinguisher cabinet | 0.75 × 1.72 × 0.27 | 84.1 | soft | 8,952 / 917 | 12 |
 
+**Batch G (30 exterior pieces):** roof plant for the neighbour roofs where attackers spawn, the Crane Deck and the
+bridge roof (`hvac_condenser`, `cooling_tower`, `water_tank`, `comm_mast`, `bmu_cradle`, `exhaust_stack`,
+`generator_enclosure`, `drone_dock`, `roof_hatch_box`, `pallet_stack`), Sky Terrace and skybridge furniture
+(`terrace_sofa`, `parasol_table`, `sun_lounger`, `patio_heater`, `fire_table`, `bamboo_planter`, `pergola_canopy`,
+`bollard_light`, `security_camera_pole`, `holo_pylon`) and vents for roofs, ledges and plant rooms (`turbine_vents`,
+`mushroom_vent`, `upblast_fan`, `gooseneck_vents`, `louvred_penthouse`, `duct_run`, `wall_louvre`, `relief_vent`,
+`ac_cassette_row`, `grate_vent`). Powder-coated and galvanised steel, concrete, weathered teak, stone and faded
+fabric, with wet up-faces, rain streaks, grime at the foot and rust only at fasteners. Hard cover: the generator,
+condenser, water tank, hatch box, pallet load, fire table, planter trough, holo pylon column and grate plinth.
+Turbine heads and AC fans carry `spin` hints and the grate's steam cards an `fx` hint (see INTEGRATION.md,
+**Exterior pieces**).
+
+| id | Piece | Size (m) | kg | Cover | Triangles | Parts |
+| --- | --- | --- | --- | --- | --- | --- |
+| `hvac_condenser` | Rooftop condenser unit on dunnage | 3.07 × 1.82 × 1.22 | 715 | hard | 12,148 / 0 | 13 |
+| `cooling_tower` | Packaged cooling tower | 2.18 × 3.08 × 1.78 | 613 | soft | 8,616 / 452 | 12 |
+| `water_tank` | Elevated sectional water tank | 3.00 × 4.21 × 2.64 | 1,668 | hard | 12,036 / 0 | 7 |
+| `comm_mast` | Lattice communications mast | 2.08 × 6.75 × 2.08 | 1,566.4 | soft | 14,428 / 1,555 | 13 |
+| `bmu_cradle` | Window-cleaning cradle on its roof rail | 3.56 × 4.90 × 1.20 | 842 | none | 8,604 / 0 | 11 |
+| `exhaust_stack` | Guyed exhaust stacks on a louvred plenum | 3.54 × 3.67 × 3.32 | 398.9 | soft | 5,160 / 0 | 13 |
+| `generator_enclosure` | Containerised standby generator | 4.05 × 3.24 × 1.84 | 3,553.6 | hard | 6,164 / 322 | 11 |
+| `drone_dock` | Drone dock with parked quadcopter | 1.73 × 1.62 × 1.58 | 191.5 | soft | 7,384 / 4,709 | 6 |
+| `roof_hatch_box` | Roof access stair box | 1.76 × 2.85 × 2.19 | 5,637.3 | hard | 2,492 / 733 | 9 |
+| `pallet_stack` | Pallet of blocks, cable drum and tarp | 2.13 × 1.19 × 1.67 | 1,018 | hard | 13,068 / 2,006 | 10 |
+| `terrace_sofa` | Terrace sofa, weatherproof three-seat module | 2.11 × 0.86 × 0.94 | 51.9 | soft | 10,884 / 0 | 14 |
+| `parasol_table` | Cantilever parasol, half-closed in the rain, with an outdoor table | 2.77 × 2.69 × 1.83 | 190.1 | soft | 7,808 / 3,231 | 9 |
+| `sun_lounger` | Sun lounger, teak and aluminium | 0.84 × 0.90 × 1.96 | 24.9 | soft | 7,988 / 2,916 | 8 |
+| `patio_heater` | Patio heater, glass flame column | 0.60 × 2.29 × 0.60 | 48.3 | none | 2,816 / 1,504 | 7 |
+| `fire_table` | Gas fire table, cast concrete | 1.55 × 0.58 × 0.87 | 254.4 | hard | 5,374 / 8,435 | 11 |
+| `bamboo_planter` | Long cast-stone planter with bamboo | 2.54 × 3.12 × 1.38 | 640.8 | hard | 13,688 / 9,949 | 7 |
+| `pergola_canopy` | Louvred pergola, 3 x 3 m | 3.12 × 2.70 × 3.14 | 240.2 | none | 7,120 / 0 | 10 |
+| `bollard_light` | Path bollard lights, pair | 1.20 × 0.84 × 0.20 | 106.4 | none | 1,872 / 2,208 | 6 |
+| `security_camera_pole` | Exterior security camera pole | 0.30 × 3.42 × 0.84 | 92.7 | none | 5,364 / 1,196 | 9 |
+| `holo_pylon` | Exterior holo advert pylon | 0.72 × 3.50 × 0.66 | 401.6 | hard | 4,112 / 6,224 | 6 |
+| `turbine_vents` | Turbine ventilators, cluster of three | 1.63 × 1.08 × 1.27 | 70.6 | soft | 14,604 / 0 | 9 |
+| `mushroom_vent` | Mushroom-cap roof exhaust fan | 1.25 × 1.02 × 1.25 | 91.5 | soft | 7,872 / 0 | 5 |
+| `upblast_fan` | Kitchen upblast exhaust fan | 1.13 × 1.18 × 0.91 | 92.2 | soft | 7,188 / 0 | 5 |
+| `gooseneck_vents` | Gooseneck intakes and J-pipe | 1.38 × 0.98 × 0.87 | 44.6 | none | 10,900 / 0 | 8 |
+| `louvred_penthouse` | Louvred intake penthouse | 1.31 × 1.21 × 1.11 | 163 | soft | 4,056 / 0 | 8 |
+| `duct_run` | Clad rooftop duct run | 3.19 × 2.30 × 0.98 | 102.3 | soft | 7,084 / 0 | 10 |
+| `wall_louvre` | Facade louvre panel | 2.04 × 1.51 × 0.20 | 95.8 | none | 2,422 / 0 | 26 |
+| `relief_vent` | Plumbing vent stacks through flashing boots | 1.01 × 0.76 × 0.55 | 17.6 | none | 4,458 / 0 | 9 |
+| `ac_cassette_row` | Split-AC outdoor units on a ledge stand | 2.87 × 1.20 × 0.45 | 160.8 | soft | 14,922 / 0 | 12 |
+| `grate_vent` | Exhaust grate on a concrete plinth | 1.65 × 1.59 × 1.00 | 1,257.1 | hard | 2,196 / 2,921 | 7 |
+
 ## Files
 
 | File | Contents |
 | --- | --- |
 | `glb/<id>.glb` | One piece per file. Origin on the floor under the middle of the footprint, front +Z, up +Y, metres, real size. Parts, hidden chunk sets, hidden debris and `col_*` collider proxies, all by name. Metadata in the glTF extras. |
-| `unity/<id>.glb` | Game-ready copies: meshes merged per node, LOD0–2, `_COL` boxes and `_HULL` convex hulls (one per chunk). Driven in Unity by `../../unity/Runtime/BreakableFurniture.cs`. |
+| `unity/<id>.glb` | Game-ready copies: meshes merged per node, LOD0–2, `_COL` boxes and `_HULL` convex hulls (one per chunk). Driven in Unity by `../../unity/Runtime/BreakableFurniture.cs` (which also turns the batch G `spin` parts and breathes the steam cards). |
 | `parts.json` | Every piece's metadata: parts, material class, mass, health, break type, support links, bullet stopping, chunks, debris, colliders; plus the class and material tables. `BreakableFurniture.cs` reads it. |
 | `sounds/` | A hit and a break sound for each material class, and rifle, shotgun and frag sounds (44.1 kHz mono WAV), plus `generate_sounds.py`, which makes them. |
-| `catalogue.png` | Contact sheet of all 64 pieces (8 × 8, in pack order; batch F names in orange). |
+| `catalogue.png` | Contact sheet of all 94 pieces (10 columns of 300 × 250 tiles, in pack order: the 64 interior pieces with white names, then the 30 exterior pieces of batch G from row 8 with light-blue names). |
 | `INTEGRATION.md` | How to place pieces, the naming contract, how breaking works, the Unity script, a parts table for every piece, and how to rebuild. |
 | `viewer.html` | The catalogue viewer, and the procedural source every file is exported from. |
 
 ## Pieces
 
 Size is W × H × D in metres (x × y × z). Cover: **none** (does not hide a body), **soft** (hides you, never stops
-bullets: ordinary furniture, as in Siege), **hard** (has parts that stop bullets). The garden bench is soft cover,
+bullets: ordinary furniture, as in Siege), **hard** (has parts that stop bullets; outside, see INTEGRATION.md
+**Exterior pieces** for which). The garden bench is soft cover,
 but its two granite plinths stop bullets. Hard batch F pieces stop bullets only through their cores: the CEO desk
 through the steel plate in its modesty panel, the boardroom table through its basalt spine and steel core, the UPS
 through its battery bay, the racks through their frames and servers. Triangles are intact / chunk sets.
@@ -141,11 +188,41 @@ through its battery bay, the racks through their frames and servers. Triangles a
 | `locker_bank` | Four-door steel locker bank | 1.20 × 1.88 × 0.65 | 95.2 | soft | 7,128 / 0 | 6 | 462 KB | F1 Locker Hall, F1 Spa Hall, F1 Plant Room, F2 Green Room |
 | `wine_fridge` | Dual-zone wine cooler | 0.60 × 1.85 × 0.74 | 185 | soft | 14,952 / 12,227 | 23 | 2017 KB | F2 Wine Room, F2 Lounge Bar, F2 VIP Lounge, F3 Exec Office |
 | `fire_cabinet` | Fire hose and extinguisher cabinet | 0.75 × 1.72 × 0.27 | 84.1 | soft | 8,952 / 917 | 12 | 742 KB | F1 Service Hall, F1 Locker Hall, F2 Bridge Lobby, F3 Exec Hall, F3 News Hall, F3 Archive Hall, F3 Media Hall |
+| `hvac_condenser` | Rooftop condenser unit on dunnage | 3.07 × 1.82 × 1.22 | 715 | hard | 12,148 / 0 | 13 | 942 KB | A2 West Roof (plant room lee), A3 Bridge Roof, A4 Crane Deck, F1 Sky Terrace service corner |
+| `cooling_tower` | Packaged cooling tower | 2.18 × 3.08 × 1.78 | 613 | soft | 8,616 / 452 | 12 | 772 KB | A2 West Roof (beside the plant room), A4 Crane Deck, A3 Bridge Roof |
+| `water_tank` | Elevated sectional water tank | 3.00 × 4.21 × 2.64 | 1,668 | hard | 12,036 / 0 | 7 | 876 KB | A2 West Roof (by the plant room), A4 Crane Deck, A3 Bridge Roof |
+| `comm_mast` | Lattice communications mast | 2.08 × 6.75 × 2.08 | 1,566.4 | soft | 14,428 / 1,555 | 13 | 1083 KB | A2 West Roof, A4 Crane Deck, A3 Bridge Roof (east tower) |
+| `bmu_cradle` | Window-cleaning cradle on its roof rail | 3.56 × 4.90 × 1.20 | 842 | none | 8,604 / 0 | 11 | 766 KB | A3 Bridge Roof, F2-F3 ledges (the moving cradle), A2 West Roof |
+| `exhaust_stack` | Guyed exhaust stacks on a louvred plenum | 3.54 × 3.67 × 3.32 | 398.9 | soft | 5,160 / 0 | 13 | 543 KB | A2 West Roof (plant room), A4 Crane Deck, A3 Bridge Roof |
+| `generator_enclosure` | Containerised standby generator | 4.05 × 3.24 × 1.84 | 3,553.6 | hard | 6,164 / 322 | 11 | 748 KB | A2 West Roof (plant room lee), A4 Crane Deck, A3 Bridge Roof |
+| `drone_dock` | Drone dock with parked quadcopter | 1.73 × 1.62 × 1.58 | 191.5 | soft | 7,384 / 4,709 | 6 | 765 KB | A3 Bridge Roof, F1 Sky Terrace, A4 Crane Deck, A2 West Roof |
+| `roof_hatch_box` | Roof access stair box | 1.76 × 2.85 × 2.19 | 5,637.3 | hard | 2,492 / 733 | 9 | 485 KB | A2 West Roof (plant room door), A4 Crane Deck, A3 Bridge Roof, F1 Sky Terrace |
+| `pallet_stack` | Pallet of blocks, cable drum and tarp | 2.13 × 1.19 × 1.67 | 1,018 | hard | 13,068 / 2,006 | 10 | 1359 KB | A4 Crane Deck, A2 West Roof, A3 Bridge Roof, F1 Sky Terrace (works corner) |
+| `terrace_sofa` | Terrace sofa, weatherproof three-seat module | 2.11 × 0.86 × 0.94 | 51.9 | soft | 10,884 / 0 | 14 | 619 KB | F1 Sky Terrace, F1 Sky Terrace (A1 canopy), Bridge roof lounge |
+| `parasol_table` | Cantilever parasol, half-closed in the rain, with an outdoor table | 2.77 × 2.69 × 1.83 | 190.1 | soft | 7,808 / 3,231 | 9 | 1201 KB | F1 Sky Terrace, Bridge roof lounge, A2 West Roof (helipad edge) |
+| `sun_lounger` | Sun lounger, teak and aluminium | 0.84 × 0.90 × 1.96 | 24.9 | soft | 7,988 / 2,916 | 8 | 818 KB | F1 Sky Terrace, F1 Veranda, Bridge roof lounge |
+| `patio_heater` | Patio heater, glass flame column | 0.60 × 2.29 × 0.60 | 48.3 | none | 2,816 / 1,504 | 7 | 340 KB | F1 Sky Terrace, F1 Sky Terrace (A1 canopy), Bridge roof lounge |
+| `fire_table` | Gas fire table, cast concrete | 1.55 × 0.58 × 0.87 | 254.4 | hard | 5,374 / 8,435 | 11 | 1145 KB | F1 Sky Terrace, F1 Sky Terrace (A1 canopy), Bridge roof lounge |
+| `bamboo_planter` | Long cast-stone planter with bamboo | 2.54 × 3.12 × 1.38 | 640.8 | hard | 13,688 / 9,949 | 7 | 2040 KB | F1 Sky Terrace, F1 Garden, Bridge roof lounge, A2 West Roof |
+| `pergola_canopy` | Louvred pergola, 3 x 3 m | 3.12 × 2.70 × 3.14 | 240.2 | none | 7,120 / 0 | 10 | 471 KB | F1 Sky Terrace, Bridge roof lounge, A2 West Roof |
+| `bollard_light` | Path bollard lights, pair | 1.20 × 0.84 × 0.20 | 106.4 | none | 1,872 / 2,208 | 6 | 492 KB | F1 Sky Terrace, Skybridge approach, A2 West Roof (helipad edge), Bridge roof |
+| `security_camera_pole` | Exterior security camera pole | 0.30 × 3.42 × 0.84 | 92.7 | none | 5,364 / 1,196 | 9 | 457 KB | A2 West Roof (plant room), Skybridge mouth, NW gantry, F1 Sky Terrace (kiosk) |
+| `holo_pylon` | Exterior holo advert pylon | 0.72 × 3.50 × 0.66 | 401.6 | hard | 4,112 / 6,224 | 6 | 884 KB | F1 Sky Terrace, Skybridge approach (East Tower hall), Bridge roof, A2 West Roof |
+| `turbine_vents` | Turbine ventilators, cluster of three | 1.63 × 1.08 × 1.27 | 70.6 | soft | 14,604 / 0 | 9 | 851 KB | A2 West Roof (plant room lee), Bridge Roof, A4 Crane Deck, West Roof plant room exterior |
+| `mushroom_vent` | Mushroom-cap roof exhaust fan | 1.25 × 1.02 × 1.25 | 91.5 | soft | 7,872 / 0 | 5 | 545 KB | A2 West Roof (plant room lee), West Roof plant room exterior, Bridge Roof, A1 Sky Terrace (service corner) |
+| `upblast_fan` | Kitchen upblast exhaust fan | 1.13 × 1.18 × 0.91 | 92.2 | soft | 7,188 / 0 | 5 | 500 KB | A2 West Roof (plant room lee), West Roof plant room exterior, F1 Kitchen roof / Sky Terrace service yard |
+| `gooseneck_vents` | Gooseneck intakes and J-pipe | 1.38 × 0.98 × 0.87 | 44.6 | none | 10,900 / 0 | 8 | 608 KB | A2 West Roof (plant room lee), Bridge Roof, F2/F3 ledge ends, NW gantry landing |
+| `louvred_penthouse` | Louvred intake penthouse | 1.31 × 1.21 × 1.11 | 163 | soft | 4,056 / 0 | 8 | 423 KB | A2 West Roof (plant room lee), West Roof plant room exterior, Bridge Roof, A4 Crane Deck |
+| `duct_run` | Clad rooftop duct run | 3.19 × 2.30 × 0.98 | 102.3 | soft | 7,084 / 0 | 10 | 575 KB | A2 West Roof (plant room lee), West Roof plant room exterior, Bridge Roof, A4 Crane Deck |
+| `wall_louvre` | Facade louvre panel | 2.04 × 1.51 × 0.20 | 95.8 | none | 2,422 / 0 | 26 | 408 KB | West Roof plant room walls, F1 Plant Room exterior wall, F2/F3 ledge plant-room openings, A4 Crane Deck site hut |
+| `relief_vent` | Plumbing vent stacks through flashing boots | 1.01 × 0.76 × 0.55 | 17.6 | none | 4,458 / 0 | 9 | 382 KB | A2 West Roof, Bridge Roof, A1 Sky Terrace (service corner), F1/F2 ledge corners |
+| `ac_cassette_row` | Split-AC outdoor units on a ledge stand | 2.87 × 1.20 × 0.45 | 160.8 | soft | 14,922 / 0 | 12 | 950 KB | A4 Crane Deck site hut wall, West Roof plant room exterior, A3 Skybridge hall exterior, F2/F3 ledge corners (only where the ledge is wider) |
+| `grate_vent` | Exhaust grate on a concrete plinth | 1.65 × 1.59 × 1.00 | 1,257.1 | hard | 2,196 / 2,921 | 7 | 830 KB | A1 Sky Terrace (service corner), A2 West Roof (plant room lee), Bridge Roof, A4 Crane Deck |
 
 ## Viewer
 
 Open `viewer.html` in a browser (it needs the network for three.js). It is a dark high-rise room with rain on the
-window and the city behind it. **Piece** view puts one piece on a turntable; pick any of the 64 from the list or with ← →.
+window and the city behind it. **Piece** view puts one piece on a turntable; pick any of the 94 from the list (grouped **Interior** and **Exterior**) or with ← →.
 Modes:
 
 - **Intact**
@@ -160,7 +237,8 @@ following its break type and support links, and falls with simple gravity, bounc
 library and loose bodies do not collide with each other). A loose glass, ceramic or electronic part that lands
 hard takes damage. Broken lights and screens go dark.
 
-The safe door ignores rifle and shotgun fire in Shoot mode (only a frag wears it down), and the aquarium water
+The turbine vent heads and the split-AC fans turn in Intact and Shoot mode (their `spin` hints) until they are shot
+loose. The safe door ignores rifle and shotgun fire in Shoot mode (only a frag wears it down), and the aquarium water
 drains away as soon as a pane breaks.
 
 **Room** view lays out a sample suite with 23 copies of the pieces: a lounge facing the media wall, a bar, a
@@ -184,3 +262,32 @@ cigar corner and a tea corner by the window. You can shoot it too. Keys: 1–6 m
   original contract, like the shipped glass.
 - The **room view** and `preview.png` still show the original suite; batch F pieces are in Piece view and the
   catalogue only.
+
+## Batch G: known weaknesses
+
+- **The wet look is material only**: darker, smoother up-faces and rain streaks in the textures. No puddles, drips
+  or running water; rain and wet decals are the map's job.
+- **Steam cards need the game**: `grate_vent`'s steam is three static crossed cards. The Unity script only breathes
+  them (scale and sway); fading and scrolling the `steam_card` material is up to the game. In engines that sort
+  blended surfaces per object they can pop in front of or behind other transparent things.
+- **Spin hints only on the vents**: the turbine heads and AC fans turn; the condenser and cooling tower fans do not
+  (their motor bars are in the same part, so they would turn too). In Unity a turning part's static colliders move
+  every frame; turn `animateSpin` off at range if many are in view.
+- **Tall and wide pieces are outdoor only**: `comm_mast` 6.75 m, `bmu_cradle` ropes cut off at 4.9 m (hide the ends
+  under an overhang), `water_tank` 4.2 m, `generator_enclosure` 4.05 m wide, `pergola_canopy` and `parasol_table`
+  are assembled in place. The viewer's room crops the tallest in Piece view.
+- **Thin colliders**: `exhaust_stack` guy wires and `comm_mast` cables are thin hulls a player can snag on; the
+  comm mast's panel boxes are a little loose (boxes round turned panels).
+- **Light parts** (`patio_heater` and `fire_table` flames, the `holo_pylon` hologram) are shatter parts with no
+  chunks that just switch off, as batch E's hologram. The viewer's Break demo throws the heater's glow card around.
+- **Light-coloured metal still catches a strong overhead light**: the galvanised, spun-aluminium and clad surfaces
+  were toned down (rougher, darker, wet twins only slightly glossy), but a hard spot straight above a curved
+  surface (the duct riser elbow, the mushroom hood) still shows a bright highlight.
+- **Shared look, separate sheets**: the three sets share galvanised steel, weathered concrete and rust, but each set
+  keeps some sheets of its own (powder coats, teak, louvre paint), so files carry 11–34 textures. `bamboo_planter`
+  is the largest file (2.0 MB, 4.2 MB Unity copy: leaf cards and soil chunks); `pallet_stack` and the turbine and AC
+  pieces are the heaviest in triangles (13–15k).
+- **No text, checked in renders**: the BMU guard rails have plain chevrons; the camera pole's IR lamp is a
+  round dim cluster behind smoked glass; the condenser and generator controller windows are abstract light fields.
+- The **room view** and `preview.png` still show the original indoor suite; exterior pieces are in Piece view and
+  the catalogue only.
