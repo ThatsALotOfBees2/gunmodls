@@ -27,6 +27,11 @@
 // part whose attach list has fewer than `need` parts still in place comes loose (a `collapse` part, the soil in a
 // planter, shatters instead). Torn paper keeps a border strip on the frame (parts.json `fixed_chunks`): it stays with
 // the part it hangs from. A part that only detaches lets out its debris (foam tufts) the first time it is shot loose.
+// A `breach_only` part (the office safe door) ignores ApplyDamage (bullets, melee, landings): only ApplyExplosion
+// wears it down (one breach charge, 500 within 1 m, blows the safe door off; a frag does 300 at the centre). A
+// `liquid` part (the aquarium water) drains instead of tumbling: its chunks and debris get no colliders, fall for
+// liquidLifetime seconds and shrink away over liquidFade; BreakInfo.liquid is set so a game can play a splash. The
+// water is never broken by hits (its health is 9999): it goes when a pane it is held by breaks (`collapse`).
 // Freshly freed bodies do not collide with colliders of the same piece they start inside (sibling chunks, a drawer in
 // its carcass) until they have moved apart. Loose chunks and debris fade out after debrisLifetime; at most
 // maxLooseBodies stay alive per piece.
@@ -53,6 +58,8 @@ public class BreakableFurniture : MonoBehaviour
     public int maxLooseBodies = 60;          // per piece; the oldest fade early past this
     public bool darkenLightsOnBreak = true;  // broken screens, LEDs and lit paper go dark
     public bool landingDamage = true;        // a loose glass, ceramic or electronic part that lands hard takes damage
+    public float liquidLifetime = 0.35f;     // liquid chunks (aquarium water) fall this long, without colliders ...
+    public float liquidFade = 0.4f;          // ... then shrink away over this long
     [Header("Layers (-1 leaves them as imported)")]
     public int softLayer = -1;               // parts that never stop bullets (soft cover, as in Siege)
     public int hardLayer = -1;               // parts with stops_bullets
@@ -67,7 +74,7 @@ public class BreakableFurniture : MonoBehaviour
     [Serializable] public class ClassSound { public string materialClass = "wood"; public AudioClip hit, breakClip; [Range(0, 1)] public float volume = 0.8f; }
     [Serializable] public class PartDamagedEvent : UnityEvent<string, string, float> { }
     [Serializable] public class PartBrokenEvent : UnityEvent<string, string, Vector3> { }
-    public struct BreakInfo { public string part, materialClass; public bool shattered; public Vector3 point; }
+    public struct BreakInfo { public string part, materialClass; public bool shattered, liquid; public Vector3 point; }
 
     public class Part
     {
@@ -80,6 +87,8 @@ public class BreakableFurniture : MonoBehaviour
         public string[] debris = new string[0];
         public int[] fixedChunks = new int[0];   // 1-based chunk numbers that stay on the part this one hangs from
         public bool collapse;                    // shatters (instead of coming loose) when its support goes
+        public bool liquid;                      // its chunks drain away (no colliders, short fade)
+        public bool breachOnly;                  // only explosions damage it
         public bool debrisOut;                   // its debris has been let out
         public Transform node, chunks;
         public PartState state = PartState.Intact;
@@ -90,7 +99,7 @@ public class BreakableFurniture : MonoBehaviour
     // parts.json, as JsonUtility reads it (the classes and materials tables are not needed here)
     [Serializable] class PackJson { public PieceJson[] pieces; }
     [Serializable] class PieceJson { public string id, cover; public PartJson[] parts; }
-    [Serializable] class PartJson { public string part, material; public float mass, health; public string @break; public string[] attach; public int need; public bool stops_bullets; public int chunks; public string[] debris; public int[] fixed_chunks; public bool collapse; }
+    [Serializable] class PartJson { public string part, material; public float mass, health; public string @break; public string[] attach; public int need; public bool stops_bullets; public int chunks; public string[] debris; public int[] fixed_chunks; public bool collapse, liquid, breach_only; }
 
     public readonly Dictionary<string, Part> parts = new Dictionary<string, Part>();
     public string Cover { get; private set; }
@@ -103,7 +112,7 @@ public class BreakableFurniture : MonoBehaviour
     readonly List<Loose> loose = new List<Loose>();
     bool ready;
 
-    class Loose { public Transform t; public Rigidbody rb; public float born; public Vector3 scale; public Part part; public float lastLand; }
+    class Loose { public Transform t; public Rigidbody rb; public float born; public Vector3 scale; public Part part; public float lastLand; public float life = -1f, fade = -1f; }
 
     // class defaults when parts.json has no entry (DESIGN numbers): density kg/m3 is not needed, base health is
     static readonly Dictionary<string, float> ClassHealth = new Dictionary<string, float> {
@@ -167,7 +176,7 @@ public class BreakableFurniture : MonoBehaviour
             p.breakType = j.@break == "shatter" ? BreakType.Shatter : j.@break == "fixed" ? BreakType.Fixed : BreakType.Detach;
             p.attach = j.attach != null && j.attach.Length > 0 ? j.attach : new[] { "ground" };
             p.need = j.need; p.stopsBullets = j.stops_bullets; p.debris = j.debris ?? new string[0];
-            p.fixedChunks = j.fixed_chunks ?? new int[0]; p.collapse = j.collapse;
+            p.fixedChunks = j.fixed_chunks ?? new int[0]; p.collapse = j.collapse; p.liquid = j.liquid; p.breachOnly = j.breach_only;
         }
         else
         {
@@ -273,11 +282,13 @@ public class BreakableFurniture : MonoBehaviour
     }
 
     // returns true when the part broke (shattered or came loose) from this hit
-    bool Damage(Part p, float amount, Vector3 point, Vector3 force)
+    bool Damage(Part p, float amount, Vector3 point, Vector3 force, bool explosive = false)
     {
         if (p.state == PartState.Shattered) return false;
         force *= impulseScale;
         if (p.breakType == BreakType.Fixed) { PlayHit(p, point); return false; }
+        // breach-only parts (the safe door) shrug off bullets and melee while in place: only blasts count
+        if (p.breachOnly && !explosive && p.state == PartState.Intact) { PlayHit(p, point); return false; }
         p.health = Mathf.Max(0f, p.health - amount);
         PlayHit(p, point);
         onPartDamaged.Invoke(p.name, p.materialClass, p.health);
@@ -312,7 +323,7 @@ public class BreakableFurniture : MonoBehaviour
         foreach (var h in hits)
         {
             var p = h.Key; var at = Centre(p); var dir = (at - centre); dir.y = Mathf.Abs(dir.y) + 0.3f;
-            Damage(p, damage * h.Value, at, dir.normalized * force * h.Value * Mathf.Min(1f, p.mass));
+            Damage(p, damage * h.Value, at, dir.normalized * force * h.Value * Mathf.Min(1f, p.mass), true);
         }
         foreach (var l in old)
         {
@@ -401,10 +412,10 @@ public class BreakableFurniture : MonoBehaviour
             d.SetParent(null, true);
             d.position = centre + UnityEngine.Random.insideUnitSphere * 0.1f;
             d.gameObject.SetActive(true);
-            var rb = MakeBody(d, 0.02f);
+            var rb = p.liquid ? Drain(d, 0.02f) : MakeBody(d, 0.02f);
             MarkDebris(d, p);
             SetVelocity(rb, baseVel + UnityEngine.Random.insideUnitSphere * 2.5f + Vector3.up * 1.5f);
-            Track(d, rb, null, true);
+            Track(d, rb, null, true, p.liquid);
         }
     }
 
@@ -446,6 +457,16 @@ public class BreakableFurniture : MonoBehaviour
                 continue;
             }
             t.SetParent(null, true);
+            if (p.liquid)
+            {
+                // water: no colliders, a short fall, then gone (the game plays the splash on the break event)
+                var wb = Drain(t, p.mass * vols[i] / total);
+                MarkDebris(t, p);
+                var o = (t.position - point); o.y = 0f;
+                SetVelocity(wb, baseVel + o.normalized * chunkScatter * UnityEngine.Random.Range(0.3f, 0.9f));
+                Track(t, wb, null, true, true);
+                continue;
+            }
             var rb = MakeBody(t, p.mass * vols[i] / total);
             rb.maxDepenetrationVelocity = 1f;
             MarkDebris(t, p);
@@ -469,6 +490,15 @@ public class BreakableFurniture : MonoBehaviour
         ReleaseDebris(p, centre, baseVel);
         PlayBreak(p, point);
         Broke(p, point, true);
+    }
+
+    // a body with no colliders (liquid chunks): it falls through everything and is gone within a second
+    Rigidbody Drain(Transform t, float mass)
+    {
+        foreach (var c in t.GetComponentsInChildren<Collider>(true)) c.enabled = false;
+        var rb = t.gameObject.AddComponent<Rigidbody>();
+        rb.mass = Mathf.Max(0.01f, mass); rb.interpolation = RigidbodyInterpolation.Interpolate;
+        return rb;
     }
 
     Rigidbody MakeBody(Transform t, float mass)
@@ -527,13 +557,14 @@ public class BreakableFurniture : MonoBehaviour
     void Broke(Part p, Vector3 point, bool shattered)
     {
         onPartBroken.Invoke(p.name, p.materialClass, point);
-        AnyPartBroken?.Invoke(this, new BreakInfo { part = p.name, materialClass = p.materialClass, shattered = shattered, point = point });
+        AnyPartBroken?.Invoke(this, new BreakInfo { part = p.name, materialClass = p.materialClass, shattered = shattered, liquid = p.liquid, point = point });
     }
 
     /* ------------------------------------------------------------------ loose bodies: landing damage, fade, limit */
-    void Track(Transform t, Rigidbody rb, Part part, bool fades)
+    void Track(Transform t, Rigidbody rb, Part part, bool fades, bool liquid = false)
     {
-        loose.Add(new Loose { t = t, rb = rb, born = fades ? Time.time : float.MaxValue, scale = t.localScale, part = part, lastLand = -1f });
+        loose.Add(new Loose { t = t, rb = rb, born = fades ? Time.time : float.MaxValue, scale = t.localScale, part = part, lastLand = -1f,
+            life = liquid ? liquidLifetime : -1f, fade = liquid ? liquidFade : -1f });
         if (part != null && landingDamage && (part.materialClass == "glass" || part.materialClass == "ceramic" || part.materialClass == "electronics"))
         {
             var l = t.gameObject.AddComponent<LandingProbe>(); l.owner = this; l.part = part;
@@ -558,10 +589,11 @@ public class BreakableFurniture : MonoBehaviour
         {
             var l = loose[i];
             if (l.t == null) { loose.RemoveAt(i); continue; }
-            var age = now - l.born - debrisLifetime;
+            var life = l.life >= 0f ? l.life : debrisLifetime; var fade = l.fade > 0f ? l.fade : fadeTime;
+            var age = now - l.born - life;
             if (age < 0) continue;
-            if (age >= fadeTime) { Release(l.t); Destroy(l.t.gameObject); loose.RemoveAt(i); continue; }
-            l.t.localScale = l.scale * (1f - age / fadeTime);   // shrink away: works with any shader
+            if (age >= fade) { Release(l.t); Destroy(l.t.gameObject); loose.RemoveAt(i); continue; }
+            l.t.localScale = l.scale * (1f - age / fade);   // shrink away: works with any shader
         }
     }
 

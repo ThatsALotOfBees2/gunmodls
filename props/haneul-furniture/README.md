@@ -7,14 +7,14 @@ in the rain. You place every piece yourself; nothing here is placed in the map. 
 celadon, brass, dark alloy and stone, with tech pieces (render racks, holo console, broadcast desk) in graphite and
 dark alloy with a few purple `#8a4dff` lights. No text, logos, numbers or symbols anywhere.
 
-**37 pieces**, one `.glb` each. Every piece is built from named parts (317 in all) that come apart.
-The 121 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
-(908 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
+**64 pieces**, one `.glb` each. Every piece is built from named parts (644 in all) that come apart.
+The 182 parts that would shatter (wood tops, glass, ceramic, screens, stone, paper, soil) carry pre-cut chunk sets
+(1,537 chunks in all) that the game swaps in when that part breaks, plus a few debris bits. Wood splits along the
 grain with saw-toothed ends (board by board), glass breaks radially round an impact (tempered glass dices), screens
 crack in their housings, hanji tears into ragged strips (a border strip stays on the frame), upholstery tears along
 its seams with recessed foam, and chunks of lights and screens are dark.
 Each part has a material class (for impact sounds and effects), a mass, a health value and collider proxies.
-307,402 triangles intact across the pack, 298,643 in the chunk sets.
+564,664 triangles intact across the pack, 368,345 in the chunk sets.
 
 ![Catalogue](catalogue.png)
 
@@ -26,6 +26,38 @@ Each part has a material class (for impact sounds and effects), a mass, a health
 | `japanese_shrine` | Japanese shrine pavilion | 3.19 × 3.78 × 3.19 | 3,087.7 | soft | 29,248 / 36,934 | 27 |
 | `maple_tree` | Red maple in a garden bed | 2.30 × 2.33 × 1.63 | 453 | soft | 13,102 / 13,476 | 9 |
 
+**Batch F (27 pieces):** an executive floor (`ceo_desk`, `ceo_chair`, `guest_chair`, `credenza`, `trophy_wall`, `boardroom_table`, `boardroom_chair`, `office_safe`), server and hardware pieces for the render-farm row, the vault core cage and the plant room (`server_rack`, `server_rack_open`, `storage_array`, `ups_cabinet`, `cooling_unit`, `cable_tray_run`, `workstation_tower`, `crash_cart`, `hardware_bench`), and the fixtures every tower has (`umbrella_stand`, `vending_machine`, `water_dispenser`, `copier`, `karaoke_machine`, `grand_piano`, `aquarium`, `locker_bank`, `wine_fridge`, `fire_cabinet`). Same naming, parts, chunks and colliders as every other piece. Two new behaviours, both in `parts.json` and handled by `BreakableFurniture.cs`: the safe door is `breach_only` (bullets do nothing; a breach charge blows it off) and the aquarium water is `liquid` (it drains away the moment a pane breaks). `cable_tray_run` hangs from the ceiling: put its origin at ceiling height − 0.70 m. Their full rows are in the table below and their parts tables in `INTEGRATION.md`.
+
+| id | Piece | Size (m) | kg | Cover | Triangles | Parts |
+| --- | --- | --- | --- | --- | --- | --- |
+| `ceo_desk` | Executive desk | 2.40 × 1.17 × 1.00 | 446 | hard | 6,408 / 11,157 | 13 |
+| `ceo_chair` | Executive chair, high back | 0.67 × 1.29 × 0.81 | 24.7 | none | 14,964 / 0 | 7 |
+| `guest_chair` | Visitor armchair | 0.58 × 0.80 × 0.54 | 11.6 | none | 5,720 / 1,648 | 7 |
+| `credenza` | Executive credenza | 2.24 × 1.07 × 0.53 | 205.9 | soft | 6,328 / 7,382 | 11 |
+| `trophy_wall` | Trophy and display wall | 2.00 × 2.40 × 0.42 | 230 | soft | 11,936 / 11,697 | 21 |
+| `boardroom_table` | Boardroom table, 3.6 m | 3.61 × 0.74 × 1.31 | 878 | hard | 3,724 / 7,422 | 10 |
+| `boardroom_chair` | Boardroom swivel chair | 0.62 × 0.94 × 0.67 | 17.8 | none | 11,860 / 0 | 7 |
+| `office_safe` | Office floor safe | 0.62 × 0.90 × 0.62 | 349 | hard | 4,380 / 0 | 3 |
+| `server_rack` | Server rack, 42U, perforated doors | 0.61 × 2.00 × 1.13 | 585.7 | hard | 15,052 / 0 | 22 |
+| `server_rack_open` | Open two-post network rack with cable managers | 0.88 × 2.00 × 0.55 | 135.9 | soft | 14,764 / 0 | 16 |
+| `storage_array` | Storage array cabinet, glass door | 0.81 × 2.01 × 1.17 | 697.8 | hard | 14,590 / 537 | 15 |
+| `ups_cabinet` | UPS and battery cabinet | 0.60 × 2.00 × 0.87 | 718.4 | hard | 7,634 / 548 | 8 |
+| `cooling_unit` | In-row precision cooling unit | 0.60 × 2.19 × 1.12 | 209.3 | soft | 12,502 / 554 | 10 |
+| `cable_tray_run` | Overhead ladder cable tray, 2 m run | 2.00 × 0.70 × 0.64 | 37 | none | 6,232 / 0 | 6 |
+| `workstation_tower` | Workstation tower, mesh front and glass side | 0.25 × 0.60 × 0.57 | 21.2 | none | 8,042 / 1,064 | 9 |
+| `crash_cart` | KVM crash cart | 0.66 × 1.26 × 0.70 | 40.1 | none | 4,708 / 346 | 11 |
+| `hardware_bench` | Electronics repair bench | 1.80 × 1.91 × 0.77 | 159.9 | soft | 12,322 / 2,668 | 20 |
+| `umbrella_stand` | Lobby umbrella stand with wet umbrellas | 0.43 × 1.01 × 0.28 | 10.8 | none | 10,016 / 622 | 7 |
+| `vending_machine` | Slim drinks and snack vending machine | 0.75 × 1.92 × 0.86 | 268.1 | soft | 14,912 / 586 | 15 |
+| `water_dispenser` | Filtered water dispenser | 0.42 × 1.08 × 0.44 | 25.3 | none | 6,492 / 483 | 8 |
+| `copier` | Office multifunction copier with finisher | 1.47 × 1.27 × 0.82 | 243 | soft | 6,768 / 461 | 15 |
+| `karaoke_machine` | Noraebang karaoke console on a cabinet | 0.92 × 1.22 × 0.52 | 70.1 | soft | 10,228 / 1,902 | 15 |
+| `grand_piano` | Black grand piano with bench | 1.51 × 1.88 × 2.33 | 314.1 | soft | 10,140 / 3,977 | 11 |
+| `aquarium` | Aquarium on a walnut cabinet | 1.21 × 1.47 × 0.52 | 262.2 | soft | 6,508 / 3,504 | 19 |
+| `locker_bank` | Four-door steel locker bank | 1.20 × 1.88 × 0.65 | 95.2 | soft | 7,128 / 0 | 6 |
+| `wine_fridge` | Dual-zone wine cooler | 0.60 × 1.85 × 0.74 | 185 | soft | 14,952 / 12,227 | 23 |
+| `fire_cabinet` | Fire hose and extinguisher cabinet | 0.75 × 1.72 × 0.27 | 84.1 | soft | 8,952 / 917 | 12 |
+
 ## Files
 
 | File | Contents |
@@ -34,7 +66,7 @@ Each part has a material class (for impact sounds and effects), a mass, a health
 | `unity/<id>.glb` | Game-ready copies: meshes merged per node, LOD0–2, `_COL` boxes and `_HULL` convex hulls (one per chunk). Driven in Unity by `../../unity/Runtime/BreakableFurniture.cs`. |
 | `parts.json` | Every piece's metadata: parts, material class, mass, health, break type, support links, bullet stopping, chunks, debris, colliders; plus the class and material tables. `BreakableFurniture.cs` reads it. |
 | `sounds/` | A hit and a break sound for each material class, and rifle, shotgun and frag sounds (44.1 kHz mono WAV), plus `generate_sounds.py`, which makes them. |
-| `catalogue.png` | Contact sheet of the first 34 pieces (the three batch E pieces are below). |
+| `catalogue.png` | Contact sheet of all 64 pieces (8 × 8, in pack order; batch F names in orange). |
 | `INTEGRATION.md` | How to place pieces, the naming contract, how breaking works, the Unity script, a parts table for every piece, and how to rebuild. |
 | `viewer.html` | The catalogue viewer, and the procedural source every file is exported from. |
 
@@ -42,7 +74,9 @@ Each part has a material class (for impact sounds and effects), a mass, a health
 
 Size is W × H × D in metres (x × y × z). Cover: **none** (does not hide a body), **soft** (hides you, never stops
 bullets: ordinary furniture, as in Siege), **hard** (has parts that stop bullets). The garden bench is soft cover,
-but its two granite plinths stop bullets. Triangles are intact / chunk sets.
+but its two granite plinths stop bullets. Hard batch F pieces stop bullets only through their cores: the CEO desk
+through the steel plate in its modesty panel, the boardroom table through its basalt spine and steel core, the UPS
+through its battery bay, the racks through their frames and servers. Triangles are intact / chunk sets.
 
 | id | Piece | Size (m) | kg | Cover | Triangles | Parts | File | Rooms |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -80,11 +114,38 @@ but its two granite plinths stop bullets. Triangles are intact / chunk sets.
 | `floor_lamp` | Hanji lantern floor lamp | 0.45 × 1.65 × 0.45 | 11.3 | none | 3,172 / 3,604 | 5 | 703 KB | F1 Tea Room, F1 Ondol Lounge, F2 River Lounge, F2 VIP Lounge, F3 Bedroom, F3 Suite Lounge |
 | `service_trolley` | Service trolley | 0.88 × 0.99 × 0.58 | 18.4 | soft | 9,344 / 11,363 | 10 | 1214 KB | F1 Kitchen, F1 Servery, F1 Kitchen Pass, F1 Laundry, F1 Dining Room, F2 Backstage |
 | `crate_stack` | Stacked crates and a flight case | 1.21 × 1.40 × 0.80 | 41 | soft | 10,108 / 10,994 | 4 | 1468 KB | F1 Plant Room, F1 Staff Entry, F1 Laundry, F1 Kitchen, F2 Studio, F2 Backstage, F2 Wardrobe |
+| `ceo_desk` | Executive desk | 2.40 × 1.17 × 1.00 | 446 | hard | 6,408 / 11,157 | 13 | 1876 KB | F3 Exec Office |
+| `ceo_chair` | Executive chair, high back | 0.67 × 1.29 × 0.81 | 24.7 | none | 14,964 / 0 | 7 | 748 KB | F3 Exec Office |
+| `guest_chair` | Visitor armchair | 0.58 × 0.80 × 0.54 | 11.6 | none | 5,720 / 1,648 | 7 | 820 KB | F3 Exec Office, F3 Exec Hall, F3 Boardroom |
+| `credenza` | Executive credenza | 2.24 × 1.07 × 0.53 | 205.9 | soft | 6,328 / 7,382 | 11 | 1641 KB | F3 Exec Office, F3 Exec Hall, F3 Boardroom |
+| `trophy_wall` | Trophy and display wall | 2.00 × 2.40 × 0.42 | 230 | soft | 11,936 / 11,697 | 21 | 2312 KB | F3 Exec Office, F3 Exec Hall, F3 Boardroom |
+| `boardroom_table` | Boardroom table, 3.6 m | 3.61 × 0.74 × 1.31 | 878 | hard | 3,724 / 7,422 | 10 | 1191 KB | F3 Boardroom |
+| `boardroom_chair` | Boardroom swivel chair | 0.62 × 0.94 × 0.67 | 17.8 | none | 11,860 / 0 | 7 | 717 KB | F3 Boardroom, F3 Exec Office |
+| `office_safe` | Office floor safe | 0.62 × 0.90 × 0.62 | 349 | hard | 4,380 / 0 | 3 | 331 KB | F3 Exec Office, F2 Vault Hall, F3 Archive Hall |
+| `server_rack` | Server rack, 42U, perforated doors | 0.61 × 2.00 × 1.13 | 585.7 | hard | 15,052 / 0 | 22 | 1133 KB | F3 Control Room (render farm row), F2 Vault Hall (core cage), F3 Archive Hall, F1 Plant Room |
+| `server_rack_open` | Open two-post network rack with cable managers | 0.88 × 2.00 × 0.55 | 135.9 | soft | 14,764 / 0 | 16 | 1039 KB | F3 Control Room, F3 Media Hall (comms closet), F1 Plant Room, F2 Vault Hall |
+| `storage_array` | Storage array cabinet, glass door | 0.81 × 2.01 × 1.17 | 697.8 | hard | 14,590 / 537 | 15 | 1236 KB | F2 Vault Hall (core cage), F3 Archive Hall, F3 Control Room (render farm row) |
+| `ups_cabinet` | UPS and battery cabinet | 0.60 × 2.00 × 0.87 | 718.4 | hard | 7,634 / 548 | 8 | 628 KB | F1 Plant Room, F3 Control Room, F2 Vault Hall (core cage), F3 Archive Hall |
+| `cooling_unit` | In-row precision cooling unit | 0.60 × 2.19 × 1.12 | 209.3 | soft | 12,502 / 554 | 10 | 955 KB | F3 Control Room (render farm row), F2 Vault Hall (core cage), F1 Plant Room |
+| `cable_tray_run` | Overhead ladder cable tray, 2 m run | 2.00 × 0.70 × 0.64 | 37 | none | 6,232 / 0 | 6 | 368 KB | F3 Control Room (over the rack row), F2 Vault Hall (core cage), F1 Plant Room, F3 Archive Hall, F3 Media Hall |
+| `workstation_tower` | Workstation tower, mesh front and glass side | 0.25 × 0.60 × 0.57 | 21.2 | none | 8,042 / 1,064 | 9 | 681 KB | F3 Control Room, F3 Media Hall, F3 Archive Hall, F3 Exec Office |
+| `crash_cart` | KVM crash cart | 0.66 × 1.26 × 0.70 | 40.1 | none | 4,708 / 346 | 11 | 461 KB | F3 Control Room, F2 Vault Hall (core cage), F3 Archive Hall, F1 Plant Room |
+| `hardware_bench` | Electronics repair bench | 1.80 × 1.91 × 0.77 | 159.9 | soft | 12,322 / 2,668 | 20 | 1423 KB | F3 Control Room (tech corner), F1 Plant Room, F3 Archive Hall, F3 Media Hall |
+| `umbrella_stand` | Lobby umbrella stand with wet umbrellas | 0.43 × 1.01 × 0.28 | 10.8 | none | 10,016 / 622 | 7 | 943 KB | F2 Sky Lobby, F2 Bridge Lobby, F1 Garden Lobby |
+| `vending_machine` | Slim drinks and snack vending machine | 0.75 × 1.92 × 0.86 | 268.1 | soft | 14,912 / 586 | 15 | 941 KB | F1 Service Hall, F1 Locker Hall, F2 Green Room, F3 Media Hall |
+| `water_dispenser` | Filtered water dispenser | 0.42 × 1.08 × 0.44 | 25.3 | none | 6,492 / 483 | 8 | 358 KB | F1 Service Hall, F1 Locker Hall, F1 Spa Hall, F3 Writers Room, F3 News Hall, F2 Green Room |
+| `copier` | Office multifunction copier with finisher | 1.47 × 1.27 × 0.82 | 243 | soft | 6,768 / 461 | 15 | 637 KB | F3 Writers Room, F3 News Hall, F3 Archive Hall, F3 Exec Office |
+| `karaoke_machine` | Noraebang karaoke console on a cabinet | 0.92 × 1.22 × 0.52 | 70.1 | soft | 10,228 / 1,902 | 15 | 1287 KB | F2 Noraebang, F2 VIP Lounge, F2 Green Room |
+| `grand_piano` | Black grand piano with bench | 1.51 × 1.88 × 2.33 | 314.1 | soft | 10,140 / 3,977 | 11 | 1395 KB | F2 VIP Lounge, F2 Sky Lobby, F2 Bridge Lobby, F3 Suite Lounge |
+| `aquarium` | Aquarium on a walnut cabinet | 1.21 × 1.47 × 0.52 | 262.2 | soft | 6,508 / 3,504 | 19 | 1311 KB | F3 Exec Hall, F3 Suite Lounge, F3 Exec Office, F2 VIP Lounge |
+| `locker_bank` | Four-door steel locker bank | 1.20 × 1.88 × 0.65 | 95.2 | soft | 7,128 / 0 | 6 | 462 KB | F1 Locker Hall, F1 Spa Hall, F1 Plant Room, F2 Green Room |
+| `wine_fridge` | Dual-zone wine cooler | 0.60 × 1.85 × 0.74 | 185 | soft | 14,952 / 12,227 | 23 | 2017 KB | F2 Wine Room, F2 Lounge Bar, F2 VIP Lounge, F3 Exec Office |
+| `fire_cabinet` | Fire hose and extinguisher cabinet | 0.75 × 1.72 × 0.27 | 84.1 | soft | 8,952 / 917 | 12 | 742 KB | F1 Service Hall, F1 Locker Hall, F2 Bridge Lobby, F3 Exec Hall, F3 News Hall, F3 Archive Hall, F3 Media Hall |
 
 ## Viewer
 
 Open `viewer.html` in a browser (it needs the network for three.js). It is a dark high-rise room with rain on the
-window and the city behind it. **Piece** view puts one piece on a turntable; pick it from the list or with ← →.
+window and the city behind it. **Piece** view puts one piece on a turntable; pick any of the 64 from the list or with ← →.
 Modes:
 
 - **Intact**
@@ -99,6 +160,27 @@ following its break type and support links, and falls with simple gravity, bounc
 library and loose bodies do not collide with each other). A loose glass, ceramic or electronic part that lands
 hard takes damage. Broken lights and screens go dark.
 
+The safe door ignores rifle and shotgun fire in Shoot mode (only a frag wears it down), and the aquarium water
+drains away as soon as a pane breaks.
+
 **Room** view lays out a sample suite with 23 copies of the pieces: a lounge facing the media wall, a bar, a
 cigar corner and a tea corner by the window. You can shoot it too. Keys: 1–6 modes, R reset. There are **Spin**
 (turntable) and **Sound** toggles.
+
+## Batch F: known weaknesses
+
+- **Wide pieces** (`boardroom_table` 3.6 m, `trophy_wall`, `ceo_desk`, `credenza`, `grand_piano`, `copier`,
+  `aquarium`) do not pass a 0.9 m door: they are assembled in place.
+- **Racks have no shatter parts**: servers, switches and doors only come out whole. Drive sleds are flat faces on
+  one backing box per bank (no recess between sleds), to keep the racks near 15k triangles.
+- **Colliders inside colliders**: on the copier's touch panel, the crash cart and karaoke monitors and the piano
+  keys the inner part's box sits inside its housing's box (as on the shipped desks), and the aquarium water's box
+  encloses the fish, plants and stones. A single-hit raycast reaches the housing (or the water) first; use
+  `RaycastAll` or blasts to reach the inner part.
+- **`KHR_materials_specular`** keeps the piano lid satin in three.js and Blender; an engine that ignores it shows
+  the lid a little brighter. Glass is alpha-blended (`glass_dark` 34 %), not refractive.
+- **Heavy chunk sets**: the wine fridge's bottles all shatter (12k chunk triangles, a 4.9 MB Unity copy).
+- **Radial and tempered panes** give up to 18 chunks (aquarium, fire cabinet, vending, storage array, wine fridge and workstation glass), over the 12 of the
+  original contract, like the shipped glass.
+- The **room view** and `preview.png` still show the original suite; batch F pieces are in Piece view and the
+  catalogue only.
