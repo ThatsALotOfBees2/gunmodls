@@ -14,6 +14,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | [Cameras](gadgets/cameras/) | Gadgets | `security-camera.glb`, `sticky-camera.glb`, sounds |
 | [Tactical Phone](gadgets/tactical-phone/) | Gadgets | `tactical-phone.glb` (rugged 5.8" phone, the tablet's sibling: TPU overmould on an alloy frame, bonded display, replaceable L-shaped corner bumpers on Torx screws, knurled grip inlays, PTT key, thermal camera; 20-cell screen atlas), sounds, Unity script |
 | [Tactical Tablet](gadgets/tactical-tablet/) | Gadgets | `tactical-tablet.glb` (rugged 8" tablet, the phone's construction at tablet scale: TPU overmould on an alloy frame, replaceable corner bumpers, battery door, hand strap, PTT key, thermal camera; tablet-layout 20-cell screen atlas), sounds, Unity script |
+| [Tool Gun](gadgets/tool-gun/) | Gadgets | `tool-gun.glb` (long sci-fi revolver tool gun with a rear screen: 16-cell pictogram atlas, fluted energy-cell cylinder, emitter muzzle; idle, fire, switch_tool, inspect clips), Unity LOD copy, Unity script |
 | [Scout Drone](gadgets/scout-drone/) | Gadgets | `scout-drone.glb` (thrown four-wheel recon drone: deploy, drive, turn, hop, shutdown), sounds, Unity driver |
 | [Tracker Tags](gadgets/tracker-tags/) | Gadgets | `tracker-tag.glb`, `tracker-tags-pack.glb` (Nox: vibration-sensing tags and their dispenser), sounds, Unity script |
 | [Nullfield](gadgets/nullfield/) | Gadgets | `nullfield-emitter.glb` (N1CK: thrown emitter, 4 m sensor-blind bubble), sounds, Unity script and feed helper |
@@ -44,6 +45,8 @@ Open `index.html` to browse every model in one page: pick one at the top, or pre
 ![Tactical Phone](gadgets/tactical-phone/preview.png)
 
 ![Tactical Tablet](gadgets/tactical-tablet/preview.png)
+
+![Tool Gun](gadgets/tool-gun/preview.png)
 
 ![Scout Drone](gadgets/scout-drone/preview.png)
 
@@ -120,7 +123,7 @@ To use them:
 The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
 to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
 (see `gadgets/recon-tablet/INTEGRATION.md`). The lattice runs on `unity/Runtime/ConductiveLattice.cs` and the cameras on
-`unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`). Nox's tags run on `unity/Runtime/TrackerTags.cs` and N1CK's bubble on `unity/Runtime/Nullfield.cs`, which the tags need (sensors ask `Nullfield.IsHidden` before reporting anything). N1CK himself runs on `unity/Runtime/N1CK.cs`, with `unity/Editor/N1CKAvatarBuilder.cs` for a Humanoid Avatar (see `operators/n1ck/INTEGRATION.md`). The Human Rig runs on `unity/Runtime/HumanRig.cs`, with `unity/Editor/HumanRigAvatar.cs` for its Humanoid Avatar (see `operators/human-rig/INTEGRATION.md`). The uplink objective runs on `unity/Runtime/UplinkServer.cs` and `unity/Runtime/UplinkLaptop.cs` (see `objectives/uplink/INTEGRATION.md`). The Tactical Phone runs on `unity/Runtime/TacticalPhone.cs` (see `gadgets/tactical-phone/INTEGRATION.md`), the Tactical Tablet on `unity/Runtime/TacticalTablet.cs` (see `gadgets/tactical-tablet/INTEGRATION.md`). Furniture pieces break with `unity/Runtime/BreakableFurniture.cs` (see `props/haneul-furniture/INTEGRATION.md`). The map sets itself up with `unity/Runtime/HaneulTowerMap.cs` and **Tools > Gunmodls > Set Up Haneul Tower Map** (see `maps/haneul-tower/INTEGRATION.md`).
+`unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`). Nox's tags run on `unity/Runtime/TrackerTags.cs` and N1CK's bubble on `unity/Runtime/Nullfield.cs`, which the tags need (sensors ask `Nullfield.IsHidden` before reporting anything). N1CK himself runs on `unity/Runtime/N1CK.cs`, with `unity/Editor/N1CKAvatarBuilder.cs` for a Humanoid Avatar (see `operators/n1ck/INTEGRATION.md`). The Human Rig runs on `unity/Runtime/HumanRig.cs`, with `unity/Editor/HumanRigAvatar.cs` for its Humanoid Avatar (see `operators/human-rig/INTEGRATION.md`). The uplink objective runs on `unity/Runtime/UplinkServer.cs` and `unity/Runtime/UplinkLaptop.cs` (see `objectives/uplink/INTEGRATION.md`). The Tactical Phone runs on `unity/Runtime/TacticalPhone.cs` (see `gadgets/tactical-phone/INTEGRATION.md`), the Tactical Tablet on `unity/Runtime/TacticalTablet.cs` (see `gadgets/tactical-tablet/INTEGRATION.md`), the Tool Gun on `unity/Runtime/ToolGun.cs` (see `gadgets/tool-gun/INTEGRATION.md`). Furniture pieces break with `unity/Runtime/BreakableFurniture.cs` (see `props/haneul-furniture/INTEGRATION.md`). The map sets itself up with `unity/Runtime/HaneulTowerMap.cs` and **Tools > Gunmodls > Set Up Haneul Tower Map** (see `maps/haneul-tower/INTEGRATION.md`).
 
 glTFast converts glTF's right-handed axes to Unity's by negating X, so any x coordinate quoted in these
 docs (glTF space) has its sign flipped in a prefab's local space.
