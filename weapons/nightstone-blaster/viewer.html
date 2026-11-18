@@ -1,0 +1,2162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nightstone Blaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Chivo+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
+<style>
+  /* Layout: full-bleed stage; title plate top-left, control strip along the bottom. */
+  :root {
+    --bg: #e6e6ec;
+    --bg-deep: #c9cad3;
+    --fg: #16171d;
+    --muted: #5b5e6b;
+    --panel: rgba(240, 240, 246, 0.8);
+    --line: rgba(22, 23, 29, 0.16);
+    --accent: #6a34d6;
+    --accent-fg: #f7f3ff;
+    --alarm: #b3121c;
+    --font-display: "Chakra Petch", "Arial Narrow", sans-serif;
+    --font-body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0c11; --bg-deep: #05060a; --fg: #e8e8f0; --muted: #8e92a6;
+      --panel: rgba(13, 14, 20, 0.74); --line: rgba(232, 232, 240, 0.13);
+      --accent: #9a6bff; --accent-fg: #0e0819; --alarm: #e0343c; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0b0c11; --bg-deep: #05060a; --fg: #e8e8f0; --muted: #8e92a6;
+    --panel: rgba(13, 14, 20, 0.74); --line: rgba(232, 232, 240, 0.13);
+    --accent: #9a6bff; --accent-fg: #0e0819; --alarm: #e0343c; color-scheme: dark;
+  }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 38%, var(--bg) 0%, var(--bg) 35%, var(--bg-deep) 100%);
+    background-color: var(--bg);
+    color: var(--fg); font-family: var(--font-body); overflow: hidden;
+  }
+  #stage { position: fixed; inset: 0; }
+  #stage canvas { display: block; outline: none; }
+  .plate {
+    position: fixed; top: calc(env(safe-area-inset-top, 0px) + 18px); left: max(16px, env(safe-area-inset-left, 0px));
+    max-width: min(360px, calc(100vw - 32px)); display: grid; gap: 6px; pointer-events: none;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  }
+  .eyebrow { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  .plate h1 {
+    margin: 0; font-family: var(--font-display); font-weight: 700; font-size: clamp(26px, 5.2vw, 36px);
+    line-height: 0.95; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .plate h1 span { color: var(--accent); }
+  .specs {
+    display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin: 6px 0 0;
+    font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums;
+  }
+  .specs dt { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10.5px; padding-top: 1px; }
+  .specs dd { margin: 0; }
+  .state { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; font: 500 11px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+  .chip b { font-weight: 500; color: var(--accent); }
+  .chip.alarm b { color: var(--alarm); }
+  .bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; justify-content: center; pointer-events: none;
+  }
+  .controls {
+    pointer-events: auto; display: grid; gap: 6px; justify-items: center; max-width: 100%;
+    background: var(--panel); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--line); border-radius: 14px; padding: 8px;
+  }
+  .row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; max-width: 100%; }
+  .group { display: flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--line); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .group::-webkit-scrollbar { display: none; }
+  .controls { grid-template-columns: minmax(0, 1fr); }
+  .row { min-width: 0; }
+  .row > .group { min-width: 0; flex: 0 1 auto; }
+  .tag { font: 500 10px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0 2px 0 4px; }
+  button {
+    font: 500 13px/1 var(--font-body); color: var(--fg); background: transparent; border: 0;
+    padding: 8px 11px; border-radius: 7px; cursor: pointer; white-space: nowrap; display: inline-flex; gap: 7px; align-items: center; flex: none;
+  }
+  button:hover { background: var(--line); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  button.toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.hold { touch-action: none; user-select: none; -webkit-user-select: none; }
+  button.hold[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+  #act-disable.hold[aria-pressed="true"] { background: var(--alarm); color: #fff; }
+  .hint {
+    position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); top: calc(env(safe-area-inset-top, 0px) + 20px);
+    font: 11px var(--font-mono); letter-spacing: 0.06em; color: #9a9db0; text-align: right; pointer-events: none;
+  }
+  #loading {
+    position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none;
+    font: 12px var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: #8e92a6;
+  }
+  @media (max-width: 640px) {
+    .hint { display: none; }
+    .plate .specs, .plate .state { display: none; }
+    .plate { padding: 10px 12px; }
+    .specs { font-size: 11px; }
+    .specs .wide { display: none; }
+    button { padding: 7px 8px; font-size: 12px; }
+    .tag { display: none; }
+    /* every group gets a full-width line of its own (none hides behind another); a group longer than the screen
+       scrolls sideways, snaps to its buttons, and fades at the edge where more buttons wait (.more-r / .more-l) */
+    .row { flex-wrap: wrap; justify-content: flex-start; gap: 4px; width: 100%; }
+    .row > .group { flex: 1 1 100%; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scroll-snap-type: x proximity; }
+    .row > .group button { scroll-snap-align: start; }
+    .row > button { flex: 1 1 0; justify-content: center; }
+    .group.more-r { -webkit-mask-image: linear-gradient(90deg, #000 78%, transparent); mask-image: linear-gradient(90deg, #000 78%, transparent); }
+    .group.more-l { -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+    .group.more-l.more-r { -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+    .controls { width: 100%; }
+    .controls { gap: 4px; padding: 6px; }
+    button { padding: 6px 7px; font-size: 11.5px; white-space: nowrap; }
+    .plate h1 { font-size: 22px; }
+    .plate .eyebrow { display: none; }
+  }
+</style>
+
+<style>
+  #fire { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  #fire:hover { filter: brightness(1.1); }
+</style>
+<style>
+  body { margin: 0; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="stage" aria-label="Interactive 3D model of a heavy two-handed blaster with a faceted black stone head that fires bullets and black crystal shards"></div>
+
+<header class="plate">
+  <div class="eyebrow">Weapon · scattergun</div>
+  <h1>Nightstone <span>Blaster</span></h1>
+  <dl class="specs">
+    <dt>Size</dt><dd id="sp-size">0.95 m long, two-handed</dd>
+    <dt>Shot</dt><dd>7 bullets in a 3.5° cone plus 3 black crystal shards that fly slower, drop and shatter</dd>
+    <dt>Drum</dt><dd>Six shards; the pump racks the drum and the crystals regrow</dd>
+  </dl>
+  <div class="state" aria-live="polite"><span class="chip">Clip <b id="st-clip">idle</b></span><span class="chip">Drum <b id="st-ammo">6 / 6</b></span></div>
+</header>
+<div class="hint">Drag to orbit · Scroll to zoom<br>Right-drag to pan · F fires, R reloads</div>
+<div id="loading">Polishing stone…</div>
+
+<nav class="bar" aria-label="Controls">
+  <div class="controls">
+    <div class="row">
+      <button type="button" id="fire" title="Fire (F)">Fire</button>
+      <button type="button" id="reload" title="Rack the pump (R)">Reload</button>
+      <button type="button" class="toggle" id="slow" aria-pressed="true" title="Effects at quarter speed">Slow-mo</button>
+      <button type="button" class="toggle" id="sound" aria-pressed="true">Sound</button>
+    </div>
+    <div class="row">
+      <div class="group" role="group" aria-label="Clip" id="clips"></div>
+      <div class="group" role="group" aria-label="View">
+        <button type="button" data-view="hero">Hero</button>
+        <button type="button" data-view="right">Right</button>
+        <button type="button" data-view="left">Left</button>
+        <button type="button" data-view="top">Top</button>
+        <button type="button" data-view="chamber">Core</button>
+        <button type="button" data-view="muzzle">Muzzle</button>
+        <button type="button" data-view="range">Range</button>
+      </div>
+      <button type="button" class="toggle" id="wire" aria-pressed="false">Wireframe</button>
+      <button type="button" class="toggle" id="spin" aria-pressed="false">Orbit</button>
+    </div>
+  </div>
+</nav>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/",
+    "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.7/src/index.js",
+    "three-bvh-csg": "https://cdn.jsdelivr.net/npm/three-bvh-csg@0.0.18/build/index.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
+import { mergeGeometries, mergeVertices, toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Brush, Evaluator, SUBTRACTION, INTERSECTION } from 'three-bvh-csg';
+
+// Metres, +Y up, the muzzle points +Z, the right side faces -X (repo convention).
+
+/* ------------------------------------------------------------------ helpers */
+
+// Monotone cubic interpolation through [x, y] points (no overshoot).
+function curve(pts) {
+  const n = pts.length, xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const d = [], m = new Array(n);
+  for (let i = 0; i < n - 1; i++) d.push((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]));
+  m[0] = d[0]; m[n - 1] = d[n - 2];
+  for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+    if (s > 9) { const t = 3 / Math.sqrt(s); m[i] = t * a * d[i]; m[i + 1] = t * b * d[i]; }
+  }
+  return x => {
+    if (x <= xs[0]) return ys[0];
+    if (x >= xs[n - 1]) return ys[n - 1];
+    let i = 0; while (x > xs[i + 1]) i++;
+    const h = xs[i + 1] - xs[i], t = (x - xs[i]) / h, t2 = t * t, t3 = t2 * t;
+    return (2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h * m[i] + (-2 * t3 + 3 * t2) * ys[i + 1] + (t3 - t2) * h * m[i + 1];
+  };
+}
+const constant = v => () => v;
+
+// Loft a superellipse cross-section along X. top/bot/hw/n are functions of x.
+// round: radius used to roll the edges at both ends; caps are flat.
+function loft({ x0, x1, top, bot, hw, n = constant(2.6), cy = null, steps = 160, seg = 72, round = 0, roundStart = round, roundEnd = round, groove = null }) {
+  const xs = [];
+  // denser stations near the ends so the rolled edges stay smooth
+  for (let i = 0; i <= steps; i++) {
+    const u = i / steps;
+    const e = 0.5 - 0.5 * Math.cos(Math.PI * u);
+    xs.push(x0 + (x1 - x0) * (0.55 * u + 0.45 * e));
+  }
+  const pos = [], idx = [];
+  const ring = (x) => {
+    let T = top(x), B = bot(x), W = hw(x);
+    const ds = x - x0, de = x1 - x;
+    let inset = 0;
+    if (roundStart > 0 && ds < roundStart) inset = Math.max(inset, roundStart - Math.sqrt(Math.max(0, roundStart * roundStart - (roundStart - ds) ** 2)));
+    if (roundEnd > 0 && de < roundEnd) inset = Math.max(inset, roundEnd - Math.sqrt(Math.max(0, roundEnd * roundEnd - (roundEnd - de) ** 2)));
+    let gB = 0, gW = 0;
+    if (groove) { const g = groove(x); gB = g; gW = g; }
+    T -= inset; B += inset + gB; W -= inset + gW;
+    // a rounding radius larger than the section must not turn the ring inside out
+    W = Math.max(0.002, W);
+    const c = cy ? cy(x) : (T + B) / 2, ry = Math.max(0.001, (T - B) / 2);
+    const e = 2 / n(x), out = [];
+    for (let j = 0; j < seg; j++) {
+      const t = (j / seg) * Math.PI * 2, co = Math.cos(t), si = Math.sin(t);
+      const z = W * Math.sign(co) * Math.pow(Math.abs(co), e);
+      const y = c + ry * Math.sign(si) * Math.pow(Math.abs(si), e);
+      out.push([x, y, z]);
+    }
+    return out;
+  };
+  const rings = xs.map(ring);
+  rings.forEach(r => r.forEach(p => pos.push(...p)));
+  for (let i = 0; i < rings.length - 1; i++) {
+    for (let j = 0; j < seg; j++) {
+      const a = i * seg + j, b = i * seg + (j + 1) % seg, c = (i + 1) * seg + j, d = (i + 1) * seg + (j + 1) % seg;
+      idx.push(a, c, b, b, c, d);
+    }
+  }
+  // flat caps with their own vertices
+  const capAt = (r, flip) => {
+    const base = pos.length / 3;
+    const cx = r.reduce((s, p) => s + p[1], 0) / r.length;
+    pos.push(r[0][0], cx, 0);
+    r.forEach(p => pos.push(...p));
+    for (let j = 0; j < seg; j++) {
+      const a = base + 1 + j, b = base + 1 + (j + 1) % seg;
+      flip ? idx.push(base, a, b) : idx.push(base, b, a);
+    }
+  };
+  // caps face outward: -x at the start, +x at the end
+  capAt(rings[0], true);
+  capAt(rings[rings.length - 1], false);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+// Polygon with per-corner radius: pts = [[x, y, r], ...]
+function roundedShape(pts, shape = new THREE.Shape()) {
+  const n = pts.length;
+  const P = pts.map(p => new THREE.Vector2(p[0], p[1]));
+  for (let i = 0; i < n; i++) {
+    const prev = P[(i - 1 + n) % n], cur = P[i], next = P[(i + 1) % n], r = pts[i][2] || 0;
+    const v1 = prev.clone().sub(cur), v2 = next.clone().sub(cur);
+    const l1 = v1.length(), l2 = v2.length();
+    const rr = Math.min(r, l1 / 2.05, l2 / 2.05);
+    const a = cur.clone().add(v1.normalize().multiplyScalar(rr));
+    const b = cur.clone().add(v2.normalize().multiplyScalar(rr));
+    if (i === 0) shape.moveTo(a.x, a.y); else shape.lineTo(a.x, a.y);
+    if (rr > 0) shape.quadraticCurveTo(cur.x, cur.y, b.x, b.y);
+  }
+  shape.closePath();
+  return shape;
+}
+function roundedPath(pts) { return roundedShape(pts, new THREE.Path()); }
+
+// Extrude a side-profile shape (in the XY plane) across Z, centred on zc.
+function slab(shape, width, { bevel = 0.04, segs = 3, zc = 0, curveSegments = 24 } = {}) {
+  const depth = Math.max(0.001, width - 2 * bevel);
+  const g = new THREE.ExtrudeGeometry(shape, {
+    depth, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel * 0.9, bevelSegments: segs, curveSegments,
+  });
+  g.translate(0, 0, zc - depth / 2);
+  return g;
+}
+
+// Lathe around the X axis. pts = [[x, r], ...]
+function latheX(pts, seg = 64) {
+  const g = new THREE.LatheGeometry(pts.map(([x, r]) => new THREE.Vector2(r, x)), seg);
+  g.rotateZ(-Math.PI / 2);
+  g.scale(1, 1, 1);
+  // after rotateZ(-90deg) the lathe axis (y) maps to +x
+  return g;
+}
+
+function clean(g) {
+  g = g.index ? g.toNonIndexed() : g;
+  for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k);
+  if (!g.attributes.normal) g.computeVertexNormals();
+  return g;
+}
+function creased(g, angle = 34) { return toCreasedNormals(clean(g), THREE.MathUtils.degToRad(angle)); }
+
+const evaluator = new Evaluator();
+evaluator.attributes = ['position', 'normal'];
+evaluator.useGroups = false;
+// Cutters passed together must not overlap each other (they are merged into one brush).
+function subtract(base, ...cutters) {
+  let a = new Brush(clean(base)); a.updateMatrixWorld();
+  const cut = new Brush(mergeGeometries(cutters.map(clean))); cut.updateMatrixWorld();
+  const r = evaluator.evaluate(a, cut, SUBTRACTION);
+  return r.geometry;
+}
+// For cutters that overlap, subtract them one after another.
+function subtractEach(base, ...cutters) {
+  let g = base;
+  for (const c of cutters) g = subtract(g, c);
+  return g;
+}
+function box(x0, x1, y0, y1, z0, z1) {
+  const g = new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0);
+  g.translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+  return g;
+}
+
+
+// Screw head with its drive recess ("inlet"). Built along +y with the underside at y = 0.
+// style: 'slot' (flat blade), 'phillips' (cross), 'hex' (socket). countersunk heads sit nearly flush.
+function screwHead(r, { style = 'slot', h, countersunk = false, seg = 36 } = {}) {
+  if (h === undefined) h = countersunk ? r * 0.5 : r * 0.6;
+  const prof = countersunk
+    ? [[0, 0], [r * 0.5, 0], [r, h - 0.006], [r, h], [0, h]]
+    : [[0, 0], [r, 0], [r, h * 0.45], [r * 0.86, h * 0.82], [r * 0.55, h * 0.97], [0, h]];
+  let g = new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x, y)), seg);
+  // the recess a driver goes into: deep enough to grip, open across the head for a blade
+  const d = Math.min(h * 0.85, r * 0.62);
+  if (style === 'slot') g = subtract(g, box(-r * 1.3, r * 1.3, h - d, h + 0.2, -r * 0.17, r * 0.17));
+  else if (style === 'phillips') {
+    g = subtractEach(g, box(-r * 0.68, r * 0.68, h - d, h + 0.2, -r * 0.13, r * 0.13), box(-r * 0.13, r * 0.13, h - d, h + 0.2, -r * 0.68, r * 0.68));
+  } else if (style === 'hex') {
+    g = subtract(g, new THREE.CylinderGeometry(r * 0.5, r * 0.5, d * 2, 6).translate(0, h, 0));
+  }
+  return creased(g, 35);
+}
+// Put a screw head at pos with its axis along normal; spin turns the recess about that axis.
+function placeScrew(geo, pos, normal, spin = 0) {
+  geo.applyMatrix4(new THREE.Matrix4().makeRotationY(spin));
+  geo.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal.clone().normalize()));
+  geo.translate(pos.x, pos.y, pos.z);
+  return geo;
+}
+
+/* ------------------------------------------------------------------ nightstone blaster core (adapted from the tool gun core) */
+// Shared kit for the Tactical Phone (see DESIGN.md, the contract). Adapted from the uplink kit.
+// Metres, +Y up (the phone's long axis), the screen faces -Z (toward the holder), the rear camera looks +Z.
+// The holder's left is +X. Every name below is a global of the page's module.
+//   math       V3 deg clamp01 clampR lerp ease easeOut easeIn sstep seg lin springK bump wrap wrap01 canvas hexRGB
+//   textures   prng vnoise fbmT stretch blurW addDimple addScratch rgbaCanvas normalFrom quantile
+//              paintFields paintMaps chipMaps underMaps rubberMaps polymerMaps grilleMaps
+//              brushedMaps wornMetalMaps knurlMaps asTex texSet ormScaled
+//   materials  M (by key; glTF names in MAT_NAMES), TX, buildMaterials(), pbr(), glowMat()
+//   geometry   prepUV boxUV uvOffScale nameOffset mergeUV dropDegenerate fixNormals noise3 edgeWear wearSplit
+//              node(name, parent, [x, y, z]) add(parent, geo, mat, name, opts) hexScrew(r, pos, normal, spin)
+//              rect(x0, x1, y0, y1, r) slabZ(shape, z0, z1, b) slabY(shape, y0, y1, b) slabX(shape, x0, x1, b)
+//              rbox(x0, x1, y0, y1, z0, z1, b) cbox(x0, x1, y0, y1, z0, z1, c) cylX/cylY/cylZ(r, a0, a1, seg)
+//              ringShape(outer, holes) hide(o) show(o, s) triCount(root)
+//   animation  sampleClip(name, len, list, fn, stepNodes) clipsFor(model)
+//   export     toBase64 patchGLB patchJSON exportScenesFor(models) exportGLBFor(models, hooks)
+//   debug      boxOf(obj) frameBox(box, dir) makeDebugSet(ctx)
+
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const deg = THREE.MathUtils.degToRad;
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+const clampR = (v, a, b) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const easeIn = (t) => t * t * t;
+const sstep = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+// 0 -> 1 between times a and b: eased (seg) or linear (lin)
+const seg = (t, a, b) => ease(clamp01((t - a) / (b - a)));
+const lin = (t, a, b) => clamp01((t - a) / (b - a));
+// a damped spring from 0 to 1 over u in 0..1 (overshoots about 10% with the defaults)
+const springK = (u, k = 5, w = 7) => u <= 0 ? 0 : u >= 1 ? 1 : 1 - Math.exp(-k * u) * Math.cos(w * u);
+// a smooth 0 -> 1 -> 0 bump over x in 0..w
+const bump = (x, w) => x <= 0 || x >= w ? 0 : Math.pow(Math.sin(Math.PI * x / w), 2);
+const wrap = (t, len) => ((t % len) + len) % len;
+const wrap01 = (t) => wrap(t, 1);
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+const hexRGB = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+
+/* ------------------------------------------------------------------ procedural texture sheets */
+// Every sheet tiles. Albedo is sRGB; normal maps use the OpenGL convention (+Y up the image); "orm" packs
+// R = 1, G = roughness, B = metalness the way glTF stores them. (Adapted from the N1CK kit.)
+
+function prng(seed) { let s = (Math.floor(Math.abs(seed) * 9973) % 2147483646) + 1; return () => (s = s * 16807 % 2147483647) / 2147483647; }
+// tileable value noise: px x py lattice cells across an N x N tile
+function vnoise(N, px, py, rnd) {
+  const L = new Float32Array(px * py); for (let i = 0; i < L.length; i++) L[i] = rnd();
+  const out = new Float32Array(N * N), X0 = new Int32Array(N), X1 = new Int32Array(N), SX = new Float32Array(N);
+  for (let x = 0; x < N; x++) { const f = x / N * px, i = Math.floor(f), t = f - i; X0[x] = i % px; X1[x] = (i + 1) % px; SX[x] = t * t * (3 - 2 * t); }
+  for (let y = 0; y < N; y++) {
+    const f = y / N * py, i = Math.floor(f), t = f - i, sy = t * t * (3 - 2 * t), r0 = (i % py) * px, r1 = ((i + 1) % py) * px;
+    for (let x = 0; x < N; x++) {
+      const a = L[r0 + X0[x]], b = L[r0 + X1[x]], c = L[r1 + X0[x]], d = L[r1 + X1[x]], sx = SX[x];
+      out[y * N + x] = a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+    }
+  }
+  return out;
+}
+// fractal sum; ar stretches the lattice along the image's y (ar > 1: streaks along x)
+function fbmT(N, p, oct, rnd, { gain = 0.5, ar = 1 } = {}) {
+  const out = new Float32Array(N * N); let a = 1, tot = 0;
+  for (let o = 0; o < oct; o++) {
+    const px = Math.max(1, Math.min(N, Math.round(p * 2 ** o))), py = Math.max(1, Math.min(N, Math.round(p * ar * 2 ** o)));
+    const n = vnoise(N, px, py, rnd);
+    for (let i = 0; i < out.length; i++) out[i] += n[i] * a;
+    tot += a; a *= gain;
+  }
+  for (let i = 0; i < out.length; i++) out[i] /= tot;
+  return out;
+}
+function stretch(a) {
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < a.length; i++) { const v = a[i]; if (v < lo) lo = v; if (v > hi) hi = v; }
+  const k = 1 / Math.max(1e-6, hi - lo); for (let i = 0; i < a.length; i++) a[i] = (a[i] - lo) * k;
+  return a;
+}
+// separable box blur that wraps around the tile
+function blurW(src, N, r) {
+  if (r < 1) return src.slice();
+  const tmp = new Float32Array(N * N), out = new Float32Array(N * N), w = 2 * r + 1, wr = (i) => ((i % N) + N) % N;
+  for (let y = 0; y < N; y++) {
+    const row = y * N; let s = 0;
+    for (let k = -r; k <= r; k++) s += src[row + wr(k)];
+    for (let x = 0; x < N; x++) { tmp[row + x] = s / w; s += src[row + wr(x + r + 1)] - src[row + wr(x - r)]; }
+  }
+  for (let x = 0; x < N; x++) {
+    let s = 0;
+    for (let k = -r; k <= r; k++) s += tmp[wr(k) * N + x];
+    for (let y = 0; y < N; y++) { out[y * N + x] = s / w; s += tmp[wr(y + r + 1) * N + x] - tmp[wr(y - r) * N + x]; }
+  }
+  return out;
+}
+// a smooth bowl pressed into a height field (a dent, a pit); wraps
+function addDimple(H, N, cx, cy, r, depth) {
+  const r2 = r * r, x0 = Math.floor(cx - r), x1 = Math.ceil(cx + r), y0 = Math.floor(cy - r), y1 = Math.ceil(cy + r);
+  for (let y = y0; y <= y1; y++) {
+    const dy = y - cy, row = (((y % N) + N) % N) * N;
+    for (let x = x0; x <= x1; x++) {
+      const dx = x - cx, d2 = dx * dx + dy * dy; if (d2 >= r2) continue;
+      const k = 1 - d2 / r2; H[row + (((x % N) + N) % N)] -= depth * k * k;
+    }
+  }
+}
+// a thin scratch with tapered ends; keeps the strongest value where scratches cross
+function addScratch(B, N, x, y, ang, len, curv, val) {
+  for (let s = 0; s < len; s += 0.6) {
+    const fade = Math.sin(Math.PI * s / len), ix = ((Math.round(x) % N) + N) % N, iy = ((Math.round(y) % N) + N) % N, i = iy * N + ix;
+    B[i] = Math.max(B[i], val * (0.35 + 0.65 * fade));
+    x += Math.cos(ang) * 0.6; y += Math.sin(ang) * 0.6; ang += curv;
+  }
+}
+function rgbaCanvas(N, Mh, fn) {
+  const c = canvas(N, Mh), ctx = c.getContext('2d'), img = ctx.createImageData(N, Mh), d = img.data, px = [0, 0, 0, 1];
+  for (let i = 0; i < N * Mh; i++) { px[3] = 1; fn(i, px); const o = i * 4; d[o] = px[0] * 255; d[o + 1] = px[1] * 255; d[o + 2] = px[2] * 255; d[o + 3] = px[3] * 255; }
+  ctx.putImageData(img, 0, 0); return c;
+}
+function normalFrom(H, N, s) {
+  const c = canvas(N, N), ctx = c.getContext('2d'), img = ctx.createImageData(N, N), d = img.data;
+  for (let y = 0; y < N; y++) {
+    const ym = ((y - 1 + N) % N) * N, yp = ((y + 1) % N) * N, row = y * N;
+    for (let x = 0; x < N; x++) {
+      const xm = (x - 1 + N) % N, xp = (x + 1) % N;
+      // canvas y runs down the image; the texture's +V runs up it
+      const nx = -(H[row + xp] - H[row + xm]) * 0.5 * s, ny = (H[yp + x] - H[ym + x]) * 0.5 * s, l = 1 / Math.hypot(nx, ny, 1), o = (row + x) * 4;
+      d[o] = (nx * l * 0.5 + 0.5) * 255; d[o + 1] = (ny * l * 0.5 + 0.5) * 255; d[o + 2] = (l * 0.5 + 0.5) * 255; d[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0); return c;
+}
+function quantile(a, q) { const s = []; for (let i = 0; i < a.length; i += 7) s.push(a[i]); s.sort((x, y) => x - y); return s[Math.floor(q * (s.length - 1))]; }
+
+// Paint over the alloy and composite. One set of paint fields drives the plain paint and the worn-edge sheet, so a
+// worn strip and the paint next to it match exactly where nothing is rubbed. Tile 0.3 m.
+function paintFields(N, seed) {
+  const R = prng(seed), n2 = N * N, k = N / 1024;
+  const peel = fbmT(N, Math.round(190 * k), 2, R, { gain: 0.45 }), fine = fbmT(N, Math.round(480 * k), 1, R);
+  const drift = stretch(fbmT(N, 2, 3, R)), blot = stretch(fbmT(N, 7, 3, R));
+  // faint scuffs: patches of short parallel scratches in the topcoat (a touch lighter and glossier)
+  const scuff = new Float32Array(n2);
+  for (let j = 0; j < 18; j++) {
+    const cx = R() * N, cy = R() * N, a = R() * 6.283, rad = (18 + R() * 40) * k, cnt = 6 + (R() * 14 | 0);
+    for (let m = 0; m < cnt; m++) { const o = (R() - 0.5) * rad, l = (10 + R() * 40) * k, t = (R() - 0.5) * rad; addScratch(scuff, N, cx - Math.sin(a) * o + Math.cos(a) * t, cy + Math.cos(a) * o + Math.sin(a) * t, a + (R() - 0.5) * 0.12, l, (R() - 0.5) * 0.004, 0.25 + R() * 0.45); }
+  }
+  for (let j = 0; j < 40; j++) addScratch(scuff, N, R() * N, R() * N, R() * 6.283, (6 + R() * 30) * k, (R() - 0.5) * 0.006, 0.2 + R() * 0.35);
+  const sc = blurW(scuff, N, 1);
+  const tone = new Float32Array(n2), H = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) {
+    tone[i] = 1 - 0.045 * drift[i] - 0.025 * blot[i] + 0.05 * sc[i];
+    H[i] = (peel[i] - 0.5) * 0.5 + (fine[i] - 0.5) * 0.06 - sc[i] * 0.12;
+  }
+  return { N, peel, fine, drift, blot, sc, tone, H };
+}
+// plain paint: neutral albedo (the material colour sets the tone), satin, a fine orange peel in the normal map
+function paintMaps(F) {
+  const { N, tone, drift, fine, sc, H } = F;
+  const map = rgbaCanvas(N, N, (i, o) => { o[0] = o[1] = o[2] = tone[i]; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.56 + 0.05 * (drift[i] - 0.5) + 0.04 * (fine[i] - 0.5) - 0.14 * sc[i], 0.3, 0.9); o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 0.8 * N / 1024), orm };
+}
+// Worn paint for edge strips: the same paint rubbed through to bare alloy in ragged runs (a few cm), a thin
+// primer ring round the bigger chips and a burnished halo of rubbed paint; warm grey bare metal with fine
+// scratches inside. One albedo per paint tone (sRGB 0..1); normals and orm shared.
+function chipMaps(F, seed, tones) {
+  const { N, tone, drift, fine, sc } = F, R = prng(seed), n2 = N * N, k = N / 1024;
+  const C = stretch(fbmT(N, 6, 3, R)), S = stretch(fbmT(N, Math.round(36 * Math.max(k, 0.5)), 3, R, { gain: 0.62 })), D2 = stretch(fbmT(N, Math.round(140 * Math.max(k, 0.5)), 2, R));
+  const m0 = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) { const th = lerp(0.8, 0.53, sstep(0.3, 0.88, C[i])), g = S[i] * 0.7 + D2[i] * 0.3; m0[i] = sstep(th - 0.012, th + 0.012, g); }
+  const sp = new Float32Array(n2);
+  for (let j = 0; j < 360; j++) { const x = R() * N, y = R() * N; if (C[(y | 0) * N + (x | 0)] > 0.55 + R() * 0.3) addDimple(sp, N, x, y, (0.8 + R() * 1.4) * k, -1); }
+  const mask = new Float32Array(n2); for (let i = 0; i < n2; i++) mask[i] = clamp01(Math.max(m0[i], sstep(0.35, 0.6, sp[i])));
+  const b2 = blurW(mask, N, Math.max(1, Math.round(2 * k))), b9 = blurW(blurW(mask, N, Math.max(2, Math.round(9 * k))), N, Math.max(2, Math.round(9 * k)));
+  const ring = new Float32Array(n2), rub = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) { ring[i] = clamp01(b2[i] * 2.2 - mask[i] * 2.2) * (1 - mask[i]); rub[i] = clamp01(b9[i] * 2.5) * (1 - mask[i]); }
+  const scr = new Float32Array(n2);
+  for (let j = 0; j < 900; j++) { const a = R() < 0.7 ? (R() - 0.5) * 0.5 : R() * 6.283; addScratch(scr, N, R() * N, R() * N, a, (6 + R() * 40) * k, (R() - 0.5) * 0.004, 0.3 + R() * 0.7); }
+  const mb = stretch(fbmT(N, 24, 3, R));
+  const H = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) H[i] = F.H[i] * 0.55 * (1 - mask[i]) - mask[i] * 0.7 - ring[i] * 0.25 + mask[i] * (mb[i] - 0.5) * 0.1 - scr[i] * mask[i] * 0.1;
+  const bare = (i) => (0.92 + 0.1 * mb[i]) * (0.97 + 0.06 * fine[i]) + scr[i] * 0.06;
+  const maps = tones.map((tc) => rgbaCanvas(N, N, (i, o) => {
+    const m = mask[i], rg = ring[i], ru = rub[i], t = tone[i] * (1 + 0.1 * ru), b = bare(i), pr = [0.2, 0.2, 0.21];
+    for (let c = 0; c < 3; c++) {
+      const paint = tc[c] * t * (1 + 0.25 * ru), metal = [0.5, 0.5, 0.49][c] * b;
+      o[c] = lerp(lerp(paint, pr[c], rg * 0.6), metal, m);
+    }
+  }));
+  const orm = rgbaCanvas(N, N, (i, o) => {
+    const m = mask[i], paintR = 0.56 + 0.05 * (drift[i] - 0.5) + 0.04 * (fine[i] - 0.5) - 0.14 * sc[i] - 0.14 * rub[i];
+    o[0] = 1; o[1] = clampR(lerp(lerp(paintR, 0.7, ring[i] * 0.8), 0.42 + 0.08 * mb[i] - 0.06 * scr[i], m), 0.34, 0.9); o[2] = m * 0.9;
+  });
+  return { maps, normal: normalFrom(H, N, 1.5 * N / 1024), orm };
+}
+// Anodized frame metal: neutral-cool, faint short machining streaks, a few scratches, dark grime in patches.
+// Albedo is neutral (about 1); the material colour sets the tone.
+function underMaps(N, seed) {
+  const R = prng(seed), n2 = N * N, k = N / 1024, H = new Float32Array(n2);
+  const streak = stretch(fbmT(N, 6, 4, R, { ar: 7 })), blot = stretch(fbmT(N, 3, 3, R)), dm = stretch(fbmT(N, 6, 4, R)), sp = stretch(fbmT(N, 120, 2, R));
+  const dust = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) dust[i] = 0.35 * sstep(0.82, 0.95, dm[i]) * sstep(0.4, 0.75, sp[i]) + 0.18 * sstep(0.9, 0.97, sp[i]) * sstep(0.6, 0.8, dm[i]);
+  for (let j = 0; j < 40; j++) addDimple(H, N, R() * N, R() * N, (3 + R() * 6) * k, 0.15);
+  const scr = new Float32Array(n2); for (let j = 0; j < 50; j++) addScratch(scr, N, R() * N, R() * N, R() * 6.283, (8 + R() * 40) * k, (R() - 0.5) * 0.004, 0.3 + R() * 0.5);
+  for (let i = 0; i < n2; i++) H[i] += streak[i] * 0.012 - scr[i] * 0.025 + dust[i] * 0.03;
+  const map = rgbaCanvas(N, N, (i, o) => {
+    const t = 0.86 * (0.975 + 0.05 * streak[i]) * (0.96 + 0.07 * blot[i]), s = scr[i] * 0.14, d = clamp01(dust[i]);
+    o[0] = Math.min(1, lerp(t + s, 1.0, d)); o[1] = Math.min(1, lerp(t + s, 0.97, d)); o[2] = Math.min(1, lerp(t + s, 0.92, d));
+  });
+  const orm = rgbaCanvas(N, N, (i, o) => { const d = clamp01(dust[i]); o[0] = 1; o[1] = lerp(0.42 + 0.03 * (streak[i] - 0.5) * 2 + 0.05 * blot[i] - 0.08 * scr[i], 0.85, d); o[2] = lerp(1, 0.1, d); });
+  return { map, normal: normalFrom(H, N, 4 / k), orm };
+}
+// black rubber: a slow blotch, a fine moulded stipple (tiny pits about 0.3 mm at the 3 cm tile) and matte roughness 0.7-0.85
+function rubberMaps(N, seed) {
+  const R = prng(seed), n2 = N * N, g = stretch(fbmT(N, 32, 3, R)), blot = stretch(fbmT(N, 2, 3, R)), st = stretch(fbmT(N, 110, 1, R)), H = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) H[i] = g[i] * 0.2 + st[i] * 0.35;
+  for (let j = 0; j < 900; j++) addDimple(H, N, R() * N, R() * N, 0.9 + R() * 1.1, 0.25);
+  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.85 + 0.25 * blot[i] + 0.1 * g[i] + 0.08 * (st[i] - 0.5); o[0] = 0.075 * t; o[1] = 0.074 * t; o[2] = 0.076 * t; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.76 + 0.08 * g[i] + 0.06 * (st[i] - 0.5), 0.7, 0.86); o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 2.6), orm };
+}
+// moulded polymer: fine stipple, satin-matte
+function polymerMaps(N, seed) {
+  const R = prng(seed), g = stretch(fbmT(N, 70, 2, R)), blot = stretch(fbmT(N, 3, 3, R)), H = new Float32Array(N * N);
+  for (let i = 0; i < H.length; i++) H[i] = g[i] * 0.12;
+  const map = rgbaCanvas(N, N, (i, o) => { const t = 0.93 + 0.1 * blot[i] + 0.05 * g[i]; o[0] = 0.102 * t; o[1] = 0.106 * t; o[2] = 0.125 * t; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.56 + 0.08 * g[i] + 0.04 * blot[i]; o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 2), orm };
+}
+// perforated black steel: staggered round holes (alpha 0 in the holes), a rolled lip round each hole in the normal map
+function grilleMaps(N, holes = 8) {
+  const p = N / holes, r = p * 0.36, H = new Float32Array(N * N), A = new Float32Array(N * N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const row = Math.floor(y / p), cy = (row + 0.5) * p, cx = (Math.round((x - (row % 2) * p / 2) / p - 0.5) + 0.5) * p + (row % 2) * p / 2;
+    const d = Math.hypot(x - cx, y - cy), i = y * N + x;
+    A[i] = d < r ? 0 : 1; H[i] = d < r ? 0 : 0.6 * sstep(r + p * 0.14, r, d);
+  }
+  const map = rgbaCanvas(N, N, (i, o) => { const t = 1 - 0.25 * H[i]; o[0] = 0.07 * t; o[1] = 0.072 * t; o[2] = 0.08 * t; o[3] = A[i]; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = 0.55; o[2] = 0.6; });
+  return { map, normal: normalFrom(H, N, 3), orm };
+}
+// Hex-perforated sheet steel for the rack doors: a honeycomb of pointy-top hexagonal holes, cols x rows per tile
+// (7 x 8 keeps the cells within 1 % of regular in a square tile; rows alternate by half a column), webs 20 % of
+// the cell (about 64 % open), a rolled edge round each hole, dark powder coat with a little dust in the webs.
+// The tone is baked into the albedo (the material colour stays white). Alpha 0 in the holes (alphaMode MASK).
+function perforatedMaps(N, cols = 7, rows = 8, seed = 131) {
+  const R = prng(seed), px = N / cols, py = N / rows, a = px / 2, inner = 0.86, n2 = N * N;   // 74 % open
+  const H = new Float32Array(n2), A = new Float32Array(n2), D = new Float32Array(n2);
+  const dust = stretch(fbmT(N, 9, 3, R)), grain = stretch(fbmT(N, 90, 2, R));
+  for (let y = 0; y < N; y++) {
+    const r0 = Math.floor(y / py);
+    for (let x = 0; x < N; x++) {
+      let h = 9;
+      for (let dr = -1; dr <= 1; dr++) {
+        const r = r0 + dr, sx = (((r % 2) + 2) % 2) * px / 2, cy = (r + 0.5) * py;
+        const c = Math.round((x - sx) / px - 0.5), cx = (c + 0.5) * px + sx;
+        const ax = Math.abs(x - cx), hh = Math.max(ax, 0.5 * ax + 0.866 * Math.abs(y - cy)) / a;   // flat sides at x = +-a
+        if (hh < h) h = hh;
+      }
+      const i = y * N + x;
+      A[i] = h < inner ? 0 : 1;
+      H[i] = h < inner ? 0 : 0.5 * sstep(inner, inner + 0.1, h);
+      D[i] = h < inner ? 0 : sstep(inner + 0.03, inner + 0.15, h) * sstep(0.5, 0.85, dust[i]);
+    }
+  }
+  const base = hexRGB('#18191e'), grey = [0.30, 0.285, 0.26];
+  const map = rgbaCanvas(N, N, (i, o) => { const t = (0.9 + 0.12 * grain[i]) * (1 - 0.2 * H[i]); for (let c = 0; c < 3; c++) o[c] = lerp(base[c] * t, grey[c], D[i] * 0.45); o[3] = A[i]; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.52 + 0.06 * grain[i] + 0.3 * D[i], 0, 1); o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 2.5), orm };
+}
+// Interlocked steel armour for the data cable: u runs along the cable (ridges per tile), v around it; one ridge
+// advance per turn makes a single-start helix. Rounded crowns, dark narrow grooves, faint wear.
+function armourMaps(N, ridges = 8, seed = 151) {
+  const R = prng(seed), n2 = N * N, H = new Float32Array(n2), G = new Float32Array(n2), sp = stretch(fbmT(N, 24, 2, R));
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const f = wrap01((x / N) * ridges + y / N), i = y * N + x;
+    G[i] = f > 0.84 ? 1 : 0;
+    H[i] = f < 0.84 ? Math.pow(Math.sin(Math.PI * f / 0.84), 0.6) : -0.25;
+  }
+  const map = rgbaCanvas(N, N, (i, o) => { o[0] = o[1] = o[2] = G[i] ? 0.22 : (0.82 + 0.18 * H[i]) * (0.93 + 0.07 * sp[i]); });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = G[i] ? 0.85 : clampR(0.5 - 0.12 * H[i] + 0.06 * sp[i], 0, 1); o[2] = G[i] ? 0.3 : 0.95; });
+  return { map, normal: normalFrom(H, N, 5), orm };
+}
+
+
+// Brushed gunmetal: long fine streaks along U (box UVs put U along the part's long run on the side faces),
+// a few sharper scratches across the grain, light dings and a little dark grime. Neutral albedo near 1; the
+// material colour sets the tone. Metalness 1 in the map; the factor sets it.
+function brushedMaps(N, seed) {
+  const R = prng(seed), n2 = N * N, k = N / 1024;
+  const streak = stretch(fbmT(N, 12, 4, R, { ar: 24 })), fineS = stretch(fbmT(N, 64, 2, R, { ar: 30 })), blot = stretch(fbmT(N, 3, 3, R)), grime = stretch(fbmT(N, 7, 3, R));
+  const scr = new Float32Array(n2);
+  for (let j = 0; j < 140; j++) { const a = R() < 0.6 ? (R() - 0.5) * 0.25 : R() * 6.283; addScratch(scr, N, R() * N, R() * N, a, (8 + R() * 60) * k, (R() - 0.5) * 0.003, 0.25 + R() * 0.6); }
+  const H = new Float32Array(n2);
+  for (let j = 0; j < 30; j++) addDimple(H, N, R() * N, R() * N, (2 + R() * 5) * k, 0.25);
+  for (let i = 0; i < n2; i++) H[i] += streak[i] * 0.02 + fineS[i] * 0.012 - scr[i] * 0.05;
+  const map = rgbaCanvas(N, N, (i, o) => {
+    const g = sstep(0.78, 0.95, grime[i]) * 0.3, t = (0.9 + 0.08 * streak[i] + 0.05 * fineS[i]) * (0.96 + 0.06 * blot[i]) * (1 - g) + scr[i] * 0.18;
+    o[0] = o[1] = Math.min(1, t); o[2] = Math.min(1, t * 1.015);
+  });
+  // roughness about 0.46 on average (satin brushed, not polished): the review asked for 0.38-0.5
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.47 + 0.07 * (streak[i] - 0.5) + 0.05 * (fineS[i] - 0.5) + 0.06 * blot[i] - 0.1 * scr[i] + 0.25 * sstep(0.78, 0.95, grime[i]), 0.3, 0.9); o[2] = 1; });
+  return { map, normal: normalFrom(H, N, 3 / k), orm, F: { N, streak, fineS, blot, grime, scr, H } };
+}
+// Worn edges of the gunmetal: the same brushed sheet with the dark finish rubbed through to bright alloy only in
+// intermittent chips and short scuffed runs (about a third of the area), so a worn edge strip reads as chipped,
+// not as continuous chrome trim. Tone baked into the albedo (the material colour stays white).
+function wornMaps(F, seed, dark, bright) {
+  const { N, streak, fineS, blot, grime, scr, H } = F, R = prng(seed), n2 = N * N;
+  const C = stretch(fbmT(N, 5, 3, R)), S = stretch(fbmT(N, 22, 3, R, { gain: 0.6 })), D2 = stretch(fbmT(N, 70, 2, R));
+  const mask = new Float32Array(n2);
+  for (let i = 0; i < n2; i++) { const th = lerp(0.74, 0.5, sstep(0.35, 0.85, C[i])), g = S[i] * 0.72 + D2[i] * 0.28; mask[i] = sstep(th - 0.02, th + 0.02, g); }
+  for (let j = 0; j < 220; j++) { const x = R() * N, y = R() * N, r = 1 + R() * 2.5; for (let yy = -3; yy <= 3; yy++) for (let xx = -3; xx <= 3; xx++) if (xx * xx + yy * yy <= r * r) { const i = (((y + yy) | 0) % N + N) % N * N + (((x + xx) | 0) % N + N) % N; mask[i] = 1; } }
+  const halo = blurW(mask, N, 3);
+  const Hw = new Float32Array(n2); for (let i = 0; i < n2; i++) Hw[i] = H[i] - mask[i] * 0.05;
+  const map = rgbaCanvas(N, N, (i, o) => {
+    const m = mask[i], gr = sstep(0.78, 0.95, grime[i]) * 0.3, t = (0.9 + 0.08 * streak[i] + 0.05 * fineS[i]) * (0.96 + 0.06 * blot[i]) * (1 - gr);
+    const hb = clamp01(halo[i] * 1.6) * (1 - m);
+    for (let c = 0; c < 3; c++) o[c] = Math.min(1, lerp(dark[c] * t * (1 + 0.3 * hb) + scr[i] * 0.08, bright[c] * (0.92 + 0.1 * fineS[i]) + scr[i] * 0.05, m));
+  });
+  const orm = rgbaCanvas(N, N, (i, o) => { const m = mask[i]; o[0] = 1; o[1] = clampR(lerp(0.47 + 0.06 * (streak[i] - 0.5) + 0.06 * blot[i] - 0.05 * clamp01(halo[i] * 1.6), 0.4 + 0.08 * fineS[i] - 0.06 * scr[i], m), 0.34, 0.9); o[2] = lerp(0.85, 1, m); });
+  return { map, normal: normalFrom(Hw, N, 3 * 1024 / N), orm };
+}
+// Rubber with a moulded diamond knurl (cells x cells pyramids per tile), slightly worn flat on the crowns.
+function knurlMaps(N, cells = 16, seed = 61) {
+  const R = prng(seed), n2 = N * N, p = N / cells, blot = stretch(fbmT(N, 3, 3, R)), g = stretch(fbmT(N, 96, 2, R)), H = new Float32Array(n2);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const u = wrap01((x + y) / (p * 2)), v = wrap01((x - y) / (p * 2)), d = Math.min(Math.abs(u - 0.5), Math.abs(v - 0.5)) * 2;
+    H[y * N + x] = Math.min(0.82, Math.pow(d, 0.8)) + g[y * N + x] * 0.09;
+  }
+  const map = rgbaCanvas(N, N, (i, o) => { const t = (0.85 + 0.2 * blot[i]) * (0.9 + 0.16 * H[i]); o[0] = 0.07 * t; o[1] = 0.07 * t; o[2] = 0.075 * t; });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.86 - 0.18 * sstep(0.7, 0.82, H[i]) + 0.05 * g[i], 0.5, 0.95); o[2] = 0; });
+  return { map, normal: normalFrom(H, N, 3.5), orm };
+}
+
+// Glass wear for screen_glass: an ORM sheet (G = roughness) that is glossy with faint wipe arcs, a few fine scratches
+// and a scuffed patch where the thumb works. Tile = the whole screen (box UVs at 0.07 m).
+function glassScuffMap(N, seed) {
+  const R = prng(seed), n2 = N * N, scr = new Float32Array(n2), wipe = new Float32Array(n2), blot = stretch(fbmT(N, 4, 3, R));
+  for (let j = 0; j < 70; j++) addScratch(scr, N, R() * N, R() * N, R() * 6.283, 10 + R() * 70, (R() - 0.5) * 0.01, 0.3 + R() * 0.7);
+  for (let j = 0; j < 26; j++) { const cx = N * (0.45 + 0.3 * R()), cy = N * (0.5 + 0.3 * R()), r = N * (0.1 + 0.25 * R()), a = R() * 6.283; for (let s = 0; s < 1.6; s += 0.004) { const x = cx + Math.cos(a + s) * r, y = cy + Math.sin(a + s) * r; const i = ((Math.round(y) % N + N) % N) * N + ((Math.round(x) % N + N) % N); wipe[i] = Math.max(wipe[i], 0.5); } }
+  const w = blurW(wipe, N, 2), sc = blurW(scr, N, 1);
+  return rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.05 + 0.05 * blot[i] + 0.18 * w[i] + 0.5 * sc[i], 0, 1); o[2] = 0; });
+}
+
+// a Fresnel lens for the flash diffusers: concentric sawtooth rings round the UV centre (UV 0..1 = one lens)
+function fresnelNormal(N, rings) {
+  const H = new Float32Array(N * N);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const r = Math.hypot(x + 0.5 - N / 2, y + 0.5 - N / 2) / (N / 2); H[y * N + x] = r < 1 ? wrap01(r * rings) * 0.9 : 0; }
+  return normalFrom(H, N, 2.2);
+}
+
+/* ------------------------------------------------------------------ materials */
+
+const TX = {}, M = {};
+// key -> glTF material name (DESIGN.md section 6). parts/screen.js adds M.screen ('screen').
+const _MAT_NAMES_UNUSED = {
+  gunmetal: 'gunmetal', gunmetalWorn: 'gunmetal_worn', frame: 'frame_alloy', polymer: 'polymer', rubber: 'rubber', grip: 'rubber_grip',
+  black: 'black_steel', bolt: 'fasteners', crevice: 'crevice', grille: 'grille', screenGlass: 'screen_glass', lens: 'lens_glass',
+  flash: 'flash_diffuser', led: 'led_status', accent: 'led_accent',
+};
+function asTex(c, { srgb = false, jpeg = false, repeat = true } = {}) {
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+  t.wrapS = t.wrapT = repeat ? THREE.RepeatWrapping : THREE.ClampToEdgeWrapping;
+  t.anisotropy = 8;
+  t.userData.mimeType = jpeg ? 'image/jpeg' : 'image/png';
+  return t;
+}
+// a copy of an ORM sheet with roughness (G) multiplied by g and clamped (glTF factors must stay within 0..1)
+function ormScaled(src, g, name) {
+  const c = canvas(src.width, src.height), x = c.getContext('2d'); x.drawImage(src, 0, 0);
+  const img = x.getImageData(0, 0, c.width, c.height), d = img.data;
+  for (let i = 0; i < d.length; i += 4) d[i + 1] = Math.min(255, Math.round(d[i + 1] * g));
+  x.putImageData(img, 0, 0);
+  const t = asTex(c); t.name = name; return t;
+}
+function texSet(name, maps, { jpeg = true } = {}) {
+  const s = { map: asTex(maps.map, { srgb: true, jpeg }), normal: asTex(maps.normal), orm: asTex(maps.orm) };
+  s.map.name = name + '_albedo'; s.normal.name = name + '_normal'; s.orm.name = name + '_orm';
+  if (maps.F) s.F = maps.F;
+  return s;
+}
+// PBR material on a texture set: colour, roughness and metalness factors multiply the maps; tile = metres per UV unit
+function pbr(name, set, tile, o = {}, ns = 1) {
+  const m = new THREE.MeshStandardMaterial({ name, color: '#ffffff', roughness: 1, metalness: 1, map: set.map, normalMap: set.normal, roughnessMap: set.orm, metalnessMap: set.orm, ...o });
+  m.normalScale.set(ns, ns); m.userData.tile = tile;
+  return m;
+}
+// emissive material: exported at strength 1 (emissiveFactor = colour); the viewer runs it at userData.glow for bloom
+function glowMat(name, emissive, glow = 1.5, o = {}) {
+  const m = new THREE.MeshStandardMaterial({ name, color: '#120a22', roughness: 0.4, metalness: 0, emissive, emissiveIntensity: glow, ...o });
+  m.userData.glow = glow; m.userData.tile = 0.1; m.userData.emissive = emissive;
+  return m;
+}
+// base material -> its worn-edge variant (add() splits convex edges into it); materials that take box UVs
+const CHIP = new Map(), TILED = new Set(), BRUSHED = new Set();
+/* ------------------------------------------------------------------ geometry helpers */
+
+// non-indexed copy with position + normal (+ uv)
+function prepUV(g) {
+  g = g.index ? g.toNonIndexed() : g.clone();
+  for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+  g.morphAttributes = {}; g.clearGroups();
+  if (!g.attributes.normal) g.computeVertexNormals();
+  return g;
+}
+// box projection: each triangle takes the plane its normal points at most; 1 UV = tile metres
+// brush = true (brushed gunmetal): U, the brushing direction, runs along each face's long run on a phone-sized part:
+// along Y on the side faces, along X on the top and bottom faces, and round the frame like a machined ring on the
+// front and back faces (along Y in the side bands, along X in the top and bottom bands; BRUSH_HALF = the half size)
+const BRUSH_HALF = [0.043, 0.080];
+function boxUV(g, tile = 0.3, off = [0, 0], brush = false) {
+  g = prepUV(g);
+  const p = g.attributes.position.array, nm = g.attributes.normal.array, uv = new Float32Array(p.length / 3 * 2);
+  for (let i = 0; i < p.length; i += 9) {
+    const ux = p[i + 3] - p[i], uy = p[i + 4] - p[i + 1], uz = p[i + 5] - p[i + 2], vx = p[i + 6] - p[i], vy = p[i + 7] - p[i + 1], vz = p[i + 8] - p[i + 2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const sx = nm[i] + nm[i + 3] + nm[i + 6], sy = nm[i + 1] + nm[i + 4] + nm[i + 7], sz = nm[i + 2] + nm[i + 5] + nm[i + 8];
+    if (sx * nx + sy * ny + sz * nz > 0) { nx = sx; ny = sy; nz = sz; }
+    const X = Math.abs(nx), Y = Math.abs(ny), Z = Math.abs(nz);
+    for (let k = 0; k < 3; k++) {
+      const x = p[i + k * 3], y = p[i + k * 3 + 1], z = p[i + k * 3 + 2]; let u, w;
+      if (brush) {
+        if (X >= Y && X >= Z) { u = y; w = nx > 0 ? -z : z; } else if (Y >= Z) { u = x; w = ny > 0 ? -z : z; }
+        else { const cx = (p[i] + p[i + 3] + p[i + 6]) / 3, cy = (p[i + 1] + p[i + 4] + p[i + 7]) / 3; if (BRUSH_HALF[0] - Math.abs(cx) < BRUSH_HALF[1] - Math.abs(cy)) { u = y; w = nz > 0 ? x : -x; } else { u = nz > 0 ? x : -x; w = y; } }
+      } else if (X >= Y && X >= Z) { u = nx > 0 ? -z : z; w = y; } else if (Y >= Z) { u = x; w = ny > 0 ? -z : z; } else { u = nz > 0 ? x : -x; w = y; }
+      const o = (i / 3 + k) * 2; uv[o] = u / tile + off[0]; uv[o + 1] = w / tile + off[1];
+    }
+  }
+  g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  return g;
+}
+// true when a geometry's UVs are far off the material's tile (a lathe's own 0..1 UVs on a small part)
+function uvOffScale(g, tile) {
+  const p = g.attributes.position.array, uv = g.attributes.uv.array; let A = 0, U = 0;
+  for (let i = 0, j = 0; i < p.length; i += 9, j += 6) {
+    const ux = p[i + 3] - p[i], uy = p[i + 4] - p[i + 1], uz = p[i + 5] - p[i + 2], vx = p[i + 6] - p[i], vy = p[i + 7] - p[i + 1], vz = p[i + 8] - p[i + 2];
+    A += Math.hypot(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx);
+    U += Math.abs((uv[j + 2] - uv[j]) * (uv[j + 5] - uv[j + 1]) - (uv[j + 4] - uv[j]) * (uv[j + 3] - uv[j + 1]));
+  }
+  const r = U / Math.max(1e-12, A / (tile * tile));
+  return r > 3 || r < 0.2;
+}
+function nameOffset(name) { let h = 2166136261; for (let i = 0; i < name.length; i++) h = Math.imul(h ^ name.charCodeAt(i), 16777619); return [((h >>> 0) % 997) / 997, ((h >>> 10) % 991) / 991]; }
+// merge geometries; any without UVs gets box UVs at this tile size first
+function mergeUV(list, tile = 0.3) {
+  const gs = list.filter(Boolean).map((g) => prepUV(g)), anyUV = gs.some((g) => g.attributes.uv);
+  return mergeGeometries(gs.map((g) => (anyUV && !g.attributes.uv ? boxUV(g, tile) : g)));
+}
+// non-indexed geometry without its zero-area triangles (lathe poles and collapsed rings make them)
+function dropDegenerate(g) {
+  const P = g.attributes.position.array, nt = P.length / 9, keep = new Uint8Array(nt); let n = 0;
+  for (let t = 0; t < nt; t++) {
+    const o = t * 9, ux = P[o + 3] - P[o], uy = P[o + 4] - P[o + 1], uz = P[o + 5] - P[o + 2], vx = P[o + 6] - P[o], vy = P[o + 7] - P[o + 1], vz = P[o + 8] - P[o + 2];
+    const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+    if (cx * cx + cy * cy + cz * cz > 1e-22) { keep[t] = 1; n++; }
+  }
+  if (n === nt) return g;
+  const out = new THREE.BufferGeometry();
+  for (const [k, a] of Object.entries(g.attributes)) {
+    const sz = a.itemSize, dst = new Float32Array(n * 3 * sz); let w = 0;
+    for (let t = 0; t < nt; t++) if (keep[t]) { dst.set(a.array.subarray(t * 3 * sz, t * 3 * sz + 3 * sz), w); w += 3 * sz; }
+    out.setAttribute(k, new THREE.BufferAttribute(dst, sz));
+  }
+  return out;
+}
+// any zero or NaN vertex normal takes its triangle's face normal (a zero normal shades NaN and bloom smears it)
+function fixNormals(g) {
+  const P = g.attributes.position.array, N = g.attributes.normal.array;
+  for (let t = 0; t < P.length; t += 9) {
+    let bad = false; for (let k = 0; k < 3; k++) { const l = Math.hypot(N[t + k * 3], N[t + k * 3 + 1], N[t + k * 3 + 2]); if (!(l > 0.1)) bad = true; }
+    if (!bad) continue;
+    const ux = P[t + 3] - P[t], uy = P[t + 4] - P[t + 1], uz = P[t + 5] - P[t + 2], vx = P[t + 6] - P[t], vy = P[t + 7] - P[t + 1], vz = P[t + 8] - P[t + 2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+    for (let k = 0; k < 3; k++) { const o = t + k * 3, q = Math.hypot(N[o], N[o + 1], N[o + 2]); if (!(q > 0.1)) { N[o] = nx; N[o + 1] = ny; N[o + 2] = nz; } }
+  }
+  return g;
+}
+function hash3(x, y, z) { let h = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 1442695041) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+function noise3(x, y, z) {
+  const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z), fx = x - ix, fy = y - iy, fz = z - iz;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy), sz = fz * fz * (3 - 2 * fz);
+  const l = (a, b, t) => a + (b - a) * t, h = (i, j, k) => hash3(ix + i, iy + j, iz + k);
+  return l(l(l(h(0, 0, 0), h(1, 0, 0), sx), l(h(0, 1, 0), h(1, 1, 0), sx), sy), l(l(h(0, 0, 1), h(1, 0, 1), sx), l(h(0, 1, 1), h(1, 1, 1), sx), sy), sz);
+}
+// Edge wear rule: p is an edge triangle's centre, n its outward normal (node space). Noise gives short irregular
+// runs (1-4 cm); a slow mask leaves long clean gaps between clusters. Edges facing up or forward wear most,
+// undersides almost never.
+function edgeWear(p, n, { chip = 0.5, freq = 34, off = [0, 0, 0] } = {}) {
+  const px = p[0] + off[0], py = p[1] + off[1], pz = p[2] + off[2], x = px * freq, y = py * freq, z = pz * freq;
+  const nz = 0.7 * noise3(x, y, z) + 0.3 * noise3(x * 3.3 + 7.1, y * 3.3 + 1.7, z * 3.3);
+  const cl = noise3(px * 6 + 11.3, py * 6 + 4.7, pz * 6 + 8.9);
+  const face = Math.max(0, n[1], 0.65 * n[2]);
+  const bias = (1 - face) * 0.08 - face * 0.06 + (n[1] < -0.5 ? 0.12 : 0);
+  return nz - bias + 0.55 * (cl - 0.5) > chip;
+}
+// Edge wear and crevices as material splits that survive export: triangles on sharp convex edges (curvature
+// above k rad/m, i.e. a radius under 1/k) are wear candidates, kept where edgeWear() says so; triangles in tight
+// concave creases (above kIn) go to the crevice material. Returns { base, wear, inner } (any may be null).
+function wearSplit(geo, { k = 150, kIn = 110, chip = 0.5, freq = 34, inner = true, all = false, off = [0, 0, 0], mask = null } = {}) {
+  const g = prepUV(geo), P = g.attributes.position.array, nt = P.length / 9;
+  const fn = new Float32Array(nt * 3), fc = new Float32Array(nt * 3);
+  for (let t = 0; t < nt; t++) {
+    const o = t * 9, ux = P[o + 3] - P[o], uy = P[o + 4] - P[o + 1], uz = P[o + 5] - P[o + 2], vx = P[o + 6] - P[o], vy = P[o + 7] - P[o + 1], vz = P[o + 8] - P[o + 2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1;
+    fn[t * 3] = nx / l; fn[t * 3 + 1] = ny / l; fn[t * 3 + 2] = nz / l;
+    fc[t * 3] = (P[o] + P[o + 3] + P[o + 6]) / 3; fc[t * 3 + 1] = (P[o + 1] + P[o + 4] + P[o + 7]) / 3; fc[t * 3 + 2] = (P[o + 2] + P[o + 5] + P[o + 8]) / 3;
+  }
+  const cls = new Uint8Array(nt), cvx = new Float32Array(nt), ccv = new Float32Array(nt), ids = new Int32Array(nt * 3), weld = new Map(); let nid = 0;
+  for (let v = 0; v < nt * 3; v++) {
+    const key = Math.round(P[v * 3] * 2e4) + ',' + Math.round(P[v * 3 + 1] * 2e4) + ',' + Math.round(P[v * 3 + 2] * 2e4);
+    let id = weld.get(key); if (id === undefined) { id = nid++; weld.set(key, id); } ids[v] = id;
+  }
+  const edges = new Map();
+  for (let t = 0; t < nt; t++) for (let e = 0; e < 3; e++) {
+    const a = ids[t * 3 + e], b = ids[t * 3 + (e + 1) % 3]; if (a === b) continue;
+    const key = a < b ? a * nid + b : b * nid + a, u = edges.get(key);
+    if (u === undefined) { edges.set(key, t); continue; }
+    if (u < 0) continue;
+    edges.set(key, -1);
+    const d = fn[u * 3] * fn[t * 3] + fn[u * 3 + 1] * fn[t * 3 + 1] + fn[u * 3 + 2] * fn[t * 3 + 2], ang = Math.acos(clampR(d, -1, 1));
+    if (ang < 0.03) continue;
+    const dx = fc[t * 3] - fc[u * 3], dy = fc[t * 3 + 1] - fc[u * 3 + 1], dz = fc[t * 3 + 2] - fc[u * 3 + 2], dist = Math.max(1e-4, Math.hypot(dx, dy, dz));
+    const side = dx * fn[u * 3] + dy * fn[u * 3 + 1] + dz * fn[u * 3 + 2] - (dx * fn[t * 3] + dy * fn[t * 3 + 1] + dz * fn[t * 3 + 2]), kk = ang / dist;
+    if (side < 0) { cvx[t] = Math.max(cvx[t], kk); cvx[u] = Math.max(cvx[u], kk); } else { ccv[t] = Math.max(ccv[t], kk); ccv[u] = Math.max(ccv[u], kk); }
+  }
+  for (let t = 0; t < nt; t++) {
+    const p = [fc[t * 3], fc[t * 3 + 1], fc[t * 3 + 2]], n = [fn[t * 3], fn[t * 3 + 1], fn[t * 3 + 2]];
+    if (cvx[t] > k && (!mask || mask(p, n)) && (all || edgeWear(p, n, { chip: chip + Math.min(0, 0.1 * (k - cvx[t]) / k), freq, off }))) cls[t] = 1;
+    else if (inner && ccv[t] > kIn) cls[t] = 2;
+  }
+  const out = [null, null, null];
+  for (let c = 0; c < 3; c++) {
+    let cnt = 0; for (let t = 0; t < nt; t++) if (cls[t] === c) cnt++;
+    if (!cnt) continue;
+    const ng = new THREE.BufferGeometry();
+    for (const [name, attr] of Object.entries(g.attributes)) {
+      const n = attr.itemSize, src = attr.array, dst = new Float32Array(cnt * 3 * n); let w = 0;
+      for (let t = 0; t < nt; t++) if (cls[t] === c) { dst.set(src.subarray(t * 3 * n, t * 3 * n + 3 * n), w); w += 3 * n; }
+      ng.setAttribute(name, new THREE.BufferAttribute(dst, n));
+    }
+    out[c] = ng;
+  }
+  return { base: out[0], wear: out[1], inner: out[2] };
+}
+
+// Smooth vertex normals across edges flatter than angle (degrees), hashed at 5 microns (three's toCreasedNormals
+// hashes at 1 cm, which welds a whole phone part into one point). Keeps every other attribute.
+function creaseNormals(g, angle = 36) {
+  const P = g.attributes.position.array, nt = P.length / 9, cosA = Math.cos(deg(angle)), fn = new Float32Array(nt * 3), map = new Map(), keys = new Array(nt * 3);
+  for (let t = 0; t < nt; t++) {
+    const o = t * 9, ux = P[o + 3] - P[o], uy = P[o + 4] - P[o + 1], uz = P[o + 5] - P[o + 2], vx = P[o + 6] - P[o], vy = P[o + 7] - P[o + 1], vz = P[o + 8] - P[o + 2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const a = Math.hypot(nx, ny, nz) || 1e-30;
+    fn[t * 3] = nx / a; fn[t * 3 + 1] = ny / a; fn[t * 3 + 2] = nz / a;
+    for (let k = 0; k < 3; k++) {
+      const v = o + k * 3, key = Math.round(P[v] * 2e5) + ',' + Math.round(P[v + 1] * 2e5) + ',' + Math.round(P[v + 2] * 2e5);
+      keys[t * 3 + k] = key; let l = map.get(key); if (!l) map.set(key, (l = [])); l.push(t, nx, ny, nz);   // area weighted
+    }
+  }
+  const N = new Float32Array(nt * 9);
+  for (let t = 0; t < nt; t++) for (let k = 0; k < 3; k++) {
+    const l = map.get(keys[t * 3 + k]), fx = fn[t * 3], fy = fn[t * 3 + 1], fz = fn[t * 3 + 2]; let sx = 0, sy = 0, sz = 0;
+    for (let j = 0; j < l.length; j += 4) { const u = l[j]; if (fn[u * 3] * fx + fn[u * 3 + 1] * fy + fn[u * 3 + 2] * fz >= cosA) { sx += l[j + 1]; sy += l[j + 2]; sz += l[j + 3]; } }
+    const q = Math.hypot(sx, sy, sz) || 1, o = t * 9 + k * 3; N[o] = sx / q; N[o + 1] = sy / q; N[o + 2] = sz / q;
+  }
+  g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+  return fixNormals(g);
+}
+// a named node (THREE.Group) under parent, at pos [x, y, z]
+function node(name, parent = null, pos = null) { const g = new THREE.Group(); g.name = name; if (pos) g.position.set(pos[0], pos[1], pos[2]); if (parent) parent.add(g); return g; }
+// Mesh(es) on a node. Tiled materials get box UVs at their tile (offset per name, so repeats don't line up);
+// gunmetal and frame_alloy split into <name>, <name>_wear (bright worn edges) and <name>_inner (grime in creases)
+// unless opts.wear === false. opts: { cast, receive, wear: bool | wearSplit options, uv: 'keep' | 'box' }.
+// Returns the main mesh.
+function add(parent, geo, mat, name, opts = {}) {
+  if (!parent) throw new Error('add: no parent for ' + name);
+  if (!mat) throw new Error('add: no material for ' + name);
+  let g = fixNormals(dropDegenerate(prepUV(geo)));
+  if (opts.crease !== false && opts.uv !== 'keep') g = creaseNormals(g, opts.crease || 36);
+  const tile = mat.userData.tile || 0.3;
+  if (opts.uv !== 'keep' && (opts.uv === 'box' || !g.attributes.uv || TILED.has(mat))) g = boxUV(g, tile, nameOffset(name), BRUSHED.has(mat));
+  const out = [];
+  const make = (gg, mm, nn) => {
+    if (!gg) return;
+    const m = new THREE.Mesh(gg, mm); m.name = nn;
+    m.castShadow = opts.cast ?? !(mm.userData.glow > 0.5 || mm.transparent); m.receiveShadow = opts.receive !== false;
+    parent.add(m); out.push(m);
+  };
+  const wear = opts.wear ?? CHIP.has(mat);
+  if (wear && CHIP.has(mat)) {
+    const w = wearSplit(g, wear === true ? {} : wear);
+    make(w.base, mat, name); make(w.wear, CHIP.get(mat), name + '_wear'); make(w.inner, M.crevice, name + '_inner');
+  } else make(g, mat, name);
+  return out[0];
+}
+// hex-socket screw head of radius r at pos, axis along normal (the head is built once per size, then copied)
+const SCREW_CACHE = new Map();
+function hexScrew(r, pos, normal, spin = 0.3, seg = 18) {
+  const key = r.toFixed(5) + '/' + seg;
+  if (!SCREW_CACHE.has(key)) SCREW_CACHE.set(key, screwHead(r, { style: 'hex', h: r * 0.55, seg }));
+  return placeScrew(SCREW_CACHE.get(key).clone(), pos, normal, spin);
+}
+// rounded rectangle shape
+const rect = (x0, x1, y0, y1, r = 0) => roundedShape([[x0, y0, r], [x1, y0, r], [x1, y1, r], [x0, y1, r]]);
+// extrusions of a 2D shape with an optional bevel (the bevel grows the outline by 0.9 * b):
+//   slabZ: front view (shape x = X, y = Y), from z0 to z1;  slabY: top view (shape x = X, y = -Z), from y0 to y1;
+//   slabX: side view (shape x = Z, y = Y), from x0 to x1
+// (exact thickness: the bevel is clamped to just under half the thickness; the gun kit's slab() keeps a 1 mm core,
+// which is far too thick for phone parts)
+const bevelFit = (w, b) => Math.max(0, Math.min(b, w / 2 - 0.00004));
+function slabExact(shape, w, b, segs, zc, cs) {
+  b = bevelFit(w, b);
+  const depth = Math.max(1e-5, w - 2 * b);
+  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: b > 0, bevelThickness: b, bevelSize: b * 0.9, bevelSegments: Math.max(1, segs), curveSegments: cs });
+  return g.translate(0, 0, zc - depth / 2);
+}
+const slabZ = (shape, z0, z1, b = 0, segs = 2, cs = 12) => slabExact(shape, z1 - z0, b, segs, (z0 + z1) / 2, cs);
+const slabY = (shape, y0, y1, b = 0, segs = 2, cs = 12) => slabExact(shape, y1 - y0, b, segs, (y0 + y1) / 2, cs).rotateX(-Math.PI / 2);
+const slabX = (shape, x0, x1, b = 0, segs = 2, cs = 12) => slabExact(shape, x1 - x0, b, segs, -(x0 + x1) / 2, cs).rotateY(-Math.PI / 2);
+// a box with every edge rounded (rbox) or chamfered (cbox) by b, outer bounds exact
+function rbox(x0, x1, y0, y1, z0, z1, b = 0.003, segs = 2, cs = 6) { b = bevelFit(z1 - z0, b); const i = b * 0.9; return slabZ(rect(x0 + i, x1 - i, y0 + i, y1 - i, b), z0, z1, b, segs, cs); }
+function cbox(x0, x1, y0, y1, z0, z1, c = 0.003) { const i = c * 0.9; return slabZ(rect(x0 + i, x1 - i, y0 + i, y1 - i, c * 1.2), z0, z1, c, 1, 1); }
+function cylX(r, x0, x1, seg = 24) { return new THREE.CylinderGeometry(r, r, x1 - x0, seg).rotateZ(-Math.PI / 2).translate((x0 + x1) / 2, 0, 0); }
+function cylY(r, y0, y1, seg = 24) { return new THREE.CylinderGeometry(r, r, y1 - y0, seg).translate(0, (y0 + y1) / 2, 0); }
+function cylZ(r, z0, z1, seg = 24) { return new THREE.CylinderGeometry(r, r, z1 - z0, seg).rotateX(Math.PI / 2).translate(0, 0, (z0 + z1) / 2); }
+const HIDDEN = 1e-4;
+function hide(o) { o.scale.setScalar(HIDDEN); return o; }
+function show(o, s = 1) { o.scale.setScalar(s); return o; }
+function triCount(root) { let n = 0; root.traverse((o) => { if (o.isMesh) n += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; }); return Math.round(n); }
+// a shape with holes: outer = THREE.Shape, holes = [THREE.Shape | THREE.Path] (wound either way)
+function ringShape(outer, holes) { for (const h of holes) outer.holes.push(h); return outer; }
+
+/* ------------------------------------------------------------------ clips */
+
+// Samples fn(t) at 30 fps into glTF tracks for list = [[node, ['quaternion' | 'position' | 'scale']], ...].
+// Quaternions are kept on one hemisphere so a spin never interpolates the long way. stepNodes: names whose
+// tracks use STEP interpolation (LED blinks).
+// extra: additional sample times (a key just before a step, so a snap back happens in one instant, not over a frame)
+function sampleClip(name, len, list, fn, stepNodes = [], extra = []) {
+  const fps = 30, n = Math.round(len * fps), data = list.map(() => ({})), times = [];
+  const ts = [...new Set([...Array.from({ length: n + 1 }, (_, i) => Math.min(len, i / fps)), ...extra].map((t) => +t.toFixed(5)))].sort((a, b) => a - b);
+  for (const t of ts) {
+    times.push(t); fn(t);
+    list.forEach(([o, props], j) => {
+      for (const p of props) {
+        const arr = (data[j][p] = data[j][p] || []), v = o[p].toArray();
+        if (p === 'quaternion' && arr.length >= 4) { const k = arr.length - 4; if (arr[k] * v[0] + arr[k + 1] * v[1] + arr[k + 2] * v[2] + arr[k + 3] * v[3] < 0) for (let c = 0; c < 4; c++) v[c] = -v[c]; }
+        arr.push(...v);
+      }
+    });
+  }
+  const tracks = [];
+  list.forEach(([o, props], j) => {
+    for (const p of props) {
+      const T = p === 'quaternion' ? THREE.QuaternionKeyframeTrack : THREE.VectorKeyframeTrack;
+      const tr = new T(`${o.name}.${p}`, times, data[j][p]);
+      if (stepNodes.includes(o.name)) tr.setInterpolation(THREE.InterpolateDiscrete);
+      tracks.push(tr);
+    }
+  });
+  return new THREE.AnimationClip(name, len, tracks);
+}
+// every clip of a model, sampled from its pose(), in file order
+function clipsFor(model) {
+  return model.order.map((name) => {
+    const C = model.clips[name];
+    const list = C.keys.map(([n, props]) => { const o = model.nodes[n]; if (!o) throw new Error(`${model.id}: clip ${name} keys a missing node ${n}`); return [o, props]; });
+    return sampleClip(name, C.len, list, (t) => model.pose(name, t), C.step || [], C.extra || []);
+  });
+}
+
+
+/* ------------------------------------------------------------------ export */
+
+function toBase64(buf) { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+// rewrite a .glb's JSON chunk: fn(json) edits it in place
+function patchGLB(buf, fn) {
+  const dv = new DataView(buf), jl = dv.getUint32(12, true), dec = new TextDecoder(), enc = new TextEncoder();
+  const json = JSON.parse(dec.decode(new Uint8Array(buf, 20, jl)));
+  fn(json);
+  let js = enc.encode(JSON.stringify(json)); const pad = (4 - js.length % 4) % 4;
+  if (pad) { const p = new Uint8Array(js.length + pad); p.set(js); p.fill(0x20, js.length); js = p; }
+  const rest = new Uint8Array(buf, 20 + jl), out = new Uint8Array(20 + js.length + rest.length), o = new DataView(out.buffer);
+  out.set(new Uint8Array(buf, 0, 12)); o.setUint32(8, out.length, true); o.setUint32(12, js.length, true); o.setUint32(16, 0x4E4F534A, true);
+  out.set(js, 20); out.set(rest, 20 + js.length);
+  return out.buffer;
+}
+// Scene name = the file name (a scene named like the root node makes three's loader rename the node); every
+// emissive baked to strength 1 (glTFast ignores KHR_materials_emissive_strength); an identity
+// KHR_texture_transform on the screen atlas so glTFast builds the screen material with texture transforms. Its offset
+// is the 'lock' cell (SCREEN_DEFAULT_OFFSET from parts/screen.js; the phone's 4 x 4 atlas falls back to [0.75, 0]) so the
+// plain glb shows a lit lock screen, not the black 'off' cell; the Unity script takes that cell back out (DefaultCell).
+function patchJSON(json, sceneName) {
+  if (json.scenes && json.scenes[0]) json.scenes[0].name = sceneName;
+  for (const m of json.materials || []) {
+    const ext = m.extensions && m.extensions.KHR_materials_emissive_strength;
+    if (ext) {
+      if (ext.emissiveStrength < 1) m.emissiveFactor = (m.emissiveFactor || [1, 1, 1]).map((v) => +(v * ext.emissiveStrength).toFixed(5));
+      delete m.extensions.KHR_materials_emissive_strength;
+      if (!Object.keys(m.extensions).length) delete m.extensions;
+    }
+    if (m.name === 'screen' && m.emissiveTexture) {
+      m.emissiveTexture.extensions = Object.assign(m.emissiveTexture.extensions || {}, { KHR_texture_transform: { offset: typeof SCREEN_DEFAULT_OFFSET !== 'undefined' ? SCREEN_DEFAULT_OFFSET : [0.75, 0], scale: [1, 1] } });
+      json.extensionsUsed = [...new Set([...(json.extensionsUsed || []), 'KHR_texture_transform'])];
+    }
+  }
+  if (json.extensionsUsed) {
+    json.extensionsUsed = json.extensionsUsed.filter((e) => e !== 'KHR_materials_emissive_strength');
+    if (!json.extensionsUsed.length) delete json.extensionsUsed;
+  }
+}
+// [{ file, root, animations }] for each model, posed at rest, with the clip table and material list on the root
+function exportScenesFor(models) {
+  return models.map((m) => {
+    const animations = clipsFor(m);
+    m.rest(); m.root.updateMatrixWorld(true);
+    const mats = new Set(); m.root.traverse((o) => { if (o.isMesh) mats.add(o.material.name); });
+    Object.assign(m.root.userData, {
+      clips: Object.fromEntries(m.order.map((n) => { const C = m.clips[n]; return [n, { seconds: C.len, loop: !!C.loop, keys: C.keys.map(([k, p]) => `${k}.${p.join('+')}`), note: C.note || '' }]; })),
+      materials: [...mats].sort(),
+      source: m.source || '',
+    }, m.extras ? m.extras() : {});
+    return { file: m.file, root: m.root, animations };
+  });
+}
+// The .glb files: parts are triangle soups, so weld them into indexed meshes for the file, export, patch, restore.
+// hooks.before() / hooks.after() let the page stop its loop and hide viewer-only things (the hand proxy).
+async function exportGLBFor(models, hooks = {}) {
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const exporter = new GLTFExporter(), out = [], swapped = [], glows = [];
+  if (hooks.before) hooks.before();
+  for (const m of Object.values(M)) if (m.userData && m.userData.glow !== undefined) { glows.push([m, m.emissiveIntensity]); m.emissiveIntensity = m.userData.glow > 1 ? 1 : m.userData.glow; }
+  try {
+    for (const md of models) md.root.traverse((o) => { if (o.isMesh && !o.geometry.index) { swapped.push([o, o.geometry]); o.geometry = mergeVertices(o.geometry, 1e-6); } });
+    for (const s of exportScenesFor(models)) {
+      const buf = patchGLB(await exporter.parseAsync(s.root, { binary: true, animations: s.animations }), (j) => patchJSON(j, s.file.replace(/[.]glb$/, '')));
+      out.push({ file: s.file, bytes: buf.byteLength, base64: toBase64(buf) });
+    }
+  } finally {
+    for (const [o, g] of swapped) { o.geometry.dispose(); o.geometry = g; }
+    for (const [m, v] of glows) m.emissiveIntensity = v;
+    if (hooks.after) hooks.after();
+  }
+  return out;
+}
+
+/* ------------------------------------------------------------------ debug: framing and the set() switch */
+
+function boxOf(obj) { obj.updateWorldMatrix(true, true); return new THREE.Box3().setFromObject(obj); }
+// a camera position framing a world box from direction dir (fov from the camera); returns { pos, target }
+function frameBox(box, dir = V3(-0.5, 0.3, -1), pad = 1.25, cam = null) {
+  const c = box.getCenter(V3(0, 0, 0)), r = Math.max(0.02, box.getSize(V3(0, 0, 0)).length() / 2) * pad;
+  const fov = deg(cam ? cam.fov : 34), asp = cam ? Math.min(1, cam.aspect) : 1, d = r / Math.sin(Math.min(fov, fov * asp) / 2);
+  return { pos: c.clone().add(dir.clone().normalize().multiplyScalar(d)), target: c };
+}
+// debug.set(opts) holds an exact state for a render (DESIGN.md 10). ctx (from parts/scene.js):
+//   model, hold(clip, t), setCell(c), setLed(s), setHand(on), setPose(name), refresh(), clipOf(), camera, controls
+function makeDebugSet(ctx) {
+  return function set(o = {}) {
+    const m = ctx.model;
+    if (o.pose !== undefined) ctx.setPose(o.pose);
+    if (o.hand !== undefined) ctx.setHand(o.hand);
+    if (o.clip !== undefined) { ctx.hold(o.clip, o.t || 0); if (o.cell === undefined) ctx.setCell(null); if (o.led === undefined) ctx.setLed(null); }
+    if (o.cell !== undefined) ctx.setCell(o.cell);
+    if (o.led !== undefined) ctx.setLed(o.led);
+    ctx.refresh();
+    if (o.focus) {
+      // a node name, or any mesh / group under the root by name (body_cam_deco, body_bumpers ...); dir is in the
+      // phone's own frame (as held), pad scales the framing radius
+      const target = o.focus === 'phone' ? m.root : m.nodes[o.focus] || m.root.getObjectByName(o.focus) || null;
+      if (!target) console.warn('debug.set: no node or mesh named ' + o.focus);
+      if (target && o.dir) { const q = new THREE.Quaternion(); m.root.getWorldQuaternion(q); o = Object.assign({}, o, { dir: V3(...o.dir).applyQuaternion(q).toArray() }); }
+      if (target) { let bx = boxOf(target); if (bx.isEmpty()) { const c = target.getWorldPosition(V3(0, 0, 0)); bx = new THREE.Box3(c.clone().subScalar(0.006), c.clone().addScalar(0.006)); }   // a locator (no mesh): a 12 mm box round its world position
+        const f = frameBox(bx, o.dir ? V3(...o.dir) : undefined, o.pad || 1.25, ctx.camera); ctx.camera.position.copy(f.pos); ctx.controls.target.copy(f.target); ctx.controls.update(); }
+    }
+    return ctx.clipOf();
+  };
+}
+
+/* ------------------------------------------------------------------ nightstone materials */
+// Polished black-violet stone: deep base with slow cloudy depth, thin pale-violet veins (the "sheen" step of the ramp),
+// a few bright flecks; low roughness under a clearcoat so facets catch crisp reflections. Tone baked into the albedo.
+function stoneMaps(N, seed) {
+  const R = prng(seed), n2 = N * N;
+  const cloud = stretch(fbmT(N, 3, 4, R)), warp = stretch(fbmT(N, 4, 4, R)), warp2 = stretch(fbmT(N, 9, 3, R)), fine = stretch(fbmT(N, 48, 2, R)), fl = stretch(fbmT(N, 160, 1, R));
+  const vein = new Float32Array(n2), H = new Float32Array(n2);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const i = y * N + x, u = x / N, v = y / N;
+    // two families of veins: long diagonal ones and finer cross ones, both warped (tileable: integer frequencies)
+    const a = Math.abs(Math.sin(Math.PI * (2 * u + 3 * v + 2.2 * warp[i] + 0.6 * warp2[i])));
+    const b = Math.abs(Math.sin(Math.PI * (5 * u - 2 * v + 1.6 * warp2[i] + 0.8 * cloud[i])));
+    vein[i] = Math.pow(1 - a, 60) * 0.8 * sstep(0.3, 0.7, warp2[i]) + Math.pow(1 - b, 90) * 0.4 * sstep(0.5, 0.85, cloud[i]);
+    // low-frequency undulation (polished but hand-ground, so reflections ripple instead of mirroring one flat panel)
+    H[i] = -vein[i] * 0.04 + fine[i] * 0.01 + cloud[i] * 0.16 + warp[i] * 0.08;
+  }
+  // inclusions: sparse small pale-violet specks deep in the stone
+  const inc = new Float32Array(n2); for (let i = 0; i < n2; i++) inc[i] = sstep(0.86, 0.97, fl[i]) * sstep(0.35, 0.7, cloud[i]);
+  const map = rgbaCanvas(N, N, (i, o) => {
+    const d = cloud[i], e = d * (0.6 + 0.4 * d), base = [lerp(0.06, 0.165, e), lerp(0.046, 0.12, e), lerp(0.088, 0.235, e)];   // #120e18 .. #2a1f3a
+    const vv = clamp01(vein[i]), f = inc[i];
+    o[0] = base[0] + vv * 0.1 + f * 0.12; o[1] = base[1] + vv * 0.07 + f * 0.09; o[2] = base[2] + vv * 0.2 + f * 0.24;
+    for (let c = 0; c < 3; c++) o[c] *= 0.94 + 0.12 * fine[i];
+  });
+  const orm = rgbaCanvas(N, N, (i, o) => { o[0] = 1; o[1] = clampR(0.24 + 0.14 * cloud[i] + 0.05 * fine[i] + 0.1 * clamp01(vein[i]), 0.2, 0.5); o[2] = 0; });
+  // emissive veins for the veined slabs: the same vein field, a thin hot line inside a wider soft halo (tileable)
+  const glow = rgbaCanvas(N, N, (i, o) => {
+    const x = i % N, y = Math.floor(i / N), u = x / N, v = y / N;
+    const a = Math.abs(Math.sin(Math.PI * (2 * u + 3 * v + 2.2 * warp[i] + 0.6 * warp2[i])));
+    const m = sstep(0.3, 0.7, warp2[i]), g = (Math.pow(1 - a, 36) * 1.0 + Math.pow(1 - a, 5) * 0.45) * m * (0.65 + 0.5 * fine[i]);
+    const h = clamp01(g); o[0] = h * 0.62; o[1] = h * 0.42; o[2] = h; o[3] = 1;
+  });
+  return { map, normal: normalFrom(H, N, 2.5), orm, glow };
+}
+// a soft violet-to-white glow gradient for the chamber core (emissive map, v = 0 rim, v = 1 hot centre)
+function buildMaterials() {
+  const t0 = performance.now();
+  const sm = stoneMaps(512, 71);
+  TX.stone = texSet('nightstone', sm); TX.stoneGlow = asTex(sm.glow, { srgb: true }); TX.stoneGlow.name = 'nightstone_vein_emissive';
+  TX.brushed = texSet('brushed', brushedMaps(512, 17));
+  TX.worn = texSet('worn', wornMaps(TX.brushed.F, 23, hexRGB('#26262c'), hexRGB('#77737a')));
+  TX.under = texSet('forged', underMaps(512, 37));
+  TX.polymer = texSet('wrap', polymerMaps(256, 89));
+  // polished stone: clearcoat over a low-roughness dark base; specular tinted toward lavender (hue-shifted highlight)
+  // the clearcoat follows the same undulating normal map (otherwise it stays a flat mirror per facet); a violet sheen
+  // at grazing angles gives the depth (viewer only: glTFast ignores KHR_materials_sheen, Unity gets it from the albedo)
+  M.stone = new THREE.MeshPhysicalMaterial({ name: 'nightstone', color: '#ffffff', map: TX.stone.map, normalMap: TX.stone.normal, roughnessMap: TX.stone.orm, metalnessMap: TX.stone.orm,
+    roughness: 1, metalness: 1, clearcoat: 0.5, clearcoatRoughness: 0.16, clearcoatNormalMap: TX.stone.normal, specularIntensity: 0.4, specularColor: new THREE.Color('#cbbcff'), envMapIntensity: 0.85, ior: 1.6,
+    sheen: 0.4, sheenColor: new THREE.Color('#462a8c'), sheenRoughness: 0.35 });
+  M.stone.normalScale.set(0.55, 0.55); M.stone.clearcoatNormalScale.set(0.45, 0.45); M.stone.userData.tile = 0.16;
+  // per-slab variants: B a touch more violet and glossier, C darker and a little cooler
+  M.stoneB = M.stone.clone(); M.stoneB.name = 'nightstone_b'; M.stoneB.color.set('#f2e6ff'); M.stoneB.clearcoatRoughness = 0.12; M.stoneB.userData.tile = 0.16;
+  M.stoneC = M.stone.clone(); M.stoneC.name = 'nightstone_c'; M.stoneC.color.set('#cfcbe0'); M.stoneC.clearcoatRoughness = 0.2; M.stoneC.userData.tile = 0.16;
+  // veined: the vein field glows violet (shares the stone UVs, so the glow sits on the albedo veins)
+  M.stoneVein = M.stone.clone(); M.stoneVein.name = 'nightstone_veined'; M.stoneVein.emissive.set('#ffffff'); M.stoneVein.emissiveMap = TX.stoneGlow; M.stoneVein.userData.glow = 2.1; M.stoneVein.userData.tile = 0.16;
+  // blackened forged iron (hammer scale, rubbed to dull steel on the edges), bronze rivets and bands
+  M.iron = pbr('forged_iron', TX.under, 0.1, { color: '#1d1d23', metalness: 0.7, envMapIntensity: 0.9 }, 0.7);
+  M.ironWorn = pbr('forged_iron_worn', TX.worn, 0.1, { envMapIntensity: 0.85 }, 0.6);
+  M.bronze = pbr('bronze', TX.brushed, 0.05, { color: '#a87a48', metalness: 1, envMapIntensity: 1.15 }, 0.6);
+  M.wrap = pbr('grip_wrap', TX.polymer, 0.03, { color: '#2a2328', envMapIntensity: 0.5 }, 0.9);
+  M.bore = new THREE.MeshStandardMaterial({ name: 'bore', color: '#08080a', metalness: 0.6, roughness: 0.6 });
+  M.crevice = new THREE.MeshStandardMaterial({ name: 'crevice', color: '#0a090c', metalness: 0, roughness: 0.95 });
+  // black crystal (overgrowth, drum shards, the projectile shards): glossy, near-black violet, high ior
+  M.crystal = new THREE.MeshPhysicalMaterial({ name: 'black_crystal', color: '#0d0a12', roughness: 0.06, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.03, ior: 2.0, envMapIntensity: 1.6,
+    specularColor: new THREE.Color('#cfc2ff'), emissive: '#2a1060', emissiveIntensity: 0.0 });
+  // glow: seams (deep violet), the seam ring next to the chamber (brighter), the hot core (near white)
+  // overgrowth tips: the same glossy black crystal lit faintly violet from inside
+  M.crystalTip = M.crystal.clone(); M.crystalTip.name = 'black_crystal_tip'; M.crystalTip.emissive.set('#6a3ed8'); M.crystalTip.userData.glow = 0.6; M.crystalTip.userData.tile = 0.05;
+  M.seam = glowMat('seam_glow', '#5a2ad0', 2.0, { color: '#0e0818' });
+  M.seamHot = glowMat('seam_glow_hot', '#8a58f6', 2.4, { color: '#120a22' });
+  M.core = glowMat('core_hot', '#efe6ff', 3.2, { color: '#ffffff' });
+  M.coreShell = new THREE.MeshPhysicalMaterial({ name: 'core_crystal', color: '#5a3aa8', emissive: '#5a2fd0', emissiveIntensity: 0.7, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.5, depthWrite: false, clearcoat: 1 });
+  M.coreShell.userData.glow = 0.7; M.coreShell.userData.tile = 0.05;
+  for (const m of [M.bore, M.crevice, M.crystal]) m.userData.tile = 0.05;
+  CHIP.set(M.iron, M.ironWorn); BRUSHED.add(M.bronze); BRUSHED.add(M.ironWorn);
+  for (const m of [M.stone, M.stoneB, M.stoneC, M.stoneVein, M.iron, M.ironWorn, M.bronze, M.wrap]) TILED.add(m);
+  return performance.now() - t0;
+}
+
+/* ------------------------------------------------------------------ the nightstone blaster */
+// Metres. +Y up, muzzle +Z, the right side faces -X. Origin on the bore axis above the trigger.
+// A thin forged-iron spine (grip, guard, skeletal stock) carrying a big faceted stone head: an iron chamber cage with a
+// hot core, a revolving shard drum on the left flank, three stone segments with glowing seams, an off-centre crest, a
+// keel, bands with bronze rivets, black crystal overgrowth and a flared five-petal muzzle crown.
+
+// merge parts that may differ in attributes (hulls have no UVs): keep position + normal; add() re-projects UVs
+function mergeP(list) { return mergeGeometries(list.map((g) => { g = g.index ? g.toNonIndexed() : g; if (!g.attributes.normal) g.computeVertexNormals(); const o = new THREE.BufferGeometry(); o.setAttribute('position', g.attributes.position); o.setAttribute('normal', g.attributes.normal); return o; })); }
+const hull = (pts) => new ConvexGeometry(pts.map((p) => (p.isVector3 ? p : V3(p[0], p[1], p[2]))));
+// smooth 1D profile through control points [z, v] (Catmull-Rom, clamped)
+function profile(ctrl) {
+  return (z) => {
+    if (z <= ctrl[0][0]) return ctrl[0][1];
+    if (z >= ctrl[ctrl.length - 1][0]) return ctrl[ctrl.length - 1][1];
+    let i = 0; while (z > ctrl[i + 1][0]) i++;
+    const a = ctrl[Math.max(0, i - 1)][1], b = ctrl[i][1], c = ctrl[i + 1][1], d = ctrl[Math.min(ctrl.length - 1, i + 2)][1], t = (z - ctrl[i][0]) / (ctrl[i + 1][0] - ctrl[i][0]);
+    return 0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t * t + (-a + 3 * b - 3 * c + d) * t * t * t);
+  };
+}
+// head cross-section: an irregular octagon (x, y) at z
+const ZS = [-0.01, 0.06, 0.13, 0.21, 0.30, 0.38, 0.445];
+const TOP = profile([[-0.01, 0.050], [0.06, 0.074], [0.13, 0.071], [0.21, 0.061], [0.30, 0.051], [0.38, 0.060], [0.445, 0.07]]);
+const BOT = profile([[-0.01, -0.058], [0.06, -0.08], [0.13, -0.077], [0.21, -0.068], [0.30, -0.058], [0.38, -0.064], [0.445, -0.074]]);
+const HW = profile([[-0.01, 0.044], [0.06, 0.06], [0.13, 0.058], [0.21, 0.052], [0.30, 0.045], [0.38, 0.051], [0.445, 0.059]]);
+function sec(z, s = 1, grow = 0) {
+  const t = TOP(z) * s + grow, b = BOT(z) * s - grow, w = HW(z) * s + grow, h = t - b;
+  const ct = h * 0.26, cb = h * 0.22, wt = w * 0.6, wb = w * 0.66;
+  return [[wt, t], [w, t - ct], [w, b + cb], [wb, b], [-wb, b], [-w, b + cb], [-w, t - ct], [-wt, t]];
+}
+// keep the part of a convex polygon where a*x + b*y + c >= 0 (one Sutherland-Hodgman pass)
+function clipPoly(P, a, b, c) {
+  const out = [], f = (p) => a * p[0] + b * p[1] + c;
+  for (let i = 0; i < P.length; i++) {
+    const p = P[i], q = P[(i + 1) % P.length], fp = f(p), fq = f(q);
+    if (fp >= 0) out.push(p);
+    if ((fp >= 0) !== (fq >= 0)) { const t = fp / (fp - fq); out.push([p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t]); }
+  }
+  return out;
+}
+const centroid = (P) => P.reduce((s, p) => [s[0] + p[0] / P.length, s[1] + p[1] / P.length], [0, 0]);
+const inset = (P, k) => { const c = centroid(P); return P.map((p) => [c[0] + (p[0] - c[0]) * k, c[1] + (p[1] - c[1]) * k]); };
+// a faceted stone slab between z0 and z1: the section clipped by line (a, b, c), chamfered ends, a jittered middle ring
+// pushed out a little so long slabs break into facets
+// broad faces break into 2-3 sub-facets at slightly different angles: extra mid rings, each vertex pushed out by its
+// own amount, plus points along the polygon edges' midpoints so a long face folds once across its width
+function stoneSlab(z0, z1, line, rnd, { ch = 0.006, bulge = 0.0055, grow = 0 } = {}) {
+  const ring = (z, k, j) => { let P = sec(z, 1, grow); if (line) P = clipPoly(P, ...line); P = inset(P, k); return P.map((p) => V3(p[0] + (rnd() - 0.5) * j, p[1] + (rnd() - 0.5) * j, z)); };
+  const pts = [...ring(z0, 0.93, 0), ...ring(z0 + ch, 1, 0.0016), ...ring(z1 - ch, 1, 0.0016), ...ring(z1, 0.93, 0)];
+  const out = (p, zm, k) => { const d = V3(p.x, p.y, 0); return p.add(d.normalize().multiplyScalar(k)); };
+  for (const zm of [lerp(z0, z1, 0.22 + 0.08 * rnd()), lerp(z0, z1, 0.5 + 0.08 * rnd()), lerp(z0, z1, 0.74 + 0.08 * rnd())]) {
+    const R0 = ring(zm, 1, 0.002);
+    for (const p of R0) pts.push(out(p, zm, bulge * (0.15 + rnd())));
+    for (let i = 0; i < R0.length; i++) { const a = R0[i], b = R0[(i + 1) % R0.length]; if (a.distanceTo(b) > 0.03 && rnd() < 0.7) pts.push(out(a.clone().lerp(b, 0.35 + 0.3 * rnd()), zm, bulge * (0.4 + 0.9 * rnd()))); }
+  }
+  return hull(pts);
+}
+// an octagonal band (ring) round the section at z, w wide, t thick
+function band(z, w, t, grow = 0.0015) {
+  const o = sec(z, 1, grow + t), i = sec(z, 1, grow);
+  const shape = new THREE.Shape(o.map((p) => new THREE.Vector2(p[0], p[1]))); shape.holes.push(new THREE.Path(i.map((p) => new THREE.Vector2(p[0], p[1])).reverse()));
+  return slabExact(shape, w, Math.min(0.0012, t * 0.4), 1, z, 1);
+}
+// a crystal: hexagonal prism with a pointed tip, from base point along dir
+function crystal(base, dir, len, r, rnd, opts = {}) { const c = crystalParts(base, dir, len, r, rnd, opts); return opts.split ? c : hull([...c.bodyPts, c.apex]); }
+function crystalParts(base, dir, len, r, rnd, { tipK = 0.32, sides = 6 } = {}) {
+  dir = dir.clone().normalize(); const q = new THREE.Quaternion().setFromUnitVectors(V3(0, 1, 0), dir), lo = [], hi = [], tw = rnd() * 6;
+  for (let i = 0; i < sides; i++) {
+    const a = tw + i / sides * Math.PI * 2, rr = r * (0.82 + 0.3 * rnd());
+    lo.push(V3(Math.cos(a) * rr * 0.9, -r * 0.6, Math.sin(a) * rr * 0.9)); hi.push(V3(Math.cos(a) * rr, len * (1 - tipK) * (0.85 + 0.25 * rnd()), Math.sin(a) * rr));
+  }
+  const apex = V3((rnd() - 0.5) * r * 0.4, len, (rnd() - 0.5) * r * 0.4), T = (p) => p.clone().applyQuaternion(q).add(base);
+  const bodyPts = [...lo, ...hi].map(T), hiW = hi.map(T), apexW = T(apex);
+  return { bodyPts, apex: apexW, body: () => hull(bodyPts), tip: () => hull([...hiW, apexW]) };
+}
+// a black shard projectile / drum shard: an elongated bipyramid with an uneven, faceted waist (+Z forward)
+// round in section (x and y radii match), 6-8 waist facets plus a shoulder ring, so it reads as a solid gem from any side
+function shardGeo(len, r, rnd, sides = 7) {
+  const pts = [V3((rnd() - 0.5) * r * 0.25, (rnd() - 0.5) * r * 0.25, len * 0.62), V3((rnd() - 0.5) * r * 0.2, (rnd() - 0.5) * r * 0.2, -len * 0.38)];
+  const a0 = rnd() * 6;
+  for (let i = 0; i < sides; i++) {
+    const a = a0 + i / sides * Math.PI * 2 + (rnd() - 0.5) * 0.25, rr = r * (0.85 + 0.25 * rnd()), z = (rnd() - 0.45) * len * 0.12;
+    pts.push(V3(Math.cos(a) * rr, Math.sin(a) * rr, z));
+    const b = a + Math.PI / sides; pts.push(V3(Math.cos(b) * rr * 0.62, Math.sin(b) * rr * 0.62, z + len * (0.2 + 0.08 * rnd())));
+    if (i % 2 === 0) pts.push(V3(Math.cos(b) * rr * 0.55, Math.sin(b) * rr * 0.55, z - len * (0.14 + 0.05 * rnd())));
+  }
+  return hull(pts);
+}
+
+function buildBlaster() {
+  const rnd = prng(4417);
+  const root = node('nightstone-blaster'), nodes = { root };
+  const N = (name, parent, pos) => (nodes[name] = node(name, parent, pos));
+  const SH = { crease: 8 };                        // faceted stone and crystals: keep every facet crisp
+
+  /* ---------------- receiver, grip, guard, stock (static, forged iron) */
+  const rec = N('receiver', root);
+  add(rec, rbox(-0.024, 0.024, -0.046, 0.034, -0.215, 0.004, 0.005), M.iron, 'receiver_body');
+  add(rec, rbox(-0.012, 0.012, 0.03, 0.044, -0.20, -0.02, 0.003), M.iron, 'receiver_strap');                 // top strap
+  add(rec, rbox(-0.026, 0.026, -0.03, -0.022, -0.21, -0.004, 0.002), M.iron, 'receiver_rib', { wear: false });
+  // grip: raked, wrapped; side profile (z, y)
+  const gp = roundedShape([[-0.122, -0.04, 0.004], [-0.078, -0.04, 0.004], [-0.092, -0.122, 0.012], [-0.104, -0.175, 0.01], [-0.146, -0.178, 0.012], [-0.14, -0.12, 0.012]]);
+  add(rec, slabX(gp, -0.0165, 0.0165, 0.0075, 3, 10), M.wrap, 'grip_wrap');
+  add(rec, slabX(roundedShape([[-0.108, -0.168, 0.004], [-0.148, -0.171, 0.004], [-0.152, -0.188, 0.004], [-0.10, -0.186, 0.004]]), -0.018, 0.018, 0.003, 2, 6), M.iron, 'grip_cap');
+  // trigger guard: a forged loop
+  const gO = roundedShape([[-0.07, -0.046, 0.003], [0.0, -0.046, 0.004], [0.002, -0.06, 0.012], [-0.03, -0.098, 0.012], [-0.088, -0.1, 0.008], [-0.086, -0.088, 0.004]]);
+  gO.holes.push(roundedPath([[-0.064, -0.05, 0.004], [-0.008, -0.05, 0.004], [-0.01, -0.06, 0.008], [-0.034, -0.09, 0.008], [-0.078, -0.09, 0.004], [-0.077, -0.074, 0.004]]));
+  add(rec, slabX(gO, -0.0045, 0.0045, 0.0015, 1, 8), M.iron, 'trigger_guard');
+  // stock: one forged iron spine, curving down from the receiver and flaring into a heel, a butt plate and a wrapped pad
+  const so = roundedShape([[-0.2, 0.03, 0.006], [-0.27, 0.018, 0.035], [-0.338, 0.0, 0.006], [-0.347, -0.004, 0.003], [-0.347, -0.108, 0.003], [-0.338, -0.108, 0.008], [-0.312, -0.058, 0.025], [-0.262, -0.04, 0.035], [-0.2, -0.04, 0.006]]);
+  add(rec, slabX(so, -0.0105, 0.0105, 0.0035, 2, 10), M.iron, 'stock');
+  add(rec, slabX(roundedShape([[-0.341, 0.01, 0.004], [-0.358, 0.008, 0.004], [-0.362, -0.13, 0.006], [-0.344, -0.128, 0.006]]), -0.017, 0.017, 0.003, 2, 6), M.iron, 'butt_plate');
+  add(rec, slabX(roundedShape([[-0.356, 0.014, 0.005], [-0.374, 0.009, 0.005], [-0.38, -0.134, 0.006], [-0.36, -0.136, 0.006]]), -0.02, 0.02, 0.004, 2, 6), M.wrap, 'butt_pad');
+  add(rec, rbox(-0.0128, 0.0128, -0.0435, 0.0205, -0.281, -0.268, 0.002), M.bronze, 'stock_band', { wear: false });
+  // bronze rivets on the stock joint, the heel and the receiver
+  const rivets = [];
+  for (const [z, y] of [[-0.215, 0.012], [-0.215, -0.03], [-0.335, -0.012], [-0.335, -0.088], [-0.17, 0.0], [-0.04, 0.0]]) for (const sx of [1, -1]) rivets.push(hexScrew(0.0032, V3(sx * (z > -0.2 ? 0.0245 : 0.011), y, z), V3(sx, 0, 0), 0, 8));
+  add(rec, mergeP(rivets.map((g) => g.index ? g.toNonIndexed() : g)), M.bronze, 'rivets_rear');
+  N('grip_attach', root, [0, -0.11, -0.115]);
+  // trigger (pivots at its top, swings back)
+  const T = N('trigger', root, [0, -0.046, -0.04]);
+  add(T, slabX(roundedShape([[0.004, 0, 0.002], [-0.006, 0, 0.002], [-0.014, -0.022, 0.004], [-0.02, -0.036, 0.003], [-0.012, -0.038, 0.003], [-0.004, -0.02, 0.004]]), -0.003, 0.003, 0.001, 1, 6), M.iron, 'trigger_blade', { wear: false });
+
+  /* ---------------- the stone head (kicks back on fire) */
+  const H = N('head', root);
+  // chamber cage: forged octagon frames front and back, four corner bars, windows both sides
+  const cage = [];
+  for (const [z0, z1] of [[-0.012, 0.004], [0.112, 0.128]]) {
+    const o = sec((z0 + z1) / 2, 1, 0.003), i = sec((z0 + z1) / 2, 0.72);
+    const sh = new THREE.Shape(o.map((p) => new THREE.Vector2(p[0], p[1]))); sh.holes.push(new THREE.Path(i.map((p) => new THREE.Vector2(p[0], p[1])).reverse()));
+    cage.push(slabExact(sh, z1 - z0, 0.0015, 1, (z0 + z1) / 2, 1));
+  }
+  for (const k of [0, 3, 4, 7]) {                       // bars along the upper and lower chamfer corners
+    const a = sec(0.004, 1, 0.001)[k], b = sec(0.112, 1, 0.001)[k], c = sec(0.06, 1, 0.003)[k], s = 0.006;
+    cage.push(hull([V3(a[0] - s, a[1] - s, 0.004), V3(a[0] + s, a[1] + s, 0.004), V3(a[0] + s, a[1] - s, 0.004), V3(a[0] - s, a[1] + s, 0.004),
+      V3(b[0] - s, b[1] - s, 0.112), V3(b[0] + s, b[1] + s, 0.112), V3(b[0] + s, b[1] - s, 0.112), V3(b[0] - s, b[1] + s, 0.112), V3(c[0], c[1], 0.06)]).toNonIndexed());
+  }
+  add(H, mergeP(cage.map((g) => g.index ? g.toNonIndexed() : g)), M.iron, 'chamber_cage');
+  // stone slabs over and under the chamber (the windows stay open at the sides)
+  add(H, stoneSlab(0.006, 0.11, [0, 1, -0.045], rnd), M.stone, 'stone_chamber_top', SH);
+  add(H, stoneSlab(0.006, 0.11, [0, -1, -0.052], rnd), M.stoneC, 'stone_chamber_bottom', SH);
+  // dark baffles above and below the core (the windows show depth, not the slabs' undersides)
+  add(H, rbox(-0.04, 0.04, 0.036, 0.044, 0.006, 0.11, 0.002), M.crevice, 'chamber_baffle_top', { wear: false });
+  add(H, rbox(-0.04, 0.04, -0.05, -0.042, 0.006, 0.11, 0.002), M.crevice, 'chamber_baffle_bottom', { wear: false });
+  // the core: a hot crystal in a violet shell, held between two iron spindles
+  const C = N('core', H, [-0.012, -0.002, 0.058]);
+  add(C, crystal(V3(0, -0.006, 0), V3(0.05, 1, 0.12), 0.016, 0.0055, prng(9)), M.core, 'core_hot', SH);
+  add(C, crystal(V3(0, -0.028, 0), V3(0, 1, 0.08), 0.052, 0.016, prng(12), { sides: 7, tipK: 0.3 }), M.coreShell, 'core_shell', SH);
+  add(H, cylZ(0.006, 0.006, 0.03, 10).translate(-0.012, -0.002, 0), M.iron, 'core_spindle_rear', { wear: false });
+  add(H, cylZ(0.006, 0.088, 0.11, 10).translate(-0.012, -0.002, 0), M.iron, 'core_spindle_front', { wear: false });
+  // three stone segments, each split in two slabs on a slanted line; seams glow between them
+  const segs = [[0.132, 0.231, [0.25, 1, -0.006]], [0.241, 0.334, [-0.3, 1, 0.004]], [0.344, 0.43, [0.18, 1, 0.0]]];
+  const SLABM = [[M.stoneVein, M.stoneB], [M.stoneC, M.stoneVein], [M.stoneB, M.stoneVein]];   // per-slab value / hue variants; three veined
+  segs.forEach(([z0, z1, l], i) => {
+    add(H, stoneSlab(z0, z1, [l[0], l[1], l[2] - 0.003], rnd), SLABM[i][0], `stone_${i}_upper`, SH);
+    add(H, stoneSlab(z0, z1, [-l[0], -l[1], -l[2] - 0.003], rnd), SLABM[i][1], `stone_${i}_lower`, SH);
+  });
+  // the glowing inner core of the head: seen only through seams (and brighter at the chamber end)
+  segs.forEach(([z0, z1], i) => { const zz = [z0 - 0.0058, (z0 + z1) / 2, z1 + 0.0058];
+    for (let k = 0; k < 2; k++) add(H, hull([...sec(zz[k], 0.925).map((p) => V3(p[0], p[1], zz[k])), ...sec(zz[k + 1], 0.925).map((p) => V3(p[0], p[1], zz[k + 1]))]), i === 0 ? M.seamHot : M.seam, `seam_core_${i}_${k}`, SH); });
+  // crest: an off-centre stone fin over the chamber, leaning right (-X), in two slabs
+  const crestPts = (z0, z1, rise) => {
+    const P = [];
+    for (const z of [z0, z0 + 0.006, z1 - 0.006, z1]) { const w = 0.022 * (1 - (z - z0) / (z1 - z0) * 0.2), y0 = TOP(z) - 0.012; P.push(V3(w, y0, z), V3(-w, y0, z)); }
+    for (const [u, y, x] of rise) P.push(V3(x - 0.003, y, lerp(z0, z1, u)), V3(x + 0.003, y - 0.004, lerp(z0, z1, u)));
+    return P;
+  };
+  add(H, hull(crestPts(-0.03, 0.074, [[0.25, 0.102, -0.008], [0.62, 0.138, -0.013], [1.0, 0.155, -0.017]])), M.stone, 'crest_rear', SH);
+  add(H, hull(crestPts(0.08, 0.27, [[0.0, 0.155, -0.017], [0.12, 0.152, -0.017], [0.45, 0.118, -0.012], [1.0, 0.068, -0.004]])), M.stoneVein, 'crest_front', SH);
+  add(H, hull([V3(-0.006, 0.07, 0.072), V3(0.006, 0.07, 0.072), V3(-0.02, 0.15, 0.074), V3(-0.014, 0.152, 0.074), V3(-0.006, 0.07, 0.08), V3(0.006, 0.07, 0.08), V3(-0.02, 0.15, 0.08), V3(-0.014, 0.152, 0.08)]), M.seamHot, 'crest_seam', SH);
+  // keel under the front, leaning left (+X)
+  add(H, hull([V3(0.03, BOT(0.33) + 0.01, 0.33), V3(-0.024, BOT(0.33) + 0.01, 0.33), V3(0.032, BOT(0.43) + 0.01, 0.43), V3(-0.02, BOT(0.43) + 0.01, 0.43),
+    V3(0.016, BOT(0.35) - 0.026, 0.35), V3(0.004, BOT(0.36) - 0.03, 0.365), V3(0.022, BOT(0.42) - 0.044, 0.425), V3(0.002, BOT(0.42) - 0.047, 0.432)]), M.stoneB, 'keel', SH);
+  // iron bands with bronze rivets (one round the chamber front collar, two on the slabs)
+  const bandG = [band(0.184, 0.012, 0.004), band(0.392, 0.012, 0.004), band(0.437, 0.014, 0.005, 0.0005)];
+  add(H, mergeP(bandG.map((g) => g.index ? g.toNonIndexed() : g)), M.iron, 'bands');
+  const rv = [];
+  for (const z of [0.184, 0.392]) { const P = sec(z, 1, 0.0055); for (const k of [1, 2, 5, 6]) { const p = P[k]; rv.push(hexScrew(0.0034, V3(p[0], p[1] + (k === 1 || k === 6 ? -0.01 : 0.01), z), V3(Math.sign(p[0]), 0, 0), 0, 8)); } }
+  for (const k of [0, 3, 4, 7]) { const p = sec(0.06, 1, 0.009)[k]; rv.push(hexScrew(0.003, V3(p[0], p[1], 0.06), V3(p[0], p[1], 0).normalize(), 0, 8)); }
+  add(H, mergeP(rv.map((g) => g.index ? g.toNonIndexed() : g)), M.bronze, 'rivets');
+  // rail under the head for the pump
+  add(H, rbox(-0.008, 0.008, -0.09, -0.074, 0.12, 0.33, 0.003), M.iron, 'pump_rail', { wear: false });
+
+  /* ---------------- shard drum on the left flank (+X): six chambers, each loaded with a black shard */
+  const DX = 0.084, DY = -0.014, DR = 0.031;
+  const D = N('shard_drum', H, [DX, DY, 0.0]);
+  { const o = new THREE.Shape(); const n = 12; for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, r = i % 2 ? DR : DR * 0.93; i ? o.lineTo(Math.cos(a) * r, Math.sin(a) * r) : o.moveTo(r, 0); }
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + Math.PI * 5 / 6, h = new THREE.Path(); h.absarc(Math.cos(a) * DR * 0.58, Math.sin(a) * DR * 0.58, 0.0072, 0, Math.PI * 2, true); o.holes.push(h); }
+    add(D, slabExact(o, 0.1, 0.002, 1, 0.056, 10), M.iron, 'drum_body'); }
+  add(D, cylZ(0.0085, -0.006, 0.118, 12), M.bronze, 'drum_axle', { wear: false });
+  for (let i = 0; i < 6; i++) {
+    const a = i / 6 * Math.PI * 2 + Math.PI * 5 / 6, s = N(`drum_shard_${i}`, D, [Math.cos(a) * DR * 0.58, Math.sin(a) * DR * 0.58, 0.1]);
+    add(s, shardGeo(0.05, 0.0064, prng(30 + i)), M.crystal, `drum_shard_${i}_mesh`, SH);
+    add(s, cylZ(0.0066, -0.094, -0.004, 8), M.crevice, `drum_chamber_${i}`, { wear: false });
+  }
+  add(H, rbox(0.03, 0.07, -0.05, -0.034, 0.002, 0.11, 0.003), M.iron, 'drum_yoke');
+  add(D, mergeP([cylZ(DR * 1.04, 0.004, 0.012, 24), cylZ(DR * 1.04, 0.1, 0.108, 24)]), M.bronze, 'drum_rings', { wear: false });
+  N('core_locator', H, [-0.012, 0.0, 0.058]);
+
+  /* ---------------- muzzle crown: three bullet bores round a shard bore, five petals */
+  { const o = sec(0.47, 1, 0.002), sh = new THREE.Shape(o.map((p) => new THREE.Vector2(p[0], p[1])));
+    const holes = [[0, 0.012, 0.0145], [0.026, -0.022, 0.0062], [-0.026, -0.022, 0.0062], [0, -0.04, 0.0062]];
+    for (const [x, y, r] of holes) { const h = new THREE.Path(); h.absarc(x, y, r, 0, Math.PI * 2, true); sh.holes.push(h); }
+    add(H, slabExact(sh, 0.036, 0.002, 1, 0.458, 16), M.iron, 'muzzle_crown');
+    add(H, mergeP(holes.map(([x, y, r]) => cylZ(r * 1.02, 0.36, 0.46, 14).translate(x, y, 0).toNonIndexed())), M.bore, 'bores', { wear: false });
+    add(H, mergeP(holes.map(([x, y, r]) => { const sh = new THREE.Shape(); sh.absarc(0, 0, r + 0.0028, 0, Math.PI * 2, false); const h = new THREE.Path(); h.absarc(0, 0, r, 0, Math.PI * 2, true); sh.holes.push(h); return slabExact(sh, 0.007, 0.001, 1, 0.478, 16).translate(x, y, 0); })), M.iron, 'bore_lips', { wear: false });
+    // a faint violet glow ring just inside each bore mouth (the heat of the last shot)
+    add(H, mergeP(holes.map(([x, y, r]) => new THREE.RingGeometry(r * 0.8, r * 1.01, 16, 1).translate(x, y, 0.47))), M.seam, 'bore_glow', { wear: false });
+    // a black shard nosing out of the big bore: the next one, ready
+    add(H, shardGeo(0.04, 0.008, prng(77)).translate(0, 0.012, 0.448), M.crystal, 'shard_ready', SH); }
+  const muz = N('muzzle', H, [0, 0, 0.478]);
+  for (let i = 0; i < 5; i++) {
+    const a = Math.PI / 2 + i / 5 * Math.PI * 2, r = 0.058, px = Math.cos(a) * r, py = Math.sin(a) * r * 1.08;
+    const P = N(`petal_${i}`, H, [px, py, 0.44]);
+    P.rotation.z = a - Math.PI / 2; P.userData.rz = P.rotation.z;
+    const pr = prng(50 + i), len = 0.072 + 0.012 * pr();
+    add(P, hull([V3(-0.02, -0.005, 0), V3(0.02, -0.005, 0), V3(-0.019, 0.004, 0), V3(0.019, 0.004, 0), V3(-0.021, 0.0095, len * 0.45), V3(0.02, 0.009, len * 0.5), V3(-0.017, 0.001, len * 0.5), V3(0.018, 0.0, len * 0.45),
+      V3(-0.008, 0.016, len * 0.85), V3(0.008, 0.015, len * 0.85), V3(-0.006, 0.01, len * 0.85), V3(0.006, 0.009, len * 0.88), V3(0.003 * (pr() - 0.5), 0.017, len)]),
+      M.stone, `petal_${i}_stone`, SH);
+    add(P, rbox(-0.008, 0.008, -0.007, -0.002, -0.006, 0.012, 0.0015), M.iron, `petal_${i}_hinge`, { wear: false });
+  }
+  // pump / charge lever (slides back on reload); the offhand holds it
+  const PU = N('pump', H, [0, -0.096, 0.2]);
+  const pp = roundedShape([[-0.07, 0.012, 0.004], [0.07, 0.012, 0.004], [0.062, -0.014, 0.01], [0.03, -0.026, 0.01], [-0.05, -0.026, 0.01], [-0.07, -0.01, 0.008]]);
+  add(PU, slabX(pp, -0.021, 0.021, 0.006, 3, 8), M.iron, 'pump_body');
+  for (let k = 0; k < 5; k++) add(PU, rbox(-0.0225, 0.0225, -0.02, -0.004, -0.04 + k * 0.016, -0.034 + k * 0.016, 0.0015), M.wrap, `pump_ridge_${k}`, { wear: false });
+  N('offhand_attach', PU, [0, -0.022, 0.0]);
+
+  /* ---------------- living overgrowth: black crystal clusters breaking through the stone */
+  // graded clusters: one leader crystal and smaller ones fanned round it; the tips are split off and glow faintly violet
+  const og = [], ogTip = [], crR = prng(808);
+  const cluster = (c, n, dir, len, r) => {
+    for (let i = 0; i < n; i++) {
+      const k = i === 0 ? 1 : 0.38 + 0.4 * crR() * (1 - i / (n + 1)), spread = i === 0 ? 0.15 : 0.9;
+      const d = dir.clone().normalize().add(V3((crR() - 0.5) * spread, (crR() - 0.5) * spread * 0.5, (crR() - 0.5) * spread));
+      const P = crystalParts(c.clone().add(V3((crR() - 0.5) * 0.014 * (i ? 1 : 0.2), 0, (crR() - 0.5) * 0.018 * (i ? 1 : 0.2))), d, len * k, r * (0.55 + 0.45 * k), crR, { tipK: 0.34 });
+      og.push(P.body().toNonIndexed()); ogTip.push(P.tip().toNonIndexed());
+    }
+  };
+  cluster(V3(-0.03, TOP(0.30) - 0.004, 0.30), 5, V3(-0.55, 1, 0.3), 0.085, 0.0105);     // top of the barrel, leaning right
+  cluster(V3(0.022, TOP(0.40) - 0.004, 0.40), 4, V3(0.45, 1, 0.45), 0.062, 0.0085);      // front top, leaning left
+  cluster(V3(-0.016, 0.128, 0.115), 4, V3(-0.35, 1, 0.55), 0.058, 0.008);               // on the crest's front slope
+  cluster(V3(-0.044, BOT(0.27) + 0.022, 0.27), 3, V3(-1, -0.3, 0.2), 0.026, 0.004);
+  add(H, mergeP(og), M.crystal, 'overgrowth', SH);
+  add(H, mergeP(ogTip), M.crystalTip, 'overgrowth_tips', SH);
+
+  /* ---------------- clips */
+  const n = nodes, D_ = n.shard_drum, PET = [0, 1, 2, 3, 4].map((i) => n[`petal_${i}`]), SHD = [0, 1, 2, 3, 4, 5].map((i) => n[`drum_shard_${i}`]);
+  function rest() {
+    n.trigger.rotation.x = 0; H.position.set(0, 0, 0); C.scale.setScalar(1); D_.rotation.z = 0; PU.position.z = 0.2;
+    PET.forEach((p) => { p.rotation.set(0, 0, p.userData.rz); }); SHD.forEach((s) => s.scale.setScalar(1));
+  }
+  const flare = (k) => PET.forEach((p, i) => { p.rotation.set(-deg(28) * k * (0.9 + 0.2 * ((i * 37) % 5) / 5), 0, p.userData.rz); });
+  const Q = ['quaternion'], P = ['position'], SC = ['scale'];
+  const petalKeys = PET.map((p) => [p.name, Q]);
+  const clips = {
+    idle: { len: 2.4, loop: true, note: 'the core breathes (scale; the script also pulses emission); trigger, head, drum, pump and petals are keyed at rest so Legacy Animation resets them', keys: [['core', SC], ['trigger', Q], ['head', P], ['shard_drum', Q], ['pump', P], ...petalKeys] },
+    fire: { len: 0.7, extra: [0.699], note: 'trigger pull, shot at 0.04 s: core flash, head kicks back 18 mm and springs home, petals flare 28 deg, drum indexes -60 deg (0.16-0.36 s) and steps back to 0 on the last frame (0.699 -> 0.7 s)', keys: [['trigger', Q], ['head', P], ['core', SC], ['shard_drum', Q], ...petalKeys] },
+    reload: { len: 1.6, note: 'pump racks back and home, drum spins one turn, the drum shards regrow from 20 % (refill all six)', keys: [['pump', P], ['shard_drum', Q], ['core', SC], ...SHD.map((s) => [s.name, SC])] },
+    inspect: { len: 2.8, note: 'petals open slowly and close, drum turns one full turn (ends at rest), pump half-stroke, core swells', keys: [['pump', P], ['shard_drum', Q], ['core', SC], ...petalKeys] },
+  };
+  function pose(name, t) {
+    rest();
+    if (name === 'idle') {
+      C.scale.setScalar(1 + 0.05 * Math.sin(t / 2.4 * Math.PI * 2));
+    } else if (name === 'fire') {
+      n.trigger.rotation.x = deg(-18) * seg(t, 0, 0.04) * (1 - seg(t, 0.12, 0.3));
+      const kick = t < 0.04 ? 0 : (t < 0.075 ? easeOut(lin(t, 0.04, 0.075)) : 1 - springK(lin(t, 0.075, 0.5), 5, 6));
+      H.position.z = -0.018 * kick; H.position.y = 0.003 * kick;
+      C.scale.setScalar(1 + 0.3 * bump(t - 0.035, 0.22));
+      flare(t < 0.04 ? 0 : easeOut(lin(t, 0.04, 0.07)) * (1 - seg(t, 0.18, 0.55)));
+      D_.rotation.z = t >= 0.7 - 1e-4 ? 0 : deg(-60) * seg(t, 0.16, 0.36);
+    } else if (name === 'reload') {
+      const back = seg(t, 0.1, 0.4) * (1 - seg(t, 1.05, 1.35));
+      PU.position.z = 0.2 - 0.055 * back;
+      D_.rotation.z = deg(-360) * seg(t, 0.3, 1.2);
+      SHD.forEach((s, i) => s.scale.setScalar(Math.max(HIDDEN, lerp(0.2, 1, easeOut(lin(t, 0.55 + i * 0.07, 1.0 + i * 0.07))))));
+      C.scale.setScalar(1 + 0.12 * bump(t - 0.9, 0.6));
+    } else if (name === 'inspect') {
+      flare(0.75 * seg(t, 0.2, 0.9) * (1 - seg(t, 2.0, 2.6)));
+      D_.rotation.z = deg(-360) * seg(t, 0.6, 2.0);
+      PU.position.z = 0.2 - 0.028 * seg(t, 0.9, 1.3) * (1 - seg(t, 1.6, 2.0));
+      C.scale.setScalar(1 + 0.15 * bump(t - 0.6, 1.6));
+    }
+  }
+  rest();
+  return {
+    id: 'nightstone-blaster', file: 'nightstone-blaster.glb', root, nodes, order: ['idle', 'fire', 'reload', 'inspect'], clips, pose, rest,
+    source: 'gunmodls/weapons/nightstone-blaster (procedural three.js)',
+    extras: () => ({
+      units: 'metres', forward: '+Z (muzzle)', up: '+Y',
+      locators: { muzzle: 'bullet + shard origin, +Z forward', core_locator: 'centre of the hot core (light / glow anchor)', grip_attach: 'firing hand on the grip axis', offhand_attach: 'support hand on the pump (moves with it)' },
+      fire_events: { shot_s: 0.04, drum_index_s: [0.16, 0.36], drum_step_back_s: 0.7, reload_refill_s: 1.0 },
+      ammo: { drum_shards: 6, note: 'drum_shard_0..5 show the loaded shots; the script hides spent ones' },
+    }),
+  };
+}
+
+/* ------------------------------------------------------------------ VFX textures (also exported as the PNG deliverables) */
+// All drawn procedurally into canvases with straight (non-premultiplied) alpha. Colours are baked where the effect
+// has a physical colour (flash, smoke, decals); sparks, tracer and glow are white-hot ramps the material tints.
+function pix(N, Mh, fn) {   // fn(u, v, out[r,g,b,a]) with u, v in 0..1 (v down the image)
+  const c = canvas(N, Mh), x = c.getContext('2d'), img = x.createImageData(N, Mh), d = img.data, o = [0, 0, 0, 0];
+  for (let j = 0; j < Mh; j++) for (let i = 0; i < N; i++) { o[0] = o[1] = o[2] = o[3] = 0; fn((i + 0.5) / N, (j + 0.5) / Mh, o, i, j); const k = (j * N + i) * 4; d[k] = clamp01(o[0]) * 255; d[k + 1] = clamp01(o[1]) * 255; d[k + 2] = clamp01(o[2]) * 255; d[k + 3] = clamp01(o[3]) * 255; }
+  x.putImageData(img, 0, 0); return c;
+}
+const sampleT = (F, N, u, v) => F[(((Math.floor(v * N) % N) + N) % N) * N + (((Math.floor(u * N) % N) + N) % N)];
+// sheet of gx x gy cells, each drawn by cellFn(c, u, v, out) in its own 0..1 space
+function sheet(cell, gx, gy, cellFn) {
+  return pix(cell * gx, cell * gy, (u, v, o) => { const cx = Math.floor(u * gx), cy = Math.floor(v * gy), c = cy * gx + cx; cellFn(c, u * gx - cx, v * gy - cy, o); });
+}
+const flashRamp = (I, o) => {   // white core -> pale gold -> orange edge; alpha from intensity
+  const a = clamp01(I * 1.6); o[0] = 1; o[1] = lerp(0.55, 1, sstep(0.15, 0.75, I)); o[2] = lerp(0.18, 0.95, sstep(0.35, 0.95, I)); o[3] = a * a * (3 - 2 * a);
+};
+function fxTextures() {
+  const T = {}, R = prng(5151), N = 256, nz = stretch(fbmT(N, 6, 5, R)), nz2 = stretch(fbmT(N, 14, 4, R)), streakN = stretch(fbmT(N, 3, 4, R, { ar: 8 }));
+  // muzzle flash flipbook 4 x 4 (256 px cells): rows 0-1 front view, rows 2-3 side plumes (base at the bottom).
+  // Front cells: an irregular lobed burst (a few smooth uneven lobes from low-order angular harmonics plus angular noise,
+  // never symmetric spikes), a small hot core, and noise breakup that eats into the outer gas
+  const petals = []; for (let c = 0; c < 16; c++) { const L = []; for (let i = 0; i < 3; i++) L.push([R() * 6.283, 0.25 + 0.35 * R(), 2 + Math.floor(R() * 4)]); petals.push({ L, s: R() * 0.5, g: 0.82 + 0.3 * R() }); }
+  T.flash = sheet(256, 4, 4, (c, u, v, o) => {
+    const p = petals[c], x = u - 0.5, y = v - 0.5;
+    let I;
+    if (c < 8) {
+      const r = Math.hypot(x, y) * 2, th = Math.atan2(y, x);
+      let lob = 0; for (const [a, amp, k] of p.L) lob += amp * Math.cos(k * th + a);
+      const nA = sampleT(nz, N, 0.5 + 0.28 * Math.cos(th) + p.s, 0.5 + 0.28 * Math.sin(th) + p.s);
+      const edge = (0.74 + 0.22 * lob + 0.36 * (nA - 0.5)) * p.g;
+      const n = sampleT(nz, N, u * 0.9 + p.s, v * 0.9 + p.s), n2 = sampleT(nz2, N, u * 1.4 + p.s, v * 1.4 + p.s);
+      const body = Math.pow(clamp01(1 - r / Math.max(0.12, edge)), 1.15);
+      const breakup = sstep(0.2, 0.8, n * 0.75 + n2 * 0.45 - r * 0.3);
+      const core = Math.exp(-1 * (r / (0.2 * p.g)) ** 2), halo = Math.exp(-1 * (r / 0.6) ** 2) * 0.16 * n * sstep(1, 0.8, r);
+      I = core * 1.1 + body * (0.25 + 0.85 * breakup) * 0.95 + halo;
+    } else {
+      const yy = 1 - v, n = sampleT(nz, N, u * 0.8 + p.s, yy * 0.5 + p.s * 0.3), n2 = sampleT(nz2, N, u + p.s, yy * 1.4);
+      const w = (0.04 + 0.2 * Math.sin(Math.PI * Math.pow(yy, 0.62)) * Math.pow(1 - yy, 0.45)) * p.g * (0.8 + 0.4 * n);
+      const body = Math.exp(-1 * ((x + 0.04 * (n2 - 0.5)) / Math.max(0.01, w)) ** 2 * 1.6) * Math.pow(clamp01(1 - yy / 0.95), 1.1);
+      const base = Math.exp(-1 * ((x / 0.12) ** 2 + ((yy - 0.06) / 0.1) ** 2));
+      I = (body * (0.5 + 0.7 * n) + base * 0.9) * (0.75 + 0.35 * n2);
+    }
+    flashRamp(clamp01(I), o);
+  });
+  // smoke flipbook 4 x 4: one billow per cell filling ~80 % of it (a cauliflower of 4-5 overlapping lobes with a
+  // noisy edge), denser early and thinning frame by frame; lit from above (pale crown, darker underside), neutral grey
+  const nzS = stretch(fbmT(N, 4, 6, R, { gain: 0.55 })), nzW = stretch(fbmT(N, 3, 4, R));
+  const lobes = []; for (let c = 0; c < 16; c++) { const L = [[0, 0.02, 0.41]]; for (let i = 0; i < 4; i++) { const a = R() * 6.283, d = 0.12 + 0.07 * R(); L.push([Math.cos(a) * d, Math.sin(a) * d * 0.9, 0.22 + 0.08 * R()]); } lobes.push(L); }
+  T.smoke = sheet(256, 4, 4, (c, u, v, o) => {
+    const f = c / 15, x = u - 0.5, y = v - 0.5, ox = (c % 4) * 0.23, oy = Math.floor(c / 4) * 0.31, L = lobes[c], grow = 1 + 0.12 * f;
+    const dens = (px, py) => {
+      const wx = px + 0.07 * (sampleT(nzW, N, px * 0.8 + ox, py * 0.8 + oy) - 0.5), wy = py + 0.07 * (sampleT(nzW, N, px * 0.8 + oy + 0.5, py * 0.8 + ox) - 0.5);
+      let e = -1; for (const [lx, ly, lr] of L) e = Math.max(e, 1 - Math.hypot(wx - lx * grow, wy - ly * grow) / (lr * grow));
+      const n = sampleT(nzS, N, (wx + 0.5) * 0.55 + ox, (wy + 0.5) * 0.55 + oy);
+      return clamp01(sstep(-0.12, 0.45, e + 0.3 * (n - 0.5)) * (0.55 + 0.55 * n)) * sstep(0.5, 0.42, Math.max(Math.abs(px), Math.abs(py)));
+    };
+    const d0 = dens(x, y), d = clamp01(d0 * (1.05 - 0.5 * f));
+    const lit = clamp01(0.58 + 1.1 * (d0 - dens(x + 0.03, y - 0.07)) - 0.6 * y);   // sample toward the light (up): open above = lit
+    const g = lerp(0.4, 0.78, lit); o[0] = g * 0.99; o[1] = g * 0.98; o[2] = g * 1.02; o[3] = d;
+  });
+  // spark: a thin hot streak along +V (head at the top), soft ends
+  T.spark = pix(32, 128, (u, v, o) => { const x = (u - 0.5) * 2, y = 1 - v, I = Math.exp(-1 * (x / 0.28) ** 2) * sstep(0, 0.25, y) * sstep(1, 0.7, y) * (0.4 + 0.6 * y); o[0] = o[1] = o[2] = 1; o[3] = I; });
+  // ember: a small soft hot dot with a faint irregular rim
+  T.ember = pix(64, 64, (u, v, o) => { const r = Math.hypot(u - 0.5, v - 0.5) * 2, n = sampleT(nz2, N, u * 0.5, v * 0.5), I = Math.exp(-1 * (r / 0.28) ** 2) + 0.25 * Math.exp(-1 * (r / 0.7) ** 2) * n; o[0] = o[1] = o[2] = 1; o[3] = clamp01(I); });
+  // tracer: a sharp streak, 3 px hard core (of 32) with a narrow falloff, a hot tapered head at the top, a thin tail
+  T.tracer = pix(32, 512, (u, v, o) => {
+    const x = Math.abs((u - 0.5) * 2), y = 1 - v, taper = 1 - 0.55 * sstep(0.9, 1.0, y);
+    const core = sstep(0.11 * taper, 0.05 * taper, x), glow = Math.exp(-1 * (x / 0.22) ** 2) * 0.22;
+    const head = Math.exp(-1 * ((y - 0.955) / 0.025) ** 2) * sstep(0.2, 0.0, x) * 0.5;
+    const I = (core * (0.4 + 0.6 * Math.pow(y, 0.8)) + glow * Math.pow(y, 1.5) + head) * sstep(0, 0.35, y) * sstep(1.0, 0.985, y);
+    o[0] = o[1] = o[2] = 1; o[3] = clamp01(I);
+  });
+  // soft glow: a gaussian with a long tail (additive layers, light cards)
+  T.glow = pix(128, 128, (u, v, o) => { const r = Math.hypot(u - 0.5, v - 0.5) * 2; o[0] = o[1] = o[2] = 1; o[3] = clamp01(Math.exp(-1 * (r / 0.35) ** 2) * 0.8 + Math.exp(-1 * (r / 0.75) ** 2) * 0.2) * sstep(1, 0.9, r); });
+  // bullet impact decal (concrete/stone): a dark bore in a pitted crater of crushed pale stone, an irregular spall ring
+  // where the face flaked off, a few short straight fractures from the rim, faint soot
+  const angN = (F, th, k, off) => sampleT(F, N, 0.5 + k * Math.cos(th) + off, 0.5 + k * Math.sin(th) + off);   // seamless round the circle
+  const fr = []; for (let i = 0; i < 4; i++) fr.push([R() * 6.283, 0.06 + 0.12 * R(), 0.006 + 0.004 * R()]);
+  T.decalBullet = pix(256, 256, (u, v, o) => {
+    const x = u - 0.5, y = v - 0.5, r = Math.hypot(x, y) * 2, th = Math.atan2(y, x), n = sampleT(nz, N, u, v), n2 = sampleT(nz2, N, u * 2, v * 2), nf = sampleT(nz2, N, u * 7 + 0.3, v * 7);
+    const cR = 0.22 + 0.08 * (angN(nz, th, 0.22, 0.1) - 0.5), sR = 0.36 + 0.16 * (angN(nz2, th, 0.3, 0.6) - 0.5) + 0.05 * (n2 - 0.5);
+    const hole = sstep(0.1 + 0.03 * n2, 0.065, r), crater = sstep(cR + 0.012, cR - 0.012, r), spall = sstep(sR + 0.04, sR - 0.03, r) * (1 - crater);
+    const pit = sstep(0.72, 0.82, nf) * (crater + spall * 0.7);
+    let frac = 0; for (const [a, len, w] of fr) { const dx = Math.cos(a), dy = Math.sin(a), along = (x * dx + y * dy) * 2, perp = Math.abs(-x * dy + y * dx) * 2, t = (along - cR) / len; if (t > -0.1 && t < 1) frac = Math.max(frac, sstep(w * (1 - t), 0, perp)); }
+    const shade = clamp01(0.6 + 0.9 * (x + y) / Math.max(0.05, r) * sstep(0.05, cR, r) * 0.4);   // concave: the lower-right inner wall catches the light
+    const fresh = [0.38, 0.37, 0.355].map((k) => k * (0.8 + 0.3 * n2)), deep = [0.035, 0.032, 0.032], soot = [0.11, 0.105, 0.1];
+    for (let k = 0; k < 3; k++) {
+      let c = soot[k];
+      if (spall > 0) c = lerp(c, fresh[k] * 0.86, spall);
+      if (crater > 0) c = lerp(c, lerp(fresh[k] * 0.55, fresh[k], shade) * (1 - 0.35 * sstep(cR, 0.1, r)), crater);
+      c = lerp(c, deep[k] * 2, pit * 0.7); c = lerp(c, deep[k], Math.max(hole, frac * 0.9));
+      o[k] = c;
+    }
+    const sootA = Math.exp(-1 * (r / 0.6) ** 2) * 0.4 * (0.5 + 0.7 * n) * sstep(0.98, 0.7, r);
+    o[3] = clamp01(Math.max(hole, crater * 0.95, spall * 0.6 * (0.6 + 0.5 * n2), frac * 0.85, sootA));
+  });
+  // black crystal shatter decal: an irregular crushed-glass scuff (dark violet-grey powder with a ragged edge), a
+  // crushed pit full of tiny glinting grains, glossy black chips (convex facets with one lit edge), short faint radial
+  // scratches at random radii, and round rotated specks thrown further out
+  const chips = []; for (let i = 0; i < 16; i++) { const a = R() * 6.283, d = 0.05 + 0.4 * R() * R(), sz = 0.015 + 0.035 * R(), k = 3 + Math.floor(R() * 3), rot = R() * 6.283, P = [];
+    for (let j = 0; j < k; j++) { const t = rot + j / k * 6.283 + (R() - 0.5) * 0.8, rr = sz * (0.6 + 0.5 * R()); P.push([0.5 + Math.cos(a) * d * 0.5 + Math.cos(t) * rr * 0.5, 0.5 + Math.sin(a) * d * 0.5 + Math.sin(t) * rr * 0.5]); }
+    P.sort((p, q) => Math.atan2(p[1] - 0.5 - Math.sin(a) * d * 0.5, p[0] - 0.5 - Math.cos(a) * d * 0.5) - Math.atan2(q[1] - 0.5 - Math.sin(a) * d * 0.5, q[0] - 0.5 - Math.cos(a) * d * 0.5));
+    chips.push({ P, lx: Math.cos(rot * 1.7), ly: Math.sin(rot * 1.7), g: 0.3 + 0.7 * R() }); }
+  const scr = []; for (let i = 0; i < 26; i++) scr.push([R() * 6.283 , 0.18 + 0.35 * R(), 0.04 + 0.14 * R() * R(), (R() - 0.5) * 0.25]);
+  const specks = []; for (let i = 0; i < 70; i++) { const a = R() * 6.283, d = 0.25 + 0.7 * Math.sqrt(R()); specks.push([0.5 + Math.cos(a) * d * 0.5, 0.5 + Math.sin(a) * d * 0.5, 0.0025 + 0.006 * R() * R(), 0.5 + 0.6 * R(), R() * 3.14, R()]); }
+  const inPoly = (P, u, v) => { for (let j = 0; j < P.length; j++) { const a = P[j], b = P[(j + 1) % P.length]; if ((b[0] - a[0]) * (v - a[1]) - (b[1] - a[1]) * (u - a[0]) < 0) return false; } return true; };
+  T.decalShatter = pix(512, 512, (u, v, o) => {
+    const x = u - 0.5, y = v - 0.5, r = Math.hypot(x, y) * 2, th = Math.atan2(y, x), n = sampleT(nz, N, u, v), n2 = sampleT(nz2, N, u * 3, v * 3), nf = sampleT(nz2, N, u * 11, v * 11 + 0.4);
+    const sR = 0.62 + 0.3 * (angN(nz, th, 0.25, 0.3) - 0.5), pR = 0.17 + 0.07 * (angN(nz2, th, 0.25, 0.8) - 0.5);
+    const powder = sstep(sR, sR - 0.35, r) * (0.35 + 0.65 * n * (0.6 + 0.6 * n2)), pit = sstep(pR + 0.02, pR - 0.02, r);
+    const grain = sstep(0.82, 0.9, nf) * Math.max(pit, powder * 0.5);
+    let col = [0.07 + 0.04 * n2, 0.066 + 0.035 * n2, 0.088 + 0.05 * n2], a = clamp01(powder * 0.75);
+    if (pit > 0) { col = col.map((c, k) => lerp(c, [0.025, 0.022, 0.032][k], pit)); a = Math.max(a, pit * 0.95); }
+    for (const [sa, s0, len, j] of scr) { const ang = sa + j, dx = Math.cos(ang), dy = Math.sin(ang), along = (x * dx + y * dy) * 2 - s0, perp = Math.abs(-x * dy + y * dx) * 2; if (along > 0 && along < len && perp < 0.004 * (1 - along / len)) { col = [0.2, 0.19, 0.24]; a = Math.max(a, 0.55 * (1 - along / len)); } }
+    if (grain > 0) { col = col.map((c, k) => lerp(c, [0.42, 0.4, 0.52][k], grain)); a = Math.max(a, grain); }
+    for (const [sx, sy, sr, el, rot, g] of specks) { const dx = u - sx, dy = v - sy; if (Math.abs(dx) > sr * 2 || Math.abs(dy) > sr * 2) continue; const cr = Math.cos(rot), sn = Math.sin(rot), px = dx * cr + dy * sn, py = (-dx * sn + dy * cr) / el, d = Math.hypot(px, py) / sr; if (d < 1) { const hl = sstep(0.6, 0.0, Math.hypot(px + sr * 0.35, py + sr * 0.35) / sr) * g; col = [0.02 + 0.3 * hl, 0.018 + 0.28 * hl, 0.028 + 0.38 * hl]; a = Math.max(a, sstep(1, 0.8, d)); } }
+    for (const C of chips) if (inPoly(C.P, u, v)) { const cx = C.P.reduce((s, p) => s + p[0], 0) / C.P.length, cy = C.P.reduce((s, p) => s + p[1], 0) / C.P.length, l = clamp01(((u - cx) * C.lx + (v - cy) * C.ly) * 45 + 0.2);
+      const k = 0.015 + 0.2 * Math.pow(l, 3) * C.g; col = [k * 0.95, k * 0.9, k * 1.25]; a = 1; }
+    o[0] = col[0]; o[1] = col[1]; o[2] = col[2]; o[3] = a * (r < 1 ? 1 : sstep(1.05, 1, r));
+  });
+  // concrete for the range wall (viewer only)
+  const cw = stretch(fbmT(N, 4, 5, R)), cp = stretch(fbmT(N, 40, 2, R));
+  T.concrete = pix(256, 256, (u, v, o) => { const a = sampleT(cw, N, u, v), b = sampleT(cp, N, u, v), t = 0.28 + 0.12 * a - 0.07 * sstep(0.8, 0.95, b); o[0] = t; o[1] = t * 0.99; o[2] = t * 1.02; o[3] = 1; });
+  return T;
+}
+// the PNG deliverables: file name -> canvas
+const FX_PNG = { flash: 'tex_muzzle_flash_4x4.png', smoke: 'tex_smoke_4x4.png', spark: 'tex_spark.png', ember: 'tex_ember.png', tracer: 'tex_tracer.png', glow: 'tex_soft_glow.png', decalBullet: 'tex_decal_bullet_impact.png', decalShatter: 'tex_decal_crystal_shatter.png' };
+
+/* ------------------------------------------------------------------ firing VFX (viewer; NightstoneBlasterFx.cs mirrors it) */
+// Layered, grounded: crisp objects (shard meshes, fragments, decals) + soft additive glow (flash, rim, light) + short
+// streaks (tracers, sparks) + slow neutral smoke. One instanced billboard pool per texture/blend mode.
+const FXV = /* glsl */`
+attribute vec3 iPos; attribute vec4 iA; attribute vec3 iCol; attribute vec3 iVel;   // iA = size, rot, frame, alpha
+uniform vec2 grid; uniform float stretchMode;
+varying vec2 vUv; varying float vAlpha; varying vec3 vCol;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(iPos, 1.0);
+  vec2 c = position.xy;
+  if (stretchMode > 0.5) {                     // long axis along the projected velocity; iVel length = streak length
+    vec3 vv = (modelViewMatrix * vec4(iVel, 0.0)).xyz; float L = length(iVel);
+    vec2 d = length(vv.xy) > 1e-6 ? normalize(vv.xy) : vec2(0.0, 1.0);
+    vec2 n = vec2(-d.y, d.x);
+    float along = max(length(vv.xy), iA.x);
+    mv.xy += d * (c.y - 0.5) * along + n * c.x * iA.x;
+  } else {
+    float s = sin(iA.y), co = cos(iA.y);
+    mv.xy += vec2(c.x * co - c.y * s, c.x * s + c.y * co) * iA.x;
+  }
+  gl_Position = projectionMatrix * mv;
+  float f = floor(iA.z + 0.5), cx = mod(f, grid.x), cy = floor(f / grid.x);
+  vUv = vec2((cx + uv.x) / grid.x, 1.0 - (cy + 1.0 - uv.y) / grid.y);
+  vAlpha = iA.w; vCol = iCol;
+}`;
+const FXF = /* glsl */`
+uniform sampler2D map; varying vec2 vUv; varying float vAlpha; varying vec3 vCol;
+void main() { vec4 t = texture2D(map, vUv); float a = t.a * vAlpha; if (a < 0.002) discard; gl_FragColor = vec4(t.rgb * vCol, a); }`;
+class Pool {
+  constructor(max, tex, grid, { additive = false, stretch = false, order = 0 } = {}) {
+    const g = new THREE.InstancedBufferGeometry(); const b = new THREE.PlaneGeometry(1, 1);
+    g.index = b.index; g.setAttribute('position', b.attributes.position); g.setAttribute('uv', b.attributes.uv);
+    this.pos = new Float32Array(max * 3); this.a = new Float32Array(max * 4); this.col = new Float32Array(max * 3); this.vel = new Float32Array(max * 3);
+    for (const [k, arr, n] of [['iPos', this.pos, 3], ['iA', this.a, 4], ['iCol', this.col, 3], ['iVel', this.vel, 3]]) { const at = new THREE.InstancedBufferAttribute(arr, n); at.setUsage(THREE.DynamicDrawUsage); g.setAttribute(k, at); }
+    g.instanceCount = 0; g.boundingSphere = new THREE.Sphere(V3(0, 0, 1), 50);
+    this.mat = new THREE.ShaderMaterial({ vertexShader: FXV, fragmentShader: FXF, transparent: true, depthWrite: false, side: THREE.DoubleSide,   // stretched quads flip winding with the streak direction
+      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      uniforms: { map: { value: tex }, grid: { value: new THREE.Vector2(grid[0], grid[1]) }, stretchMode: { value: stretch ? 1 : 0 } } });
+    this.mesh = new THREE.Mesh(g, this.mat); this.mesh.frustumCulled = false; this.mesh.renderOrder = order; this.max = max; this.list = []; this.g = g;
+  }
+  spawn(p) { if (this.list.length < this.max) this.list.push(p); return p; }
+  // p: { pos V3, vel V3, age, life, size(u), alpha(u), col(u) -> [r,g,b], rot, spin, frame(u), drag, grav, buoy, streak }
+  tick(dt) {
+    const L = this.list;
+    for (let i = L.length - 1; i >= 0; i--) {
+      const p = L[i]; p.age += dt; if (p.age >= p.life) { L.splice(i, 1); continue; } if (p.age < 0) continue;
+      if (p.stopAt !== undefined && p.age >= p.stopAt) { p.pos.copy(p.hit); continue; }
+      if (p.drag) p.vel.multiplyScalar(Math.exp(-p.drag * dt));
+      if (p.grav) p.vel.y -= p.grav * dt;
+      if (p.buoy) p.vel.y += p.buoy * dt;
+      p.pos.addScaledVector(p.vel, dt); p.rot = (p.rot || 0) + (p.spin || 0) * dt;
+      if (p.floor !== undefined && p.pos.y < p.floor) { p.pos.y = p.floor; p.vel.y *= -0.3; p.vel.x *= 0.5; p.vel.z *= 0.5; }
+    }
+    this.g.instanceCount = L.length;
+    L.forEach((p, i) => {
+      const u = p.age / p.life, c = p.col(u);
+      this.pos.set([p.pos.x, p.pos.y, p.pos.z], i * 3); this.a.set([p.size(Math.max(0, u)), p.rot || 0, p.frame ? p.frame(Math.max(0, u)) : 0, p.age < 0 ? 0 : p.alpha(u)], i * 4); this.col.set(c, i * 3);
+      const v = p.streakDir ? p.streakDir : p.vel; const s = p.streak ? p.streak(u, v) : 0; const l = v.length() || 1; this.vel.set([v.x / l * s, v.y / l * s, v.z / l * s], i * 3);
+    });
+    for (const k of ['iPos', 'iA', 'iCol', 'iVel']) this.g.attributes[k].needsUpdate = true;
+  }
+  clear() { this.list.length = 0; this.g.instanceCount = 0; }
+}
+// a camera-facing ribbon through a list of points (shard trails): width and alpha taper from head to tail
+const RIBV = /* glsl */`
+attribute float side; attribute float t; attribute vec3 dir; uniform float width; varying float vt; varying float vs;
+void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); vec3 d = (modelViewMatrix * vec4(dir, 0.0)).xyz; vec2 n = length(d.xy) > 1e-6 ? normalize(vec2(-d.y, d.x)) : vec2(1.0, 0.0);
+  mv.xy += n * side * width * (1.0 - t * 0.7); vt = t; vs = side; gl_Position = projectionMatrix * mv; }`;
+const RIBF = /* glsl */`
+uniform vec3 color; uniform float alpha; uniform float edge; varying float vt; varying float vs;
+void main() { float a = alpha * pow(1.0 - vt, 1.6) * pow(1.0 - abs(vs), edge); if (a < 0.002) discard; gl_FragColor = vec4(color, a); }`;
+class Ribbon {
+  constructor(n, { color, width, alpha, additive = false, edge = 1.5 }) {
+    this.n = n; const g = new THREE.BufferGeometry(); this.p = new Float32Array(n * 2 * 3); this.d = new Float32Array(n * 2 * 3);
+    const side = new Float32Array(n * 2), t = new Float32Array(n * 2), idx = [];
+    for (let i = 0; i < n; i++) { side[i * 2] = -1; side[i * 2 + 1] = 1; t[i * 2] = t[i * 2 + 1] = i / (n - 1); if (i < n - 1) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    g.setAttribute('position', new THREE.BufferAttribute(this.p, 3)); g.setAttribute('dir', new THREE.BufferAttribute(this.d, 3)); g.setAttribute('side', new THREE.BufferAttribute(side, 1)); g.setAttribute('t', new THREE.BufferAttribute(t, 1)); g.setIndex(idx);
+    this.mat = new THREE.ShaderMaterial({ vertexShader: RIBV, fragmentShader: RIBF, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      uniforms: { color: { value: new THREE.Color(color) }, width: { value: width }, alpha: { value: alpha }, edge: { value: edge } } });
+    this.mesh = new THREE.Mesh(g, this.mat); this.mesh.frustumCulled = false; this.g = g; this.base = alpha;
+  }
+  set(pts) {   // pts[0] = head
+    for (let i = 0; i < this.n; i++) {
+      const p = pts[Math.min(i, pts.length - 1)], q = pts[Math.min(i + 1, pts.length - 1)], r = pts[Math.min(Math.max(0, i - 1), pts.length - 1)];
+      const d = V3(r.x - q.x, r.y - q.y, r.z - q.z);
+      for (const s of [0, 1]) { this.p.set([p.x, p.y, p.z], (i * 2 + s) * 3); this.d.set([d.x, d.y, d.z], (i * 2 + s) * 3); }
+    }
+    this.g.attributes.position.needsUpdate = true; this.g.attributes.dir.needsUpdate = true;
+  }
+}
+
+function buildFx(scene, K) {
+  const FX = new THREE.Group(); FX.name = 'fx'; scene.add(FX);
+  const TXF = {};
+  for (const [k, c] of Object.entries(K.FXT)) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; TXF[k] = t; }
+  const P = {
+    smoke: new Pool(120, TXF.smoke, [4, 4], { order: 1 }),
+    dust: new Pool(80, TXF.smoke, [4, 4], { order: 1 }),
+    flash: new Pool(16, TXF.flash, [4, 4], { additive: true, order: 3 }),
+    glow: new Pool(24, TXF.glow, [1, 1], { additive: true, order: 3 }),
+    spark: new Pool(220, TXF.spark, [1, 1], { additive: true, stretch: true, order: 4 }),
+    tracer: new Pool(16, TXF.tracer, [1, 1], { additive: true, stretch: true, order: 4 }),
+  };
+  for (const p of Object.values(P)) FX.add(p.mesh);
+  // side-on flash cards (two crossed planes along the bore) use real meshes so they keep their length when seen from the side
+  const cardMat = new THREE.MeshBasicMaterial({ map: TXF.flash.clone(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+  cardMat.map.repeat.set(0.25, 0.25); cardMat.map.needsUpdate = true;
+  const cardGeo = (() => { const a = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0).rotateX(Math.PI / 2), b = a.clone().rotateZ(Math.PI / 2); return mergeGeometries([a, b]); })();
+  const cards = new THREE.Mesh(cardGeo, cardMat); cards.renderOrder = 3; cards.visible = false; FX.add(cards);
+  const frontMat = cardMat.clone(); frontMat.map = TXF.flash.clone(); frontMat.map.repeat.set(0.25, 0.25); frontMat.map.needsUpdate = true;
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), frontMat); front.renderOrder = 3; cards.add(front); front.position.z = 0.012;
+  // the range: a concrete wall 1.6 m past the muzzle and a floor (shown while effects play or in the range view)
+  const range = new THREE.Group(); range.name = 'range'; FX.add(range);
+  const ctex = new THREE.CanvasTexture(K.FXT.concrete); ctex.colorSpace = THREE.SRGBColorSpace; ctex.wrapS = ctex.wrapT = THREE.RepeatWrapping; ctex.repeat.set(12, 4);
+  const WALL_Z = 2.08, FLOOR_Y = -0.42;
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(24, 8), new THREE.MeshStandardMaterial({ map: ctex, roughness: 0.92, metalness: 0, color: '#d8d6dc' }));
+  wall.position.set(0, FLOOR_Y + 4, WALL_Z); wall.rotation.y = Math.PI; wall.receiveShadow = true; range.add(wall);
+  const rangeLight = new THREE.HemisphereLight('#dcd7cf', '#35312d', 1.1); range.add(rangeLight);
+  const lamp = new THREE.SpotLight('#ffe9d2', 6, 6, deg(40), 0.6, 1.5); lamp.position.set(-0.6, 1.4, 1.2); lamp.target.position.set(0, -0.2, WALL_Z); range.add(lamp, lamp.target);
+  const ftex = ctex.clone(); ftex.repeat.set(12, 12); ftex.needsUpdate = true;
+  const floorM = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshStandardMaterial({ map: ftex, roughness: 0.95, color: '#a09ea6' }));
+  floorM.rotation.x = -Math.PI / 2; floorM.position.set(0, FLOOR_Y, 1.0); floorM.receiveShadow = true; range.add(floorM);
+  // decals on the wall
+  const decalMats = { bullet: TXF.decalBullet, shatter: TXF.decalShatter };
+  const decals = [];
+  function decal(kind, p, size, rot) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshStandardMaterial({ map: decalMats[kind], transparent: true, depthWrite: false, roughness: kind === 'shatter' ? 0.25 : 0.9, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2 }));
+    m.position.set(p.x, p.y, WALL_Z - 0.001); m.rotation.set(0, Math.PI, rot); m.renderOrder = 0; range.add(m); decals.push(m);
+  }
+  // lights: muzzle (warm), shard impacts (violet)
+  const muzLight = new THREE.PointLight('#ffb36b', 0, 3, 2); FX.add(muzLight);
+  const hitLight = new THREE.PointLight('#8a6cd8', 0, 0.6, 2); FX.add(hitLight);
+  // shards (meshes) with fresnel rim glow, trails; fragments
+  const shardMat = M.crystal.clone(); shardMat.name = 'black_crystal_fx'; shardMat.envMapIntensity = 1.8; shardMat.specularIntensity = 0.9; shardMat.color.set('#16111f');
+  shardMat.onBeforeCompile = (sh) => {
+    sh.uniforms.rimColor = { value: new THREE.Color('#7a50f0').multiplyScalar(1.5) };
+    sh.fragmentShader = 'uniform vec3 rimColor;\n' + sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  { float fr = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 2.5); totalEmissiveRadiance += rimColor * fr; }');
+  };
+  const SHARD_GEOS = [0, 1, 2].map((i) => shardGeo(0.07 + 0.012 * i, 0.0125 - 0.001 * i, prng(900 + i), 6 + i));
+  const FRAG_GEOS = [0, 1, 2, 3, 4].map((i) => { const r = prng(950 + i), pts = []; for (let k = 0; k < 7; k++) pts.push(V3((r() - 0.5) * 0.016, (r() - 0.5) * 0.009, (r() - 0.5) * 0.02 * (1 + i * 0.2))); return hull(pts); });
+  const shards = [], frags = [];
+  for (let i = 0; i < 4; i++) {
+    const m = new THREE.Mesh(SHARD_GEOS[i % 3], shardMat); m.castShadow = true; m.visible = false; FX.add(m);
+    const dark = new Ribbon(14, { color: '#100d16', width: 0.012, alpha: 0.3, edge: 2.0 }), core = new Ribbon(14, { color: new THREE.Color('#5a3aa0'), width: 0.0022, alpha: 0.45, additive: true, edge: 2 });
+    dark.mesh.renderOrder = 2; core.mesh.renderOrder = 3; FX.add(dark.mesh, core.mesh);
+    // a small specular glint riding the shard (flickers as the facets roll past the light)
+    const glint = new THREE.Sprite(new THREE.SpriteMaterial({ map: TXF.glow, color: new THREE.Color(1.6, 1.45, 2.0), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false }));
+    glint.scale.setScalar(0.016); glint.visible = false; glint.renderOrder = 4; FX.add(glint);
+    shards.push({ m, dark, core, glint, hist: [], on: false });
+  }
+  const fragMat = M.crystal.clone(); fragMat.name = 'black_crystal_fragment'; fragMat.envMapIntensity = 0.8;
+  for (let i = 0; i < 48; i++) { const m = new THREE.Mesh(FRAG_GEOS[i % 5], fragMat); m.castShadow = true; m.visible = false; FX.add(m); frags.push({ m, vel: V3(0, 0, 0), spin: V3(0, 0, 0), on: false, age: 0 }); }
+
+  let R = prng(1), T = 0, events = [], active = false;
+  const warm = (u) => [lerp(1.0, 1.0, u), lerp(0.86, 0.55, u), lerp(0.62, 0.25, u)];
+  const rndCone = (dir, deg_) => {   // a direction inside a cone of half-angle deg_ round dir (uniform on the disc)
+    const a = R() * Math.PI * 2, r = Math.sqrt(R()) * Math.tan(deg(deg_)), up = Math.abs(dir.y) < 0.9 ? V3(0, 1, 0) : V3(1, 0, 0);
+    const x = V3().crossVectors(dir, up).normalize(), y = V3().crossVectors(x, dir).normalize();
+    return dir.clone().add(x.multiplyScalar(Math.cos(a) * r)).add(y.multiplyScalar(Math.sin(a) * r)).normalize();
+  };
+  function clear() {
+    for (const p of Object.values(P)) p.clear(); events = []; cards.visible = false; muzLight.intensity = hitLight.intensity = 0;
+    shards.forEach((s) => { s.on = false; s.m.visible = false; s.glint.visible = false; s.dark.mesh.visible = s.core.mesh.visible = false; });
+    frags.forEach((f) => { f.on = false; f.m.visible = false; });
+    for (const d of decals) { range.remove(d); d.geometry.dispose(); d.material.dispose(); } decals.length = 0; active = false;
+  }
+  // one shot from the muzzle node: 7 bullets (hitscan, tracers drawn travelling) + 3 shards (ballistic)
+  const CFG = { bullets: 7, bulletCone: 3.5, tracerSpeed: 90, shards: 3, shardCone: 7, shardSpeed: 15, gravity: 9.81 };
+  function fire(muzzle, seed = 1) {
+    R = prng(seed); active = true; T = 0;
+    const o = muzzle.getWorldPosition(V3(0, 0, 0)), q = muzzle.getWorldQuaternion(new THREE.Quaternion()), fwd = V3(0, 0, 1).applyQuaternion(q);
+    const bores = [V3(0.026, -0.022, -0.02), V3(-0.026, -0.022, -0.02), V3(0, -0.04, -0.02)].map((b) => b.applyQuaternion(q).add(o));
+    const shardO = V3(0, 0.012, -0.02).applyQuaternion(q).add(o);
+    // muzzle flash: a front star (two stacked frames), a soft warm glow, side plume cards, the light
+    P.flash.spawn({ pos: o.clone().addScaledVector(fwd, 0.015), vel: V3(0, 0, 0), age: 0, life: 0.03, rot: R() * 6.28, size: (u) => 0.05 * (1 + u), alpha: (u) => (1 - u) ** 2, col: () => [1.6, 1.45, 1.3], frame: () => 0 });
+    cards.userData.ff = Math.floor(R() * 8); front.rotation.z = R() * 6.28;
+    P.glow.spawn({ pos: o.clone().addScaledVector(fwd, 0.05), vel: V3(0, 0, 0), age: 0, life: 0.09, size: (u) => 0.22 + 0.12 * u, alpha: (u) => 0.3 * (1 - u) ** 2, col: () => [1.0, 0.62, 0.32] });
+    P.glow.spawn({ pos: shardO.clone().addScaledVector(fwd, 0.02), vel: V3(0, 0, 0), age: 0, life: 0.07, size: () => 0.07, alpha: (u) => 0.7 * (1 - u), col: () => [0.75, 0.5, 1.6] });
+    cards.visible = true; cards.position.copy(o); cards.quaternion.copy(q); cards.userData.frame = 8 + Math.floor(R() * 7); cards.userData.age = 0;
+    muzLight.position.copy(o).addScaledVector(fwd, 0.16);
+    // powder embers: fast, tiny, short
+    for (let i = 0; i < 18; i++) { const d = rndCone(fwd, 14); P.spark.spawn({ pos: o.clone(), vel: d.multiplyScalar(6 + R() * 14), age: 0, life: 0.06 + R() * 0.14, drag: 9, grav: 2, size: () => 0.0022, streak: (u, v) => Math.min(0.06, v.length() * 0.006), alpha: (u) => (1 - u), col: (u) => warm(u).map((c) => c * 2.2) }); }
+    // smoke: a forward jet that stalls and blooms, then barrel wisps from the bores
+    for (let i = 0; i < 16; i++) { const d = rndCone(fwd, 16), sp = 0.6 + R() * 3.4, life = 1.4 + R() * 1.4, s0 = 0.03 + R() * 0.03, s1 = 0.22 + R() * 0.2, f0 = Math.floor(R() * 4), g = 0.42 + 0.12 * R();
+      P.smoke.spawn({ pos: o.clone().addScaledVector(fwd, 0.02 + R() * 0.05), vel: d.multiplyScalar(sp), age: -R() * 0.05, life, drag: 3.2, buoy: 0.09, rot: R() * 6.28, spin: (R() - 0.5) * 0.5, size: (u) => lerp(s0, s1, 1 - (1 - u) ** 2.2), alpha: (u) => 0.34 * sstep(0, 0.08, u) * (1 - u) ** 1.3, col: () => [g, g, g * 1.04], frame: (u) => Math.min(15, f0 + u * 12) }); }
+    for (let i = 0; i < 6; i++) { const b = bores[i % 3].clone(), g = 0.5 + 0.1 * R();
+      events.push({ t: 0.12 + i * 0.09, fn: () => P.smoke.spawn({ pos: b.clone(), vel: V3((R() - 0.5) * 0.02, 0.05 + R() * 0.04, 0.02), age: 0, life: 1.6, drag: 0.5, buoy: 0.05, rot: R() * 6.28, spin: 0.3, size: (u) => lerp(0.012, 0.09, u), alpha: (u) => 0.22 * sstep(0, 0.15, u) * (1 - u), col: () => [g, g, g * 1.04], frame: (u) => 2 + u * 10 }) }); }
+    // bullets: hitscan against the wall plane (the game uses physics raycasts); tracers travel at tracerSpeed
+    for (let i = 0; i < CFG.bullets; i++) {
+      const b = bores[i % 3], d = rndCone(fwd, CFG.bulletCone), t = (WALL_Z - b.z) / Math.max(0.05, d.z), hit = b.clone().addScaledVector(d, t);
+      const delay = R() * 0.004, travel = t / CFG.tracerSpeed, len = 0.3 + R() * 0.12, life = travel + delay + 0.025;
+      const tr = { pos: b.clone(), vel: d.clone().multiplyScalar(CFG.tracerSpeed), hit, stopAt: travel, age: -delay, life, size: () => 0.016, alpha: (u) => 1.0, col: () => [3.4, 2.9, 2.2] };   // quad width: the texture's 3 px core is ~2 mm of it
+      tr.streak = () => { const a = Math.max(0, tr.age); return a < travel ? Math.min(len, a * CFG.tracerSpeed + 0.02) : len * Math.max(0, 1 - (a - travel) / 0.025); };
+      tr.streakDir = d.clone(); P.tracer.spawn(tr);
+      if (hit.y > FLOOR_Y && Math.abs(hit.x) < 3) events.push({ t: travel + delay, fn: () => bulletHit(hit, d) });
+    }
+    // shards: ballistic, slower, wider
+    for (let i = 0; i < CFG.shards; i++) {
+      const s = shards[i], d = rndCone(fwd, CFG.shardCone); s.on = true; s.m.visible = true; s.glint.visible = true; s.dark.mesh.visible = s.core.mesh.visible = true;
+      s.pos = shardO.clone(); s.vel = d.multiplyScalar(CFG.shardSpeed * (0.9 + 0.2 * R())); s.age = -i * 0.006; s.hist = [s.pos.clone()]; s.histT = [s.age]; s.roll = R() * 6.28; s.rollV = (R() - 0.5) * 30;
+    }
+    tick(0);
+  }
+  function bulletHit(p, d) {
+    decal('bullet', p, 0.035 + R() * 0.02, R() * 6.28);
+    const n = V3(0, 0, -1);
+    for (let i = 0; i < 10; i++) { const v = n.clone().multiplyScalar(0.4 + R()).add(V3((R() - 0.5) * 1.6, (R() - 0.2) * 1.4, 0)).normalize().multiplyScalar(2 + R() * 5);
+      P.spark.spawn({ pos: p.clone(), vel: v, age: 0, life: 0.1 + R() * 0.25, drag: 2, grav: 9.8, size: () => 0.0018, streak: (u, vv) => Math.min(0.05, vv.length() * 0.01), alpha: (u) => 1 - u, col: (u) => warm(0.3 + u * 0.7).map((c) => c * 2.4) }); }
+    for (let i = 0; i < 3; i++) { const g = 0.42 + 0.08 * R(); P.dust.spawn({ pos: p.clone().add(V3(0, 0, -0.01)), vel: V3((R() - 0.5) * 0.3, R() * 0.15, -0.15 - R() * 0.3), age: 0, life: 0.9 + R() * 0.8, drag: 3, grav: 0.4, rot: R() * 6.28, spin: 0.4, size: (u) => lerp(0.02, 0.1 + R() * 0.02, 1 - (1 - u) ** 2), alpha: (u) => 0.4 * sstep(0, 0.05, u) * (1 - u) ** 1.5, col: () => [g * 1.02, g, g * 0.97], frame: (u) => 4 + u * 10 }); }
+    P.glow.spawn({ pos: p.clone().add(V3(0, 0, -0.01)), vel: V3(0, 0, 0), age: 0, life: 0.03, size: () => 0.022, alpha: (u) => 0.5 * (1 - u), col: () => [1.0, 0.7, 0.4] });
+  }
+  function shardHit(s, p, n) {
+    if (n.z < -0.5) decal('shatter', p, 0.12 + R() * 0.04, R() * 6.28);
+    s.on = false; s.m.visible = false; s.glint.visible = false;
+    const tang = V3(R() - 0.5, R() - 0.5, R() - 0.5);
+    let k = 0; for (const f of frags) { if (f.on) continue; f.on = true; f.m.visible = true; f.age = 0; f.m.position.copy(p).addScaledVector(n, 0.005);
+      f.vel.copy(n).multiplyScalar(0.6 + R() * 1.8).add(s.vel.clone().multiplyScalar(0.06 * R())).add(V3((R() - 0.5) * 2.6, (R() - 0.3) * 2.2, (R() - 0.5) * 2.6).multiplyScalar(0.8)); if (n.z < -0.5) f.vel.z = -Math.abs(f.vel.z);
+      f.spin.set((R() - 0.5) * 30, (R() - 0.5) * 30, (R() - 0.5) * 30); f.m.rotation.set(R() * 6, R() * 6, R() * 6); f.m.scale.setScalar(0.6 + R() * 0.8); if (++k >= 12) break; }
+    for (let i = 0; i < 8; i++) { const v = n.clone().multiplyScalar(0.5 + R()).add(V3((R() - 0.5) * 1.8, (R() - 0.3) * 1.6, (R() - 0.5) * 1.8)).normalize().multiplyScalar(1.5 + R() * 3);
+      P.spark.spawn({ pos: p.clone(), vel: v, age: 0, life: 0.12 + R() * 0.18, drag: 3, grav: 6, size: () => 0.0016, streak: (u, vv) => Math.min(0.035, vv.length() * 0.009), alpha: (u) => 1 - u, col: () => [1.2, 1.05, 1.6] }); }
+    for (let i = 0; i < 5; i++) { const g = 0.3 + 0.08 * R(); P.dust.spawn({ pos: p.clone().addScaledVector(n, 0.01), vel: n.clone().multiplyScalar(0.2 + R() * 0.3).add(V3((R() - 0.5) * 0.4, R() * 0.2, (R() - 0.5) * 0.4)), age: 0, life: 1.2 + R(), drag: 2.5, grav: 0.3, rot: R() * 6.28, spin: 0.3, size: (u) => lerp(0.03, 0.15, 1 - (1 - u) ** 2), alpha: (u) => 0.38 * sstep(0, 0.05, u) * (1 - u) ** 1.4, col: () => [g, g * 0.97, g * 1.06], frame: (u) => 3 + u * 11 }); }
+    P.glow.spawn({ pos: p.clone().addScaledVector(n, 0.012), vel: V3(0, 0, 0), age: 0, life: 0.14, size: (u) => 0.1 + 0.08 * u, alpha: (u) => 0.3 * (1 - u) ** 2, col: () => [0.5, 0.38, 0.95] });
+    hitLight.position.copy(p).addScaledVector(n, 0.05); hitLight.userData.t = 0;
+  }
+  function tick(dt) {
+    if (!active) return;
+    T += dt;
+    for (const e of events.slice()) if (T >= e.t) { e.fn(); events.splice(events.indexOf(e), 1); }
+    for (const p of Object.values(P)) p.tick(dt);
+    // flash cards and lights
+    if (cards.visible) { cards.userData.age += dt; const u = cards.userData.age / 0.04; if (u >= 1) cards.visible = false; else {
+      const f = cards.userData.frame + Math.floor(u * 2), ff = cards.userData.ff; cardMat.map.offset.set((f % 4) * 0.25, 1 - (Math.floor(f / 4) + 1) * 0.25); frontMat.map.offset.set((ff % 4) * 0.25, 1 - (Math.floor(ff / 4) + 1) * 0.25);
+      cards.scale.set(0.085 * (1 + u * 0.5), 0.085 * (1 + u * 0.5), 0.2 * (0.8 + u * 0.7)); front.scale.setScalar(1.5); cardMat.opacity = frontMat.opacity = (1 - u) ** 1.3; cardMat.color.setRGB(1.6, 1.42, 1.25); frontMat.color.setRGB(1.3, 1.15, 1.0); } }
+    muzLight.intensity = 0.7 * Math.max(0, 1 - T / 0.06) ** 2;
+    if (hitLight.userData.t !== undefined) { hitLight.userData.t += dt; hitLight.intensity = 0.12 * Math.max(0, 1 - hitLight.userData.t / 0.15) ** 2; }
+    // shards: ballistic step with a swept test against the wall and the floor
+    for (const s of shards) {
+      if (!s.on) continue; s.age += dt; if (s.age < 0) { s.m.position.copy(s.pos); continue; }
+      const prev = s.pos.clone(); s.vel.y -= CFG.gravity * dt; s.pos.addScaledVector(s.vel, dt); s.roll += s.rollV * dt;
+      let hit = null;
+      if (s.pos.z >= WALL_Z) { const k = (WALL_Z - prev.z) / (s.pos.z - prev.z); hit = [prev.clone().lerp(s.pos, k), V3(0, 0, -1)]; }
+      else if (s.pos.y <= FLOOR_Y) { const k = (FLOOR_Y - prev.y) / (s.pos.y - prev.y); hit = [prev.clone().lerp(s.pos, k), V3(0, 1, 0)]; }
+      s.m.position.copy(s.pos); s.m.quaternion.setFromUnitVectors(V3(0, 0, 1), s.vel.clone().normalize()); s.m.rotateZ(s.roll);
+      s.glint.position.copy(s.pos).addScaledVector(s.vel.clone().normalize(), 0.012).add(V3(0, 0.004, 0)); s.glint.material.opacity = 0.25 + 0.75 * Math.pow(0.5 + 0.5 * Math.sin(s.roll * 2.3), 6);
+      s.hist.unshift(s.pos.clone()); s.histT = s.histT || []; s.histT.unshift(s.age); while (s.hist.length > 2 && s.age - s.histT[s.hist.length - 1] > 0.016) { s.hist.pop(); s.histT.pop(); }
+      // trail samples in time, so the trail length scales with speed (about 30 ms of path)
+      const pts = s.hist.length > 1 ? s.hist : [s.pos, s.pos];
+      s.dark.set(pts); s.core.set(pts);
+      if (hit) shardHit(s, hit[0], hit[1]);
+    }
+    for (const s of shards) if (!s.on && s.dark.mesh.visible) { s.fade = (s.fade || 1) - dt / 0.12; s.dark.mat.uniforms.alpha.value = s.dark.base * Math.max(0, s.fade); s.core.mat.uniforms.alpha.value = s.core.base * Math.max(0, s.fade); if (s.fade <= 0) { s.dark.mesh.visible = s.core.mesh.visible = false; s.fade = 1; s.dark.mat.uniforms.alpha.value = s.dark.base; s.core.mat.uniforms.alpha.value = s.core.base; } }
+    // fragments: tumble, fall, bounce once on the floor, settle
+    for (const f of frags) {
+      if (!f.on) continue; f.age += dt; f.vel.y -= 9.81 * dt; f.vel.multiplyScalar(Math.exp(-0.6 * dt)); f.m.position.addScaledVector(f.vel, dt);
+      f.m.rotation.x += f.spin.x * dt; f.m.rotation.y += f.spin.y * dt; f.m.rotation.z += f.spin.z * dt;
+      if (f.m.position.z > WALL_Z - 0.004) { f.m.position.z = WALL_Z - 0.004; f.vel.z *= -0.25; }
+      if (f.m.position.y < FLOOR_Y + 0.003) { f.m.position.y = FLOOR_Y + 0.003; f.vel.y *= -0.25; f.vel.x *= 0.5; f.vel.z *= 0.5; f.spin.multiplyScalar(0.4); }
+    }
+  }
+  const busy = () => active && (events.length || Object.values(P).some((p) => p.list.length) || shards.some((s) => s.on));
+  return { group: FX, range, fire, tick, clear, busy, CFG, WALL_Z, FLOOR_Y, SHARD_GEOS, FRAG_GEOS, cardGeo, TXF, shardMat, P };
+}
+
+
+/* ------------------------------------------------------------------ renderer, studio */
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(stage.clientWidth, stage.clientHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+{ // studio sweep: mid grey at the top, near black at the bottom, so the dark stone still reads against it
+  const c = canvas(16, 512), x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 512);
+  g.addColorStop(0, '#8c8d95'); g.addColorStop(0.5, '#55565e'); g.addColorStop(1, '#1d1d22'); x.fillStyle = g; x.fillRect(0, 0, 16, 512);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
+}
+const pmrem = new THREE.PMREMGenerator(renderer);
+{ // studio environment: a vertical gradient dome and two long soft boxes (smooth reflections on the stone facets,
+  // no hard square highlights)
+  const env = new THREE.Scene(), c = canvas(8, 256), x = c.getContext('2d'), g = x.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#b9bccb'); g.addColorStop(0.45, '#5e5f6a'); g.addColorStop(0.55, '#2c2b31'); g.addColorStop(1, '#0d0d10'); x.fillStyle = g; x.fillRect(0, 0, 8, 256);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  env.add(new THREE.Mesh(new THREE.SphereGeometry(10, 32, 16), new THREE.MeshBasicMaterial({ map: t, side: THREE.BackSide })));
+  const box = (w, h, p, col, k) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(k), side: THREE.DoubleSide })); m.position.set(...p); m.lookAt(0, 0, 0); env.add(m); };
+  // narrow strips at modest strength plus a dimmer second strip: a broad facet reflects a graded band, never one flat panel
+  box(9, 0.6, [-4, 6, 2], '#fff3e6', 0.95); box(9, 0.9, [-5, 3.8, 3.5], '#f4ecff', 0.35); box(0.9, 9, [6, 2, -4], '#d4dcff', 0.75); box(5, 0.5, [3, 5, 4], '#b9a8ff', 0.3);
+  scene.environment = pmrem.fromScene(env, 0.035).texture; scene.environmentIntensity = 0.75;
+}
+const camera = new THREE.PerspectiveCamera(30, stage.clientWidth / stage.clientHeight, 0.01, 40);
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 }));
+composer.addPass(new RenderPass(scene, camera));
+const ao = new GTAOPass(scene, camera, 1, 1); ao.updateGtaoMaterial({ radius: 0.02, distanceExponent: 1.5, thickness: 0.06, scale: 1.0, samples: 16 }); ao.blendIntensity = 0.6; composer.addPass(ao);
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.5, 0.35, 1.4); composer.addPass(bloom);
+composer.addPass(new OutputPass());
+composer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); composer.setSize(stage.clientWidth, stage.clientHeight);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 0.15; controls.maxDistance = 6;
+
+const key = new THREE.DirectionalLight('#fff1e2', 2.0); key.position.set(-0.7, 1.3, 0.4); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -0.7, right: 0.7, top: 0.7, bottom: -0.7, near: 0.1, far: 5 }); key.shadow.bias = -0.0004; key.shadow.normalBias = 0.002;
+const rim = new THREE.DirectionalLight('#c9d2ff', 2.0); rim.position.set(0.9, 0.7, -1.0);
+const rim2 = new THREE.DirectionalLight('#b7a6ff', 0.9); rim2.position.set(-1.0, 0.3, 1.2);
+const fill = new THREE.DirectionalLight('#ffffff', 0.35); fill.position.set(0.6, -0.4, 0.6);
+scene.add(key, rim, rim2, fill);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.ShadowMaterial({ opacity: 0.3 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.21; floor.receiveShadow = true; scene.add(floor);
+
+/* ------------------------------------------------------------------ build */
+
+await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+const TIMINGS = {};
+TIMINGS.materials = Math.round(buildMaterials());
+let _t0 = performance.now(); const GUN = buildBlaster(); TIMINGS.gun = Math.round(performance.now() - _t0);
+scene.add(GUN.root); key.target = GUN.root;
+for (const m of Object.values(M)) if (m.userData && m.userData.glow !== undefined) m.emissiveIntensity = m.userData.glow;
+_t0 = performance.now(); const FXT = fxTextures(); const FXS = buildFx(scene, { FXT }); TIMINGS.fx = Math.round(performance.now() - _t0);
+
+/* ------------------------------------------------------------------ play: clips, ammo, effects */
+
+const PLAY = { clip: 'idle', t: 0, ammo: 6, pendingShot: false, ts: 0.25, seed: 1, view: 'hero', keepRange: false };
+let onClipChange = () => {};
+function playClip(name) { PLAY.clip = name; PLAY.t = 0; onClipChange(name); }
+const SHARDS = [0, 1, 2, 3, 4, 5].map((i) => GUN.nodes[`drum_shard_${i}`]);
+// spent shards. Slot 0 sits on the inner side of the drum and feeds the bore; the drum turns -60 deg per shot, so
+// shard i ends where shard i-1 rests. At rest the spent ones are i >= 6 - spent; from the shot until the clip ends,
+// shard 0 (just fired) and i >= 7 - spent are hidden. The two sets line up when the drum snaps back.
+function applyAmmo() {
+  if (PLAY.clip === 'reload') return;
+  const spent = 6 - PLAY.ammo, afterShot = PLAY.clip === 'fire' && !PLAY.pendingShot && PLAY.t >= 0.04;
+  SHARDS.forEach((s, i) => { if (afterShot ? (i === 0 || i >= 7 - spent) : i >= 6 - spent) hide(s); });
+}
+// sounds: a short synthetic report (noise burst through a low-pass + a low thump) and a glassy shard ring
+let AC = null, soundOn = true;
+function sfx(kind) {
+  if (!soundOn) return;
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); } catch { return; }
+  const t = AC.currentTime, g = AC.createGain(); g.connect(AC.destination);
+  if (kind === 'shot') {
+    const n = AC.createBufferSource(), b = AC.createBuffer(1, AC.sampleRate * 0.5, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+    const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(300, t + 0.35); n.buffer = b; n.connect(f); f.connect(g);
+    g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.5); n.start(t);
+    const o = AC.createOscillator(), og = AC.createGain(); o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.2); og.gain.setValueAtTime(0.5, t); og.gain.exponentialRampToValueAtTime(0.001, t + 0.25); o.connect(og); og.connect(AC.destination); o.start(t); o.stop(t + 0.3);
+    for (const fr of [1870, 2630, 3310]) { const s = AC.createOscillator(), sg = AC.createGain(); s.type = 'sine'; s.frequency.value = fr; sg.gain.setValueAtTime(0.025, t + 0.03); sg.gain.exponentialRampToValueAtTime(0.0005, t + 0.6); s.connect(sg); sg.connect(AC.destination); s.start(t + 0.03); s.stop(t + 0.62); }
+  } else {
+    const o = AC.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(kind === 'rack' ? 180 : 900, t); g.gain.setValueAtTime(0.06, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.06); o.connect(g); o.start(t); o.stop(t + 0.07);
+  }
+}
+function fire() {
+  if (PLAY.clip === 'reload' || (PLAY.clip === 'fire' && PLAY.t < 0.4)) return;
+  if (PLAY.ammo <= 0) { reload(); return; }
+  playClip('fire'); PLAY.pendingShot = true;
+}
+function reload() { if (PLAY.clip === 'reload') return; playClip('reload'); sfx('rack'); }
+let wire = false;
+function setWire(on) { wire = on; for (const m of Object.values(M)) if (m && m.isMaterial) m.wireframe = on; $('wire').setAttribute('aria-pressed', String(on)); }
+function sceneTick(dtReal) {
+  const dt = dtReal * PLAY.ts;
+  PLAY.t += dt;
+  const C = GUN.clips[PLAY.clip];
+  if (PLAY.pendingShot && PLAY.t >= 0.04) { PLAY.pendingShot = false; GUN.pose('fire', 0.04); GUN.root.updateMatrixWorld(true); FXS.fire(GUN.nodes.muzzle, PLAY.seed++); PLAY.ammo--; sfx('shot'); }
+  if (PLAY.t >= C.len) { if (C.loop) PLAY.t %= C.len; else { if (PLAY.clip === 'reload') PLAY.ammo = 6; playClip('idle'); } }
+  GUN.pose(PLAY.clip, PLAY.t); applyAmmo();
+  // emission: the core breathes in idle and flashes on the shot; the seams follow it a little
+  const flash = PLAY.clip === 'fire' ? bump(PLAY.t - 0.035, 0.25) : 0, breathe = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * 2.6);
+  M.core.emissiveIntensity = M.core.userData.glow * (0.85 + 0.15 * breathe + 0.5 * flash);
+  M.coreShell.emissiveIntensity = M.coreShell.userData.glow * (0.8 + 0.2 * breathe + 0.8 * flash);
+  M.seamHot.emissiveIntensity = M.seamHot.userData.glow * (0.9 + 0.1 * breathe + 0.5 * flash);
+  M.seam.emissiveIntensity = M.seam.userData.glow * (0.95 + 0.05 * breathe + 0.5 * flash);
+  M.stoneVein.emissiveIntensity = M.stoneVein.userData.glow * (0.9 + 0.1 * breathe + 0.4 * flash);
+  M.crystalTip.emissiveIntensity = M.crystalTip.userData.glow * (0.9 + 0.1 * breathe + 0.3 * flash);
+  FXS.tick(dt);
+  FXS.range.visible = PLAY.keepRange || PLAY.view === 'range' || FXS.busy();
+  floor.visible = !FXS.range.visible; ao.enabled = !FXS.range.visible;   // GTAO is tuned for the gun's scale; it smears over the range
+  $('st-ammo').textContent = `${PLAY.ammo} / 6`;
+}
+
+/* ------------------------------------------------------------------ UI */
+
+const $ = (id) => document.getElementById(id);
+const VIEWS = {
+  hero: { pos: [-1.0, 0.38, 0.92], target: [0, -0.01, 0.06] },     // the right (-X) side: the open chamber window, crest lean and the big clusters
+  right: { pos: [-1.55, 0.02, 0.03], target: [0, -0.02, 0.03] },
+  left: { pos: [1.55, 0.02, 0.03], target: [0, -0.02, 0.03] },
+  top: { pos: [0.0, 1.6, 0.0301], target: [0, -0.02, 0.03] },
+  chamber: { pos: [-0.3, 0.06, 0.1], target: [-0.01, 0.0, 0.06] },
+  muzzle: { pos: [-0.2, 0.12, 0.78], target: [0, 0.0, 0.46] },
+  range: { pos: [-0.78, 0.3, -0.4], target: [0.06, -0.06, 1.0], fov: 44 },
+  impact: { pos: [-0.55, 0.15, 1.35], target: [0.02, -0.02, 2.06] },
+};
+let camTween = null, spinning = false;
+function goView(name, instant = false) {
+  const v = VIEWS[name], to = V3(...v.pos), tt = V3(...v.target); PLAY.view = name;
+  camera.fov = v.fov || 30; camera.updateProjectionMatrix();
+  const k = camera.aspect < 1 ? Math.min(3.0, 1.35 / camera.aspect) : Math.max(1, 1.25 / camera.aspect); to.sub(tt).multiplyScalar(k).add(tt);
+  document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (instant) { camera.position.copy(to); controls.target.copy(tt); controls.update(); camTween = null; return; }
+  camTween = { from: camera.position.clone(), fromT: controls.target.clone(), to, tt, t: 0 };
+}
+controls.addEventListener('start', () => { camTween = null; });
+for (const name of GUN.order) {
+  const b = document.createElement('button'); b.type = 'button'; b.dataset.clip = name; b.textContent = name;
+  b.addEventListener('click', () => { if (name === 'fire') fire(); else if (name === 'reload') reload(); else playClip(name); }); $('clips').appendChild(b);
+}
+onClipChange = (name) => { document.querySelectorAll('[data-clip]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.clip === name))); $('st-clip').textContent = name; };
+$('fire').addEventListener('click', () => fire());
+$('reload').addEventListener('click', () => reload());
+$('slow').addEventListener('click', () => { PLAY.ts = PLAY.ts < 1 ? 1 : 0.25; $('slow').setAttribute('aria-pressed', String(PLAY.ts < 1)); });
+$('wire').addEventListener('click', () => setWire(!wire));
+$('spin').addEventListener('click', () => { spinning = !spinning; controls.autoRotate = spinning; controls.autoRotateSpeed = 1.2; $('spin').setAttribute('aria-pressed', String(spinning)); });
+$('sound').addEventListener('click', () => { soundOn = !soundOn; $('sound').setAttribute('aria-pressed', String(soundOn)); });
+document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => goView(b.dataset.view)));
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return; const k = e.key.toLowerCase();
+  if (k === 'f' || k === ' ') { e.preventDefault(); fire(); } else if (k === 'r') reload();
+});
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); composer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+window.addEventListener('resize', resize);
+
+/* ------------------------------------------------------------------ export */
+
+const MODELS = [GUN];
+// the effect meshes: three shard variants, five fragments, muzzle flash cards (front quad + two crossed side planes,
+// UVs on one flipbook cell each), all at their real size, +Z forward
+function fxRoot() {
+  const r = new THREE.Group(); r.name = 'nightstone-blaster-fx';
+  const cm = new THREE.MeshStandardMaterial({ name: 'black_crystal', color: '#0d0a12', roughness: 0.06, metalness: 0.1, emissive: '#2a1060', emissiveIntensity: 0.15 });
+  FXS.SHARD_GEOS.forEach((g, i) => { const m = new THREE.Mesh(g.clone(), cm); m.name = `fx_shard_${'abc'[i]}`; m.position.set(-0.12 + i * 0.12, 0, 0); r.add(m); });
+  FXS.FRAG_GEOS.forEach((g, i) => { const m = new THREE.Mesh(g.clone(), cm); m.name = `fx_fragment_${i}`; m.position.set(-0.12 + i * 0.06, -0.08, 0); r.add(m); });
+  const fm = new THREE.MeshBasicMaterial({ name: 'muzzle_flash_additive', map: FXS.TXF.flash, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+  const cell = (g, c) => { const uv = g.attributes.uv, cx = c % 4, cy = Math.floor(c / 4); for (let i = 0; i < uv.count; i++) uv.setXY(i, (cx + uv.getX(i)) / 4, 1 - (cy + 1 - uv.getY(i)) / 4); return g; };
+  const front = cell(new THREE.PlaneGeometry(0.16, 0.16), 0);
+  const sideA = cell(new THREE.PlaneGeometry(0.09, 0.2).translate(0, 0.1, 0).rotateX(Math.PI / 2), 9), sideB = sideA.clone().rotateZ(Math.PI / 2);
+  const cards = new THREE.Mesh(mergeGeometries([front, sideA, sideB]), fm); cards.name = 'fx_muzzle_flash_cards'; cards.position.set(0, 0.12, 0); r.add(cards);
+  r.userData = { units: 'metres', forward: '+Z', note: 'Effect meshes for NightstoneBlasterFx.cs: shards fly +Z, fragments are shatter chunks (scale 0.6-1.4 at spawn), flash cards sit on the muzzle locator. Textures ship as PNGs next to this file.' };
+  return r;
+}
+function exportScenes() { return exportScenesFor(MODELS); }
+async function exportGLB() {
+  const was = looping;
+  const out = await exportGLBFor(MODELS, {
+    before: () => { setLoop(false); setWire(false); FXS.clear(); GUN.rest(); },
+    after: () => { if (was) setLoop(true); },
+  });
+  const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+  const r = fxRoot(); r.traverse((o) => { if (o.isMesh && !o.geometry.index) o.geometry = mergeVertices(o.geometry, 1e-6); });
+  const buf = patchGLB(await new GLTFExporter().parseAsync(r, { binary: true }), (j) => patchJSON(j, 'nightstone-blaster-fx'));
+  out.push({ file: 'nightstone-blaster-fx.glb', bytes: buf.byteLength, base64: toBase64(buf) });
+  return out;
+}
+function stats() {
+  const mats = new Set(), meshes = []; GUN.root.traverse((o) => { if (o.isMesh) { mats.add(o.material.name); meshes.push([o.name, (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3]); } });
+  const b = boxOf(GUN.root);
+  return { timings: TIMINGS, tris: triCount(GUN.root), materials: [...mats].sort(), meshes, size: b.getSize(V3(0, 0, 0)).toArray().map((v) => +v.toFixed(4)), min: b.min.toArray().map((v) => +v.toFixed(4)), max: b.max.toArray().map((v) => +v.toFixed(4)) };
+}
+window.__model = { id: 'nightstone-blaster', exportScenes, exportGLB, timings: TIMINGS, fxPNG: () => Object.fromEntries(Object.entries(FX_PNG).map(([k, f]) => [f, FXT[k].toDataURL('image/png')])) };
+
+/* ------------------------------------------------------------------ go */
+
+const clock = new THREE.Clock();
+let looping = false;
+function setLoop(on) { looping = on; renderer.setAnimationLoop(on ? loop : null); }
+function tick(dt) {
+  sceneTick(dt);
+  if (camTween) { camTween.t = Math.min(1, camTween.t + dt / 0.8); const e = ease(camTween.t); camera.position.lerpVectors(camTween.from, camTween.to, e); controls.target.lerpVectors(camTween.fromT, camTween.tt, e); if (camTween.t >= 1) camTween = null; }
+}
+function loop() { const dt = Math.min(clock.getDelta(), 1 / 30); tick(dt); controls.update(); composer.render(dt); }
+resize(); goView('hero', true); $('loading').hidden = true; playClip('idle');
+{ const s = boxOf(GUN.root).getSize(V3(0, 0, 0)); $('sp-size').textContent = `${(s.z * 1000).toFixed(0)} × ${(s.y * 1000).toFixed(0)} × ${(s.x * 1000).toFixed(0)} mm (L × H × W), two-handed`; }
+tick(0); setLoop(true);
+window.__model.ready = true;
+window.__model.preview = () => {
+  setLoop(false); document.querySelectorAll('.plate, .bar, .hint').forEach((e) => { e.hidden = true; });
+  window.__model.debug.set({}); goView('hero', true); window.__model.debug.renderOnce();
+};
+window.__model.debug = {
+  stop: () => setLoop(false), start: () => setLoop(true), tick, goView, VIEWS, camera, controls, scene, renderer, composer, bloom, M, TX, GUN, PLAY, FXS, stats, fire, setWire,
+  // freeze a frame: clip at time t; fx: simulate one shot to fx seconds (effect time) at 1/240 s steps
+  set: (o = {}) => {
+    FXS.clear(); PLAY.ammo = o.ammo ?? 6; PLAY.keepRange = !!o.range; PLAY.pendingShot = false;
+    PLAY.clip = o.clip || 'idle'; PLAY.t = o.t || 0; onClipChange(PLAY.clip);
+    if (o.fx !== undefined) {
+      PLAY.clip = 'fire'; PLAY.t = 0.04; GUN.pose('fire', 0.04); GUN.root.updateMatrixWorld(true); FXS.fire(GUN.nodes.muzzle, o.seed || 3);
+      const st = 1 / 240; for (let s = 0; s < o.fx; s += st) FXS.tick(st);
+      PLAY.t = 0.04 + o.fx; PLAY.keepRange = true;
+    }
+    const ts = PLAY.ts; PLAY.ts = 0; sceneTick(0); PLAY.ts = ts;
+  },
+  renderOnce: () => { controls.update(); composer.render(); const gl = renderer.getContext(); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4)); },
+};
+</script>
+</body>
+</html>

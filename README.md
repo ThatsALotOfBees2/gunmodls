@@ -7,6 +7,7 @@ Each model has an interactive viewer, real-world dimensions, named parts and wor
 | --- | --- | --- |
 | [Mossberg 590A1](shotguns/m590a1/) | Shotguns | `m590a1.glb`, `shell-12ga.glb` |
 | [AK-47 (AKM)](rifles/ak47/) | Rifles | `ak47.glb`, `cartridge-7.62x39.glb` |
+| [Nightstone Blaster](weapons/nightstone-blaster/) | Weapons | `nightstone-blaster.glb` (original dark-gemstone blaster: faceted violet-black stone head on a forged-iron frame, glowing core, six-shard drum; fires bullets plus black crystal shards; idle, fire, reload, inspect clips), `vfx/` (shard and fragment meshes, flash/smoke flipbooks, decals), Unity LOD copy, Unity weapon + FX scripts |
 | [Wall Fortification](gadgets/wall-fortification/) | Gadgets | `wall-fortification-{small,standard,large,xl,hatch}.glb` |
 | [Breach Spider](gadgets/breach-spider/) | Gadgets | `breach-spider.glb` (spider, lance, kerf, effect locators), sounds, effect textures |
 | [Recon Tablet](gadgets/recon-tablet/) | Gadgets | `recon-tablet.glb` (left-hand scanner), sounds, Unity ability script |
@@ -31,6 +32,8 @@ Open `index.html` to browse every model in one page: pick one at the top, or pre
 ![Mossberg 590A1](shotguns/m590a1/preview.png)
 
 ![AK-47](rifles/ak47/preview.png)
+
+![Nightstone Blaster](weapons/nightstone-blaster/preview.png)
 
 ![Wall Fortification](gadgets/wall-fortification/preview.png)
 
@@ -123,7 +126,7 @@ To use them:
 The Breach Spider's effects and timing come with a reference player: add `unity/Runtime/BreachSpiderFx.cs`
 to your project and see `gadgets/breach-spider/INTEGRATION.md`. The Recon Tablet's ability is `unity/Runtime/ReconTablet.cs`
 (see `gadgets/recon-tablet/INTEGRATION.md`). The lattice runs on `unity/Runtime/ConductiveLattice.cs` and the cameras on
-`unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`). Nox's tags run on `unity/Runtime/TrackerTags.cs` and N1CK's bubble on `unity/Runtime/Nullfield.cs`, which the tags need (sensors ask `Nullfield.IsHidden` before reporting anything). N1CK himself runs on `unity/Runtime/N1CK.cs`, with `unity/Editor/N1CKAvatarBuilder.cs` for a Humanoid Avatar (see `operators/n1ck/INTEGRATION.md`). The Human Rig runs on `unity/Runtime/HumanRig.cs`, with `unity/Editor/HumanRigAvatar.cs` for its Humanoid Avatar (see `operators/human-rig/INTEGRATION.md`). The uplink objective runs on `unity/Runtime/UplinkServer.cs` and `unity/Runtime/UplinkLaptop.cs` (see `objectives/uplink/INTEGRATION.md`). The Tactical Phone runs on `unity/Runtime/TacticalPhone.cs` (see `gadgets/tactical-phone/INTEGRATION.md`), the Tactical Tablet on `unity/Runtime/TacticalTablet.cs` (see `gadgets/tactical-tablet/INTEGRATION.md`), the Tool Gun on `unity/Runtime/ToolGun.cs` (see `gadgets/tool-gun/INTEGRATION.md`). Furniture pieces break with `unity/Runtime/BreakableFurniture.cs` (see `props/haneul-furniture/INTEGRATION.md`). The map sets itself up with `unity/Runtime/HaneulTowerMap.cs` and **Tools > Gunmodls > Set Up Haneul Tower Map** (see `maps/haneul-tower/INTEGRATION.md`).
+`unity/Runtime/DeviceCamera.cs`. The Scout Drone drives with `unity/Runtime/ScoutDrone.cs` (see `gadgets/scout-drone/INTEGRATION.md`). Nox's tags run on `unity/Runtime/TrackerTags.cs` and N1CK's bubble on `unity/Runtime/Nullfield.cs`, which the tags need (sensors ask `Nullfield.IsHidden` before reporting anything). N1CK himself runs on `unity/Runtime/N1CK.cs`, with `unity/Editor/N1CKAvatarBuilder.cs` for a Humanoid Avatar (see `operators/n1ck/INTEGRATION.md`). The Human Rig runs on `unity/Runtime/HumanRig.cs`, with `unity/Editor/HumanRigAvatar.cs` for its Humanoid Avatar (see `operators/human-rig/INTEGRATION.md`). The uplink objective runs on `unity/Runtime/UplinkServer.cs` and `unity/Runtime/UplinkLaptop.cs` (see `objectives/uplink/INTEGRATION.md`). The Tactical Phone runs on `unity/Runtime/TacticalPhone.cs` (see `gadgets/tactical-phone/INTEGRATION.md`), the Tactical Tablet on `unity/Runtime/TacticalTablet.cs` (see `gadgets/tactical-tablet/INTEGRATION.md`), the Tool Gun on `unity/Runtime/ToolGun.cs` (see `gadgets/tool-gun/INTEGRATION.md`). The Nightstone Blaster runs on `unity/Runtime/NightstoneBlaster.cs` with `NightstoneBlasterFx.cs` for its effects (see `weapons/nightstone-blaster/INTEGRATION.md`). Furniture pieces break with `unity/Runtime/BreakableFurniture.cs` (see `props/haneul-furniture/INTEGRATION.md`). The map sets itself up with `unity/Runtime/HaneulTowerMap.cs` and **Tools > Gunmodls > Set Up Haneul Tower Map** (see `maps/haneul-tower/INTEGRATION.md`).
 
 glTFast converts glTF's right-handed axes to Unity's by negating X, so any x coordinate quoted in these
 docs (glTF space) has its sign flipped in a prefab's local space.
